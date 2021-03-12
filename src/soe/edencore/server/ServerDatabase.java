@@ -19,7 +19,7 @@ public class ServerDatabase {
     private static final ModSkeleton instance = EdenCore.instance.getSkeleton();
 
     public static PlayerData getPlayerData(String playerName) {
-        ArrayList<Object> dataObjectList = new ArrayList<>();
+        ArrayList<Object> dataObjectList = PersistentObjectUtil.getObjects(instance, PlayerData.class);
         for(Object dataObject : dataObjectList) {
             PlayerData playerData = (PlayerData) dataObject;
             if(playerData.getPlayerName().equals(playerName)) return playerData;
