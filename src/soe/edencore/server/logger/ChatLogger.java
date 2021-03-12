@@ -25,11 +25,11 @@ public class ChatLogger {
         EdenBot edenBot = getBot();
         edenBot.chatWebhook.setUsername("EdenBot");
         edenBot.chatWebhook.setAvatarUrl("https://i.imgur.com/2Prc2ke.jpg");
-        if(ServerDatabase.getPlayerData(event.getPlayer().getName()) == null) {
-            edenBot.chatWebhook.setContent(":confetti_ball: Everyone welcome " + event.getPlayer().getName() + " to Skies of Eden!");
-            ServerDatabase.addNewPlayerData(event.getPlayer().getName());
+        if(ServerDatabase.getPlayerData(event.getPlayerName()) == null) {
+            edenBot.chatWebhook.setContent(":confetti_ball: Everyone welcome " + event.getPlayerName() + " to Skies of Eden!");
+            ServerDatabase.addNewPlayerData(event.getPlayerName());
         } else {
-            edenBot.chatWebhook.setContent(":arrow_right: " + event.getPlayer().getName() + " has joined the server");
+            edenBot.chatWebhook.setContent(":arrow_right: " + event.getPlayerName() + " has joined the server");
         }
         try {
             edenBot.chatWebhook.execute();
