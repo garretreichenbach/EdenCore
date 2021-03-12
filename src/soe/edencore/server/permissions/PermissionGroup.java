@@ -1,15 +1,14 @@
 package soe.edencore.server.permissions;
 
 import soe.edencore.data.PlayerData;
-
 import java.io.Serializable;
 import java.util.ArrayList;
 
 /**
  * PermissionGroup.java
  * <Description>
- * ==================================================
- * Created 03/10/2021
+ *
+ * @since 03/10/2021
  * @author TheDerpGamer
  */
 public class PermissionGroup implements Serializable {

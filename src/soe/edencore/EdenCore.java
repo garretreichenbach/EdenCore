@@ -4,7 +4,6 @@ import api.common.GameCommon;
 import api.listener.Listener;
 import api.listener.events.faction.FactionCreateEvent;
 import api.listener.events.faction.FactionRelationChangeEvent;
-import api.listener.events.network.ClientLoginEvent;
 import api.listener.events.player.*;
 import api.mod.StarLoader;
 import api.mod.StarMod;
@@ -18,8 +17,8 @@ import java.io.IOException;
 /**
  * EdenCore.java
  * <Description>
- * ==================================================
- * Created 03/10/2021
+ *
+ * @since 03/10/2021
  * @author TheDerpGamer
  */
 public class EdenCore extends StarMod {
@@ -78,10 +77,17 @@ public class EdenCore extends StarMod {
             }
         }, this);
 
-        StarLoader.registerListener(ClientLoginEvent.class, new Listener<ClientLoginEvent>() {
+        StarLoader.registerListener(PlayerJoinWorldEvent.class, new Listener<PlayerJoinWorldEvent>() {
             @Override
-            public void onEvent(ClientLoginEvent event) {
+            public void onEvent(PlayerJoinWorldEvent event) {
                 ChatLogger.handlePlayerJoinEvent(event);
+            }
+        }, this);
+
+        StarLoader.registerListener(PlayerLeaveWorldEvent.class, new Listener<PlayerLeaveWorldEvent>() {
+            @Override
+            public void onEvent(PlayerLeaveWorldEvent event) {
+                ChatLogger.handlePlayerLeaveEvent(event);
             }
         }, this);
 
@@ -160,9 +166,9 @@ public class EdenCore extends StarMod {
                 edenBot.chatWebhook.setAvatarUrl("https://i.imgur.com/2Prc2ke.jpg");
 
                 if(event.getNewRelation().equals(FactionRelation.RType.FRIEND)) {
-                    edenBot.chatWebhook.setContent(":shield: " + event.getFrom().getName() + " is now allied with " + event.getTo().getName());
+                    edenBot.chatWebhook.setContent(":shield: " + event.getTo().getName() + " is now allied with " + event.getFrom().getName());
                 } else if(event.getNewRelation().equals(FactionRelation.RType.ENEMY)) {
-                    edenBot.chatWebhook.setContent(":crossed_swords: " + event.getFrom().getName() + " is now at war with " + event.getTo().getName());
+                    edenBot.chatWebhook.setContent(":crossed_swords: " + event.getTo().getName() + " is now at war with " + event.getFrom().getName());
                 } else {
                     return;
                 }

@@ -15,8 +15,8 @@ import java.util.Set;
 /**
  * DiscordWebhook.java
  * <Description>
- * ==================================================
- * Created 03/11/2021
+ *
+ * @since 03/11/2021
  * @author JakeV
  */
 public class DiscordWebhook {

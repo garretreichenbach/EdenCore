@@ -2,7 +2,7 @@
   "name": "EdenCore",
   "author": "TheDerpGamer",
   "description": "SOE Core mod",
-  "version": "1.1.5",
+  "version": "1.1.6",
   "starmade_version": "0.202.108",
   "client_mod": false,
   "server_mod": true,

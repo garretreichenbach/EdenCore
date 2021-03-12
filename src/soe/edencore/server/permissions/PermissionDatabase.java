@@ -9,8 +9,8 @@ import java.util.Arrays;
 /**
  * PermissionDatabase.java
  * <Description>
- * ==================================================
- * Created 03/10/2021
+ *
+ * @since 03/10/2021
  * @author TheDerpGamer
  */
 public class PermissionDatabase {

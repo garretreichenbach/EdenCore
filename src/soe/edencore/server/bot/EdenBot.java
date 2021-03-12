@@ -3,8 +3,8 @@ package soe.edencore.server.bot;
 /**
  * EdenBot.java
  * <Description>
- * ==================================================
- * Created 03/11/2021
+ *
+ * @since 03/11/2021
  * @author TheDerpGamer
  */
 public class EdenBot {
