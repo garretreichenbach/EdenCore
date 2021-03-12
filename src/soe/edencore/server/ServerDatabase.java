@@ -1,6 +1,5 @@
 package soe.edencore.server;
 
-import api.common.GameCommon;
 import api.mod.ModSkeleton;
 import api.mod.config.PersistentObjectUtil;
 import soe.edencore.EdenCore;
@@ -29,7 +28,7 @@ public class ServerDatabase {
     }
 
     public static PlayerData addNewPlayerData(String playerName) {
-        PlayerData playerData = new PlayerData(GameCommon.getPlayerFromName(playerName));
+        PlayerData playerData = new PlayerData(playerName);
         PermissionDatabase.generateDefaults(playerData);
         PersistentObjectUtil.addObject(instance, playerData);
         PersistentObjectUtil.save(instance);

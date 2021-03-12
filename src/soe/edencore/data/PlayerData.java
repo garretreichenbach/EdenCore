@@ -1,7 +1,6 @@
 package soe.edencore.data;
 
 import api.common.GameCommon;
-import org.schema.game.common.data.player.PlayerState;
 import org.schema.game.common.data.player.faction.Faction;
 import soe.edencore.server.permissions.PermissionGroup;
 import java.io.Serializable;
@@ -20,8 +19,8 @@ public class PlayerData implements Serializable {
     private ArrayList<String> permissions;
     private ArrayList<PermissionGroup> groups;
 
-    public PlayerData(PlayerState playerState) {
-        this.playerName = playerState.getName();
+    public PlayerData(String playerName) {
+        this.playerName = playerName;
         this.permissions = new ArrayList<>();
         this.groups = new ArrayList<>();
     }
