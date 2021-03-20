@@ -1,6 +1,6 @@
 package soe.edencore.server.permissions;
 
-import soe.edencore.data.PlayerData;
+import soe.edencore.data.player.PlayerData;
 import java.io.Serializable;
 import java.util.ArrayList;
 

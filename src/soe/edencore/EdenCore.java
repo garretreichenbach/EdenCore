@@ -1,15 +1,32 @@
 package soe.edencore;
 
+import api.common.GameClient;
 import api.common.GameCommon;
 import api.listener.Listener;
 import api.listener.events.faction.FactionCreateEvent;
 import api.listener.events.faction.FactionRelationChangeEvent;
+import api.listener.events.gui.GUITopBarCreateEvent;
 import api.listener.events.player.*;
 import api.mod.StarLoader;
 import api.mod.StarMod;
+import api.mod.config.FileConfiguration;
+import api.mod.config.PersistentObjectUtil;
+import api.utils.StarRunnable;
+import api.utils.gui.ControlManagerHandler;
+import org.schema.game.client.view.gui.newgui.GUITopBar;
 import org.schema.game.common.controller.SegmentController;
 import org.schema.game.common.data.player.PlayerState;
 import org.schema.game.common.data.player.faction.FactionRelation;
+import org.schema.schine.graphicsengine.core.MouseEvent;
+import org.schema.schine.graphicsengine.forms.gui.GUIActivationHighlightCallback;
+import org.schema.schine.graphicsengine.forms.gui.GUICallback;
+import org.schema.schine.graphicsengine.forms.gui.GUIElement;
+import org.schema.schine.input.InputState;
+import soe.edencore.data.player.PlayerData;
+import soe.edencore.gui.admintools.AdminToolsGUIControlManager;
+import soe.edencore.gui.admintools.AdminToolsMenuPanel;
+import soe.edencore.gui.admintools.player.PlayerDataEditorControlManager;
+import soe.edencore.server.ServerDatabase;
 import soe.edencore.server.bot.EdenBot;
 import soe.edencore.server.logger.ChatLogger;
 import java.io.IOException;
@@ -30,20 +47,38 @@ public class EdenCore extends StarMod {
     public static EdenCore instance;
     public static void main(String[] args) { }
 
-    //Data
+    //Config
+    private final String[] defaultConfig = {
+            "debug-mode: false",
+            "auto-save-frequency: 10000",
+            "max-log-age: 30"
+    };
+    public boolean debugMode = false;
+    public long autoSaveFrequency = 10000;
+    public int maxLogAge = 30;
+
+    //Permissions
     public final String[] defaultPermissions = {
             "player.chat.general.speak",
             "player.chat.general.read",
             "player.chat.faction.speak",
             "player.chat.faction.read"
     };
+
+    //Data
     public EdenBot edenBot;
+
+    //GUI
+    public AdminToolsGUIControlManager adminToolsGUIControlManager;
+    public PlayerDataEditorControlManager playerDataEditorControlManager;
 
     @Override
     public void onEnable() {
         instance = this;
-        registerListeners();
+        initConfig();
         initialize();
+        registerListeners();
+        startRunners();
     }
 
     @Override
@@ -58,7 +93,71 @@ public class EdenCore extends StarMod {
         }
     }
 
+    private void initConfig() {
+        FileConfiguration config = getConfig("config");
+        config.saveDefault(defaultConfig);
+
+        debugMode = config.getConfigurableBoolean("debug-mode", false);
+        autoSaveFrequency = config.getConfigurableLong("auto-save-frequency", 10000);
+        maxLogAge = config.getConfigurableInt("max-log-age", 30);
+    }
+
+    private void initialize() {
+        edenBot = new EdenBot();
+        edenBot.chatWebhook.setUsername("EdenBot");
+        edenBot.chatWebhook.setAvatarUrl("https://i.imgur.com/2Prc2ke.jpg");
+        edenBot.chatWebhook.setContent(":white_check_mark: Server Started");
+        try {
+            edenBot.chatWebhook.execute();
+        } catch (IOException exception) {
+            exception.printStackTrace();
+        }
+    }
+
     private void registerListeners() {
+        StarLoader.registerListener(GUITopBarCreateEvent.class, new Listener<GUITopBarCreateEvent>() {
+            @Override
+            public void onEvent(final GUITopBarCreateEvent event) {
+                PlayerData playerData = ServerDatabase.getPlayerData(GameClient.getClientPlayerState().getName());
+                if(playerData != null && playerData.hasPermission(AdminToolsMenuPanel.usagePerms)) {
+                    GUITopBar.ExpandedButton dropDownButton = event.getDropdownButtons().get(event.getDropdownButtons().size() - 1);
+                    dropDownButton.addExpandedButton("ADMIN TOOLS", new GUICallback() {
+                        @Override
+                        public void callback(final GUIElement guiElement, MouseEvent mouseEvent) {
+                            if(mouseEvent.pressedLeftMouse()) {
+                                GameClient.getClientState().getController().queueUIAudio("0022_menu_ui - enter");
+                                if(adminToolsGUIControlManager == null) {
+                                    adminToolsGUIControlManager = new AdminToolsGUIControlManager(event.getGuiTopBar().getState());
+                                    ControlManagerHandler.registerNewControlManager(getSkeleton(), adminToolsGUIControlManager);
+                                }
+                                adminToolsGUIControlManager.setActive(true);
+                            }
+                        }
+
+                        @Override
+                        public boolean isOccluded() {
+                            return false;
+                        }
+                    }, new GUIActivationHighlightCallback() {
+                        @Override
+                        public boolean isHighlighted(InputState inputState) {
+                            return false;
+                        }
+
+                        @Override
+                        public boolean isVisible(InputState inputState) {
+                            return true;
+                        }
+
+                        @Override
+                        public boolean isActive(InputState inputState) {
+                            return true;
+                        }
+                    });
+                }
+            }
+        }, this);
+
         StarLoader.registerListener(PlayerChatEvent.class, new Listener<PlayerChatEvent>() {
             @Override
             public void onEvent(PlayerChatEvent event) {
@@ -182,22 +281,20 @@ public class EdenCore extends StarMod {
         }, this);
     }
 
+    private void startRunners() {
+        //Auto Saver
+        new StarRunnable() {
+            @Override
+            public void run() {
+                PersistentObjectUtil.save(getSkeleton());
+            }
+        }.runTimer(this, autoSaveFrequency);
+    }
+
     private String convertToString(String command, String... args) {
         StringBuilder builder = new StringBuilder();
         builder.append(command);
         for(String arg : args) builder.append(" ").append(arg);
         return builder.toString();
-    }
-
-    private void initialize() {
-        edenBot = new EdenBot();
-        edenBot.chatWebhook.setUsername("EdenBot");
-        edenBot.chatWebhook.setAvatarUrl("https://i.imgur.com/2Prc2ke.jpg");
-        edenBot.chatWebhook.setContent(":white_check_mark: Server Started");
-        try {
-            edenBot.chatWebhook.execute();
-        } catch (IOException exception) {
-            exception.printStackTrace();
-        }
     }
 }

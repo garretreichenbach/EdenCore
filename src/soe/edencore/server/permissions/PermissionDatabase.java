@@ -3,7 +3,7 @@ package soe.edencore.server.permissions;
 import api.mod.ModSkeleton;
 import api.mod.config.PersistentObjectUtil;
 import soe.edencore.EdenCore;
-import soe.edencore.data.PlayerData;
+import soe.edencore.data.player.PlayerData;
 import java.util.Arrays;
 
 /**

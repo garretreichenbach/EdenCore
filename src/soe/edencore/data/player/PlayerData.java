@@ -1,7 +1,8 @@
-package soe.edencore.data;
+package soe.edencore.data.player;
 
 import api.common.GameCommon;
 import org.schema.game.common.data.player.faction.Faction;
+import soe.edencore.server.ServerDatabase;
 import soe.edencore.server.permissions.PermissionGroup;
 import java.io.Serializable;
 import java.util.ArrayList;
@@ -16,17 +17,33 @@ import java.util.ArrayList;
 public class PlayerData implements Serializable {
 
     private String playerName;
+    private PlayerRank rank;
     private ArrayList<String> permissions;
     private ArrayList<PermissionGroup> groups;
+    private long playTime;
 
     public PlayerData(String playerName) {
         this.playerName = playerName;
+        this.rank = ServerDatabase.defaultRank;
         this.permissions = new ArrayList<>();
         this.groups = new ArrayList<>();
+        this.playTime = 0;
     }
 
     public String getPlayerName() {
         return playerName;
+    }
+
+    public PlayerRank getRank() {
+        return rank;
+    }
+
+    public void setPlayerName(String playerName) {
+        this.playerName = playerName;
+    }
+
+    public String getFactionName() {
+        return (getFaction() == null) ? "No Faction" : getFaction().getName();
     }
 
     public Faction getFaction() {
@@ -62,5 +79,13 @@ public class PlayerData implements Serializable {
 
     public boolean hasPermission(String... permission) {
         return getPermissions().contains(permission);
+    }
+
+    public double getHoursPlayed() {
+        return (double) playTime / (1000 * 60 * 60);
+    }
+
+    public void updatePlayTime(long timeSinceLastUpdate) {
+        playTime += timeSinceLastUpdate;
     }
 }
