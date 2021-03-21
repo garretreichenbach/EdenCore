@@ -17,13 +17,15 @@ public class PlayerRankEditorMenuPanel extends GUIMenuPanel {
     private PlayerData playerData;
 
     public PlayerRankEditorMenuPanel(InputState inputState, PlayerData playerData) {
-        super(inputState, "PlayerRankEditorMenuPanel", 800, 500);
+        super(inputState, "PlayerRankEditorMenuPanel", 350, 200);
         this.playerData = playerData;
     }
 
     @Override
     public void recreateTabs() {
         guiWindow.clearTabs();
-        GUIContentPane rankTab = guiWindow.addTab("EDIT RANKS");
+        GUIContentPane rankTab = guiWindow.addTab("EDIT RANK");
+
+        //Todo: Rank tab
     }
 }

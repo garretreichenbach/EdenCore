@@ -1,5 +1,6 @@
 package soe.edencore;
 
+import api.DebugFile;
 import api.common.GameClient;
 import api.common.GameCommon;
 import api.listener.Listener;
@@ -13,10 +14,12 @@ import api.mod.config.FileConfiguration;
 import api.mod.config.PersistentObjectUtil;
 import api.utils.StarRunnable;
 import api.utils.gui.ControlManagerHandler;
+import org.apache.commons.io.IOUtils;
 import org.schema.game.client.view.gui.newgui.GUITopBar;
 import org.schema.game.common.controller.SegmentController;
 import org.schema.game.common.data.player.PlayerState;
 import org.schema.game.common.data.player.faction.FactionRelation;
+import org.schema.game.network.objects.ChatMessage;
 import org.schema.schine.graphicsengine.core.MouseEvent;
 import org.schema.schine.graphicsengine.forms.gui.GUIActivationHighlightCallback;
 import org.schema.schine.graphicsengine.forms.gui.GUICallback;
@@ -28,8 +31,13 @@ import soe.edencore.gui.admintools.AdminToolsMenuPanel;
 import soe.edencore.gui.admintools.player.PlayerDataEditorControlManager;
 import soe.edencore.server.ServerDatabase;
 import soe.edencore.server.bot.EdenBot;
-import soe.edencore.server.logger.ChatLogger;
+import soe.edencore.server.chat.ChatLogger;
+
+import java.io.FileInputStream;
 import java.io.IOException;
+import java.security.ProtectionDomain;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipInputStream;
 
 /**
  * EdenCore.java
@@ -67,6 +75,9 @@ public class EdenCore extends StarMod {
 
     //Data
     public EdenBot edenBot;
+    private final String[] overwriteClasses = {
+            "GUITextOverlay"
+    };
 
     //GUI
     public AdminToolsGUIControlManager adminToolsGUIControlManager;
@@ -91,6 +102,15 @@ public class EdenCore extends StarMod {
         } catch (IOException exception) {
             exception.printStackTrace();
         }
+    }
+
+    @Override
+    public byte[] onClassTransform(ClassLoader loader, String className, Class<?> classBeingRedefined, ProtectionDomain protectionDomain, byte[] byteCode) {
+        for(String name : overwriteClasses) {
+            if(className.endsWith(name)) return overwriteClass(className, byteCode);
+        }
+
+        return super.onClassTransform(loader, className, classBeingRedefined, protectionDomain, byteCode);
     }
 
     private void initConfig() {
@@ -296,5 +316,28 @@ public class EdenCore extends StarMod {
         builder.append(command);
         for(String arg : args) builder.append(" ").append(arg);
         return builder.toString();
+    }
+
+    private byte[] overwriteClass(String className, byte[] byteCode) {
+        byte[] bytes = null;
+        try {
+            ZipInputStream file = new ZipInputStream(new FileInputStream(this.getSkeleton().getJarFile()));
+            while (true) {
+                ZipEntry nextEntry = file.getNextEntry();
+                if (nextEntry == null) break;
+                if (nextEntry.getName().endsWith(className + ".class")) {
+                    bytes = IOUtils.toByteArray(file);
+                }
+            }
+            file.close();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        if (bytes != null) {
+            DebugFile.log("[ImmersivePlanets]: Overwrote Class " + className, this);
+            return bytes;
+        } else {
+            return byteCode;
+        }
     }
 }

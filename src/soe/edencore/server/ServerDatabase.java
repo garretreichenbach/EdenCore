@@ -20,7 +20,7 @@ public class ServerDatabase {
 
     private static final ModSkeleton instance = EdenCore.instance.getSkeleton();
 
-    public static final PlayerRank defaultRank = new PlayerRank("Player", "[Player] ");
+    public static final PlayerRank defaultRank = new PlayerRank("Player", "&2[Player]");
 
     public static PlayerData getPlayerData(String playerName) {
         ArrayList<Object> dataObjectList = PersistentObjectUtil.getObjects(instance, PlayerData.class);

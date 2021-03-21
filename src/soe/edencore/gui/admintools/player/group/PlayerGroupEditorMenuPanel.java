@@ -25,6 +25,6 @@ public class PlayerGroupEditorMenuPanel extends GUIMenuPanel {
     public void recreateTabs() {
         guiWindow.clearTabs();
         GUIContentPane groupsTab = guiWindow.addTab("EDIT GROUPS");
-
+        //Todo: Groups tab
     }
 }

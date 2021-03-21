@@ -1,9 +1,11 @@
-package soe.edencore.server.logger;
+package soe.edencore.server.chat;
 
 import api.listener.events.player.PlayerChatEvent;
 import api.listener.events.player.PlayerJoinWorldEvent;
 import api.listener.events.player.PlayerLeaveWorldEvent;
 import soe.edencore.EdenCore;
+import soe.edencore.data.player.PlayerData;
+import soe.edencore.data.player.PlayerRank;
 import soe.edencore.server.ServerDatabase;
 import soe.edencore.server.bot.EdenBot;
 import java.io.IOException;
@@ -51,14 +53,18 @@ public class ChatLogger {
     }
 
     public static void handleMessage(PlayerChatEvent event) {
-        EdenBot edenBot = getBot();
-        edenBot.chatWebhook.setUsername(event.getMessage().sender);
-        edenBot.chatWebhook.setAvatarUrl("https://i.imgur.com/2Prc2ke.jpg");
-        edenBot.chatWebhook.setContent(event.getText());
-        try {
-            edenBot.chatWebhook.execute();
-        } catch (IOException exception) {
-            exception.printStackTrace();
+        PlayerData playerData = ServerDatabase.getPlayerData(event.getMessage().sender);
+        if(playerData != null) {
+            PlayerRank playerRank = playerData.getRank();
+            EdenBot edenBot = getBot();
+            edenBot.chatWebhook.setUsername(playerRank.chatPrefix + event.getMessage().sender);
+            edenBot.chatWebhook.setAvatarUrl("https://i.imgur.com/2Prc2ke.jpg");
+            edenBot.chatWebhook.setContent(event.getText());
+            try {
+                edenBot.chatWebhook.execute();
+            } catch(IOException exception) {
+                exception.printStackTrace();
+            }
         }
     }
 

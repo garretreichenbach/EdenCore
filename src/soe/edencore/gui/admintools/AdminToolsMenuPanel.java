@@ -18,9 +18,8 @@ public class AdminToolsMenuPanel extends GUIMenuPanel {
     public static final String[] usagePerms = {
             "*",
             "admin.*",
-            "admin.tools.*",
-            "admin.tools.toolGUI.*",
-            "admin.tools.toolGUI.open"
+            "admin.menu.*",
+            "admin.menu.open"
     };
 
     private GUIContentPane serverTab;
