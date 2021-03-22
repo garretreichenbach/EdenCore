@@ -24,8 +24,11 @@ import java.util.Set;
  */
 public class PlayerDataList extends ScrollableTableList<PlayerData> {
 
+    public static PlayerDataList instance;
+
     public PlayerDataList(InputState inputState, GUIElement guiElement) {
         super(inputState, 739, 300, guiElement);
+        instance = this;
     }
 
     @Override
@@ -109,7 +112,7 @@ public class PlayerDataList extends ScrollableTableList<PlayerData> {
             (playTimeRowElement = new GUIClippedRow(getState())).attach(playTimeTextElement);
 
             PlayerDataListRow playerDataListRow = new PlayerDataListRow(getState(), playerData, nameRowElement, factionRowElement, rankRowElement, playTimeRowElement);
-            GUIAncor anchor = new GUIAncor(getState(), 739.0f, 28.0f);
+            GUIAncor anchor = new GUIAncor(getState(), getWidth() - 12, 28.0f);
             anchor.attach(redrawButtonPane(playerData, anchor));
             playerDataListRow.expanded = new GUIElementList(getState());
             playerDataListRow.expanded.add(new GUIListElement(anchor, getState()));

@@ -6,6 +6,10 @@ import soe.edencore.EdenCore;
 import soe.edencore.data.logs.AdminLogEntry;
 import soe.edencore.data.player.PlayerData;
 import soe.edencore.data.player.PlayerRank;
+import soe.edencore.gui.admintools.logs.AdminLogList;
+import soe.edencore.gui.admintools.player.PlayerDataList;
+import soe.edencore.gui.admintools.player.permission.PlayerPermissionList;
+import soe.edencore.gui.admintools.player.rank.PlayerRankList;
 import soe.edencore.server.permissions.PermissionDatabase;
 import java.util.ArrayList;
 
@@ -20,7 +24,78 @@ public class ServerDatabase {
 
     private static final ModSkeleton instance = EdenCore.instance.getSkeleton();
 
-    public static final PlayerRank defaultRank = new PlayerRank("Player", "&2[Player]");
+    private static PlayerRank defaultRank;
+
+    public static void updateGUIs() {
+        if(AdminLogList.instance != null) {
+            AdminLogList.instance.flagDirty();
+            AdminLogList.instance.handleDirty();
+        }
+
+        if(PlayerDataList.instance != null) {
+            PlayerDataList.instance.flagDirty();
+            PlayerDataList.instance.handleDirty();
+        }
+
+        if(PlayerPermissionList.instance != null) {
+            PlayerPermissionList.instance.flagDirty();
+            PlayerPermissionList.instance.handleDirty();
+        }
+
+        if(PlayerRankList.instance != null) PlayerRankList.instance.redraw();
+    }
+
+    public static PlayerRank getDefaultRank() {
+        if(defaultRank == null) {
+            defaultRank = new PlayerRank("Player", "&2[Player]", PlayerRank.RankType.PLAYER);
+            addRank(defaultRank);
+        }
+        return defaultRank;
+    }
+
+    public static boolean rankExists(String rankName) {
+        ArrayList<PlayerRank> rankList = getAllRanks();
+        for(PlayerRank playerRank : rankList) {
+            if(playerRank.rankName.toLowerCase().equals(rankName.toLowerCase())) return true;
+        }
+        return false;
+    }
+
+    public static void addRank(PlayerRank playerRank) {
+        ArrayList<PlayerRank> toRemove = new ArrayList<>();
+        ArrayList<Object> rankObjectList = PersistentObjectUtil.getObjects(instance, PlayerRank.class);
+        for(Object rankObject : rankObjectList) {
+            PlayerRank pRank = (PlayerRank) rankObject;
+            if(pRank.rankName.equals(playerRank.rankName)) toRemove.add(pRank);
+        }
+        for(PlayerRank remove : toRemove) PersistentObjectUtil.removeObject(instance, remove);
+        PersistentObjectUtil.addObject(instance, playerRank);
+    }
+
+    public static void removeRank(PlayerRank playerRank) {
+        ArrayList<PlayerData> playerDataList = getAllPlayerData();
+        for(PlayerData playerData : playerDataList) {
+            if(playerData.getRank().rankName.equals(playerRank.rankName)) {
+                playerData.setRank(getDefaultRank());
+                updatePlayerData(playerData);
+            }
+        }
+
+        ArrayList<PlayerRank> toRemove = new ArrayList<>();
+        ArrayList<Object> rankObjectList = PersistentObjectUtil.getObjects(instance, PlayerRank.class);
+        for(Object rankObject : rankObjectList) {
+            PlayerRank pRank = (PlayerRank) rankObject;
+            if(pRank.rankName.equals(playerRank.rankName)) toRemove.add(pRank);
+        }
+        for(PlayerRank remove : toRemove) PersistentObjectUtil.removeObject(instance, remove);
+    }
+
+    public static ArrayList<PlayerRank> getAllRanks() {
+        ArrayList<PlayerRank> rankList = new ArrayList<>();
+        ArrayList<Object> rankObjectList = PersistentObjectUtil.getObjects(instance, PlayerRank.class);
+        for(Object rankObject : rankObjectList) rankList.add((PlayerRank) rankObject);
+        return rankList;
+    }
 
     public static PlayerData getPlayerData(String playerName) {
         ArrayList<Object> dataObjectList = PersistentObjectUtil.getObjects(instance, PlayerData.class);

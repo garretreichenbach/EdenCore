@@ -551,7 +551,19 @@ public class GUITextOverlay extends GUIElement {
                             }
                         }
                     } else {
-                        this.font.drawDisplayList(var2, var18, var20, Color.white, 0, var20.length());
+                        char[] charArray = var20.toCharArray();
+                        Color color = Color.white;
+                        float xPos = var2;
+                        for(int i = 0; i < charArray.length; i ++) {
+                            if(charArray[i] == '&') {
+                                i ++;
+                                color = ColorUtils.fromCode(Character.toLowerCase(charArray[i]));
+                                i ++;
+                            }
+                            GlUtil.glColor4f(new Vector4f(color.r, color.g, color.b, color.a));
+                            this.font.drawDisplayList(xPos, var18, "" + charArray[i], color, 0, 1);
+                            xPos += getWidthOfFont("" + charArray[i]);
+                        }
                     }
 
                     var18 += (float)this.getFont().getLineHeight();

@@ -1,6 +1,7 @@
 package soe.edencore.gui.admintools;
 
 import api.utils.gui.GUIMenuPanel;
+import org.schema.schine.graphicsengine.forms.gui.GUIElement;
 import org.schema.schine.graphicsengine.forms.gui.newgui.GUIContentPane;
 import org.schema.schine.input.InputState;
 import soe.edencore.gui.admintools.logs.AdminLogList;
@@ -38,6 +39,7 @@ public class AdminToolsMenuPanel extends GUIMenuPanel {
 
     @Override
     public void recreateTabs() {
+        orientate(GUIElement.ORIENTATION_HORIZONTAL_MIDDLE | GUIElement.ORIENTATION_VERTICAL_MIDDLE);
         guiWindow.clearTabs();
 
         //Server Tab

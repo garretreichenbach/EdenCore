@@ -31,15 +31,16 @@ public class PlayerPermissionEditorMenuPanel extends GUIMenuPanel {
 
     @Override
     public void recreateTabs() {
+        orientate(GUIElement.ORIENTATION_HORIZONTAL_MIDDLE | GUIElement.ORIENTATION_VERTICAL_MIDDLE);
         guiWindow.clearTabs();
         GUIContentPane permissionsTab = guiWindow.addTab("EDIT PERMISSIONS");
-        permissionsTab.setTextBoxHeightLast((int) (permissionsTab.getHeight() - 82));
+        permissionsTab.setTextBoxHeightLast((int) (getHeight() - 110));
 
         final PlayerPermissionList permissionsList = new PlayerPermissionList(getState(), permissionsTab.getContent(0), playerData);
         permissionsList.onInit();
         permissionsTab.getContent(0).attach(permissionsList);
 
-        permissionsTab.addNewTextBox(0, 22);
+        permissionsTab.addNewTextBox(30);
         GUIHorizontalButtonTablePane buttonPane = new GUIHorizontalButtonTablePane(getState(), 1, 1, permissionsTab.getContent(1));
         buttonPane.onInit();
 
@@ -83,7 +84,7 @@ public class PlayerPermissionEditorMenuPanel extends GUIMenuPanel {
             }
         });
 
-        buttonPane.addButton(0, 0, "REMOVE PERMISSION", GUIHorizontalArea.HButtonColor.ORANGE, new GUICallback() {
+        buttonPane.addButton(1, 0, "REMOVE PERMISSION", GUIHorizontalArea.HButtonColor.ORANGE, new GUICallback() {
             @Override
             public void callback(GUIElement guiElement, MouseEvent event) {
                 if(event.pressedLeftMouse() && permissionsList.getSelectedRow() != null) {

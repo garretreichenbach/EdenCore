@@ -22,11 +22,13 @@ import java.util.Set;
  */
 public class PlayerPermissionList extends ScrollableTableList<String> {
 
+    public static PlayerPermissionList instance;
     private PlayerData playerData;
 
     public PlayerPermissionList(InputState inputState, GUIElement guiElement, PlayerData playerData) {
         super(inputState, 739, 300, guiElement);
         this.playerData = playerData;
+        instance = this;
     }
 
     @Override

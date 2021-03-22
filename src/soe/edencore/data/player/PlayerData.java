@@ -24,7 +24,7 @@ public class PlayerData implements Serializable {
 
     public PlayerData(String playerName) {
         this.playerName = playerName;
-        this.rank = ServerDatabase.defaultRank;
+        this.rank = ServerDatabase.getDefaultRank();
         this.permissions = new ArrayList<>();
         this.groups = new ArrayList<>();
         this.playTime = 0;
@@ -36,6 +36,10 @@ public class PlayerData implements Serializable {
 
     public PlayerRank getRank() {
         return rank;
+    }
+
+    public void setRank(PlayerRank rank) {
+        this.rank = rank;
     }
 
     public void setPlayerName(String playerName) {
@@ -78,7 +82,12 @@ public class PlayerData implements Serializable {
     }
 
     public boolean hasPermission(String... permission) {
-        return getPermissions().contains(permission);
+        if(permission.length > 1) {
+            for(String perm : permission) {
+                if(getPermissions().contains(perm)) return true;
+            }
+        }
+        return getPermissions().contains(permission[0]);
     }
 
     public double getHoursPlayed() {
