@@ -199,7 +199,7 @@ public class PlayerRankList extends ScrollableTableList<PlayerRank> {
                     public void callback(GUIElement guiElement, MouseEvent event) {
                         if(event.pressedLeftMouse()) {
                             getState().getController().queueUIAudio("0022_menu_ui - cancel");
-                            playerData.setRank(playerRank);
+                            playerData.setRank(ServerDatabase.getDefaultRank());
                             ServerDatabase.updatePlayerData(playerData);
                             redraw();
                         }

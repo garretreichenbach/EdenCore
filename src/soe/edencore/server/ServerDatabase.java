@@ -45,7 +45,8 @@ public class ServerDatabase {
     public static boolean rankExists(String rankName) {
         ArrayList<PlayerRank> rankList = getAllRanks();
         for(PlayerRank playerRank : rankList) {
-            if(playerRank.rankName.equals(rankName.toLowerCase())) return true;
+            String name = playerRank.rankName.trim().toLowerCase();
+            if(name.equals(rankName.trim().toLowerCase())) return true;
         }
         return false;
     }
@@ -102,11 +103,10 @@ public class ServerDatabase {
         return playerDataList;
     }
 
-    public static PlayerData addNewPlayerData(String playerName) {
+    public static void addNewPlayerData(String playerName) {
         PlayerData playerData = new PlayerData(playerName);
         playerData.getPermissions().addAll(Arrays.asList(EdenCore.instance.defaultPermissions));
         PersistentObjectUtil.addObject(instance, playerData);
-        return playerData;
     }
 
     public static void updatePlayerData(PlayerData playerData) {

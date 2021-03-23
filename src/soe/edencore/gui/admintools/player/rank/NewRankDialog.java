@@ -93,7 +93,7 @@ public class NewRankDialog extends PlayerInput {
                         getState().getController().queueUIAudio("0022_menu_ui - error 1");
                         (new SimplePopup(getState(), "Cannot Add Rank", "A rank with the name " + rankName.trim() + " already exists in database!")).activate();
                     } else {
-                        char[] charArray = rankPrefix.toCharArray();
+                        char[] charArray = rankName.toCharArray();
                         StringBuilder builder = new StringBuilder();
                         for(int i = 0; i < charArray.length; i ++) {
                             if(charArray[i] == '&') {
@@ -106,7 +106,7 @@ public class NewRankDialog extends PlayerInput {
                         rankPrefix = rankPrefix.trim();
                         if(rankLevelString != null && !rankLevelString.isEmpty()) {
                             try {
-                                rankLevel = Integer.parseInt(rankLevelString);
+                                rankLevel = Integer.parseInt(rankLevelString.trim());
                             } catch(Exception ignored) { }
                         }
 

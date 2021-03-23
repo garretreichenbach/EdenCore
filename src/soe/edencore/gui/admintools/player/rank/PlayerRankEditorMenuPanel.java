@@ -40,7 +40,8 @@ public class PlayerRankEditorMenuPanel extends GUIMenuPanel {
         GUIContentPane rankTab = guiWindow.addTab("EDIT RANK");
         rankTab.setTextBoxHeightLast((int) (getHeight() - 110));
 
-        playerRankList = new PlayerRankList(getState(), rankTab.getContent(0), playerData);
+        (playerRankList = new PlayerRankList(getState(), rankTab.getContent(0), playerData)).onInit();
+        rankTab.getContent(0).attach(playerRankList);
 
         rankTab.addNewTextBox(30);
         (buttonPane = new GUIHorizontalButtonTablePane(getState(), 1, 1, rankTab.getContent(1))).onInit();
