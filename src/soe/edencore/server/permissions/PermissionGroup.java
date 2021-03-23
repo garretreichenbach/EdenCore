@@ -35,6 +35,7 @@ public class PermissionGroup implements Serializable {
 
     public ArrayList<String> getPermissions() {
         for(PermissionGroup group : inheritedGroups) permissions.addAll(group.getPermissions());
+        this.permissions = convertToLowerCase();
         return permissions;
     }
 
@@ -44,5 +45,13 @@ public class PermissionGroup implements Serializable {
 
     public ArrayList<PermissionGroup> getInheritedGroups() {
         return inheritedGroups;
+    }
+
+    private ArrayList<String> convertToLowerCase() {
+        ArrayList<String> perms = new ArrayList<>();
+        for(String perm : permissions) {
+            perms.add(perm.toLowerCase());
+        }
+        return perms;
     }
 }

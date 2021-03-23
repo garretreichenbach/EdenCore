@@ -2,15 +2,13 @@ package soe.edencore.server;
 
 import api.mod.ModSkeleton;
 import api.mod.config.PersistentObjectUtil;
+import org.schema.schine.graphicsengine.forms.gui.newgui.ScrollableTableList;
 import soe.edencore.EdenCore;
 import soe.edencore.data.logs.AdminLogEntry;
 import soe.edencore.data.player.PlayerData;
 import soe.edencore.data.player.PlayerRank;
-import soe.edencore.gui.admintools.logs.AdminLogList;
-import soe.edencore.gui.admintools.player.PlayerDataList;
-import soe.edencore.gui.admintools.player.permission.PlayerPermissionList;
-import soe.edencore.gui.admintools.player.rank.PlayerRankList;
 import soe.edencore.server.permissions.PermissionDatabase;
+import soe.edencore.server.permissions.PermissionGroup;
 import java.util.ArrayList;
 
 /**
@@ -23,26 +21,17 @@ import java.util.ArrayList;
 public class ServerDatabase {
 
     private static final ModSkeleton instance = EdenCore.instance.getSkeleton();
+    public static ArrayList<ScrollableTableList<?>> guiLists = new ArrayList<>();
 
     private static PlayerRank defaultRank;
 
     public static void updateGUIs() {
-        if(AdminLogList.instance != null) {
-            AdminLogList.instance.flagDirty();
-            AdminLogList.instance.handleDirty();
+        for(ScrollableTableList<?> guiList : guiLists) {
+            try {
+                guiList.flagDirty();
+                guiList.handleDirty();
+            } catch(Exception ignored) { }
         }
-
-        if(PlayerDataList.instance != null) {
-            PlayerDataList.instance.flagDirty();
-            PlayerDataList.instance.handleDirty();
-        }
-
-        if(PlayerPermissionList.instance != null) {
-            PlayerPermissionList.instance.flagDirty();
-            PlayerPermissionList.instance.handleDirty();
-        }
-
-        if(PlayerRankList.instance != null) PlayerRankList.instance.redraw();
     }
 
     public static PlayerRank getDefaultRank() {
@@ -56,7 +45,7 @@ public class ServerDatabase {
     public static boolean rankExists(String rankName) {
         ArrayList<PlayerRank> rankList = getAllRanks();
         for(PlayerRank playerRank : rankList) {
-            if(playerRank.rankName.toLowerCase().equals(rankName.toLowerCase())) return true;
+            if(playerRank.rankName.equals(rankName.toLowerCase())) return true;
         }
         return false;
     }
@@ -129,6 +118,41 @@ public class ServerDatabase {
         }
         for(PlayerData remove : toRemove) PersistentObjectUtil.removeObject(instance, remove);
         PersistentObjectUtil.addObject(instance, playerData);
+    }
+
+    public static ArrayList<PermissionGroup> getAllGroups() {
+        ArrayList<PermissionGroup> groupList = new ArrayList<>();
+        ArrayList<Object> groupObjectList = PersistentObjectUtil.getObjects(instance, PermissionGroup.class);
+        for(Object groupObject : groupObjectList) groupList.add((PermissionGroup) groupObject);
+        return groupList;
+    }
+
+    public static void updateGroup(PermissionGroup group) {
+        ArrayList<PermissionGroup> toRemove = new ArrayList<>();
+        ArrayList<Object> groupObjectList = PersistentObjectUtil.getObjects(instance, PermissionGroup.class);
+        for(Object groupObject : groupObjectList) {
+            PermissionGroup permGroup = (PermissionGroup) groupObject;
+            if(permGroup.getGroupName().equals(group.getGroupName())) toRemove.add(permGroup);
+        }
+        for(PermissionGroup remove : toRemove) PersistentObjectUtil.removeObject(instance, remove);
+        PersistentObjectUtil.addObject(instance, group);
+    }
+
+    public static void removeGroup(PermissionGroup group) {
+        for(PlayerData playerData : group.getMembers()) {
+            playerData.removeGroup(group);
+            updatePlayerData(playerData);
+        }
+        group.getMembers().clear();
+
+        ArrayList<PermissionGroup> toRemove = new ArrayList<>();
+        ArrayList<Object> groupObjectList = PersistentObjectUtil.getObjects(instance, PermissionGroup.class);
+        for(Object groupObject : groupObjectList) {
+            PermissionGroup permGroup = (PermissionGroup) groupObject;
+            if(permGroup.getGroupName().equals(group.getGroupName())) toRemove.add(permGroup);
+        }
+        for(PermissionGroup remove : toRemove) PersistentObjectUtil.removeObject(instance, remove);
+        PersistentObjectUtil.removeObject(instance, group);
     }
 
     public static ArrayList<AdminLogEntry> getAdminLog() {

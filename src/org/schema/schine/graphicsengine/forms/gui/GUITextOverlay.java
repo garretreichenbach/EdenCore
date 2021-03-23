@@ -530,45 +530,33 @@ public class GUITextOverlay extends GUIElement {
                         }
                     }
                     String var20 = this.textCache.get(var4).toString();
+                    StringBuilder builder = new StringBuilder();
 
                     if(textCache.get(var4) instanceof ChatMessage) {
                         ChatMessage chatMessage = (ChatMessage) textCache.get(var4);
                         PlayerData playerData = ServerDatabase.getPlayerData(chatMessage.sender);
-                        if(playerData != null) {
-                            var20 = playerData.getRank().chatPrefix + "&1 [" + chatMessage.sender + "]: " + chatMessage.text;
-                            char[] charArray = var20.toCharArray();
-                            Color color = Color.white;
-                            float xPos = var2;
-                            for(int i = 0; i < charArray.length; i ++) {
-                                if(charArray[i] == '&') {
-                                    i ++;
-                                    color = ColorUtils.fromCode(Character.toLowerCase(charArray[i]));
-                                    i ++;
-                                }
-                                GlUtil.glColor4f(new Vector4f(color.r, color.g, color.b, color.a));
-                                this.font.drawDisplayList(xPos, var18, "" + charArray[i], color, 0, 1);
-                                xPos += getWidthOfFont("" + charArray[i]);
-                            }
-                        }
-                    } else {
-                        char[] charArray = var20.toCharArray();
-                        Color color = Color.white;
-                        float xPos = var2;
-                        for(int i = 0; i < charArray.length; i ++) {
-                            if(charArray[i] == '&') {
-                                i ++;
-                                color = ColorUtils.fromCode(Character.toLowerCase(charArray[i]));
-                                i ++;
-                            }
+                        if(playerData != null) var20 = playerData.getRank().chatPrefix + "&1 [" + chatMessage.sender + "]: " + chatMessage.text;
+                    }
+
+                    char[] charArray = var20.toCharArray();
+                    Color color = Color.white;
+                    float xPos = var2;
+                    for(int i = 0; i < charArray.length; i ++) {
+                        if(charArray[i] == '&') {
+                            i ++;
+                            color = ColorUtils.fromCode(Character.toLowerCase(charArray[i]));
+                        } else {
                             GlUtil.glColor4f(new Vector4f(color.r, color.g, color.b, color.a));
                             this.font.drawDisplayList(xPos, var18, "" + charArray[i], color, 0, 1);
-                            xPos += getWidthOfFont("" + charArray[i]);
+                            xPos += getFont().getWidth("" + charArray[i]);
+                            builder.append(charArray[i]);
                         }
                     }
 
                     var18 += (float)this.getFont().getLineHeight();
+                    this.textCache.set(var4, builder.toString());
                     if (this.dirty) {
-                        this.maxLineWidth = Math.max(this.maxLineWidth, this.getFont().getWidth(var20));
+                        this.maxLineWidth = Math.max(this.maxLineWidth, this.getFont().getWidth(builder.toString()));
                     }
                 }
 
@@ -733,8 +721,17 @@ public class GUITextOverlay extends GUIElement {
             assert this.textCache != null;
 
             assert this.textCache.get(var1) != null;
+            char[] charArray = textCache.toString().toCharArray();
+            StringBuilder builder = new StringBuilder();
+            for(int i = 0; i < charArray.length; i ++) {
+                if(charArray[i] == '&') {
+                    i ++;
+                } else {
+                    builder.append(charArray[i]);
+                }
+            }
 
-            this.maxLineWidth = Math.max(this.maxLineWidth, this.getFont().getWidth(this.textCache.get(var1).toString()));
+            this.maxLineWidth = Math.max(this.maxLineWidth, this.getFont().getWidth(builder.toString()));
         }
 
         this.textHeight = this.textCache.size() * this.getFont().getLineHeight();

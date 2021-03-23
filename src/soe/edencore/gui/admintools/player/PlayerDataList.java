@@ -24,11 +24,9 @@ import java.util.Set;
  */
 public class PlayerDataList extends ScrollableTableList<PlayerData> {
 
-    public static PlayerDataList instance;
-
     public PlayerDataList(InputState inputState, GUIElement guiElement) {
         super(inputState, 739, 300, guiElement);
-        instance = this;
+        ServerDatabase.guiLists.add(this);
     }
 
     @Override
@@ -71,7 +69,7 @@ public class PlayerDataList extends ScrollableTableList<PlayerData> {
             public boolean isOk(String s, PlayerData playerData) {
                 return playerData.getPlayerName().toLowerCase().contains(s.toLowerCase());
             }
-        }, "PLAYER NAME", ControllerElement.FilterRowStyle.LEFT);
+        }, "SEARCH BY NAME", ControllerElement.FilterRowStyle.LEFT);
 
         addTextFilter(new GUIListFilterText<PlayerData>() {
             public boolean isOk(String s, PlayerData playerData) {
@@ -80,7 +78,7 @@ public class PlayerDataList extends ScrollableTableList<PlayerData> {
                 }
                 return false;
             }
-        }, "PERMISSION GROUP", ControllerElement.FilterRowStyle.RIGHT);
+        }, "SEARCH BY GROUP", ControllerElement.FilterRowStyle.RIGHT);
 
         activeSortColumnIndex = 0;
     }

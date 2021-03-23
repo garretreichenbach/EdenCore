@@ -21,11 +21,12 @@ import soe.edencore.server.ServerDatabase;
 public class NewRankDialog extends PlayerInput {
 
     private NewRankPanel panel;
-    private PlayerRank.RankType rankType = PlayerRank.RankType.PLAYER;
+    public PlayerRank.RankType rankType;
 
     public NewRankDialog(GameClientState clientState) {
         super(clientState);
-        (panel = new NewRankPanel(getState(), this)).onInit();
+        rankType = PlayerRank.RankType.PLAYER;
+        (panel = new NewRankPanel(getState(), this, this)).onInit();
     }
 
     @Override
@@ -80,8 +81,6 @@ public class NewRankDialog extends PlayerInput {
                 if(guiElement.getUserPointer().equals("CANCEL") || guiElement.getUserPointer().equals("X")) {
                     deactivate();
                 } else if(guiElement.getUserPointer().equals("OK")) {
-                    boolean validName;
-
                     String rankName = panel.rankNameBar.getTextInput().getCache();
                     String rankPrefix = panel.rankPrefixBar.getTextInput().getCache();
                     String rankLevelString = panel.rankLevelBar.getTextInput().getCache();
@@ -89,50 +88,32 @@ public class NewRankDialog extends PlayerInput {
 
                     if(rankName == null || rankName.isEmpty()) {
                         getState().getController().queueUIAudio("0022_menu_ui - error 1");
-                        validName = false;
                         (new SimplePopup(getState(), "Cannot Add Rank", "The rank name cannot be blank!")).activate();
                     } else if(ServerDatabase.rankExists(rankName)) {
                         getState().getController().queueUIAudio("0022_menu_ui - error 1");
-                        validName = false;
                         (new SimplePopup(getState(), "Cannot Add Rank", "A rank with the name " + rankName.trim() + " already exists in database!")).activate();
                     } else {
-                        validName = true;
-                        char[] charArray = rankName.trim().toCharArray();
+                        char[] charArray = rankPrefix.toCharArray();
                         StringBuilder builder = new StringBuilder();
                         for(int i = 0; i < charArray.length; i ++) {
-                            if(charArray[i] == '&') i += 2;
-                            builder.append(charArray[i]);
+                            if(charArray[i] == '&') {
+                                i ++;
+                            } else {
+                                builder.append(charArray[i]);
+                            }
                         }
-                        rankName = builder.toString();
-                    }
-
-                    if(validName) {
-                        if(rankPrefix == null || rankPrefix.isEmpty()) {
-                            rankPrefix = "&2[" + rankName + "]";
-                        } else {
-                            rankPrefix = rankPrefix.trim();
-                        }
-
+                        rankName = builder.toString().trim();
+                        rankPrefix = rankPrefix.trim();
                         if(rankLevelString != null && !rankLevelString.isEmpty()) {
                             try {
                                 rankLevel = Integer.parseInt(rankLevelString);
-                            } catch (Exception exception) {
-                                rankLevel = 0;
-                            }
+                            } catch(Exception ignored) { }
                         }
 
                         ServerDatabase.addRank(new PlayerRank(rankName, rankPrefix, rankType, rankLevel));
                         ServerDatabase.updateGUIs();
+                        deactivate();
                     }
-                } else if(guiElement.getUserPointer().equals("PLAYER")) {
-                    rankType = PlayerRank.RankType.PLAYER;
-                    panel.rankTypeOverlay.setTextSimple("PLAYER");
-                } else if(guiElement.getUserPointer().equals("DONATOR")) {
-                    rankType = PlayerRank.RankType.DONATOR;
-                    panel.rankTypeOverlay.setTextSimple("DONATOR");
-                } else if(guiElement.getUserPointer().equals("STAFF")) {
-                    rankType = PlayerRank.RankType.STAFF;
-                    panel.rankTypeOverlay.setTextSimple("STAFF");
                 }
             }
         }

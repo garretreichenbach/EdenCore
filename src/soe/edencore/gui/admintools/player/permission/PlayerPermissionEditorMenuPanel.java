@@ -56,8 +56,7 @@ public class PlayerPermissionEditorMenuPanel extends GUIMenuPanel {
                                 if(!playerData.hasPermission(s)) {
                                     playerData.getPermissions().add(s);
                                     ServerDatabase.updatePlayerData(playerData);
-                                    permissionsList.flagDirty();
-                                    permissionsList.handleDirty();
+                                    ServerDatabase.updateGUIs();
                                 }
                                 return true;
                             } else {
@@ -91,8 +90,7 @@ public class PlayerPermissionEditorMenuPanel extends GUIMenuPanel {
                     getState().getController().queueUIAudio("0022_menu_ui - select 1");
                     playerData.getPermissions().remove(permissionsList.getSelectedRow().f);
                     ServerDatabase.updatePlayerData(playerData);
-                    permissionsList.flagDirty();
-                    permissionsList.handleDirty();
+                    ServerDatabase.updateGUIs();
                 }
             }
 

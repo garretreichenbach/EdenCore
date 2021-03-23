@@ -19,7 +19,6 @@ import org.schema.game.client.view.gui.newgui.GUITopBar;
 import org.schema.game.common.controller.SegmentController;
 import org.schema.game.common.data.player.PlayerState;
 import org.schema.game.common.data.player.faction.FactionRelation;
-import org.schema.game.network.objects.ChatMessage;
 import org.schema.schine.graphicsengine.core.MouseEvent;
 import org.schema.schine.graphicsengine.forms.gui.GUIActivationHighlightCallback;
 import org.schema.schine.graphicsengine.forms.gui.GUICallback;
@@ -29,6 +28,7 @@ import soe.edencore.data.player.PlayerData;
 import soe.edencore.gui.admintools.AdminToolsGUIControlManager;
 import soe.edencore.gui.admintools.AdminToolsMenuPanel;
 import soe.edencore.gui.admintools.player.PlayerDataEditorControlManager;
+import soe.edencore.gui.admintools.player.group.GroupEditorControlManager;
 import soe.edencore.server.ServerDatabase;
 import soe.edencore.server.bot.EdenBot;
 import soe.edencore.server.chat.ChatLogger;
@@ -82,6 +82,7 @@ public class EdenCore extends StarMod {
     //GUI
     public AdminToolsGUIControlManager adminToolsGUIControlManager;
     public PlayerDataEditorControlManager playerDataEditorControlManager;
+    public GroupEditorControlManager groupEditorControlManager;
 
     @Override
     public void onEnable() {

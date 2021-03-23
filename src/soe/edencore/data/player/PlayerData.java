@@ -78,6 +78,7 @@ public class PlayerData implements Serializable {
 
     public ArrayList<String> getPermissions() {
         for(PermissionGroup group : getGroups()) permissions.addAll(group.getPermissions());
+        permissions = convertToLowerCase();
         return permissions;
     }
 
@@ -96,5 +97,13 @@ public class PlayerData implements Serializable {
 
     public void updatePlayTime(long timeSinceLastUpdate) {
         playTime += timeSinceLastUpdate;
+    }
+
+    private ArrayList<String> convertToLowerCase() {
+        ArrayList<String> perms = new ArrayList<>();
+        for(String perm : permissions) {
+            perms.add(perm.toLowerCase());
+        }
+        return perms;
     }
 }

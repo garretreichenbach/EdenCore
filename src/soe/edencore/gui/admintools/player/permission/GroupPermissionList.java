@@ -8,33 +8,32 @@ import org.schema.schine.graphicsengine.forms.gui.newgui.GUIListFilterText;
 import org.schema.schine.graphicsengine.forms.gui.newgui.GUITextOverlayTable;
 import org.schema.schine.graphicsengine.forms.gui.newgui.ScrollableTableList;
 import org.schema.schine.input.InputState;
-import soe.edencore.data.player.PlayerData;
 import soe.edencore.server.ServerDatabase;
-
+import soe.edencore.server.permissions.PermissionGroup;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.Set;
 
 /**
- * PlayerPermissionList.java
+ * GroupPermissionList.java
  * <Description>
  *
  * @author TheDerpGamer
- * @since 03/20/2021
+ * @since 03/22/2021
  */
-public class PlayerPermissionList extends ScrollableTableList<String> {
+public class GroupPermissionList extends ScrollableTableList<String> {
 
-    private PlayerData playerData;
+    private PermissionGroup group;
 
-    public PlayerPermissionList(InputState inputState, GUIElement guiElement, PlayerData playerData) {
+    public GroupPermissionList(InputState inputState, GUIElement guiElement, PermissionGroup group) {
         super(inputState, 739, 300, guiElement);
-        this.playerData = playerData;
+        this.group = group;
         ServerDatabase.guiLists.add(this);
     }
 
     @Override
     public ArrayList<String> getElementList() {
-        return playerData.getPermissions();
+        return group.getPermissions();
     }
 
     @Override
@@ -67,16 +66,16 @@ public class PlayerPermissionList extends ScrollableTableList<String> {
             GUIClippedRow permissionRowElement;
             (permissionRowElement = new GUIClippedRow(getState())).attach(permissionTextElement);
 
-            PlayerPermissionListRow playerPermissionListRow = new PlayerPermissionListRow(getState(), permission, permissionRowElement);
-            playerPermissionListRow.onInit();
-            guiElementList.add(playerPermissionListRow);
+            GroupPermissionListRow groupPermissionListRow = new GroupPermissionListRow(getState(), permission, permissionRowElement);
+            groupPermissionListRow.onInit();
+            guiElementList.add(groupPermissionListRow);
         }
         guiElementList.updateDim();
     }
 
-    public class PlayerPermissionListRow extends ScrollableTableList<String>.Row {
+    public class GroupPermissionListRow extends ScrollableTableList<String>.Row {
 
-        public PlayerPermissionListRow(InputState inputState, String permission, GUIElement... guiElements) {
+        public GroupPermissionListRow(InputState inputState, String permission, GUIElement... guiElements) {
             super(inputState, permission, guiElements);
             highlightSelect = true;
             highlightSelectSimple = true;

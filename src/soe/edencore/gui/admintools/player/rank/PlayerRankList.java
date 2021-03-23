@@ -21,13 +21,12 @@ import java.util.Set;
  */
 public class PlayerRankList extends ScrollableTableList<PlayerRank> {
 
-    public static PlayerRankList instance;
     private PlayerData playerData;
 
     public PlayerRankList(InputState inputState, GUIElement guiElement, PlayerData playerData) {
         super(inputState, 739, 300, guiElement);
         this.playerData = playerData;
-        instance = this;
+        ServerDatabase.guiLists.add(this);
     }
 
     @Override
@@ -63,7 +62,7 @@ public class PlayerRankList extends ScrollableTableList<PlayerRank> {
             public boolean isOk(String s, PlayerRank playerRank) {
                 return playerRank.rankName.toLowerCase().contains(s.toLowerCase());
             }
-        }, "RANK NAME", ControllerElement.FilterRowStyle.LEFT);
+        }, "SEARCH BY NAME", ControllerElement.FilterRowStyle.LEFT);
 
         addDropdownFilter(new GUIListFilterDropdown<PlayerRank, PlayerRank.RankType>(PlayerRank.RankType.values()) {
             public boolean isOk(PlayerRank.RankType rankType, PlayerRank playerRank) {

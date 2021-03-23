@@ -4,7 +4,7 @@ import api.utils.gui.GUIControlManager;
 import api.utils.gui.GUIMenuPanel;
 import org.schema.game.client.data.GameClientState;
 import soe.edencore.data.player.PlayerData;
-import soe.edencore.gui.admintools.player.group.PlayerGroupEditorMenuPanel;
+import soe.edencore.gui.admintools.player.group.GroupsEditorMenuPanel;
 import soe.edencore.gui.admintools.player.permission.PlayerPermissionEditorMenuPanel;
 import soe.edencore.gui.admintools.player.rank.PlayerRankEditorMenuPanel;
 
@@ -42,7 +42,7 @@ public class PlayerDataEditorControlManager extends GUIControlManager {
                 case RANK_EDITOR:
                     return new PlayerRankEditorMenuPanel(getState(), playerData);
                 case GROUP_EDITOR:
-                    return new PlayerGroupEditorMenuPanel(getState(), playerData);
+                    return new GroupsEditorMenuPanel(getState(), playerData);
                 case PERMISSION_EDITOR:
                     return new PlayerPermissionEditorMenuPanel(getState(), playerData);
             }
