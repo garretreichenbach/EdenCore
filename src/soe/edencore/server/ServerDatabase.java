@@ -7,9 +7,9 @@ import soe.edencore.EdenCore;
 import soe.edencore.data.logs.AdminLogEntry;
 import soe.edencore.data.player.PlayerData;
 import soe.edencore.data.player.PlayerRank;
-import soe.edencore.server.permissions.PermissionDatabase;
 import soe.edencore.server.permissions.PermissionGroup;
 import java.util.ArrayList;
+import java.util.Arrays;
 
 /**
  * ServerDatabase.java
@@ -104,7 +104,7 @@ public class ServerDatabase {
 
     public static PlayerData addNewPlayerData(String playerName) {
         PlayerData playerData = new PlayerData(playerName);
-        PermissionDatabase.generateDefaults(playerData);
+        playerData.getPermissions().addAll(Arrays.asList(EdenCore.instance.defaultPermissions));
         PersistentObjectUtil.addObject(instance, playerData);
         return playerData;
     }

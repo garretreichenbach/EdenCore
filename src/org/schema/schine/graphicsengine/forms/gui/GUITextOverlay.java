@@ -474,54 +474,46 @@ public class GUITextOverlay extends GUIElement {
                 float var18 = var1 != null ? var1.y : 0.0F;
                 int var3 = this.limitTextDraw;
                 this.createCache(false);
-                if (this.dirty) {
-                    this.maxLineWidth = 0;
-                }
+                if(this.dirty) this.maxLineWidth = 0;
 
                 int var4 = 0;
                 int var5;
-                if (this.clipStartPX >= 0) {
+                if(this.clipStartPX >= 0) {
                     var18 = (float)((var5 = FastMath.fastFloor((float)this.clipStartPX / (float)this.getFont().getLineHeight())) * this.getFont().getLineHeight());
                     var4 = var5;
                 }
 
                 for(; var4 < this.textCache.size(); ++var4) {
-                    if (this.wasCacheDirty) {
+                    if(this.wasCacheDirty) {
                         try {
-                            if (this.textCache.get(var4) == null || this.textCache.get(var4).toString() == null) {
+                            if(this.textCache.get(var4) == null || this.textCache.get(var4).toString() == null) {
                                 try {
                                     throw new Exception("TEXT NULL ON GUI OVERLAY " + this.textCache);
-                                } catch (Exception var14) {
+                                } catch(Exception var14) {
                                     var14.printStackTrace();
                                     break;
                                 }
                             }
-                        } catch (Exception var15) {
+                        } catch(Exception var15) {
                             System.err.println("TEXT NULL ON GUI OVERLAY");
                             var15.printStackTrace();
                         }
                     }
 
-                    if (this.clipEndPX >= 0 && var18 > (float) this.clipEndPX) {
-                        break;
-                    }
+                    if(this.clipEndPX >= 0 && var18 > (float) this.clipEndPX) break;
 
-                     if (this.textCache.get(var4) instanceof ColoredInterface) {
+                     if(this.textCache.get(var4) instanceof ColoredInterface) {
                         Vector4f var19 = ((ColoredInterface)this.textCache.get(var4)).getColor();
                         this.color.r = var19.x;
                         this.color.g = var19.y;
                         this.color.b = var19.z;
                         this.color.a = var19.w;
-                        if (this.color.a <= 0.0F) {
-                            continue;
-                        }
+                        if(this.color.a <= 0.0F) continue;
                     }
 
-                    if (var3 >= 0 && var4 >= var3) {
-                        break;
-                    }
+                    if(var3 >= 0 && var4 >= var3) break;
 
-                    if (this.textCache.get(var4) == null || this.textCache.get(var4).toString() == null) {
+                    if(this.textCache.get(var4) == null || this.textCache.get(var4).toString() == null) {
                         try {
                             throw new Exception("TEXT NULL ON GUI OVERLAY " + this.textCache);
                         } catch (Exception var13) {
@@ -554,27 +546,22 @@ public class GUITextOverlay extends GUIElement {
                     }
 
                     var18 += (float)this.getFont().getLineHeight();
-                    this.textCache.set(var4, builder.toString());
-                    if (this.dirty) {
-                        this.maxLineWidth = Math.max(this.maxLineWidth, this.getFont().getWidth(builder.toString()));
-                    }
+                    if(this.dirty) this.maxLineWidth = Math.max(this.maxLineWidth, this.getFont().getWidth(builder.toString()));
                 }
 
-                if (this.clipStartPX >= 0 && this.clipEndPX >= 0) {
+                if(this.clipStartPX >= 0 && this.clipEndPX >= 0) {
                     var5 = this.textCache.size();
                     this.textHeight = var5 * this.getFont().getLineHeight();
                 } else {
                     this.textHeight = (int)var18;
                 }
 
-                if (this.isMouseUpdateEnabled()) {
-                    this.checkMouseInside();
-                }
+                if(this.isMouseUpdateEnabled()) this.checkMouseInside();
 
                 GlUtil.glColor4f(1.0F, 1.0F, 1.0F, 1.0F);
                 GlUtil.glDisable(3042);
                 GlUtil.glEnable(2896);
-            } catch (Exception var16) {
+            } catch(Exception var16) {
                 var16.printStackTrace();
             } finally {
                 if (translateOnlyMode) {
