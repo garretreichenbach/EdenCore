@@ -124,7 +124,7 @@ public class AdminLogList extends ScrollableTableList<AdminLogEntry> {
             (typeRowElement = new GUIClippedRow(getState())).attach(typeTextElement);
 
             AdminLogListRow logListRow = new AdminLogListRow(getState(), logEntry, dateRowElement, typeRowElement);
-            GUIAncor anchor = new GUIAncor(getState(), 739, 64);
+            GUIAncor anchor = new GUIAncor(getState(), getWidth() - 4, 64);
             GUITextOverlay descriptionOverlay = new GUITextOverlay(735, 60, FontLibrary.FontSize.SMALL, getState());
             descriptionOverlay.setTextSimple(logEntry.description);
             anchor.attach(descriptionOverlay);

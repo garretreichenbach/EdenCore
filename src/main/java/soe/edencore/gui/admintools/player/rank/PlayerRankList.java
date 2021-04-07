@@ -123,7 +123,7 @@ public class PlayerRankList extends ScrollableTableList<PlayerRank> {
             (levelRowElement = new GUIClippedRow(getState())).attach(levelTextElement);
 
             PlayerRankListRow playerRankListRow = new PlayerRankListRow(getState(), playerRank, nameRowElement, prefixRowElement, levelRowElement);
-            GUIAncor anchor = new GUIAncor(getState(), getWidth() - 12, 28.0f);
+            GUIAncor anchor = new GUIAncor(getState(), getWidth() - 4, 28.0f);
             anchor.attach(redrawButtonPane(playerRank, anchor));
             playerRankListRow.expanded = new GUIElementList(getState());
             playerRankListRow.expanded.add(new GUIListElement(anchor, getState()));

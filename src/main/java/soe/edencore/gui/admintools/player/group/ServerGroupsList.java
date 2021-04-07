@@ -1,30 +1,32 @@
 package soe.edencore.gui.admintools.player.group;
 
+import api.common.GameClient;
+import api.utils.gui.ControlManagerHandler;
 import org.hsqldb.lib.StringComparator;
 import org.schema.schine.graphicsengine.core.MouseEvent;
 import org.schema.schine.graphicsengine.forms.gui.*;
 import org.schema.schine.graphicsengine.forms.gui.newgui.*;
 import org.schema.schine.input.InputState;
+import soe.edencore.EdenCore;
 import soe.edencore.data.player.PlayerData;
 import soe.edencore.server.ServerDatabase;
 import soe.edencore.server.permissions.PermissionGroup;
-
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.Set;
 
 /**
- * PlayerGroupsList.java
+ * ServerGroupsList.java
  * <Description>
  *
  * @author TheDerpGamer
  * @since 03/22/2021
  */
-public class PlayerGroupsList extends ScrollableTableList<PermissionGroup> {
+public class ServerGroupsList extends ScrollableTableList<PermissionGroup> {
 
     private PlayerData playerData;
 
-    public PlayerGroupsList(InputState inputState, GUIElement guiElement, PlayerData playerData, int width) {
+    public ServerGroupsList(InputState inputState, GUIElement guiElement, PlayerData playerData, int width) {
         super(inputState, width, 300, guiElement);
         this.playerData = playerData;
         ServerDatabase.guiLists.add(this);
@@ -32,7 +34,11 @@ public class PlayerGroupsList extends ScrollableTableList<PermissionGroup> {
 
     @Override
     public ArrayList<PermissionGroup> getElementList() {
-        return playerData.getGroups();
+        ArrayList<PermissionGroup> groupsList = new ArrayList<>();
+        for(PermissionGroup group : ServerDatabase.getAllGroups()) {
+            if(!group.getMembers().contains(playerData)) groupsList.add(group);
+        }
+        return groupsList;
     }
 
     @Override
@@ -108,14 +114,14 @@ public class PlayerGroupsList extends ScrollableTableList<PermissionGroup> {
             GUIClippedRow membersRowElement;
             (membersRowElement = new GUIClippedRow(getState())).attach(membersTextElement);
 
-            PlayerGroupsListRow playerGroupsListRow = new PlayerGroupsListRow(getState(), group, nameRowElement, permsRowElement, inheritedRowElement, membersRowElement);
-            GUIAncor anchor = new GUIAncor(getState(), getWidth() - 12, 28.0f);
+            ServerGroupsListRow serverGroupsListRow = new ServerGroupsListRow(getState(), group, nameRowElement, permsRowElement, inheritedRowElement, membersRowElement);
+            GUIAncor anchor = new GUIAncor(getState(), getWidth() - 4, 28.0f);
             anchor.attach(redrawButtonPane(group, anchor));
-            playerGroupsListRow.expanded = new GUIElementList(getState());
-            playerGroupsListRow.expanded.add(new GUIListElement(anchor, getState()));
-            playerGroupsListRow.expanded.attach(anchor);
-            playerGroupsListRow.onInit();
-            guiElementList.add(playerGroupsListRow);
+            serverGroupsListRow.expanded = new GUIElementList(getState());
+            serverGroupsListRow.expanded.add(new GUIListElement(anchor, getState()));
+            serverGroupsListRow.expanded.attach(anchor);
+            serverGroupsListRow.onInit();
+            guiElementList.add(serverGroupsListRow);
         }
         guiElementList.updateDim();
     }
@@ -124,12 +130,12 @@ public class PlayerGroupsList extends ScrollableTableList<PermissionGroup> {
         GUIHorizontalButtonTablePane buttonPane = new GUIHorizontalButtonTablePane(getState(), 1, 1, anchor);
         buttonPane.onInit();
 
-        buttonPane.addButton(0, 0, "REMOVE FROM GROUP", GUIHorizontalArea.HButtonColor.BLUE, new GUICallback() {
+        buttonPane.addButton(0, 0, "ADD TO GROUP", GUIHorizontalArea.HButtonColor.GREEN, new GUICallback() {
             @Override
             public void callback(GUIElement guiElement, MouseEvent event) {
                 if(event.pressedLeftMouse()) {
-                    playerData.getGroups().remove(group);
-                    group.getMembers().remove(playerData);
+                    playerData.getGroups().add(group);
+                    group.getMembers().add(playerData);
                     ServerDatabase.updatePlayerData(playerData);
                     ServerDatabase.updateGroup(group);
                     ServerDatabase.updateGUIs();
@@ -152,12 +158,41 @@ public class PlayerGroupsList extends ScrollableTableList<PermissionGroup> {
             }
         });
 
+        buttonPane.addButton(1, 0, "EDIT GROUP", GUIHorizontalArea.HButtonColor.BLUE, new GUICallback() {
+            @Override
+            public void callback(GUIElement guiElement, MouseEvent event) {
+                if(event.pressedLeftMouse()) {
+                    if(EdenCore.instance.groupEditorControlManager == null) {
+                        EdenCore.instance.groupEditorControlManager = new GroupEditorControlManager(GameClient.getClientState());
+                        ControlManagerHandler.registerNewControlManager(EdenCore.instance.getSkeleton(), EdenCore.instance.groupEditorControlManager);
+                    }
+                    EdenCore.instance.groupEditorControlManager.group = group;
+                    EdenCore.instance.groupEditorControlManager.setActive(true);
+                }
+            }
+
+            @Override
+            public boolean isOccluded() {
+                return false;
+            }
+        }, new GUIActivationCallback() {
+            @Override
+            public boolean isVisible(InputState inputState) {
+                return true;
+            }
+
+            @Override
+            public boolean isActive(InputState inputState) {
+                return true;
+            }
+        });
+
         return buttonPane;
     }
 
-    public class PlayerGroupsListRow extends ScrollableTableList<PermissionGroup>.Row {
+    public class ServerGroupsListRow extends ScrollableTableList<PermissionGroup>.Row {
 
-        public PlayerGroupsListRow(InputState inputState, PermissionGroup group, GUIElement... guiElements) {
+        public ServerGroupsListRow(InputState inputState, PermissionGroup group, GUIElement... guiElements) {
             super(inputState, group, guiElements);
             highlightSelect = true;
             highlightSelectSimple = true;

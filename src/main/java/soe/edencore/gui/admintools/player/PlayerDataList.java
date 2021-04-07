@@ -110,7 +110,7 @@ public class PlayerDataList extends ScrollableTableList<PlayerData> {
             (playTimeRowElement = new GUIClippedRow(getState())).attach(playTimeTextElement);
 
             PlayerDataListRow playerDataListRow = new PlayerDataListRow(getState(), playerData, nameRowElement, factionRowElement, rankRowElement, playTimeRowElement);
-            GUIAncor anchor = new GUIAncor(getState(), getWidth() - 12, 28.0f);
+            GUIAncor anchor = new GUIAncor(getState(), getWidth() - 4, 28.0f);
             anchor.attach(redrawButtonPane(playerData, anchor));
             playerDataListRow.expanded = new GUIElementList(getState());
             playerDataListRow.expanded.add(new GUIListElement(anchor, getState()));

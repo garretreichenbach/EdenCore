@@ -534,7 +534,7 @@ public class GUITextOverlay extends GUIElement {
                     Color color = Color.white;
                     float xPos = var2;
                     for(int i = 0; i < charArray.length; i ++) {
-                        if(charArray[i] == '&') {
+                        if(charArray[i] == '&' && charArray.length > i + 1) {
                             i ++;
                             color = ColorUtils.fromCode(Character.toLowerCase(charArray[i]));
                         } else {

@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+
+    <groupId>soe.edencore</groupId>
+    <artifactId>EdenCore</artifactId>
+    <version>1.3.0</version>
+
+    <properties>
+        <maven.compiler.source>7</maven.compiler.source>
+        <maven.compiler.target>7</maven.compiler.target>
+    </properties>
+
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-shade-plugin</artifactId>
+                <version>3.2.4</version>
+                <configuration>
+                    <filters>
+                        <filter>
+                            <artifact>com.discord4j:discord4j-core</artifact>
+                            <includes>
+                                <include>**</include>
+                            </includes>
+                        </filter>
+                    </filters>
+                </configuration>
+                <executions>
+                    <execution>
+                        <phase>package</phase>
+                        <goals>
+                            <goal>shade</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
+        </plugins>
+    </build>
+
+    <dependencies>
+        <dependency>
+            <groupId>com.discord4j</groupId>
+            <artifactId>discord4j-core</artifactId>
+            <version>3.2.0-M3</version>
+        </dependency>
+    </dependencies>
+</project>
