@@ -25,14 +25,14 @@ import org.schema.schine.graphicsengine.forms.gui.GUICallback;
 import org.schema.schine.graphicsengine.forms.gui.GUIElement;
 import org.schema.schine.input.InputState;
 import soe.edencore.data.player.PlayerData;
+import soe.edencore.data.player.PlayerRank;
 import soe.edencore.gui.admintools.AdminToolsGUIControlManager;
 import soe.edencore.gui.admintools.AdminToolsMenuPanel;
 import soe.edencore.gui.admintools.player.PlayerDataEditorControlManager;
 import soe.edencore.gui.admintools.player.group.GroupEditorControlManager;
 import soe.edencore.server.ServerDatabase;
-import soe.edencore.server.bot.EdenBot;
-import soe.edencore.server.chat.ChatLogger;
-
+import soe.edencore.server.bot.BotThread;
+import soe.edencore.server.bot.commands.ListCommand;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.security.ProtectionDomain;
@@ -59,22 +59,27 @@ public class EdenCore extends StarMod {
     private final String[] defaultConfig = {
             "debug-mode: false",
             "auto-save-frequency: 10000",
-            "max-log-age: 30"
+            "max-log-age: 30",
+            "bot-token: BOT TOKEN",
+            "channel-id: CHANNEL ID"
     };
     public boolean debugMode = false;
     public long autoSaveFrequency = 10000;
     public int maxLogAge = 30;
+    public String botToken;
+    public long channelId;
 
     //Permissions
     public final String[] defaultPermissions = {
-            "player.chat.general.speak",
-            "player.chat.general.read",
-            "player.chat.faction.speak",
-            "player.chat.faction.read"
+            "chat.general.speak",
+            "chat.general.read",
+            "chat.faction.speak",
+            "chat.faction.read",
+            "chat.command.list"
     };
 
     //Data
-    public EdenBot edenBot;
+    public BotThread botThread;
     private final String[] overwriteClasses = {
             "GUITextOverlay"
     };
@@ -88,21 +93,15 @@ public class EdenCore extends StarMod {
     public void onEnable() {
         instance = this;
         initConfig();
-        initialize();
+        initializeBot();
+        registerCommands();
         registerListeners();
         startRunners();
     }
 
     @Override
     public void onDisable() {
-        edenBot.chatWebhook.setUsername("EdenBot");
-        edenBot.chatWebhook.setAvatarUrl("https://i.imgur.com/2Prc2ke.jpg");
-        edenBot.chatWebhook.setContent(":octagonal_sign: Server Stopped");
-        try {
-            edenBot.chatWebhook.execute();
-        } catch (IOException exception) {
-            exception.printStackTrace();
-        }
+        botThread.getBot().sendMessage("EdenBot", ":octagonal_sign: Server Stopped");
     }
 
     @Override
@@ -121,18 +120,16 @@ public class EdenCore extends StarMod {
         debugMode = config.getConfigurableBoolean("debug-mode", false);
         autoSaveFrequency = config.getConfigurableLong("auto-save-frequency", 10000);
         maxLogAge = config.getConfigurableInt("max-log-age", 30);
+        botToken = config.getString("bot-token");
+        channelId = config.getLong("channel-id");
     }
 
-    private void initialize() {
-        edenBot = new EdenBot();
-        edenBot.chatWebhook.setUsername("EdenBot");
-        edenBot.chatWebhook.setAvatarUrl("https://i.imgur.com/2Prc2ke.jpg");
-        edenBot.chatWebhook.setContent(":white_check_mark: Server Started");
-        try {
-            edenBot.chatWebhook.execute();
-        } catch (IOException exception) {
-            exception.printStackTrace();
-        }
+    private void initializeBot() {
+        (botThread = new BotThread(botToken, channelId)).start();
+    }
+
+    private void registerCommands() {
+        StarLoader.registerCommand(new ListCommand());
     }
 
     private void registerListeners() {
@@ -182,99 +179,73 @@ public class EdenCore extends StarMod {
         StarLoader.registerListener(PlayerChatEvent.class, new Listener<PlayerChatEvent>() {
             @Override
             public void onEvent(PlayerChatEvent event) {
-                if(event.getText().startsWith("/")) {
-                    ChatLogger.handleCommand(event.getMessage().sender, event.getText());
-                } else {
-                    ChatLogger.handleMessage(event);
+                if(!event.getMessage().sender.equals("EdenBot")) {
+                    PlayerData playerData = ServerDatabase.getPlayerData(event.getMessage().sender);
+                    if(playerData != null) {
+                        PlayerRank playerRank = playerData.getRank();
+                        //Todo: Color and Emote support
+                        botThread.getBot().sendMessage("[" + playerRank.rankName + "] " + playerData.getPlayerName(), event.getText());
+                    }
                 }
             }
         }, this);
 
-        StarLoader.registerListener(PlayerCustomCommandEvent.class, new Listener<PlayerCustomCommandEvent>() {
-            @Override
-            public void onEvent(PlayerCustomCommandEvent event) {
-                ChatLogger.handleCommand(event.getSender().getName(), convertToString(event.getCommand().getCommand(), event.getArgs()));
-            }
-        }, this);
 
         StarLoader.registerListener(PlayerJoinWorldEvent.class, new Listener<PlayerJoinWorldEvent>() {
             @Override
             public void onEvent(PlayerJoinWorldEvent event) {
-                ChatLogger.handlePlayerJoinEvent(event);
+                if(ServerDatabase.getPlayerData(event.getPlayerName()) == null) {
+                    botThread.getBot().sendMessage("EdenBot", ":confetti_ball: Everyone welcome " + event.getPlayerName() + " to Skies of Eden!");
+                    ServerDatabase.addNewPlayerData(event.getPlayerName());
+                } else {
+                    botThread.getBot().sendMessage("EdenBot", ":arrow_right: " + event.getPlayerName() + " has joined the server");
+                }
             }
         }, this);
 
         StarLoader.registerListener(PlayerLeaveWorldEvent.class, new Listener<PlayerLeaveWorldEvent>() {
             @Override
             public void onEvent(PlayerLeaveWorldEvent event) {
-                ChatLogger.handlePlayerLeaveEvent(event);
+                botThread.getBot().sendMessage("EdenBot", ":door: " + event.getPlayerName() + " has left the server");
             }
         }, this);
 
         StarLoader.registerListener(FactionCreateEvent.class, new Listener<FactionCreateEvent>() {
             @Override
             public void onEvent(FactionCreateEvent event) {
-                edenBot.chatWebhook.setUsername("EdenBot");
-                edenBot.chatWebhook.setAvatarUrl("https://i.imgur.com/2Prc2ke.jpg");
-                edenBot.chatWebhook.setContent(":new: " + event.getPlayer().getName() + " has created a new faction called " + event.getFaction().getName());
-                try {
-                    edenBot.chatWebhook.execute();
-                } catch (IOException exception) {
-                    exception.printStackTrace();
-                }
+                botThread.getBot().sendMessage("EdenBot", ":new: " + event.getPlayer().getName() + " has created a new faction called " + event.getFaction().getName());
             }
         }, this);
 
         StarLoader.registerListener(PlayerJoinFactionEvent.class, new Listener<PlayerJoinFactionEvent>() {
             @Override
             public void onEvent(PlayerJoinFactionEvent event) {
-                edenBot.chatWebhook.setUsername("EdenBot");
-                edenBot.chatWebhook.setAvatarUrl("https://i.imgur.com/2Prc2ke.jpg");
-                edenBot.chatWebhook.setContent(":heavy_plus_sign: " + event.getPlayer().getName() + " has joined the faction " + event.getFaction().getName());
-                try {
-                    edenBot.chatWebhook.execute();
-                } catch (IOException exception) {
-                    exception.printStackTrace();
-                }
+                botThread.getBot().sendMessage("EdenBot", ":heavy_plus_sign: " + event.getPlayer().getName() + " has joined the faction " + event.getFaction().getName());
             }
         }, this);
 
         StarLoader.registerListener(PlayerLeaveFactionEvent.class, new Listener<PlayerLeaveFactionEvent>() {
             @Override
             public void onEvent(PlayerLeaveFactionEvent event) {
-                edenBot.chatWebhook.setUsername("EdenBot");
-                edenBot.chatWebhook.setAvatarUrl("https://i.imgur.com/2Prc2ke.jpg");
-                edenBot.chatWebhook.setContent(":heavy_minus_sign: " + event.getPlayer().getName() + " has left the faction " + event.getFaction().getName());
-                try {
-                    edenBot.chatWebhook.execute();
-                } catch (IOException exception) {
-                    exception.printStackTrace();
-                }
+                botThread.getBot().sendMessage("EdenBot", ":heavy_minus_sign: " + event.getPlayer().getName() + " has left the faction " + event.getFaction().getName());
             }
         }, this);
 
         StarLoader.registerListener(PlayerDeathEvent.class, new Listener<PlayerDeathEvent>() {
             @Override
             public void onEvent(PlayerDeathEvent event) {
-                edenBot.chatWebhook.setUsername("EdenBot");
-                edenBot.chatWebhook.setAvatarUrl("https://i.imgur.com/2Prc2ke.jpg");
                 if(event.getDamager().isSegmentController()) {
                     SegmentController segmentController = (SegmentController) event.getDamager();
-                    edenBot.chatWebhook.setContent(":skull_crossbones: " + event.getPlayer().getName() + " was killed by entity " + segmentController.getName() + " [" + GameCommon.getGameState().getFactionManager().getFaction(segmentController.getFactionId()).getName() + "]");
+                    botThread.getBot().sendMessage("EdenBot", ":skull_crossbones: " + event.getPlayer().getName() + " was killed by entity " + segmentController.getName() + " [" + GameCommon.getGameState().getFactionManager().getFaction(segmentController.getFactionId()).getName() + "]");
                 } else if(event.getDamager() instanceof PlayerState) {
                     PlayerState playerState = (PlayerState) event.getDamager();
                     if(playerState.getFactionId() != 0) {
-                        edenBot.chatWebhook.setContent(":skull_crossbones: " + event.getPlayer().getName() + " was killed by player " + playerState.getName() + " [" + GameCommon.getGameState().getFactionManager().getFaction(playerState.getFactionId()).getName() + "]");
+                        botThread.getBot().sendMessage("EdenBot", ":skull_crossbones: " + event.getPlayer().getName() + " was killed by player " + playerState.getName() + " [" + GameCommon.getGameState().getFactionManager().getFaction(playerState.getFactionId()).getName() + "]");
                     } else {
-                        edenBot.chatWebhook.setContent(":skull_crossbones: " + event.getPlayer().getName() + " was killed by player " + playerState.getName());
+                        botThread.getBot().sendMessage("EdenBot", ":skull_crossbones: " + event.getPlayer().getName() + " was killed by player " + playerState.getName());
                     }
                 } else {
-                    edenBot.chatWebhook.setContent(":skull_crossbones: " + event.getPlayer().getName() + " has died");
-                }
-                try {
-                    edenBot.chatWebhook.execute();
-                } catch(IOException exception) {
-                    exception.printStackTrace();
+                    botThread.getBot().sendMessage("EdenBot", ":skull_crossbones: " + event.getPlayer().getName() + " has died");
                 }
             }
         }, this);
@@ -282,21 +253,10 @@ public class EdenCore extends StarMod {
         StarLoader.registerListener(FactionRelationChangeEvent.class, new Listener<FactionRelationChangeEvent>() {
             @Override
             public void onEvent(FactionRelationChangeEvent event) {
-                edenBot.chatWebhook.setUsername("EdenBot");
-                edenBot.chatWebhook.setAvatarUrl("https://i.imgur.com/2Prc2ke.jpg");
-
                 if(event.getNewRelation().equals(FactionRelation.RType.FRIEND)) {
-                    edenBot.chatWebhook.setContent(":shield: " + event.getTo().getName() + " is now allied with " + event.getFrom().getName());
+                    botThread.getBot().sendMessage("EdenBot", ":shield: " + event.getTo().getName() + " is now allied with " + event.getFrom().getName());
                 } else if(event.getNewRelation().equals(FactionRelation.RType.ENEMY)) {
-                    edenBot.chatWebhook.setContent(":crossed_swords: " + event.getTo().getName() + " is now at war with " + event.getFrom().getName());
-                } else {
-                    return;
-                }
-
-                try {
-                    edenBot.chatWebhook.execute();
-                } catch(IOException exception) {
-                    exception.printStackTrace();
+                    botThread.getBot().sendMessage("EdenBot", ":crossed_swords: " + event.getTo().getName() + " is now at war with " + event.getFrom().getName());
                 }
             }
         }, this);

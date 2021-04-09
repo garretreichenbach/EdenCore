@@ -2,12 +2,12 @@
   "name": "EdenCore",
   "author": "TheDerpGamer",
   "description": "Primary mod for Skies of Eden StarMade server.",
-  "version": "1.3.0",
+  "version": "1.3.4",
   "starmade_version": "0.202.110",
   "client_mod": false,
   "server_mod": false,
   "main_class": "soe.edencore.EdenCore",
-  "smd_resource_id": 9999,
+  "smd_resource_id": 8251,
   "dependencies": [
     -1
   ],
