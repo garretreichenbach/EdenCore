@@ -11,8 +11,8 @@ public class BotThread extends Thread {
 
     private EdenBot edenBot;
 
-    public BotThread(String token, long channelId) {
-        edenBot = new EdenBot(token, channelId);
+    public BotThread(String token, long chatChannelId, long commandChannelId) {
+        edenBot = new EdenBot(token, chatChannelId, commandChannelId);
     }
 
     @Override

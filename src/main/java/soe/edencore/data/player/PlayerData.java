@@ -21,6 +21,7 @@ public class PlayerData implements Serializable {
     private ArrayList<String> permissions;
     private ArrayList<PermissionGroup> groups;
     private long playTime;
+    private long discordId;
 
     public PlayerData(String playerName) {
         this.playerName = playerName;
@@ -28,6 +29,7 @@ public class PlayerData implements Serializable {
         this.permissions = new ArrayList<>();
         this.groups = new ArrayList<>();
         this.playTime = 0;
+        this.discordId = -1;
     }
 
     public String getPlayerName() {
@@ -105,5 +107,13 @@ public class PlayerData implements Serializable {
             perms.add(perm.toLowerCase());
         }
         return perms;
+    }
+
+    public long getDiscordId() {
+        return discordId;
+    }
+
+    public void setDiscordId(long discordId) {
+        this.discordId = discordId;
     }
 }

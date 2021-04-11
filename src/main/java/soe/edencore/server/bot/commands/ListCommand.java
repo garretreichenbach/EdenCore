@@ -9,6 +9,8 @@ import org.schema.game.common.data.player.PlayerState;
 import soe.edencore.EdenCore;
 import soe.edencore.data.player.PlayerData;
 import soe.edencore.server.ServerDatabase;
+import soe.edencore.server.bot.EdenBot;
+
 import javax.annotation.Nullable;
 import java.util.Arrays;
 
@@ -36,7 +38,7 @@ public class ListCommand implements CommandInterface, DiscordCommand {
     @Override
     public String[] getAliases() {
         return new String[] {
-                "l"
+                "li"
         };
     }
 
@@ -121,7 +123,7 @@ public class ListCommand implements CommandInterface, DiscordCommand {
                         if(playerState.isAdmin()) builder.append(playerState.getName()).append(" [").append(playerState.getFactionName()).append("]\n");
                     }
             }
-            EdenCore.instance.botThread.getBot().sendMessage("EdenBot", builder.toString().trim());
+            EdenCore.instance.botThread.getBot().sendMessage("EdenBot", builder.toString().trim(), EdenBot.MessageMode.BOTH);
         }
     }
 }

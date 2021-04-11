@@ -1,6 +1,7 @@
 package soe.edencore.utils;
 
-import java.sql.Date;
+import java.text.SimpleDateFormat;
+import java.util.Date;
 
 /**
  * DateUtils.java
@@ -19,5 +20,13 @@ public class DateUtils {
 
     public static int getAgeDays(long time) {
         return getAgeDays(new Date(time));
+    }
+
+    public static String getTimeFormatted(String format) {
+        return (new SimpleDateFormat(format)).format(new Date()) + " ";
+    }
+
+    public static String getTimeFormatted() {
+        return getTimeFormatted("MM/dd/yyyy '-' hh:mm:ss z");
     }
 }

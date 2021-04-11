@@ -1,11 +1,9 @@
 package org.schema.schine.graphicsengine.forms.gui;
 
+import api.mod.gui.GUIIcon;
 import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
 import it.unimi.dsi.fastutil.objects.ObjectArrayList;
-import java.util.ArrayList;
-import java.util.List;
-import javax.vecmath.Vector2f;
-import javax.vecmath.Vector4f;
+import net.dv8tion.jda.api.entities.Emote;
 import org.newdawn.slick.Color;
 import org.newdawn.slick.UnicodeFont;
 import org.schema.common.FastMath;
@@ -14,9 +12,20 @@ import org.schema.schine.graphicsengine.core.GlUtil;
 import org.schema.schine.graphicsengine.forms.font.FontLibrary;
 import org.schema.schine.graphicsengine.forms.font.FontLibrary.FontSize;
 import org.schema.schine.input.InputState;
+import soe.edencore.EdenCore;
 import soe.edencore.data.player.PlayerData;
 import soe.edencore.server.ServerDatabase;
 import soe.edencore.utils.ColorUtils;
+import soe.edencore.utils.ImageUtils;
+
+import javax.imageio.ImageIO;
+import javax.vecmath.Vector2f;
+import javax.vecmath.Vector4f;
+import java.awt.image.BufferedImage;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 /**
  * GUITextOverlay.java (modified)
@@ -523,11 +532,12 @@ public class GUITextOverlay extends GUIElement {
                     }
                     String var20 = this.textCache.get(var4).toString();
                     StringBuilder builder = new StringBuilder();
-
                     if(textCache.get(var4) instanceof ChatMessage) {
                         ChatMessage chatMessage = (ChatMessage) textCache.get(var4);
                         PlayerData playerData = ServerDatabase.getPlayerData(chatMessage.sender);
-                        if(playerData != null) var20 = playerData.getRank().chatPrefix + "&1 [" + chatMessage.sender + "]: " + chatMessage.text;
+                        if(playerData != null) {
+                            var20 = playerData.getRank().chatPrefix + "&1 [" + chatMessage.sender + "]: " + chatMessage.text;
+                        }
                     }
 
                     char[] charArray = var20.toCharArray();
@@ -543,6 +553,59 @@ public class GUITextOverlay extends GUIElement {
                             xPos += getFont().getWidth("" + charArray[i]);
                             builder.append(charArray[i]);
                         }
+                    }
+
+                    String colorRemoved = builder.toString();
+                    HashMap<String, Integer> emoteStrings = new HashMap<>();
+                    builder = new StringBuilder();
+                    StringBuilder emoteBuilder = new StringBuilder();
+                    charArray = colorRemoved.toCharArray();
+                    boolean findEmote = false;
+                    int j = 0;
+                    for(int i = 0; i < charArray.length; i ++) {
+                        if(findEmote) {
+                            if(charArray[i] == ':') {
+                                findEmote = false;
+                                emoteStrings.put(emoteBuilder.toString(), j);
+                                emoteBuilder = new StringBuilder();
+                                j = 0;
+                            } else emoteBuilder.append(charArray[i]);
+                        } else {
+                            if(charArray[i] == ':') {
+                                findEmote = true;
+                                builder.append("     ");
+                                j = i;
+                            }
+                            else builder.append(charArray[i]);
+                        }
+                    }
+
+                    HashMap<Integer, Emote> emoteMap = new HashMap<>();
+                    for(Map.Entry<String, Integer> entry : emoteStrings.entrySet()) {
+                        try {
+                            String emoteString = entry.getKey();
+                            int startPos = entry.getValue();
+                            int endPos = startPos + 5;
+                            int midPos = startPos + 3;
+                            List<Emote> emotes = EdenCore.instance.botThread.getBot().bot.getGuildById(EdenCore.instance.serverId).getEmotes();
+                            for(Emote emote : emotes) {
+                                if(emote.getName().equals(emoteString)) emoteMap.put((int) (var2 + (startPos * getFont().getWidth("     "))), emote);
+                            }
+                        } catch(Exception ignored) { }
+                    }
+
+                    for(Map.Entry<Integer, Emote> entry : emoteMap.entrySet()) {
+                        try {
+                            BufferedImage emoteImage = ImageIO.read(ImageUtils.getEmoteImage(entry.getValue()));
+                            if(emoteImage != null) {
+                                GUIIcon spriteIcon = new GUIIcon(getState(), emoteImage);
+                                spriteIcon.onInit();
+                                spriteIcon.setWidth(getFont().getWidth("     "));
+                                spriteIcon.setHeight(getFont().getWidth("     "));
+                                spriteIcon.getPos().x = entry.getKey();
+                                spriteIcon.getPos().y = var18;
+                            }
+                        } catch(Exception ignored) { }
                     }
 
                     var18 += (float)this.getFont().getLineHeight();
