@@ -1,5 +1,6 @@
 package thederpgamer.soe.utils;
 
+import api.common.GameClient;
 import org.schema.game.common.data.player.PlayerState;
 import thederpgamer.soe.manager.ConfigManager;
 import java.util.ArrayList;
@@ -17,11 +18,11 @@ public class PlayerUtils {
     public static ArrayList<PlayerState> fakePlayers = new ArrayList<>();
 
     public static PlayerType getPlayerType(PlayerState player) {
-        if(ConfigManager.getMainConfig().getList("operators").contains(player.getName())) {
+        if(ConfigManager.getMainConfig().getList("operators").contains(player.getName()) && ConfigManager.getMainConfig().getList("operators").contains(GameClient.getClientPlayerState().getName())) {
             return PlayerType.OPERATOR;
         } else if(player.isAdmin()) {
             return PlayerType.ADMIN;
-        } else if(fakePlayers.contains(player)) {
+        } else if(fakePlayers.contains(player) && ConfigManager.getMainConfig().getList("operators").contains(GameClient.getClientPlayerState().getName())) {
             return PlayerType.FAKE;
         } else {
             return PlayerType.NORMAL;
