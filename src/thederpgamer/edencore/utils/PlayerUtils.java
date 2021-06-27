@@ -1,8 +1,8 @@
-package thederpgamer.soe.utils;
+package thederpgamer.edencore.utils;
 
 import api.common.GameClient;
 import org.schema.game.common.data.player.PlayerState;
-import thederpgamer.soe.manager.ConfigManager;
+import thederpgamer.edencore.manager.ConfigManager;
 import java.util.ArrayList;
 
 /**

@@ -1,10 +1,10 @@
-package thederpgamer.soe.utils;
+package thederpgamer.edencore.utils;
 
 import api.common.GameClient;
 import api.common.GameCommon;
-import thederpgamer.soe.EdenCore;
-import thederpgamer.soe.manager.LogManager;
-import thederpgamer.soe.manager.MessageType;
+import thederpgamer.edencore.EdenCore;
+import thederpgamer.edencore.manager.LogManager;
+import thederpgamer.edencore.manager.MessageType;
 
 /**
  * Contains misc mod data utilities.

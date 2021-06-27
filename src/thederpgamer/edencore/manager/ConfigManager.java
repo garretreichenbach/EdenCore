@@ -1,7 +1,7 @@
-package thederpgamer.soe.manager;
+package thederpgamer.edencore.manager;
 
 import api.mod.config.FileConfiguration;
-import thederpgamer.soe.EdenCore;
+import thederpgamer.edencore.EdenCore;
 
 /**
  * Manages mod config files and values.

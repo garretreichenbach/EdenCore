@@ -1,4 +1,4 @@
-package thederpgamer.soe.gui.admintools.playermenu;
+package thederpgamer.edencore.gui.admintools.playermenu;
 
 import api.common.GameServer;
 import org.schema.game.common.data.player.PlayerState;
@@ -8,7 +8,7 @@ import org.schema.schine.graphicsengine.forms.gui.GUIElementList;
 import org.schema.schine.graphicsengine.forms.gui.GUIListElement;
 import org.schema.schine.graphicsengine.forms.gui.newgui.*;
 import org.schema.schine.input.InputState;
-import thederpgamer.soe.utils.PlayerUtils;
+import thederpgamer.edencore.utils.PlayerUtils;
 import java.util.Collection;
 import java.util.Comparator;
 import java.util.Set;

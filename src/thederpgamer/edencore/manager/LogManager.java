@@ -1,7 +1,7 @@
-package thederpgamer.soe.manager;
+package thederpgamer.edencore.manager;
 
-import thederpgamer.soe.utils.DataUtils;
-import thederpgamer.soe.utils.DateUtils;
+import thederpgamer.edencore.utils.DataUtils;
+import thederpgamer.edencore.utils.DateUtils;
 import javax.annotation.Nullable;
 import java.io.File;
 import java.io.FileWriter;

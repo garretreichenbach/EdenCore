@@ -1,4 +1,4 @@
-package thederpgamer.soe.utils;
+package thederpgamer.edencore.utils;
 
 import java.text.SimpleDateFormat;
 import java.util.Date;

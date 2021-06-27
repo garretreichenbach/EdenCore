@@ -1,4 +1,4 @@
-package thederpgamer.soe.gui.admintools;
+package thederpgamer.edencore.gui.admintools;
 
 import api.utils.gui.GUIControlManager;
 import api.utils.gui.GUIMenuPanel;

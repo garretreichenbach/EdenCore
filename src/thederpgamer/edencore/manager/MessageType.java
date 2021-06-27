@@ -1,4 +1,4 @@
-package thederpgamer.soe.manager;
+package thederpgamer.edencore.manager;
 
 /**
  * MessageType enum for LogManager.

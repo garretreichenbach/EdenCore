@@ -1,4 +1,4 @@
-package thederpgamer.soe.gui.admintools;
+package thederpgamer.edencore.gui.admintools;
 
 import api.common.GameClient;
 import api.common.GameServer;
@@ -17,9 +17,9 @@ import org.schema.schine.graphicsengine.forms.gui.newgui.GUIHorizontalArea;
 import org.schema.schine.graphicsengine.forms.gui.newgui.GUIHorizontalButtonTablePane;
 import org.schema.schine.input.InputState;
 import org.schema.schine.network.server.ServerMessage;
-import thederpgamer.soe.gui.admintools.playermenu.PlayerScrollableList;
-import thederpgamer.soe.manager.ConfigManager;
-import thederpgamer.soe.utils.PlayerUtils;
+import thederpgamer.edencore.gui.admintools.playermenu.PlayerScrollableList;
+import thederpgamer.edencore.manager.ConfigManager;
+import thederpgamer.edencore.utils.PlayerUtils;
 
 /**
  * Panel for Admin Tools menu.

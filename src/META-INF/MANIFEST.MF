@@ -1,5 +1,5 @@
 Manifest-Version: 1.0
-Main-Class: thederpgamer.soe.EdenCore
+Main-Class: thederpgamer.edencore.EdenCore
 Class-Path: lwjgl.jar slick.jar hsqldb.jar jinput.jar jbullet.jar jgraph
  x.jar pircbot.jar vecmath.jar CodecWav.jar gson-2.1.jar poi-3.16.jar pr
  oguard.jar tera-ovr.jar uuid-3.4.jar CodecJOgg.jar javassist.jar jna-4.

@@ -1,4 +1,4 @@
-package thederpgamer.soe;
+package thederpgamer.edencore;
 
 import api.common.GameClient;
 import api.listener.Listener;
@@ -12,9 +12,9 @@ import org.schema.schine.graphicsengine.forms.gui.GUIActivationHighlightCallback
 import org.schema.schine.graphicsengine.forms.gui.GUICallback;
 import org.schema.schine.graphicsengine.forms.gui.GUIElement;
 import org.schema.schine.input.InputState;
-import thederpgamer.soe.gui.admintools.AdminToolsControlManager;
-import thederpgamer.soe.manager.ConfigManager;
-import thederpgamer.soe.manager.LogManager;
+import thederpgamer.edencore.gui.admintools.AdminToolsControlManager;
+import thederpgamer.edencore.manager.ConfigManager;
+import thederpgamer.edencore.manager.LogManager;
 
 /**
  * Main class for EdenCore mod.
