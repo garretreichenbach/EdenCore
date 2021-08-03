@@ -1,6 +1,8 @@
-package thederpgamer.edencore.gui.admintools.playermenu;
+package thederpgamer.edencore.gui.buildtools.buildsector;
 
-import api.common.GameServer;
+import api.common.GameClient;
+import org.schema.game.common.controller.SegmentController;
+import org.schema.game.common.data.player.ControllerStateUnit;
 import org.schema.game.common.data.player.PlayerState;
 import org.schema.schine.graphicsengine.forms.gui.GUIAncor;
 import org.schema.schine.graphicsengine.forms.gui.GUIElement;
@@ -8,21 +10,25 @@ import org.schema.schine.graphicsengine.forms.gui.GUIElementList;
 import org.schema.schine.graphicsengine.forms.gui.GUIListElement;
 import org.schema.schine.graphicsengine.forms.gui.newgui.*;
 import org.schema.schine.input.InputState;
-import thederpgamer.edencore.utils.PlayerUtils;
+import thederpgamer.edencore.data.BuildSectorData;
+import thederpgamer.edencore.utils.DataUtils;
 import java.util.Collection;
 import java.util.Comparator;
 import java.util.Set;
 
 /**
- * Player List for Admin Tools menu.
+ * <Description>
  *
  * @author TheDerpGamer
- * @since 06/27/2021
+ * @since 08/02/2021
  */
-public class PlayerScrollableList extends ScrollableTableList<PlayerState> implements GUIActiveInterface {
+public class BuildSectorPlayerList extends ScrollableTableList<PlayerState> {
 
-    public PlayerScrollableList(InputState state, float width, float height, GUIElement contentPane) {
+    private BuildSectorData sectorData;
+
+    public BuildSectorPlayerList(InputState state, float width, float height, GUIElement contentPane) {
         super(state, width, height, contentPane);
+        sectorData = DataUtils.getBuildSector(GameClient.getClientPlayerState());
     }
 
     @Override
@@ -43,17 +49,10 @@ public class PlayerScrollableList extends ScrollableTableList<PlayerState> imple
             }
         });
 
-        addColumn("Sector", 5.0f, new Comparator<PlayerState>() {
+        addColumn("Entity", 15.0f, new Comparator<PlayerState>() {
             @Override
             public int compare(PlayerState o1, PlayerState o2) {
-                return o1.getCurrentSector().compareTo(o2.getCurrentSector());
-            }
-        });
-
-        addColumn("Type", 7.0f, new Comparator<PlayerState>() {
-            @Override
-            public int compare(PlayerState o1, PlayerState o2) {
-                return PlayerUtils.getPlayerType(o1).compareTo(PlayerUtils.getPlayerType(o2));
+                return getEntityString(o1).compareTo(getEntityString(o2));
             }
         });
 
@@ -73,37 +72,34 @@ public class PlayerScrollableList extends ScrollableTableList<PlayerState> imple
     }
 
     @Override
-    public Collection<PlayerState> getElementList() {
-        return GameServer.getServerState().getPlayerStatesByName().values();
+    protected Collection<PlayerState> getElementList() {
+        return DataUtils.getPlayersInBuildSector(sectorData);
     }
 
     @Override
     public void updateListEntries(GUIElementList guiElementList, Set<PlayerState> set) {
+        sectorData = DataUtils.getBuildSector(GameClient.getClientPlayerState());
+
         guiElementList.deleteObservers();
         guiElementList.addObserver(this);
 
         for(PlayerState playerState : set) {
             GUITextOverlayTable nameTextElement;
-            (nameTextElement = new GUITextOverlayTable(10, 10, this.getState())).setTextSimple(playerState.getName());
+            (nameTextElement = new GUITextOverlayTable(10, 10, getState())).setTextSimple(playerState.getName());
             GUIClippedRow nameRowElement;
-            (nameRowElement = new GUIClippedRow(this.getState())).attach(nameTextElement);
+            (nameRowElement = new GUIClippedRow(getState())).attach(nameTextElement);
 
             GUITextOverlayTable factionTextElement;
-            (factionTextElement = new GUITextOverlayTable(10, 10, this.getState())).setTextSimple(playerState.getFactionName());
+            (factionTextElement = new GUITextOverlayTable(10, 10, getState())).setTextSimple(playerState.getFactionName());
             GUIClippedRow factionRowElement;
-            (factionRowElement = new GUIClippedRow(this.getState())).attach(factionTextElement);
+            (factionRowElement = new GUIClippedRow(getState())).attach(factionTextElement);
 
-            GUITextOverlayTable sectorTextElement;
-            (sectorTextElement = new GUITextOverlayTable(10, 10, this.getState())).setTextSimple(playerState.getCurrentSector().toString());
-            GUIClippedRow sectorRowElement;
-            (sectorRowElement = new GUIClippedRow(this.getState())).attach(sectorTextElement);
+            GUITextOverlayTable entityTextElement;
+            (entityTextElement = new GUITextOverlayTable(10, 10, getState())).setTextSimple(getEntityString(playerState));
+            GUIClippedRow entityRowElement;
+            (entityRowElement = new GUIClippedRow(getState())).attach(entityTextElement);
 
-            GUITextOverlayTable typeTextElement;
-            (typeTextElement = new GUITextOverlayTable(10, 10, this.getState())).setTextSimple(PlayerUtils.getPlayerType(playerState));
-            GUIClippedRow typeRowElement;
-            (typeRowElement = new GUIClippedRow(this.getState())).attach(typeTextElement);
-
-            final PlayerListRow playerListRow = new PlayerListRow(this.getState(), playerState, nameRowElement, factionRowElement, sectorRowElement, typeRowElement);
+            final PlayerListRow playerListRow = new PlayerListRow(getState(), playerState, nameRowElement, factionRowElement, entityRowElement);
             GUIAncor anchor = new GUIAncor(getState(), getWidth() - 49.0f, 28.0f);
             anchor.attach(redrawButtonPane(playerState, anchor));
             playerListRow.expanded = new GUIElementList(getState());
@@ -122,6 +118,19 @@ public class PlayerScrollableList extends ScrollableTableList<PlayerState> imple
         //Todo: Player actions button pane
 
         return buttonPane;
+    }
+
+    private String getEntityString(PlayerState player) {
+        SegmentController control = getCurrentControl(player);
+        if(control != null) return control.getName();
+        else return "NONE";
+    }
+
+    private SegmentController getCurrentControl(PlayerState player) {
+        Set<ControllerStateUnit> units = player.getControllerState().getUnits();
+        if(units.isEmpty()) return null;
+        ControllerStateUnit unit = units.iterator().next();
+        return (SegmentController) unit.playerControllable;
     }
 
     public class PlayerListRow extends ScrollableTableList<PlayerState>.Row {

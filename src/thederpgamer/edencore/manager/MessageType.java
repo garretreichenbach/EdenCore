@@ -7,6 +7,7 @@ package thederpgamer.edencore.manager;
  * @since 06/27/2021
  */
 public enum MessageType {
+    DEBUG("[DEBUG]: "),
     INFO("[INFO]: "),
     WARNING("[WARNING]: "),
     ERROR("[ERROR]: "),

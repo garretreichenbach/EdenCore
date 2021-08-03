@@ -15,8 +15,9 @@ public class ConfigManager {
     private static FileConfiguration mainConfig;
     private static final String[] defaultMainConfig = {
             "debug-mode: false",
+            "auto-save-interval: 10000",
             "max-world-logs: 5",
-            "operators: Admin_TheDerpGamer, TheDerpGamer"
+            "operators: null"
     };
 
     public static void initialize(EdenCore instance) {

@@ -49,6 +49,10 @@ public class LogManager {
         }
     }
 
+    public static void logDebug(String message) {
+        if(ConfigManager.getMainConfig().getBoolean("debug-mode")) logMessage(MessageType.DEBUG, message);
+    }
+
     public static void logWarning(String message, @Nullable Exception exception) {
         if(exception != null) logMessage(MessageType.WARNING, message + ":\n" + exception.getMessage());
         else logMessage(MessageType.WARNING, message);

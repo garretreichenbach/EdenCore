@@ -1,25 +1,12 @@
 package thederpgamer.edencore.gui.admintools;
 
 import api.common.GameClient;
-import api.common.GameServer;
 import api.utils.gui.GUIMenuPanel;
-import org.schema.game.client.controller.PlayerGameTextInput;
-import org.schema.game.common.data.player.PlayerState;
-import org.schema.schine.common.TextCallback;
-import org.schema.schine.common.language.Lng;
-import org.schema.schine.graphicsengine.core.MouseEvent;
-import org.schema.schine.graphicsengine.core.settings.PrefixNotFoundException;
-import org.schema.schine.graphicsengine.forms.gui.GUIActivationCallback;
-import org.schema.schine.graphicsengine.forms.gui.GUICallback;
-import org.schema.schine.graphicsengine.forms.gui.GUIElement;
 import org.schema.schine.graphicsengine.forms.gui.newgui.GUIContentPane;
-import org.schema.schine.graphicsengine.forms.gui.newgui.GUIHorizontalArea;
 import org.schema.schine.graphicsengine.forms.gui.newgui.GUIHorizontalButtonTablePane;
 import org.schema.schine.input.InputState;
-import org.schema.schine.network.server.ServerMessage;
 import thederpgamer.edencore.gui.admintools.playermenu.PlayerScrollableList;
 import thederpgamer.edencore.manager.ConfigManager;
-import thederpgamer.edencore.utils.PlayerUtils;
 
 /**
  * Panel for Admin Tools menu.
@@ -50,7 +37,7 @@ public class AdminToolsMenuPanel extends GUIMenuPanel {
 
     private void createPlayerMenu() {
         final GUIContentPane playerMenu = guiWindow.addTab("PLAYERS");
-        playerMenu.setTextBoxHeightLast(500);
+        playerMenu.setTextBoxHeightLast(450);
 
         final PlayerScrollableList playerList = new PlayerScrollableList(getState(), playerMenu.getWidth(), playerMenu.getHeight(), playerMenu.getContent(0));
         playerList.onInit();
@@ -61,6 +48,7 @@ public class AdminToolsMenuPanel extends GUIMenuPanel {
             GUIHorizontalButtonTablePane buttonPane = new GUIHorizontalButtonTablePane(getState(), 1, 1, playerMenu.getContent(1));
             buttonPane.onInit();
 
+            /*
             buttonPane.addButton(0, 0, "ADD PLAYER", GUIHorizontalArea.HButtonColor.GREEN, new GUICallback() {
                 @Override
                 public void callback(GUIElement guiElement, MouseEvent mouseEvent) {
@@ -90,14 +78,16 @@ public class AdminToolsMenuPanel extends GUIMenuPanel {
 
                             @Override
                             public boolean onInput(String s) {
-                                if(!GameServer.getServerState().getPlayerStatesByName().containsKey(s)) {
-                                    inputArray[0] = s;
-                                    GameClient.getClientState().getController().queueUIAudio("0022_menu_ui - enter");
-                                    return true;
-                                } else {
-                                    GameClient.getClientState().getController().queueUIAudio("0022_menu_ui - error 1");
-                                    return false;
-                                }
+                                if(s != null && s.length() > 0) {
+                                    if(!GameServer.getServerState().getPlayerStatesByName().containsKey(s)) {
+                                        inputArray[0] = s;
+                                        GameClient.getClientState().getController().queueUIAudio("0022_menu_ui - enter");
+                                        return true;
+                                    } else {
+                                        GameClient.getClientState().getController().queueUIAudio("0022_menu_ui - error 1");
+                                        return false;
+                                    }
+                                } else return false;
                             }
                         }).activate();
 
@@ -156,6 +146,8 @@ public class AdminToolsMenuPanel extends GUIMenuPanel {
             });
 
             playerMenu.getContent(1).attach(buttonPane);
+
+             */
         }
     }
 
