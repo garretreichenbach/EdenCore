@@ -3,7 +3,7 @@
   "author": "TheDerpGamer",
   "description": "Various server administration tools and utilities for servers.",
   "version": "1.1.0",
-  "starmade_version": "0.202.116",
+  "starmade_version": "0.202.118",
   "client_mod": false,
   "server_mod": false,
   "main_class": "thederpgamer.edencore.EdenCore",

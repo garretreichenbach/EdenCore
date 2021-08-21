@@ -115,7 +115,9 @@ public class BuildSectorPlayerList extends ScrollableTableList<PlayerState> {
         GUIHorizontalButtonTablePane buttonPane = new GUIHorizontalButtonTablePane(getState(), 1, 1, anchor);
         buttonPane.onInit();
 
+        int pos = 0;
         //Todo: Player actions button pane
+
 
         return buttonPane;
     }

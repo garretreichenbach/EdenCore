@@ -30,7 +30,7 @@ public class BuildToolsMenuPanel extends GUIMenuPanel {
 
     //Elements
     private GUIGraph statsGraph;
-    private GUIHorizontalButtonTablePane buttonPane;
+    private GUIHorizontalButtonTablePane playerButtonPane;
     private BuildSectorPlayerList playerList;
     private BuildSectorEntityList entityList;
 
@@ -48,24 +48,37 @@ public class BuildToolsMenuPanel extends GUIMenuPanel {
 
     private void createStatsMenu() {
         GUIContentPane contentPane = guiWindow.addTab("STATISTICS");
-        contentPane.setTextBoxHeightLast(450);
+        contentPane.setTextBoxHeightLast(450 - 28);
+        contentPane.addDivider((int) (contentPane.getWidth() / 2) + 50);
+        contentPane.setTextBoxHeight(1, 0, 450 - 28);
+        contentPane.addNewTextBox(0, 450 - 28);
+        contentPane.addNewTextBox(1, 450 - 28);
+
+        GUIAncor statsPane = contentPane.getContent(0, 0);
+        GUIAncor statsButtonPane = contentPane.getContent(0, 1);
+        GUIAncor variablesPane = contentPane.getContent(1, 0);
+        GUIAncor optionsButtonPane = contentPane.getContent(1, 1);
 
         statsGraph = new GUIGraph(getState());
+        statsPane.attach(statsGraph);
     }
 
     private void createBuildSectorPanel() {
         GUIContentPane contentPane = guiWindow.addTab("BUILD SECTOR");
-        contentPane.setTextBoxHeightLast(450);
-        contentPane.addNewTextBox(0, 400);
-        contentPane.addDivider(375);
+        contentPane.setTextBoxHeightLast(28);
+        contentPane.addNewTextBox(0, 450 - 28);
+        contentPane.addDivider((int) (contentPane.getWidth() / 2) - 30);
+        contentPane.setTextBoxHeight(1, 0, 28);
+        contentPane.addNewTextBox(1, 450 - 28);
 
-        GUIAncor actionsPane = contentPane.getContent(0, 0);
-        GUIAncor entityListPane = contentPane.getContent(0, 1);
-        GUIAncor playerListPane = contentPane.getContent(1, 1);
+        GUIAncor playerActionsPane = contentPane.getContent(0, 0);
+        GUIAncor playerListPane = contentPane.getContent(0, 1);
+        GUIAncor entityActionsPane = contentPane.getContent(1, 0);
+        GUIAncor entityListPane = contentPane.getContent(1, 1);
 
-        buttonPane = new GUIHorizontalButtonTablePane(getState(), 1, 1, actionsPane);
-        createButtonPane(buttonPane);
-        actionsPane.attach(buttonPane);
+        playerButtonPane = new GUIHorizontalButtonTablePane(getState(), 1, 1, playerActionsPane);
+        createPlayerButtonPane();
+        playerActionsPane.attach(playerButtonPane);
 
         entityList = new BuildSectorEntityList(getState(), 375, 400, entityListPane);
         entityList.onInit();
@@ -81,12 +94,12 @@ public class BuildToolsMenuPanel extends GUIMenuPanel {
         contentPane.setTextBoxHeightLast(450);
     }
 
-    private void createButtonPane(GUIHorizontalButtonTablePane buttonPane) {
-        buttonPane.onInit();
+    private void createPlayerButtonPane() {
+        playerButtonPane.onInit();
         BuildSectorData sectorData = DataUtils.getPlayerCurrentBuildSector(GameClient.getClientPlayerState());
         int pos = 0;
         if(sectorData == null) { //Not in build sector
-            buttonPane.addButton(0, pos, "ENTER BUILD SECTOR", GUIHorizontalArea.HButtonColor.BLUE, new GUICallback() {
+            playerButtonPane.addButton(0, pos, "ENTER BUILD SECTOR", GUIHorizontalArea.HButtonColor.BLUE, new GUICallback() {
                 @Override
                 public void callback(GUIElement guiElement, MouseEvent mouseEvent) {
                     if(mouseEvent.pressedLeftMouse()) {
@@ -95,7 +108,9 @@ public class BuildToolsMenuPanel extends GUIMenuPanel {
                             DataUtils.movePlayerToBuildSector(GameClient.getClientPlayerState(), DataUtils.getBuildSector(GameClient.getClientPlayerState()));
                         } catch(IOException exception) {
                             LogManager.logException("Something went wrong while trying to transport player " + GameClient.getClientPlayerState().getName() + " to their build sector in " + DataUtils.getBuildSector(GameClient.getClientPlayerState()), exception);
-                            DataUtils.movePlayerFromBuildSector(GameClient.getClientPlayerState());
+                            try {
+                                DataUtils.movePlayerFromBuildSector(GameClient.getClientPlayerState());
+                            } catch(IOException ignored) { }
                             PlayerUtils.sendMessage(GameClient.getClientPlayerState(), "Something went wrong while trying to transport you to your build sector! Please report this issue to an admin!");
                         }
                         refresh();
@@ -119,12 +134,14 @@ public class BuildToolsMenuPanel extends GUIMenuPanel {
             });
             pos ++;
         } else {
-            buttonPane.addButton(0, pos, "EXIT BUILD SECTOR", GUIHorizontalArea.HButtonColor.BLUE, new GUICallback() {
+            playerButtonPane.addButton(0, pos, "EXIT BUILD SECTOR", GUIHorizontalArea.HButtonColor.BLUE, new GUICallback() {
                 @Override
                 public void callback(GUIElement guiElement, MouseEvent mouseEvent) {
                     if(mouseEvent.pressedLeftMouse()) {
                         getState().getController().queueUIAudio("0022_menu_ui - enter");
-                        DataUtils.movePlayerFromBuildSector(GameClient.getClientPlayerState());
+                        try {
+                            DataUtils.movePlayerFromBuildSector(GameClient.getClientPlayerState());
+                        } catch(IOException ignored) { }
                         refresh();
                     }
                 }
@@ -153,6 +170,6 @@ public class BuildToolsMenuPanel extends GUIMenuPanel {
         entityList.handleDirty();
         playerList.flagDirty();
         playerList.handleDirty();
-        createButtonPane(buttonPane);
+        createPlayerButtonPane();
     }
 }

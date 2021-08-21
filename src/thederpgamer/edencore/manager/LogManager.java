@@ -1,5 +1,7 @@
 package thederpgamer.edencore.manager;
 
+import api.DebugFile;
+import thederpgamer.edencore.EdenCore;
 import thederpgamer.edencore.utils.DataUtils;
 import thederpgamer.edencore.utils.DateUtils;
 import javax.annotation.Nullable;
@@ -80,7 +82,7 @@ public class LogManager {
             }
             System.out.println(builder.toString());
             logWriter.append(builder.toString()).append("\n");
-            logWriter.flush();
+            DebugFile.log(builder.toString(), EdenCore.getInstance());
         } catch(IOException var3) {
             var3.printStackTrace();
         }

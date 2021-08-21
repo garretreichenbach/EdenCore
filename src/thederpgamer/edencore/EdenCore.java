@@ -2,19 +2,13 @@ package thederpgamer.edencore;
 
 import api.common.GameClient;
 import api.listener.Listener;
-import api.listener.events.gui.GUITopBarCreateEvent;
+import api.listener.events.input.KeyPressEvent;
 import api.listener.events.player.PlayerSpawnEvent;
 import api.mod.StarLoader;
 import api.mod.StarMod;
 import api.utils.StarRunnable;
 import api.utils.gui.ModGUIHandler;
 import org.apache.commons.io.IOUtils;
-import org.schema.game.client.view.gui.newgui.GUITopBar;
-import org.schema.schine.graphicsengine.core.MouseEvent;
-import org.schema.schine.graphicsengine.forms.gui.GUIActivationHighlightCallback;
-import org.schema.schine.graphicsengine.forms.gui.GUICallback;
-import org.schema.schine.graphicsengine.forms.gui.GUIElement;
-import org.schema.schine.input.InputState;
 import thederpgamer.edencore.gui.admintools.AdminToolsControlManager;
 import thederpgamer.edencore.gui.buildtools.BuildToolsControlManager;
 import thederpgamer.edencore.manager.ConfigManager;
@@ -47,7 +41,8 @@ public class EdenCore extends StarMod {
 
     //Data
     private final String[] overwriteClasses = new String[] {
-            "PlayerState"
+            "PlayerState",
+            "GUITopBar"
     };
     public AdminToolsControlManager adminToolsControlManager;
     public BuildToolsControlManager buildToolsControlManager;
@@ -71,86 +66,44 @@ public class EdenCore extends StarMod {
         StarLoader.registerListener(PlayerSpawnEvent.class, new Listener<PlayerSpawnEvent>() {
             @Override
             public void onEvent(PlayerSpawnEvent event) {
-                if(DataUtils.isPlayerInAnyBuildSector(event.getPlayer().getOwnerState())) DataUtils.movePlayerFromBuildSector(event.getPlayer().getOwnerState());
-            }
-        }, this);
-
-        StarLoader.registerListener(GUITopBarCreateEvent.class, new Listener<GUITopBarCreateEvent>() {
-            @Override
-            public void onEvent(final GUITopBarCreateEvent event) {
-                GUITopBar.ExpandedButton buildToolsButton = event.getDropdownButtons().get(event.getDropdownButtons().size() - 1);
-                buildToolsButton.addExpandedButton("BUILD TOOLS", new GUICallback() {
-                    @Override
-                    public void callback(final GUIElement guiElement, MouseEvent mouseEvent) {
-                        if(mouseEvent.pressedLeftMouse()) {
-                            GameClient.getClientState().getController().queueUIAudio("0022_menu_ui - enter");
-                            if(buildToolsControlManager == null) {
-                                buildToolsControlManager = new BuildToolsControlManager(GameClient.getClientState());
-                                ModGUIHandler.registerNewControlManager(getSkeleton(), buildToolsControlManager);
-                            }
-                            buildToolsControlManager.setActive(true);
-                        }
-                    }
-
-                    @Override
-                    public boolean isOccluded() {
-                        return false;
-                    }
-                }, new GUIActivationHighlightCallback() {
-                    @Override
-                    public boolean isHighlighted(InputState inputState) {
-                        return false;
-                    }
-
-                    @Override
-                    public boolean isVisible(InputState inputState) {
-                        return true;
-                    }
-
-                    @Override
-                    public boolean isActive(InputState inputState) {
-                        return true;
-                    }
-                });
-
-                if(GameClient.getClientPlayerState().isAdmin()) {
-                    GUITopBar.ExpandedButton adminToolsButton = event.getDropdownButtons().get(event.getDropdownButtons().size() - 1);
-                    adminToolsButton.addExpandedButton("ADMIN TOOLS", new GUICallback() {
-                        @Override
-                        public void callback(final GUIElement guiElement, MouseEvent mouseEvent) {
-                            if(mouseEvent.pressedLeftMouse()) {
-                                GameClient.getClientState().getController().queueUIAudio("0022_menu_ui - enter");
-                                if(adminToolsControlManager == null) {
-                                    adminToolsControlManager = new AdminToolsControlManager(GameClient.getClientState());
-                                    ModGUIHandler.registerNewControlManager(getSkeleton(), adminToolsControlManager);
-                                }
-                                adminToolsControlManager.setActive(true);
-                            }
-                        }
-
-                        @Override
-                        public boolean isOccluded() {
-                            return false;
-                        }
-                    }, new GUIActivationHighlightCallback() {
-                        @Override
-                        public boolean isHighlighted(InputState inputState) {
-                            return false;
-                        }
-
-                        @Override
-                        public boolean isVisible(InputState inputState) {
-                            return true;
-                        }
-
-                        @Override
-                        public boolean isActive(InputState inputState) {
-                            return true;
-                        }
-                    });
+                if(DataUtils.isPlayerInAnyBuildSector(event.getPlayer().getOwnerState())) {
+                    try {
+                        DataUtils.movePlayerFromBuildSector(event.getPlayer().getOwnerState());
+                    } catch(IOException ignored) { }
                 }
             }
         }, this);
+
+        StarLoader.registerListener(KeyPressEvent.class, new Listener<KeyPressEvent>() {
+            @Override
+            public void onEvent(KeyPressEvent event) {
+                if(GameClient.getClientState().getPlayerInputs().isEmpty()) {
+                    if(event.getChar() == ConfigManager.getMainConfig().getString("build-tools-menu-key").charAt(0)) {
+                        activateBuildToolsMenu();
+                    } else if(event.getChar() == ConfigManager.getMainConfig().getString("admin-tools-menu-key").charAt(0) && GameClient.getClientPlayerState().isAdmin()) {
+                        activateAdminToolsMenu();
+                    }
+                }
+            }
+        }, this);
+    }
+
+    public void activateAdminToolsMenu() {
+        ModGUIHandler.deactivateAll();
+        if(adminToolsControlManager == null) {
+            adminToolsControlManager = new AdminToolsControlManager(GameClient.getClientState());
+            ModGUIHandler.registerNewControlManager(getSkeleton(), adminToolsControlManager);
+        }
+        adminToolsControlManager.setActive(true);
+    }
+
+    public void activateBuildToolsMenu() {
+        ModGUIHandler.deactivateAll();
+        if(buildToolsControlManager == null) {
+            buildToolsControlManager = new BuildToolsControlManager(GameClient.getClientState());
+            ModGUIHandler.registerNewControlManager(getSkeleton(), buildToolsControlManager);
+        }
+        buildToolsControlManager.setActive(true);
     }
 
     private void startRunners() {

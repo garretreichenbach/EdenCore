@@ -17,6 +17,7 @@ import thederpgamer.edencore.data.ComparableData;
 import thederpgamer.edencore.data.PlayerData;
 import thederpgamer.edencore.manager.LogManager;
 import thederpgamer.edencore.manager.MessageType;
+
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Random;
@@ -81,33 +82,31 @@ public class DataUtils {
         }
     }
 
-    public static void movePlayerToBuildSector(PlayerState playerState, BuildSectorData sectorData) throws IOException {
+    public static void movePlayerToBuildSector(final PlayerState playerState, final BuildSectorData sectorData) throws IOException {
         PlayerData playerData = getPlayerData(playerState);
         playerData.lastRealSector.set(playerState.getCurrentSector());
         removeExistingData(playerData);
         PersistentObjectUtil.addObject(instance, playerData);
         saveData();
 
-        playerState.getControllerState().forcePlayerOutOfSegmentControllers();
-        GameServer.getServerState().getController().queueSectorSwitch(playerState.getFirstControlledTransformableWOExc(), sectorData.sector, SectorSwitch.TRANS_JUMP, false, true, true);
-        playerState.updateInventory();
-
         Sector sector = GameServer.getUniverse().getSector(sectorData.sector);
-        sector.noEnter(true);
-        sector.noExit(true);
-
+        sector.setActive(true);
+        playerState.getControllerState().forcePlayerOutOfSegmentControllers();
+        (GameServer.getServerState().getController().queueSectorSwitch(playerState.getAssingedPlayerCharacter(), sectorData.sector, SectorSwitch.TRANS_JUMP, false, true, true)).execute(GameServer.getServerState());
+        playerState.updateInventory();
         LogManager.logDebug(playerState.getName() + " teleported to a build sector in " + sectorData.sector.toString());
     }
 
-    public static void movePlayerFromBuildSector(PlayerState playerState) {
-        Vector3i sector = playerState.getCurrentSector();
+    public static void movePlayerFromBuildSector(final PlayerState playerState) throws IOException {
         PlayerData playerData = getPlayerData(playerState);
+        final Vector3i pos = new Vector3i(playerState.getCurrentSector());
+        GameServer.getUniverse().getSector(pos).noExit(true);
+        GameServer.getUniverse().getSector(pos).noEnter(true);
         playerState.getControllerState().forcePlayerOutOfSegmentControllers();
-        GameServer.getServerState().getController().queueSectorSwitch(playerState.getFirstControlledTransformableWOExc(), playerData.lastRealSector, SectorSwitch.TRANS_JUMP, false, true, true);
+        (GameServer.getServerState().getController().queueSectorSwitch(playerState.getAssingedPlayerCharacter(), playerData.lastRealSector, SectorSwitch.TRANS_JUMP, false, true, true)).execute(GameServer.getServerState());
         playerState.updateInventory();
         if(playerState.isGodMode() && !playerState.isAdmin()) playerState.setGodMode(false);
-
-        LogManager.logDebug(playerState.getName() + " teleported from a build sector in " + sector.toString());
+        LogManager.logDebug(playerState.getName() + " teleported from a build sector in " + pos.toString());
     }
 
     public static boolean isInEntity() {
@@ -129,6 +128,7 @@ public class DataUtils {
         PlayerData playerData = new PlayerData(playerName, playerId, lastRealSector);
         removeExistingData(playerData);
         PersistentObjectUtil.addObject(instance, playerData);
+        saveData();
         return playerData;
     }
 
@@ -187,14 +187,15 @@ public class DataUtils {
         BuildSectorData data = new BuildSectorData(playerName, playerId, sector, permissions);
         removeExistingData(data);
         PersistentObjectUtil.addObject(instance, data);
+        saveData();
         return data;
     }
 
     public static Vector3i getRandomSector(int offset) {
         Random random = new Random();
-        int x = (int) (random.nextInt(offset) + (System.currentTimeMillis() / 100));
-        int y = (int) (random.nextInt(offset) + (System.currentTimeMillis() / 100));
-        int z = (int) (random.nextInt(offset) + (System.currentTimeMillis() / 100));
+        int x = (int) (random.nextInt(offset) + (System.currentTimeMillis() / 10000));
+        int y = (int) (random.nextInt(offset) + (System.currentTimeMillis() / 10000));
+        int z = (int) (random.nextInt(offset) + (System.currentTimeMillis() / 10000));
         return new Vector3i(x, y, z);
     }
 
