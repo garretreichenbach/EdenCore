@@ -9,7 +9,7 @@ import org.schema.game.common.controller.Ship;
 import org.schema.game.common.controller.SpaceStation;
 import org.schema.game.common.data.player.PlayerState;
 import org.schema.game.common.data.world.SimpleTransformableSendableObject;
-import org.schema.schine.network.StateInterface;
+import org.schema.schine.resource.FileExt;
 import org.schema.schine.resource.tag.Tag;
 import thederpgamer.edencore.utils.DataUtils;
 
@@ -64,53 +64,50 @@ public class TransferManager {
         Tag tag = entity.toTagStructure();
         File transferFolder = getTransferFolder(playerState);
         if(transferFolder != null && transferFolder.isDirectory()) {
-            File entityFile = new File(transferFolder, entity.getType().ordinal() + "~" + entity.getName().substring(0, entity.getName().indexOf(' ') - 1) + ".ent");
-            if(!entityFile.exists()) entityFile.createNewFile();
+            FileExt entityFile = new FileExt(transferFolder,  entity.getUniqueIdentifierFull() + ".ent");
+            if(entityFile.exists()) entityFile.delete();
+            entityFile.createNewFile();
             tag.writeTo(new BufferedOutputStream(new FileOutputStream(entityFile)), true);
         }
     }
 
     public static void loadEntity(PlayerState playerState, String entityName) throws Exception {
-        playerState.getControllerState().forcePlayerOutOfSegmentControllers();
         File transferFolder = getTransferFolder(playerState);
-        File entityFile = null;
-        int entityType = -1;
+        FileExt entityFile = null;
         if(transferFolder != null && transferFolder.isDirectory()) {
             if(transferFolder.listFiles() != null && Objects.requireNonNull(transferFolder.listFiles()).length > 0) {
                 for(File file : Objects.requireNonNull(transferFolder.listFiles())) {
-                    try {
-                        entityType = Integer.parseInt(file.getName().substring(0, file.getName().indexOf('~') - 1));
-                        String name = file.getName().substring(file.getName().indexOf('~') + 1, file.getName().lastIndexOf('.') - 1);
-                        if(name.equals(entityName)) {
-                            entityFile = file;
-                            break;
-                        }
-                    } catch(Exception ignored) { }
+                    String dbPrefix = file.getName().substring(0, file.getName().indexOf('_'));
+                    Tag entityTag = Tag.readFrom(new BufferedInputStream(new FileInputStream(file)), true, false);
+                    String realName = ((String) ((Tag[]) entityTag.getValue())[5].getValue());
+                    if(realName.toLowerCase().contains(entityName.toLowerCase())) {
+                        if(dbPrefix.equals(SimpleTransformableSendableObject.EntityType.SHIP.dbPrefix)) {
+                            Ship ship = new Ship(GameServer.getServerState());
+                            ship.setId(GameServer.getServerState().getNextFreeObjectId());
+                            ship.setSectorId(playerState.getSectorId());
+                            ship.dbId = -1L;
+                            ship.initialize();
+                            ship.fromTagStructure(entityTag);
+                            GameServer.getServerState().getController().getSynchController().addNewSynchronizedObjectQueued(ship);
+                            Starter.modManager.onSegmentControllerSpawn(ship);
+                            //entityFile.delete();
+                            return;
+                        } else if(dbPrefix.equals(SimpleTransformableSendableObject.EntityType.SPACE_STATION.dbPrefix)) {
+                            SpaceStation station = new SpaceStation(GameServer.getServerState());
+                            station.setId(GameServer.getServerState().getNextFreeObjectId());
+                            station.setSectorId(playerState.getSectorId());
+                            station.dbId = -1L;
+                            station.initialize();
+                            station.fromTagStructure(entityTag);
+                            GameServer.getServerState().getController().getSynchController().addNewSynchronizedObjectQueued(station);
+                            Starter.modManager.onSegmentControllerSpawn(station);
+                            entityFile.delete();
+                            return;
+                        } else throw new IllegalArgumentException("Entity \"" + entityName + "\" is neither a ship or station and therefore cannot be transferred.");
+                    }
                 }
-                if(entityFile != null) {
-                    Tag tag = Tag.readFrom(new BufferedInputStream(new FileInputStream(entityFile)), true, false);
-                    if(entityType == SimpleTransformableSendableObject.EntityType.SHIP.ordinal()) {
-                        Ship ship = new Ship((StateInterface) GameCommon.getGameState());
-                        ship.setId(((StateInterface) Objects.requireNonNull(GameCommon.getGameState())).getNextFreeObjectId());
-                        ship.setSectorId(playerState.getSectorId());
-                        ship.dbId = -1L;
-                        ship.initialize();
-                        ship.fromTagStructure(tag);
-                        GameServer.getServerState().getController().getSynchController().addNewSynchronizedObjectQueued(ship);
-                        Starter.modManager.onSegmentControllerSpawn(ship);
-                        entityFile.delete();
-                    } else if(entityType == SimpleTransformableSendableObject.EntityType.SPACE_STATION.ordinal()) {
-                        SpaceStation station = new SpaceStation((StateInterface) GameCommon.getGameState());
-                        station.setId(((StateInterface) Objects.requireNonNull(GameCommon.getGameState())).getNextFreeObjectId());
-                        station.setSectorId(playerState.getSectorId());
-                        station.dbId = -1L;
-                        station.initialize();
-                        station.fromTagStructure(tag);
-                        GameServer.getServerState().getController().getSynchController().addNewSynchronizedObjectQueued(station);
-                        Starter.modManager.onSegmentControllerSpawn(station);
-                        entityFile.delete();
-                    } else throw new IllegalArgumentException("Entity \"" + entityName + "\" is neither a ship or station and therefore cannot be transferred.");
-                } else throw new NullPointerException("There is no entity by the name \"" + entityName + "\" saved in the world transfer folder.");
+
+                throw new NullPointerException("There is no entity by the name \"" + entityName + "\" saved in the world transfer folder.");
             }
         }
     }

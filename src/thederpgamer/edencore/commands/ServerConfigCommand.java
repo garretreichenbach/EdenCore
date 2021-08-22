@@ -128,6 +128,7 @@ public class ServerConfigCommand implements CommandInterface {
             String inputType = getType(value);
             if(fieldType.equals(inputType)) {
                 ConfigManager.getMainConfig().set(field, value);
+                ConfigManager.getMainConfig().saveConfig();
                 return true;
             } else return false;
         } catch(Exception exception) {

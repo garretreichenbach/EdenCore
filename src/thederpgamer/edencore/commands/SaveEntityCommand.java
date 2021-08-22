@@ -4,6 +4,7 @@ import api.mod.StarMod;
 import api.utils.game.PlayerUtils;
 import api.utils.game.chat.CommandInterface;
 import org.schema.game.common.controller.SegmentController;
+import org.schema.game.common.data.element.ElementDocking;
 import org.schema.game.common.data.player.PlayerState;
 import thederpgamer.edencore.EdenCore;
 import thederpgamer.edencore.manager.LogManager;
@@ -50,7 +51,13 @@ public class SaveEntityCommand implements CommandInterface {
                     try {
                         TransferManager.saveEntity(playerState, entity);
                         PlayerUtils.sendMessage(playerState, "Successfully saved entity \"" + DataUtils.getEntityNameFormatted(entity) + "\" for transferring. Use /load_entity <name> after the reset to complete the transfer.");
+                        entity.railController.destroyDockedRecursive();
+                        for(ElementDocking dock : entity.getDockingController().getDockedOnThis()) {
+                            dock.from.getSegment().getSegmentController().markForPermanentDelete(true);
+                            dock.from.getSegment().getSegmentController().setMarkedForDeleteVolatile(true);
+                        }
                         entity.markForPermanentDelete(true);
+                        entity.setMarkedForDeleteVolatile(true);
                     } catch(Exception exception) {
                         LogManager.logException("Failed to save entity \"" + DataUtils.getEntityNameFormatted(entity) + "\" to world transfer folder", exception);
                         PlayerUtils.sendMessage(playerState, "An exception occurred while trying to save \"" + DataUtils.getEntityNameFormatted(entity) + "\" to world transfer folder. Let an admin know if this continues to occur!");
