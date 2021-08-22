@@ -107,13 +107,11 @@ public class EdenCore extends StarMod {
 
     public void activateBuildToolsMenu() {
         ModGUIHandler.deactivateAll();
-        if(ConfigManager.getMainConfig().getBoolean("debug-mode")) { //Todo: Finish build tools menu
-            if(buildToolsControlManager == null) {
-                buildToolsControlManager = new BuildToolsControlManager(GameClient.getClientState());
-                ModGUIHandler.registerNewControlManager(getSkeleton(), buildToolsControlManager);
-            }
-            buildToolsControlManager.setActive(true);
+        if(buildToolsControlManager == null) {
+            buildToolsControlManager = new BuildToolsControlManager(GameClient.getClientState());
+            ModGUIHandler.registerNewControlManager(getSkeleton(), buildToolsControlManager);
         }
+        buildToolsControlManager.setActive(true);
     }
 
     private void startRunners() {

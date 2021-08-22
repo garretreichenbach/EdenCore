@@ -13,6 +13,7 @@ import org.schema.schine.graphicsengine.forms.gui.newgui.GUIContentPane;
 import org.schema.schine.graphicsengine.forms.gui.newgui.GUIHorizontalArea;
 import org.schema.schine.graphicsengine.forms.gui.newgui.GUIHorizontalButtonTablePane;
 import org.schema.schine.input.InputState;
+import thederpgamer.edencore.EdenCore;
 import thederpgamer.edencore.data.BuildSectorData;
 import thederpgamer.edencore.gui.buildtools.buildsector.BuildSectorEntityList;
 import thederpgamer.edencore.gui.buildtools.buildsector.BuildSectorPlayerList;
@@ -105,9 +106,14 @@ public class BuildToolsMenuPanel extends GUIMenuPanel {
                     if(mouseEvent.pressedLeftMouse()) {
                         getState().getController().queueUIAudio("0022_menu_ui - enter");
                         try {
-                            DataUtils.movePlayerToBuildSector(GameClient.getClientPlayerState(), DataUtils.getBuildSector(GameClient.getClientPlayerState()));
+                            if(DataUtils.canTeleportPlayer(GameClient.getClientPlayerState())) DataUtils.movePlayerToBuildSector(GameClient.getClientPlayerState(), DataUtils.getBuildSector(GameClient.getClientPlayerState()));
+                            else {
+                                PlayerUtils.sendMessage(GameClient.getClientPlayerState(), "You can't teleport to your build sector right now as there are enemies nearby.");
+                                EdenCore.getInstance().buildToolsControlManager.setActive(false);
+                                return;
+                            }
                         } catch(IOException exception) {
-                            LogManager.logException("Something went wrong while trying to transport player " + GameClient.getClientPlayerState().getName() + " to their build sector in " + DataUtils.getBuildSector(GameClient.getClientPlayerState()), exception);
+                            LogManager.logException("Something went wrong while trying to transport player \"" + GameClient.getClientPlayerState().getName() + "\" to their build sector in " + DataUtils.getBuildSector(GameClient.getClientPlayerState()).sector.toString(), exception);
                             try {
                                 DataUtils.movePlayerFromBuildSector(GameClient.getClientPlayerState());
                             } catch(IOException ignored) { }

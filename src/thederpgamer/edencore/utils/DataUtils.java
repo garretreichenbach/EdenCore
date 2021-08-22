@@ -8,9 +8,11 @@ import api.mod.config.PersistentObjectUtil;
 import org.schema.common.util.linAlg.Vector3i;
 import org.schema.game.common.controller.SegmentController;
 import org.schema.game.common.data.player.PlayerState;
+import org.schema.game.common.data.player.faction.FactionRelation;
 import org.schema.game.common.data.world.Sector;
-import org.schema.game.server.controller.SectorSwitch;
+import org.schema.game.common.data.world.SimpleTransformableSendableObject;
 import org.schema.game.server.data.ServerConfig;
+import org.schema.game.server.data.admin.AdminCommands;
 import thederpgamer.edencore.EdenCore;
 import thederpgamer.edencore.data.BuildSectorData;
 import thederpgamer.edencore.data.ComparableData;
@@ -80,6 +82,19 @@ public class DataUtils {
         }
     }
 
+    public static boolean canTeleportPlayer(PlayerState playerState) throws IOException {
+        Sector sector = GameServer.getUniverse().getSector(playerState.getCurrentSector());
+        if(!getBuildSector(playerState).sector.equals(playerState.getCurrentSector())) {
+            if(!GameCommon.getGameState().getFactionManager().getRelation(playerState.getFactionId(), sector.getFactionId()).equals(FactionRelation.RType.ENEMY)) {
+                for(SimpleTransformableSendableObject<?> entity : sector.getEntities()) {
+                    if(GameCommon.getGameState().getFactionManager().getRelation(playerState.getFactionId(), entity.getFactionId()).equals(FactionRelation.RType.ENEMY)) return false;
+                }
+                return true;
+            }
+        } else LogManager.logWarning("Player \"" + playerState.getName() + "\" attempted to teleport to their build sector while already inside it.", null);
+        return false;
+    }
+
     public static void movePlayerToBuildSector(final PlayerState playerState, final BuildSectorData sectorData) throws IOException {
         PlayerData playerData = getPlayerData(playerState);
         playerData.lastRealSector.set(playerState.getCurrentSector());
@@ -87,23 +102,25 @@ public class DataUtils {
         PersistentObjectUtil.addObject(instance, playerData);
         saveData();
 
-        Sector sector = GameServer.getUniverse().getSector(sectorData.sector);
-        sector.setActive(true);
         playerState.getControllerState().forcePlayerOutOfSegmentControllers();
-        (GameServer.getServerState().getController().queueSectorSwitch(playerState.getAssingedPlayerCharacter(), sectorData.sector, SectorSwitch.TRANS_JUMP, false, true, true)).execute(GameServer.getServerState());
+        GameServer.getServerState().getController().enqueueAdminCommand(GameServer.getServerClient(playerState), AdminCommands.CHANGE_SECTOR, new Object[] {sectorData.sector.x, sectorData.sector.y, sectorData.sector.z});
         playerState.updateInventory();
+        GameServer.getUniverse().getSector(sectorData.sector).noEnter(true);
+        GameServer.getUniverse().getSector(sectorData.sector).noExit(true);
         LogManager.logDebug(playerState.getName() + " teleported to a build sector in " + sectorData.sector.toString());
     }
 
     public static void movePlayerFromBuildSector(final PlayerState playerState) throws IOException {
         PlayerData playerData = getPlayerData(playerState);
         final Vector3i pos = new Vector3i(playerState.getCurrentSector());
-        GameServer.getUniverse().getSector(pos).noExit(true);
-        GameServer.getUniverse().getSector(pos).noEnter(true);
+        GameServer.getUniverse().getSector(pos).noExit(false);
+        GameServer.getUniverse().getSector(pos).noEnter(false);
         playerState.getControllerState().forcePlayerOutOfSegmentControllers();
-        (GameServer.getServerState().getController().queueSectorSwitch(playerState.getAssingedPlayerCharacter(), playerData.lastRealSector, SectorSwitch.TRANS_JUMP, false, true, true)).execute(GameServer.getServerState());
+        GameServer.getServerState().getController().enqueueAdminCommand(GameServer.getServerClient(playerState), AdminCommands.CHANGE_SECTOR, new Object[] {playerData.lastRealSector.x, playerData.lastRealSector.y, playerData.lastRealSector.z});
         playerState.updateInventory();
         if(playerState.isGodMode() && !playerState.isAdmin()) playerState.setGodMode(false);
+        GameServer.getUniverse().getSector(pos).noEnter(true);
+        GameServer.getUniverse().getSector(pos).noExit(true);
         LogManager.logDebug(playerState.getName() + " teleported from a build sector in " + pos.toString());
     }
 
