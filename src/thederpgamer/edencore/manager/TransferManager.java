@@ -59,13 +59,12 @@ public class TransferManager {
         return playerState.getFirstControlledTransformableWOExc() != null && (playerState.getFirstControlledTransformableWOExc().getType().equals(SimpleTransformableSendableObject.EntityType.SHIP) && !(((Ship) playerState.getFirstControlledTransformableWOExc()).getSpawner().toLowerCase(Locale.ENGLISH).equals("<system>"))) || (playerState.getFirstControlledTransformableWOExc().getType().equals(SimpleTransformableSendableObject.EntityType.SPACE_STATION) && !(((SpaceStation) playerState.getFirstControlledTransformableWOExc()).getSpawner().toLowerCase(Locale.ENGLISH).equals("<system>")));
     }
 
-    public static void saveEntity(PlayerState playerState) throws Exception {
-        SegmentController entity = (SegmentController) playerState.getFirstControlledTransformableWOExc();
+    public static void saveEntity(PlayerState playerState, SegmentController entity) throws Exception {
         playerState.getControllerState().forcePlayerOutOfSegmentControllers();
         Tag tag = entity.toTagStructure();
         File transferFolder = getTransferFolder(playerState);
         if(transferFolder != null && transferFolder.isDirectory()) {
-            File entityFile = new File(transferFolder.getPath() + "/" + entity.getType().ordinal() + "|" + entity.getName() + "|" + entity.getUniqueIdentifier() + ".ent");
+            File entityFile = new File(transferFolder, entity.getType().ordinal() + "~" + entity.getName().substring(0, entity.getName().indexOf(' ') - 1) + ".ent");
             if(!entityFile.exists()) entityFile.createNewFile();
             tag.writeTo(new BufferedOutputStream(new FileOutputStream(entityFile)), true);
         }
@@ -80,8 +79,8 @@ public class TransferManager {
             if(transferFolder.listFiles() != null && Objects.requireNonNull(transferFolder.listFiles()).length > 0) {
                 for(File file : Objects.requireNonNull(transferFolder.listFiles())) {
                     try {
-                        entityType = Integer.parseInt(file.getName().substring(file.getName().lastIndexOf('/') + 1, file.getName().indexOf('|') - 1));
-                        String name = file.getName().substring(file.getName().indexOf('|') + 1, file.getName().lastIndexOf('|') - 1);
+                        entityType = Integer.parseInt(file.getName().substring(0, file.getName().indexOf('~') - 1));
+                        String name = file.getName().substring(file.getName().indexOf('~') + 1, file.getName().lastIndexOf('.') - 1);
                         if(name.equals(entityName)) {
                             entityFile = file;
                             break;

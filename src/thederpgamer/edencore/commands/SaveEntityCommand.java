@@ -3,10 +3,12 @@ package thederpgamer.edencore.commands;
 import api.mod.StarMod;
 import api.utils.game.PlayerUtils;
 import api.utils.game.chat.CommandInterface;
+import org.schema.game.common.controller.SegmentController;
 import org.schema.game.common.data.player.PlayerState;
 import thederpgamer.edencore.EdenCore;
 import thederpgamer.edencore.manager.LogManager;
 import thederpgamer.edencore.manager.TransferManager;
+import thederpgamer.edencore.utils.DataUtils;
 
 import javax.annotation.Nullable;
 
@@ -43,14 +45,15 @@ public class SaveEntityCommand implements CommandInterface {
     public boolean onCommand(PlayerState playerState, String[] args) {
         if(TransferManager.getTransferMode() == TransferManager.SAVE) {
             if(TransferManager.canTransfer(playerState)) {
+                SegmentController entity = (SegmentController) playerState.getFirstControlledTransformableWOExc();
                 if(TransferManager.isValidTransfer(playerState)) {
                     try {
-                        TransferManager.saveEntity(playerState);
-                        PlayerUtils.sendMessage(playerState, "Successfully saved entity \"" + playerState.getFirstControlledTransformableWOExc().getName() + "\" for transferring. Use /load_entity <name> after the reset to complete the transfer.");
-                        playerState.getFirstControlledTransformableWOExc().markForPermanentDelete(true);
+                        TransferManager.saveEntity(playerState, entity);
+                        PlayerUtils.sendMessage(playerState, "Successfully saved entity \"" + DataUtils.getEntityNameFormatted(entity) + "\" for transferring. Use /load_entity <name> after the reset to complete the transfer.");
+                        entity.markForPermanentDelete(true);
                     } catch(Exception exception) {
-                        LogManager.logException("Failed to save entity \"" + playerState.getFirstControlledTransformableWOExc().getName() + "\" to world transfer folder", exception);
-                        PlayerUtils.sendMessage(playerState, "An exception occurred while trying to save \"" + playerState.getFirstControlledTransformableWOExc() + "\" to world transfer folder. Let an admin know if this continues to occur!");
+                        LogManager.logException("Failed to save entity \"" + DataUtils.getEntityNameFormatted(entity) + "\" to world transfer folder", exception);
+                        PlayerUtils.sendMessage(playerState, "An exception occurred while trying to save \"" + DataUtils.getEntityNameFormatted(entity) + "\" to world transfer folder. Let an admin know if this continues to occur!");
                     }
                 } else PlayerUtils.sendMessage(playerState, "This entity was spawned by an admin or ai and therefore cannot be transferred.");
             } else PlayerUtils.sendMessage(playerState, "You must be inside a ship or space station to use this command.");

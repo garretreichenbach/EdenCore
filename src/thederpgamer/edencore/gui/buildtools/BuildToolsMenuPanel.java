@@ -14,11 +14,11 @@ import org.schema.schine.graphicsengine.forms.gui.newgui.GUIHorizontalArea;
 import org.schema.schine.graphicsengine.forms.gui.newgui.GUIHorizontalButtonTablePane;
 import org.schema.schine.input.InputState;
 import thederpgamer.edencore.EdenCore;
-import thederpgamer.edencore.data.BuildSectorData;
 import thederpgamer.edencore.gui.buildtools.buildsector.BuildSectorEntityList;
 import thederpgamer.edencore.gui.buildtools.buildsector.BuildSectorPlayerList;
 import thederpgamer.edencore.manager.LogManager;
 import thederpgamer.edencore.utils.DataUtils;
+
 import java.io.IOException;
 
 /**
@@ -97,9 +97,8 @@ public class BuildToolsMenuPanel extends GUIMenuPanel {
 
     private void createPlayerButtonPane() {
         playerButtonPane.onInit();
-        BuildSectorData sectorData = DataUtils.getPlayerCurrentBuildSector(GameClient.getClientPlayerState());
         int pos = 0;
-        if(sectorData == null) { //Not in build sector
+        if(!DataUtils.isPlayerInAnyBuildSector(GameClient.getClientPlayerState())) { //Not in build sector
             playerButtonPane.addButton(0, pos, "ENTER BUILD SECTOR", GUIHorizontalArea.HButtonColor.BLUE, new GUICallback() {
                 @Override
                 public void callback(GUIElement guiElement, MouseEvent mouseEvent) {
@@ -110,16 +109,19 @@ public class BuildToolsMenuPanel extends GUIMenuPanel {
                             else {
                                 PlayerUtils.sendMessage(GameClient.getClientPlayerState(), "You can't teleport to your build sector right now as there are enemies nearby.");
                                 EdenCore.getInstance().buildToolsControlManager.setActive(false);
-                                return;
                             }
                         } catch(IOException exception) {
                             LogManager.logException("Something went wrong while trying to transport player \"" + GameClient.getClientPlayerState().getName() + "\" to their build sector in " + DataUtils.getBuildSector(GameClient.getClientPlayerState()).sector.toString(), exception);
                             try {
                                 DataUtils.movePlayerFromBuildSector(GameClient.getClientPlayerState());
-                            } catch(IOException ignored) { }
-                            PlayerUtils.sendMessage(GameClient.getClientPlayerState(), "Something went wrong while trying to transport you to your build sector! Please report this issue to an admin!");
+                            } catch(IOException ignored) {
+                                PlayerUtils.sendMessage(GameClient.getClientPlayerState(), "Something went wrong while trying to transport you to your build sector! Please report this issue to an admin!");
+                            } finally {
+                                redraw();
+                            }
+                        } finally {
+                            redraw();
                         }
-                        refresh();
                     }
                 }
 
@@ -147,8 +149,11 @@ public class BuildToolsMenuPanel extends GUIMenuPanel {
                         getState().getController().queueUIAudio("0022_menu_ui - enter");
                         try {
                             DataUtils.movePlayerFromBuildSector(GameClient.getClientPlayerState());
-                        } catch(IOException ignored) { }
-                        refresh();
+                        } catch(IOException ignored) {
+
+                        } finally {
+                            redraw();
+                        }
                     }
                 }
 
@@ -171,11 +176,8 @@ public class BuildToolsMenuPanel extends GUIMenuPanel {
         }
     }
 
-    public void refresh() {
-        entityList.flagDirty();
-        entityList.handleDirty();
-        playerList.flagDirty();
-        playerList.handleDirty();
-        createPlayerButtonPane();
+    public void redraw() {
+        EdenCore.getInstance().buildToolsControlManager.setActive(false);
+        EdenCore.getInstance().buildToolsControlManager.setActive(true);
     }
 }

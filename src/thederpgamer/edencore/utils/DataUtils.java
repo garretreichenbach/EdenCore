@@ -1,6 +1,5 @@
 package thederpgamer.edencore.utils;
 
-import api.common.GameClient;
 import api.common.GameCommon;
 import api.common.GameServer;
 import api.mod.ModSkeleton;
@@ -21,6 +20,7 @@ import thederpgamer.edencore.manager.LogManager;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Objects;
 import java.util.Random;
 import java.util.Set;
 
@@ -43,14 +43,7 @@ public class DataUtils {
     }
 
     public static String getWorldDataPath() {
-        String universeName = GameCommon.getUniqueContextId();
-        try {
-            if(GameCommon.isDedicatedServer() || GameCommon.isOnSinglePlayer()) return getResourcesPath() + "/data/" + universeName;
-            else throw new IllegalAccessException("Cannot access server world data as a client.");
-        } catch(IllegalAccessException exception) {
-            LogManager.logException("Client " + GameClient.getClientPlayerState().getName() + " attempted to illegally access server data.", exception);
-        }
-        return null;
+        return getResourcesPath() + "/data/" + GameCommon.getUniqueContextId();
     }
 
     public static Vector3i getSpawnSector() {
@@ -58,6 +51,10 @@ public class DataUtils {
         int y = (int) ServerConfig.DEFAULT_SPAWN_SECTOR_Y.getCurrentState();
         int z = (int) ServerConfig.DEFAULT_SPAWN_SECTOR_Z.getCurrentState();
         return new Vector3i(x, y, z);
+    }
+
+    public static String getEntityNameFormatted(SegmentController entity) {
+        return entity.getName().substring(0, entity.getName().lastIndexOf(' ') - 1);
     }
 
     public static void removeExistingData(ComparableData data) {
@@ -84,8 +81,8 @@ public class DataUtils {
 
     public static boolean canTeleportPlayer(PlayerState playerState) throws IOException {
         Sector sector = GameServer.getUniverse().getSector(playerState.getCurrentSector());
-        if(!getBuildSector(playerState).sector.equals(playerState.getCurrentSector())) {
-            if(!GameCommon.getGameState().getFactionManager().getRelation(playerState.getFactionId(), sector.getFactionId()).equals(FactionRelation.RType.ENEMY)) {
+        if(!isPlayerInAnyBuildSector(playerState)) {
+            if(!Objects.requireNonNull(GameCommon.getGameState()).getFactionManager().getRelation(playerState.getFactionId(), sector.getFactionId()).equals(FactionRelation.RType.ENEMY)) {
                 for(SimpleTransformableSendableObject<?> entity : sector.getEntities()) {
                     if(GameCommon.getGameState().getFactionManager().getRelation(playerState.getFactionId(), entity.getFactionId()).equals(FactionRelation.RType.ENEMY)) return false;
                 }
@@ -97,7 +94,8 @@ public class DataUtils {
 
     public static void movePlayerToBuildSector(final PlayerState playerState, final BuildSectorData sectorData) throws IOException {
         PlayerData playerData = getPlayerData(playerState);
-        playerData.lastRealSector.set(playerState.getCurrentSector());
+        if(isPlayerInAnyBuildSector(playerState)) playerData.lastRealSector.set(2, 2, 2);
+        else playerData.lastRealSector.set(new Vector3i(playerState.getCurrentSector()));
         removeExistingData(playerData);
         PersistentObjectUtil.addObject(instance, playerData);
         saveData();
@@ -122,10 +120,6 @@ public class DataUtils {
         GameServer.getUniverse().getSector(pos).noEnter(true);
         GameServer.getUniverse().getSector(pos).noExit(true);
         LogManager.logDebug(playerState.getName() + " teleported from a build sector in " + pos.toString());
-    }
-
-    public static boolean isInEntity() {
-        return GameClient.getClientPlayerState().isControllingCore() || GameClient.getClientState().isInFlightMode() || GameClient.getClientState().isInAnyStructureBuildMode() || GameClient.getClientState().isInFlightMode() || !GameClient.getClientState().isInCharacterBuildMode() || GameClient.getCurrentControl() instanceof SegmentController;
     }
 
     public static PlayerData getPlayerData(PlayerState playerState) {
@@ -156,7 +150,7 @@ public class DataUtils {
     public static BuildSectorData getPlayerCurrentBuildSector(PlayerState playerState) {
         ArrayList<BuildSectorData> dataList = getAllBuildSectors();
         for(BuildSectorData sectorData : dataList) {
-            if(getPlayersInBuildSector(sectorData).contains(playerState)) return sectorData;
+            if(playerState.getCurrentSector().equals(sectorData.sector)) return sectorData;
         }
         return null;
     }
@@ -179,7 +173,9 @@ public class DataUtils {
     public static ArrayList<PlayerState> getPlayersInBuildSector(BuildSectorData sectorData) {
         ArrayList<PlayerState> playerList = new ArrayList<>();
         try {
-            playerList.addAll(GameServer.getUniverse().getSector(sectorData.sector).getRemoteSector()._getCurrentPlayers());
+            for(PlayerState playerState : GameServer.getUniverse().getSector(sectorData.sector).getRemoteSector()._getCurrentPlayers()) {
+                if(playerState.getCurrentSector().equals(sectorData.sector)) playerList.add(playerState);
+            }
         } catch(IOException exception) {
             exception.printStackTrace();
         }
@@ -208,9 +204,9 @@ public class DataUtils {
 
     public static Vector3i getRandomSector(int offset) {
         Random random = new Random();
-        int x = (int) (random.nextInt(offset) + (System.currentTimeMillis() / 10000));
-        int y = (int) (random.nextInt(offset) + (System.currentTimeMillis() / 10000));
-        int z = (int) (random.nextInt(offset) + (System.currentTimeMillis() / 10000));
+        int x = (int) (random.nextInt(offset) + (System.currentTimeMillis() / 1000));
+        int y = (int) (random.nextInt(offset) + (System.currentTimeMillis() / 1000));
+        int z = (int) (random.nextInt(offset) + (System.currentTimeMillis() / 1000));
         return new Vector3i(x, y, z);
     }
 
