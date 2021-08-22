@@ -9,6 +9,8 @@ import api.mod.StarMod;
 import api.utils.StarRunnable;
 import api.utils.gui.ModGUIHandler;
 import org.apache.commons.io.IOUtils;
+import thederpgamer.edencore.commands.LoadEntityCommand;
+import thederpgamer.edencore.commands.SaveEntityCommand;
 import thederpgamer.edencore.gui.admintools.AdminToolsControlManager;
 import thederpgamer.edencore.gui.buildtools.BuildToolsControlManager;
 import thederpgamer.edencore.manager.ConfigManager;
@@ -53,6 +55,7 @@ public class EdenCore extends StarMod {
         ConfigManager.initialize(this);
         LogManager.initialize();
         registerListeners();
+        registerCommands();
         startRunners();
     }
 
@@ -88,6 +91,11 @@ public class EdenCore extends StarMod {
         }, this);
     }
 
+    private void registerCommands() {
+        StarLoader.registerCommand(new SaveEntityCommand());
+        StarLoader.registerCommand(new LoadEntityCommand());
+    }
+
     public void activateAdminToolsMenu() {
         ModGUIHandler.deactivateAll();
         if(adminToolsControlManager == null) {
@@ -99,11 +107,13 @@ public class EdenCore extends StarMod {
 
     public void activateBuildToolsMenu() {
         ModGUIHandler.deactivateAll();
-        if(buildToolsControlManager == null) {
-            buildToolsControlManager = new BuildToolsControlManager(GameClient.getClientState());
-            ModGUIHandler.registerNewControlManager(getSkeleton(), buildToolsControlManager);
+        if(ConfigManager.getMainConfig().getBoolean("debug-mode")) { //Todo: Finish build tools menu
+            if(buildToolsControlManager == null) {
+                buildToolsControlManager = new BuildToolsControlManager(GameClient.getClientState());
+                ModGUIHandler.registerNewControlManager(getSkeleton(), buildToolsControlManager);
+            }
+            buildToolsControlManager.setActive(true);
         }
-        buildToolsControlManager.setActive(true);
     }
 
     private void startRunners() {

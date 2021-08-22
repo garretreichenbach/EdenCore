@@ -1,12 +1,9 @@
 package thederpgamer.edencore.gui.admintools;
 
-import api.common.GameClient;
 import api.utils.gui.GUIMenuPanel;
 import org.schema.schine.graphicsengine.forms.gui.newgui.GUIContentPane;
-import org.schema.schine.graphicsengine.forms.gui.newgui.GUIHorizontalButtonTablePane;
 import org.schema.schine.input.InputState;
 import thederpgamer.edencore.gui.admintools.playermenu.PlayerScrollableList;
-import thederpgamer.edencore.manager.ConfigManager;
 
 /**
  * Panel for Admin Tools menu.
@@ -43,6 +40,7 @@ public class AdminToolsMenuPanel extends GUIMenuPanel {
         playerList.onInit();
         playerMenu.getContent(0).attach(playerList);
 
+        /*
         if(ConfigManager.getMainConfig().getList("operators").contains(GameClient.getClientPlayerState().getName())) {
             playerMenu.addNewTextBox(0, 22);
             GUIHorizontalButtonTablePane buttonPane = new GUIHorizontalButtonTablePane(getState(), 1, 1, playerMenu.getContent(1));
@@ -146,9 +144,8 @@ public class AdminToolsMenuPanel extends GUIMenuPanel {
             });
 
             playerMenu.getContent(1).attach(buttonPane);
-
-             */
         }
+         */
     }
 
     private void createFactionMenu() {

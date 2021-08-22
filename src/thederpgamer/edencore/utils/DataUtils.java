@@ -16,7 +16,6 @@ import thederpgamer.edencore.data.BuildSectorData;
 import thederpgamer.edencore.data.ComparableData;
 import thederpgamer.edencore.data.PlayerData;
 import thederpgamer.edencore.manager.LogManager;
-import thederpgamer.edencore.manager.MessageType;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -43,14 +42,13 @@ public class DataUtils {
 
     public static String getWorldDataPath() {
         String universeName = GameCommon.getUniqueContextId();
-        if(!universeName.contains(":")) {
-            return getResourcesPath() + "/data/" + universeName;
-        } else {
-            try {
-                LogManager.logMessage(MessageType.ERROR, "Client " + GameClient.getClientPlayerState().getName() + " attempted to illegally access server data.");
-            } catch(Exception ignored) { }
-            return null;
+        try {
+            if(GameCommon.isDedicatedServer() || GameCommon.isOnSinglePlayer()) return getResourcesPath() + "/data/" + universeName;
+            else throw new IllegalAccessException("Cannot access server world data as a client.");
+        } catch(IllegalAccessException exception) {
+            LogManager.logException("Client " + GameClient.getClientPlayerState().getName() + " attempted to illegally access server data.", exception);
         }
+        return null;
     }
 
     public static Vector3i getSpawnSector() {
