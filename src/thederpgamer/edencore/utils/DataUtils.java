@@ -54,7 +54,7 @@ public class DataUtils {
     }
 
     public static String getEntityNameFormatted(SegmentController entity) {
-        return entity.getName().substring(0, entity.getName().lastIndexOf(' ') - 1);
+        return entity.getRealName();
     }
 
     public static void removeExistingData(ComparableData data) {

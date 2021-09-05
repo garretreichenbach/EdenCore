@@ -61,7 +61,14 @@ public class LogManager {
     }
 
     public static void logException(String message, Exception exception) {
+        exception.printStackTrace();
         logMessage(MessageType.ERROR, message + ":\n" + exception.getMessage());
+    }
+
+    public static void logCritical(String message, Exception exception) {
+        exception.printStackTrace();
+        logMessage(MessageType.CRITICAL, message + ":\n" + exception.getMessage());
+        System.exit(1);
     }
 
     public static void logMessage(MessageType messageType, String message) {

@@ -7,6 +7,7 @@ import org.schema.game.common.controller.SegmentController;
 import org.schema.game.common.data.element.ElementDocking;
 import org.schema.game.common.data.player.PlayerState;
 import thederpgamer.edencore.EdenCore;
+import thederpgamer.edencore.manager.ConfigManager;
 import thederpgamer.edencore.manager.LogManager;
 import thederpgamer.edencore.manager.TransferManager;
 import thederpgamer.edencore.utils.DataUtils;
@@ -28,7 +29,9 @@ public class SaveEntityCommand implements CommandInterface {
 
     @Override
     public String[] getAliases() {
-        return new String[0];
+        return new String[] {
+                "entity_save"
+        };
     }
 
     @Override
@@ -44,13 +47,13 @@ public class SaveEntityCommand implements CommandInterface {
 
     @Override
     public boolean onCommand(PlayerState playerState, String[] args) {
-        if(TransferManager.getTransferMode() == TransferManager.SAVE) {
+        if(TransferManager.getTransferMode() == TransferManager.SAVE || (ConfigManager.getMainConfig().getBoolean("debug-mode") && playerState.isAdmin())) {
             if(TransferManager.canTransfer(playerState)) {
                 SegmentController entity = (SegmentController) playerState.getFirstControlledTransformableWOExc();
                 if(TransferManager.isValidTransfer(playerState)) {
                     try {
                         TransferManager.saveEntity(playerState, entity);
-                        PlayerUtils.sendMessage(playerState, "Successfully saved entity \"" + DataUtils.getEntityNameFormatted(entity) + "\" for transferring. Use /load_entity <name> after the reset to complete the transfer.");
+                        PlayerUtils.sendMessage(playerState, "Successfully saved entity \"" + DataUtils.getEntityNameFormatted(entity) + "\" for transferring. Use /load_entity \"" + DataUtils.getEntityNameFormatted(entity) + "\" after the reset to complete the transfer.");
                         entity.railController.destroyDockedRecursive();
                         for(ElementDocking dock : entity.getDockingController().getDockedOnThis()) {
                             dock.from.getSegment().getSegmentController().markForPermanentDelete(true);
