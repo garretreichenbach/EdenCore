@@ -24,14 +24,12 @@ public class SaveEntityCommand implements CommandInterface {
 
     @Override
     public String getCommand() {
-        return "save_entity";
+        return "entity_save";
     }
 
     @Override
     public String[] getAliases() {
-        return new String[] {
-                "entity_save"
-        };
+        return new String[0];
     }
 
     @Override

@@ -17,16 +17,15 @@ import javax.annotation.Nullable;
  * @since 08/21/2021
  */
 public class LoadEntityCommand implements CommandInterface {
+
     @Override
     public String getCommand() {
-        return "load_entity";
+        return "entity_load";
     }
 
     @Override
     public String[] getAliases() {
-        return new String[] {
-                "entity_load"
-        };
+        return new String[0];
     }
 
     @Override

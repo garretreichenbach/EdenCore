@@ -10,6 +10,7 @@ import api.utils.StarRunnable;
 import api.utils.game.PlayerUtils;
 import api.utils.gui.ModGUIHandler;
 import org.apache.commons.io.IOUtils;
+import thederpgamer.edencore.commands.ListEntityCommand;
 import thederpgamer.edencore.commands.LoadEntityCommand;
 import thederpgamer.edencore.commands.SaveEntityCommand;
 import thederpgamer.edencore.gui.admintools.AdminToolsControlManager;
@@ -96,9 +97,9 @@ public class EdenCore extends StarMod {
     }
 
     private void registerCommands() {
-        //StarLoader.registerCommand(new ServerConfigCommand());
         StarLoader.registerCommand(new SaveEntityCommand());
         StarLoader.registerCommand(new LoadEntityCommand());
+        StarLoader.registerCommand(new ListEntityCommand());
     }
 
     public void activateAdminToolsMenu() {

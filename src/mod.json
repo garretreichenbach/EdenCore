@@ -1,13 +1,13 @@
 {
   "name": "EdenCore",
   "author": "TheDerpGamer",
-  "description": "Various server administration tools and utilities for servers.",
-  "version": "1.1.0",
+  "description": "Core mod for Skies of Eden StarMade Server.",
+  "version": "1.0.3",
   "starmade_version": "0.202.118",
   "client_mod": false,
   "server_mod": false,
   "main_class": "thederpgamer.edencore.EdenCore",
-  "smd_resource_id": 9999,
+  "smd_resource_id": 8289,
   "dependencies": [
     -1
   ],

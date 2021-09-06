@@ -18,18 +18,14 @@ import org.schema.game.server.data.blueprint.SegmentControllerSpawnCallbackDirec
 import org.schema.game.server.data.blueprintnw.BlueprintEntry;
 import org.schema.schine.graphicsengine.core.GlUtil;
 import org.schema.schine.resource.tag.Tag;
+import thederpgamer.edencore.data.EntityHeaderData;
 import thederpgamer.edencore.utils.DataUtils;
 
 import javax.vecmath.Vector3f;
 import java.io.*;
 import java.nio.file.Files;
-import java.util.List;
-import java.util.Locale;
-import java.util.Objects;
-import java.util.zip.ZipEntry;
-import java.util.zip.ZipFile;
-import java.util.zip.ZipInputStream;
-import java.util.zip.ZipOutputStream;
+import java.util.*;
+import java.util.zip.*;
 
 /**
  * <Description>
@@ -85,16 +81,8 @@ public class TransferManager {
 
             ZipEntry fileHeader = new ZipEntry("info.dat");
             outputStream.putNextEntry(fileHeader);
-            String currentTimeMillis = String.valueOf(System.currentTimeMillis());
-            String headerData = (
-                    "NAME: " + entity.getRealName() + "\n" +
-                    "TYPE: " + entity.getType().toString() + "\n" +
-                    "MASS: " + entity.getTotalPhysicalMass() + "\n" +
-                    "SIZE: " + entity.getBoundingBox().toStringSize() + "\n" +
-                    "OWNER: " + playerState.getName() + "\n" +
-                    "SAVED_ON: " + currentTimeMillis
-            );
-            byte[] data = headerData.getBytes();
+            EntityHeaderData headerData = new EntityHeaderData(entity, playerState);
+            byte[] data = headerData.serialize();
             outputStream.write(data, 0, data.length);
             outputStream.closeEntry();
 
@@ -105,14 +93,14 @@ public class TransferManager {
 
             ZipEntry entityData = new ZipEntry("entity.dat");
             outputStream.putNextEntry(entityData);
-            String name = "entity_temp_" + currentTimeMillis;
+            String name = "entity_temp_" + headerData.saveDate;
             BlueprintEntry blueprintEntry = new BlueprintEntry(name);
             blueprintEntry.write(entity, false);
             File blueprintFile = blueprintEntry.export();
             File temp = new File(transferFolder.getPath() + "/" + name + ".dat");
             Files.move(blueprintFile.toPath(), temp.toPath());
             data = Files.readAllBytes(temp.toPath());
-            outputStream.write(data, 0, data.length); //Might need to set an offset to avoid overwriting the above data...
+            outputStream.write(data, 0, data.length);
             outputStream.closeEntry();
             outputStream.close();
             blueprintFile.delete();
@@ -136,10 +124,10 @@ public class TransferManager {
                         dataStream = zipFile.getInputStream(fileHeader);
                         ByteArrayOutputStream byteOutStream = new ByteArrayOutputStream();
                         IOUtils.copy(dataStream, byteOutStream);
-                        String[] headerData = getHeaderData(byteOutStream.toString().split("\n"));
+                        EntityHeaderData headerData = new EntityHeaderData(byteOutStream.toByteArray());
                         //Todo: Do something with the header data
                         dataStream.close();
-                        if(headerData[0].toLowerCase().contains(entityName.toLowerCase())) {
+                        if(headerData.entityName.toLowerCase().contains(entityName.toLowerCase())) {
                             ZipEntry entityHeader = zipInputStream.getNextEntry();
                             dataStream = zipFile.getInputStream(entityHeader);
                             Tag entityTag = Tag.readFrom(dataStream, false, false);
@@ -147,7 +135,7 @@ public class TransferManager {
 
                             ZipEntry entityData = zipInputStream.getNextEntry();
                             dataStream = zipFile.getInputStream(entityData);
-                            File tempFile = new File(transferFolder.getPath() + "/entity_temp_" + headerData[5] + ".dat");
+                            File tempFile = new File(transferFolder.getPath() + "/entity_temp_" + headerData.saveDate + ".dat");
                             FileOutputStream outputStream = new FileOutputStream(tempFile);
                             IOUtils.copy(dataStream, outputStream);
                             outputStream.close();
@@ -162,8 +150,7 @@ public class TransferManager {
                                     transform.setIdentity();
                                     transform.origin.set(playerState.getFirstControlledTransformableWOExc().getWorldTransform().origin);
                                     Vector3f forward = GlUtil.getForwardVector(new Vector3f(), transform);
-                                    String[] split = headerData[3].split(", ");
-                                    Vector3f size = new Vector3f(Float.parseFloat(split[0]), Float.parseFloat(split[1]), Float.parseFloat(split[2]));
+                                    Vector3f size = headerData.size;
                                     size.scale(0.5f);
                                     forward.scaleAdd(1.15f, size);
                                     transform.origin.set(forward);
@@ -203,23 +190,40 @@ public class TransferManager {
         }
     }
 
-    private static String[] getHeaderData(String[] rawData) {
-        String[] headerData = new String[rawData.length];
-        for(int i = 0; i < rawData.length; i ++) {
-            headerData[i] = rawData[i].split(": ")[1].trim();
-        }
-        return headerData;
-    }
+    public static HashMap<String, File> getSavedEntities(PlayerState playerState) {
+        HashMap<String, File> savedEntities = new HashMap<>();
+        File transferFolder = getTransferFolder(playerState);
+        if(transferFolder != null && transferFolder.isDirectory()) {
+            for(File file : Objects.requireNonNull(transferFolder.listFiles())) {
+                if(file.getName().endsWith(".zip")) {
+                    try {
+                        ZipFile zipFile = new ZipFile(file);
+                        ZipInputStream zipInputStream = new ZipInputStream(new FileInputStream(file));
+                        InputStream dataStream;
 
-    private static String getDbPrefix(String name) {
-        int count = 0;
-        for(int i = 0; i < name.toCharArray().length; i ++) {
-            char c = name.toCharArray()[i];
-            if(c == '_') {
-                if(count < 1) count ++;
-                else return name.substring(0, i + 1);
+                        ZipEntry fileHeader = zipInputStream.getNextEntry();
+                        dataStream = zipFile.getInputStream(fileHeader);
+                        ByteArrayOutputStream byteOutStream = new ByteArrayOutputStream();
+                        IOUtils.copy(dataStream, byteOutStream);
+                        EntityHeaderData headerData = new EntityHeaderData(byteOutStream.toByteArray());
+                        byteOutStream.close();
+                        dataStream.close();
+                        zipInputStream.close();
+                        savedEntities.put(headerData.entityName, file);
+                    } catch(IOException exception) {
+                        exception.printStackTrace();
+                    }
+                }
             }
         }
-        return null;
+        return savedEntities;
+    }
+
+    public static String getSavedEntitiesList(PlayerState playerState) {
+        HashMap<String, File> savedEntities = getSavedEntities(playerState);
+        StringBuilder builder = new StringBuilder();
+        builder.append("Saved Entities for ").append(playerState.getName()).append(":\n");
+        for(String name : savedEntities.keySet()) builder.append(name).append("\n");
+        return builder.toString().trim();
     }
 }
