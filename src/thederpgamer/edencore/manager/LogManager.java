@@ -4,10 +4,12 @@ import api.DebugFile;
 import thederpgamer.edencore.EdenCore;
 import thederpgamer.edencore.utils.DataUtils;
 import thederpgamer.edencore.utils.DateUtils;
+
 import javax.annotation.Nullable;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.util.LinkedList;
 
 /**
  * Handles mod specific logging for EdenCore.
@@ -17,7 +19,22 @@ import java.io.IOException;
  */
 public class LogManager {
 
+    private enum MessageType {
+        DEBUG("[DEBUG]: "),
+        INFO("[INFO]: "),
+        WARNING("[WARNING]: "),
+        ERROR("[ERROR]: "),
+        CRITICAL("[CRITICAL]: ");
+
+        public String prefix;
+
+        MessageType(String prefix) {
+            this.prefix = prefix;
+        }
+    }
+
     private static FileWriter logWriter;
+    private static final LinkedList<String> messageQueue = new LinkedList<>();
 
     public static void initialize() {
         String logFolderPath = DataUtils.getWorldDataPath() + "/logs";
@@ -51,6 +68,10 @@ public class LogManager {
         }
     }
 
+    public static void logInfo(String message) {
+        logMessage(MessageType.INFO, message);
+    }
+
     public static void logDebug(String message) {
         if(ConfigManager.getMainConfig().getBoolean("debug-mode")) logMessage(MessageType.DEBUG, message);
     }
@@ -71,29 +92,33 @@ public class LogManager {
         System.exit(1);
     }
 
-    public static void logMessage(MessageType messageType, String message) {
-        String prefix = "[" + DateUtils.getTimeFormatted() + "] [EdenCore] " + messageType.prefix;
-        try {
-            StringBuilder builder = new StringBuilder();
-            builder.append(prefix);
-            String[] lines = message.split("\n");
-            if(lines.length > 1) {
-                for(int i = 0; i < lines.length; i ++) {
-                    builder.append(lines[i]);
-                    if(i < lines.length - 1) {
-                        if(i > 1) for(int j = 0; j < prefix.length(); j ++) builder.append(" ");
+    private static void logMessage(MessageType messageType, String message) {
+        if(!messageQueue.contains(message) || messageType.equals(MessageType.CRITICAL)) {
+            String prefix = "[" + DateUtils.getTimeFormatted() + "] [EdenCore] " + messageType.prefix;
+            try {
+                StringBuilder builder = new StringBuilder();
+                builder.append(prefix);
+                String[] lines = message.split("\n");
+                if(lines.length > 1) {
+                    for(int i = 0; i < lines.length; i ++) {
+                        builder.append(lines[i]);
+                        if(i < lines.length - 1) {
+                            if(i > 1) for(int j = 0; j < prefix.length(); j ++) builder.append(" ");
+                        }
                     }
+                } else {
+                    builder.append(message);
                 }
-            } else {
-                builder.append(message);
+                System.out.println(builder.toString());
+                logWriter.append(builder.toString()).append("\n");
+                DebugFile.log(builder.toString(), EdenCore.getInstance());
+            } catch(IOException var3) {
+                var3.printStackTrace();
             }
-            System.out.println(builder.toString());
-            logWriter.append(builder.toString()).append("\n");
-            DebugFile.log(builder.toString(), EdenCore.getInstance());
-        } catch(IOException var3) {
-            var3.printStackTrace();
+            if(messageType.equals(MessageType.CRITICAL)) System.exit(1);
         }
-        if(messageType.equals(MessageType.CRITICAL)) System.exit(1);
+        if(messageQueue.size() == ConfigManager.getMainConfig().getInt("log-queue-size")) messageQueue.removeLast(); //Prevent spam from repeated messages
+        messageQueue.addFirst(message);
     }
 
     public static void clearLogs() {

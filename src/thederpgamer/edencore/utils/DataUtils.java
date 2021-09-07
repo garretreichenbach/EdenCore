@@ -19,10 +19,7 @@ import thederpgamer.edencore.data.PlayerData;
 import thederpgamer.edencore.manager.LogManager;
 
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Objects;
-import java.util.Random;
-import java.util.Set;
+import java.util.*;
 
 /**
  * Contains misc mod data utilities.
@@ -194,8 +191,7 @@ public class DataUtils {
         String playerName = playerState.getName();
         String playerId = playerState.getUniqueIdentifier();
         Vector3i sector = getRandomSector(69420);
-        String[] permissions = genDefaultOwnerPermissions(playerName);
-        BuildSectorData data = new BuildSectorData(playerName, playerId, sector, permissions);
+        BuildSectorData data = new BuildSectorData(playerName, playerId, sector, new HashMap<String, HashMap<String, Boolean>>());
         removeExistingData(data);
         PersistentObjectUtil.addObject(instance, data);
         saveData();
@@ -208,11 +204,5 @@ public class DataUtils {
         int y = (int) (random.nextInt(offset) + (System.currentTimeMillis() / 1000));
         int z = (int) (random.nextInt(offset) + (System.currentTimeMillis() / 1000));
         return new Vector3i(x, y, z);
-    }
-
-    private static String[] genDefaultOwnerPermissions(String ownerName) {
-        return new String[] {ownerName + ":{place_blocks=true,remove_blocks=true,spawn_entities=true,delete_entities=true,use_weapons=true," +
-                "invite_others=true,remove_others=true,use_god_mode=true,use_creative_mode=true,activate_blocks=true" +
-                "enter_ships=true,exit_ships=true,faction_override=true,teleport_enter=true,}"};
     }
 }

@@ -10,6 +10,7 @@ import api.utils.StarRunnable;
 import api.utils.game.PlayerUtils;
 import api.utils.gui.ModGUIHandler;
 import org.apache.commons.io.IOUtils;
+import thederpgamer.edencore.commands.BuildSectorCommand;
 import thederpgamer.edencore.commands.ListEntityCommand;
 import thederpgamer.edencore.commands.LoadEntityCommand;
 import thederpgamer.edencore.commands.SaveEntityCommand;
@@ -76,7 +77,12 @@ public class EdenCore extends StarMod {
                 if(DataUtils.isPlayerInAnyBuildSector(event.getPlayer().getOwnerState())) {
                     try {
                         DataUtils.movePlayerFromBuildSector(event.getPlayer().getOwnerState());
-                    } catch(IOException ignored) { }
+                    } catch(IOException exception) {
+                        LogManager.logException("Encountered a severe exception while trying to move player \"" + event.getPlayer().getOwnerState().getName() + "\" out of a build sector! Report this ASAP!", exception);
+                        event.getPlayer().getOwnerState().setUseCreativeMode(false);
+                        if(!event.getPlayer().getOwnerState().isAdmin()) event.getPlayer().getOwnerState().setHasCreativeMode(false);
+                        PlayerUtils.sendMessage(event.getPlayer().getOwnerState(), "The server encountered a severe exception while trying to load you in and your player state may be corrupted as a result. Report this to an admin ASAP!");
+                    }
                 }
             }
         }, this);
@@ -100,6 +106,7 @@ public class EdenCore extends StarMod {
         StarLoader.registerCommand(new SaveEntityCommand());
         StarLoader.registerCommand(new LoadEntityCommand());
         StarLoader.registerCommand(new ListEntityCommand());
+        StarLoader.registerCommand(new BuildSectorCommand());
     }
 
     public void activateAdminToolsMenu() {
