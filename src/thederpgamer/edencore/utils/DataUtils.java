@@ -113,12 +113,30 @@ public class DataUtils {
         playerState.getControllerState().forcePlayerOutOfSegmentControllers();
         GameServer.getServerState().getController().enqueueAdminCommand(GameServer.getServerClient(playerState), AdminCommands.CHANGE_SECTOR, new Object[] {playerData.lastRealSector.x, playerData.lastRealSector.y, playerData.lastRealSector.z});
         playerState.updateInventory();
-        if(playerState.isGodMode() && !playerState.isAdmin()) playerState.setGodMode(false);
+        playerState.setGodMode(false);
         GameServer.getUniverse().getSector(pos).noEnter(true);
         GameServer.getUniverse().getSector(pos).noExit(true);
         LogManager.logDebug(playerState.getName() + " teleported from a build sector in " + pos.toString());
     }
-
+    
+    public static void movePlayerToLastRealSector(final PlayerState playerState) throws IOException {
+        final Vector3i pos = new Vector3i(playerState.getCurrentSector());
+        boolean wasInBuildSector = isPlayerInAnyBuildSector(playerState);
+        if(wasInBuildSector) {
+            GameServer.getUniverse().getSector(pos).noExit(false);
+            GameServer.getUniverse().getSector(pos).noEnter(false);
+        }
+        playerState.getControllerState().forcePlayerOutOfSegmentControllers();
+        PlayerData playerData = getPlayerData(playerState);
+        GameServer.getServerState().getController().enqueueAdminCommand(GameServer.getServerClient(playerState), AdminCommands.CHANGE_SECTOR, new Object[] {playerData.lastRealSector.x, playerData.lastRealSector.y, playerData.lastRealSector.z});
+        playerState.updateInventory();
+        playerState.setGodMode(false);
+        if(wasInBuildSector) {
+            GameServer.getUniverse().getSector(pos).noEnter(true);
+            GameServer.getUniverse().getSector(pos).noExit(true);
+        }
+    }
+    
     public static PlayerData getPlayerData(PlayerState playerState) {
         for(Object obj : PersistentObjectUtil.getObjects(instance, PlayerData.class)) {
             PlayerData playerData = (PlayerData) obj;

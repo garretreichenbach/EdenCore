@@ -18,13 +18,14 @@ public class BuildSectorData implements ComparableData {
     public String ownerName;
     public Vector3i sector;
     public HashMap<String, HashMap<String, Boolean>> permissions;
-    public boolean allAIDisabled = false;
+    public boolean allAIDisabled;
 
     public BuildSectorData(String ownerName, String ownerId, Vector3i sector, HashMap<String, HashMap<String, Boolean>> permissions) {
         this.ownerName = ownerName;
         this.ownerId = ownerId;
         this.sector = sector;
         this.permissions = permissions;
+        this.allAIDisabled = true;
     }
 
     @Override
@@ -89,6 +90,7 @@ public class BuildSectorData implements ComparableData {
         HashMap<String, Boolean> defaultPermissions = new HashMap<>();
         defaultPermissions.put("JOIN", true);
         defaultPermissions.put("EDIT", false);
+        defaultPermissions.put("PICKUP", false);
         defaultPermissions.put("SPAWN", false);
         defaultPermissions.put("SPAWN_ENEMIES", false);
         defaultPermissions.put("DELETE", false);
@@ -100,8 +102,9 @@ public class BuildSectorData implements ComparableData {
         HashMap<String, Boolean> ownerPermissions = new HashMap<>();
         ownerPermissions.put("JOIN", true);
         ownerPermissions.put("EDIT", true);
+        ownerPermissions.put("PICKUP", true);
         ownerPermissions.put("SPAWN", true);
-        ownerPermissions.put("SPAWN_ENENMIES", true);
+        ownerPermissions.put("SPAWN_ENEMIES", true);
         ownerPermissions.put("DELETE", true);
         ownerPermissions.put("TOGGLE_AI", true);
         return ownerPermissions;

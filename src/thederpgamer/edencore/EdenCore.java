@@ -2,7 +2,10 @@ package thederpgamer.edencore;
 
 import api.common.GameClient;
 import api.listener.Listener;
+import api.listener.events.block.*;
 import api.listener.events.input.KeyPressEvent;
+import api.listener.events.player.PlayerDeathEvent;
+import api.listener.events.player.PlayerPickupFreeItemEvent;
 import api.listener.events.player.PlayerSpawnEvent;
 import api.mod.StarLoader;
 import api.mod.StarMod;
@@ -14,6 +17,7 @@ import thederpgamer.edencore.commands.BuildSectorCommand;
 import thederpgamer.edencore.commands.ListEntityCommand;
 import thederpgamer.edencore.commands.LoadEntityCommand;
 import thederpgamer.edencore.commands.SaveEntityCommand;
+import thederpgamer.edencore.data.BuildSectorData;
 import thederpgamer.edencore.gui.admintools.AdminToolsControlManager;
 import thederpgamer.edencore.gui.buildtools.BuildToolsControlManager;
 import thederpgamer.edencore.manager.ConfigManager;
@@ -71,6 +75,101 @@ public class EdenCore extends StarMod {
     }
 
     private void registerListeners() {
+        StarLoader.registerListener(SegmentPieceAddEvent.class, new Listener<SegmentPieceAddEvent>() {
+            @Override
+            public void onEvent(SegmentPieceAddEvent event) {
+                try {
+                    if(DataUtils.isPlayerInAnyBuildSector(GameClient.getClientPlayerState())) {
+                        BuildSectorData sectorData = DataUtils.getPlayerCurrentBuildSector(GameClient.getClientPlayerState());
+                        if(!sectorData.hasPermission(GameClient.getClientPlayerState().getName(), "EDIT")) event.setCanceled(true);
+                    }
+                } catch(Exception ignored) { }
+            }
+        }, this);
+
+        StarLoader.registerListener(SegmentPieceRemoveEvent.class, new Listener<SegmentPieceRemoveEvent>() {
+            @Override
+            public void onEvent(SegmentPieceRemoveEvent event) {
+                try {
+                    if(DataUtils.isPlayerInAnyBuildSector(GameClient.getClientPlayerState())) {
+                        BuildSectorData sectorData = DataUtils.getPlayerCurrentBuildSector(GameClient.getClientPlayerState());
+                        if(!sectorData.hasPermission(GameClient.getClientPlayerState().getName(), "EDIT")) event.setCanceled(true);
+                    }
+                } catch(Exception ignored) { }
+            }
+        }, this);
+
+        StarLoader.registerListener(SegmentPieceActivateByPlayer.class, new Listener<SegmentPieceActivateByPlayer>() {
+            @Override
+            public void onEvent(SegmentPieceActivateByPlayer event) {
+                try {
+                    if(DataUtils.isPlayerInAnyBuildSector(GameClient.getClientPlayerState())) {
+                        BuildSectorData sectorData = DataUtils.getPlayerCurrentBuildSector(GameClient.getClientPlayerState());
+                        if(!sectorData.hasPermission(GameClient.getClientPlayerState().getName(), "EDIT")) event.setCanceled(true);
+                    }
+                } catch(Exception ignored) { }
+            }
+        }, this);
+
+        StarLoader.registerListener(SegmentPieceModifyOnClientEvent.class, new Listener<SegmentPieceModifyOnClientEvent>() {
+            @Override
+            public void onEvent(SegmentPieceModifyOnClientEvent event) {
+                try {
+                    if(DataUtils.isPlayerInAnyBuildSector(GameClient.getClientPlayerState())) {
+                        BuildSectorData sectorData = DataUtils.getPlayerCurrentBuildSector(GameClient.getClientPlayerState());
+                        if(!sectorData.hasPermission(GameClient.getClientPlayerState().getName(), "EDIT")) event.setCanceled(true);
+                    }
+                } catch(Exception ignored) { }
+            }
+        }, this);
+
+        StarLoader.registerListener(ClientSelectSegmentPieceEvent.class, new Listener<ClientSelectSegmentPieceEvent>() {
+            @Override
+            public void onEvent(ClientSelectSegmentPieceEvent event) {
+                try {
+                    if(DataUtils.isPlayerInAnyBuildSector(GameClient.getClientPlayerState())) {
+                        BuildSectorData sectorData = DataUtils.getPlayerCurrentBuildSector(GameClient.getClientPlayerState());
+                        if(!sectorData.hasPermission(GameClient.getClientPlayerState().getName(), "EDIT")) event.setCanceled(true);
+                    }
+                } catch(Exception ignored) { }
+            }
+        }, this);
+
+        StarLoader.registerListener(ClientSegmentPieceConnectionChangeEvent.class, new Listener<ClientSegmentPieceConnectionChangeEvent>() {
+            @Override
+            public void onEvent(ClientSegmentPieceConnectionChangeEvent event) {
+                try {
+                    if(DataUtils.isPlayerInAnyBuildSector(GameClient.getClientPlayerState())) {
+                        BuildSectorData sectorData = DataUtils.getPlayerCurrentBuildSector(GameClient.getClientPlayerState());
+                        if(!sectorData.hasPermission(GameClient.getClientPlayerState().getName(), "EDIT")) event.setCanceled(true);
+                    }
+                } catch(Exception ignored) { }
+            }
+        }, this);
+
+        StarLoader.registerListener(PlayerPickupFreeItemEvent.class, new Listener<PlayerPickupFreeItemEvent>() {
+            @Override
+            public void onEvent(PlayerPickupFreeItemEvent event) {
+                try {
+                    if(DataUtils.isPlayerInAnyBuildSector(GameClient.getClientPlayerState())) {
+                        BuildSectorData sectorData = DataUtils.getPlayerCurrentBuildSector(GameClient.getClientPlayerState());
+                        if(!sectorData.hasPermission(GameClient.getClientPlayerState().getName(), "PICKUP")) event.setCanceled(true);
+                    }
+                } catch(Exception ignored) { }
+            }
+        }, this);
+
+        StarLoader.registerListener(PlayerDeathEvent.class, new Listener<PlayerDeathEvent>() {
+            @Override
+            public void onEvent(PlayerDeathEvent event) {
+                if(DataUtils.isPlayerInAnyBuildSector(event.getPlayer())) {
+                    try {
+                        DataUtils.movePlayerToLastRealSector(event.getPlayer());
+                    } catch(IOException ignored) { }
+                }
+            }
+        }, this);
+
         StarLoader.registerListener(PlayerSpawnEvent.class, new Listener<PlayerSpawnEvent>() {
             @Override
             public void onEvent(PlayerSpawnEvent event) {
