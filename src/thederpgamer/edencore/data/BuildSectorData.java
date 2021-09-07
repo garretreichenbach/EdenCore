@@ -14,31 +14,30 @@ import java.util.Map;
  */
 public class BuildSectorData implements ComparableData {
 
-    public String ownerId;
     public String ownerName;
     public Vector3i sector;
     public HashMap<String, HashMap<String, Boolean>> permissions;
     public boolean allAIDisabled;
 
-    public BuildSectorData(String ownerName, String ownerId, Vector3i sector, HashMap<String, HashMap<String, Boolean>> permissions) {
+    public BuildSectorData(String ownerName, Vector3i sector, HashMap<String, HashMap<String, Boolean>> permissions) {
         this.ownerName = ownerName;
-        this.ownerId = ownerId;
         this.sector = sector;
         this.permissions = permissions;
         this.allAIDisabled = true;
+        this.addPlayer(ownerName);
     }
 
     @Override
     public boolean equalTo(ComparableData data) {
         if(data instanceof BuildSectorData) {
             BuildSectorData sectorData = (BuildSectorData) data;
-            return sectorData.ownerId.equals(ownerId) && sectorData.ownerName.equals(ownerName) && sector.equals(sectorData.sector);
+            return sectorData.ownerName.equals(ownerName) && sector.equals(sectorData.sector);
         } else return false;
     }
 
     public void addPlayer(String player) {
         permissions.remove(player);
-        if(player.toLowerCase().equals(ownerName.toLowerCase())) permissions.put(player, getOwnerPermissions());
+        if(player.equals(ownerName)) permissions.put(player, getOwnerPermissions());
         else permissions.put(player, getDefaultPermissions());
     }
 
@@ -49,7 +48,8 @@ public class BuildSectorData implements ComparableData {
 
     public boolean hasPermission(String player, String permission) {
         if(!permissions.containsKey(player)) {
-            denyPermission(player, "ENTER");
+            if(!player.equals(ownerName)) denyPermission(player, "ENTER");
+            else addPlayer(player);
             return false;
         } else return permissions.get(player).get(permission.toUpperCase());
     }

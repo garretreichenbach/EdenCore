@@ -1,9 +1,12 @@
 package thederpgamer.edencore.utils;
 
+import api.common.GameClient;
 import api.common.GameCommon;
 import api.common.GameServer;
 import api.mod.ModSkeleton;
 import api.mod.config.PersistentObjectUtil;
+import api.utils.StarRunnable;
+import api.utils.game.PlayerUtils;
 import org.schema.common.util.linAlg.Vector3i;
 import org.schema.game.common.controller.SegmentController;
 import org.schema.game.common.data.player.PlayerState;
@@ -90,67 +93,93 @@ public class DataUtils {
     }
 
     public static void movePlayerToBuildSector(final PlayerState playerState, final BuildSectorData sectorData) throws IOException {
+        playerState.getControllerState().forcePlayerOutOfSegmentControllers();
         PlayerData playerData = getPlayerData(playerState);
-        if(isPlayerInAnyBuildSector(playerState)) playerData.lastRealSector.set(2, 2, 2);
-        else playerData.lastRealSector.set(new Vector3i(playerState.getCurrentSector()));
-        removeExistingData(playerData);
-        PersistentObjectUtil.addObject(instance, playerData);
+        playerData.lastRealSector.set(new Vector3i(playerState.getCurrentSector()));
+        if(playerData.lastRealSector.length() > 10000000 || playerData.lastRealSector.equals(sectorData.sector)) {
+            Vector3i defaultSector = (playerState.getFactionId() != 0) ? GameCommon.getGameState().getFactionManager().getFaction(playerState.getFactionId()).getHomeSector() : new Vector3i(2, 2, 2);
+            playerData.lastRealSector.set(defaultSector);
+            PlayerUtils.sendMessage(playerState, "An error occurred while trying to save your last position, so it has been reset to prevent future issues.");
+        }
         saveData();
 
-        playerState.getControllerState().forcePlayerOutOfSegmentControllers();
-        GameServer.getServerState().getController().enqueueAdminCommand(GameServer.getServerClient(playerState), AdminCommands.CHANGE_SECTOR, new Object[] {sectorData.sector.x, sectorData.sector.y, sectorData.sector.z});
-        playerState.updateInventory();
-        GameServer.getUniverse().getSector(sectorData.sector).noEnter(true);
-        GameServer.getUniverse().getSector(sectorData.sector).noExit(true);
-        LogManager.logDebug(playerState.getName() + " teleported to a build sector in " + sectorData.sector.toString());
+        try {
+            GameServer.getServerState().getUniverse().loadOrGenerateSector(sectorData.sector);
+        } catch(Exception ignored) { }
+
+        new StarRunnable() {
+            @Override
+            public void run() {
+                try {
+                    if(GameServer.getServerState() != null) {
+                        GameServer.getServerState().getUniverse().getSector(sectorData.sector).noEnter(false);
+                        GameServer.getServerState().getUniverse().getSector(sectorData.sector).noExit(false);
+                    }
+                    if(GameClient.getClientState() != null) GameClient.getClientState().getController().sendAdminCommand(AdminCommands.CHANGE_SECTOR, sectorData.sector.x, sectorData.sector.y, sectorData.sector.z);
+                    playerState.updateInventory();
+                    if(GameServer.getServerState() != null) {
+                        GameServer.getServerState().getUniverse().getSector(sectorData.sector).noEnter(true);
+                        GameServer.getServerState().getUniverse().getSector(sectorData.sector).noExit(true);
+                    }
+                    LogManager.logDebug(playerState.getName() + " teleported to a build sector in " + sectorData.sector.toString());
+                } catch(IOException exception) {
+                    exception.printStackTrace();
+                }
+            }
+        }.runLater(EdenCore.getInstance(), 10);
     }
 
     public static void movePlayerFromBuildSector(final PlayerState playerState) throws IOException {
-        PlayerData playerData = getPlayerData(playerState);
-        final Vector3i pos = new Vector3i(playerState.getCurrentSector());
-        GameServer.getUniverse().getSector(pos).noExit(false);
-        GameServer.getUniverse().getSector(pos).noEnter(false);
         playerState.getControllerState().forcePlayerOutOfSegmentControllers();
-        GameServer.getServerState().getController().enqueueAdminCommand(GameServer.getServerClient(playerState), AdminCommands.CHANGE_SECTOR, new Object[] {playerData.lastRealSector.x, playerData.lastRealSector.y, playerData.lastRealSector.z});
-        playerState.updateInventory();
-        playerState.setGodMode(false);
-        GameServer.getUniverse().getSector(pos).noEnter(true);
-        GameServer.getUniverse().getSector(pos).noExit(true);
-        LogManager.logDebug(playerState.getName() + " teleported from a build sector in " + pos.toString());
-    }
-    
-    public static void movePlayerToLastRealSector(final PlayerState playerState) throws IOException {
+        final PlayerData playerData = getPlayerData(playerState);
+        final BuildSectorData sectorData = getPlayerCurrentBuildSector(playerState);
+        if(playerData.lastRealSector.length() > 10000000 || (sectorData != null && playerData.lastRealSector.equals(sectorData.sector))) {
+            Vector3i defaultSector = (playerState.getFactionId() != 0) ? GameCommon.getGameState().getFactionManager().getFaction(playerState.getFactionId()).getHomeSector() : new Vector3i(2, 2, 2);
+            playerData.lastRealSector.set(defaultSector);
+            saveData();
+            PlayerUtils.sendMessage(playerState, "An error occurred while trying to save your last position, so it has been reset to prevent future issues.");
+        }
         final Vector3i pos = new Vector3i(playerState.getCurrentSector());
-        boolean wasInBuildSector = isPlayerInAnyBuildSector(playerState);
-        if(wasInBuildSector) {
-            GameServer.getUniverse().getSector(pos).noExit(false);
-            GameServer.getUniverse().getSector(pos).noEnter(false);
-        }
-        playerState.getControllerState().forcePlayerOutOfSegmentControllers();
-        PlayerData playerData = getPlayerData(playerState);
-        GameServer.getServerState().getController().enqueueAdminCommand(GameServer.getServerClient(playerState), AdminCommands.CHANGE_SECTOR, new Object[] {playerData.lastRealSector.x, playerData.lastRealSector.y, playerData.lastRealSector.z});
-        playerState.updateInventory();
-        playerState.setGodMode(false);
-        if(wasInBuildSector) {
-            GameServer.getUniverse().getSector(pos).noEnter(true);
-            GameServer.getUniverse().getSector(pos).noExit(true);
-        }
+
+        try {
+            GameServer.getServerState().getUniverse().loadOrGenerateSector(playerData.lastRealSector);
+        } catch(Exception ignored) { }
+
+        new StarRunnable() {
+            @Override
+            public void run() {
+                try {
+                    if(GameServer.getServerState() != null && sectorData != null) {
+                        GameServer.getServerState().getUniverse().getSector(sectorData.sector).noEnter(false);
+                        GameServer.getServerState().getUniverse().getSector(sectorData.sector).noExit(false);
+                    }
+                    if(GameClient.getClientState() != null) GameClient.getClientState().getController().sendAdminCommand(AdminCommands.CHANGE_SECTOR, playerData.lastRealSector.x, playerData.lastRealSector.y, playerData.lastRealSector.z);
+                    playerState.updateInventory();
+                    playerState.setGodMode(false);
+                    if(GameServer.getServerState() != null && sectorData != null) {
+                        GameServer.getServerState().getUniverse().getSector(sectorData.sector).noEnter(true);
+                        GameServer.getServerState().getUniverse().getSector(sectorData.sector).noExit(true);
+                    }
+                    LogManager.logDebug(playerState.getName() + " teleported from a build sector in " + pos.toString());
+                } catch(IOException exception) {
+                    exception.printStackTrace();
+                }
+            }
+        }.runLater(EdenCore.getInstance(), 10);
     }
     
     public static PlayerData getPlayerData(PlayerState playerState) {
         for(Object obj : PersistentObjectUtil.getObjects(instance, PlayerData.class)) {
             PlayerData playerData = (PlayerData) obj;
-            if(playerData.playerId.equals(playerState.getUniqueIdentifier()) && playerData.playerName.equals(playerState.getName())) return playerData;
+            if(playerData.playerName.equals(playerState.getName())) return playerData;
         }
         return createNewPlayerData(playerState);
     }
 
     public static PlayerData createNewPlayerData(PlayerState playerState) {
         String playerName = playerState.getName();
-        String playerId = playerState.getUniqueIdentifier();
-        Vector3i lastRealSector = (!playerState.isInPersonalSector() && !playerState.isInTestSector()) ? playerState.getCurrentSector() : getSpawnSector();
-        PlayerData playerData = new PlayerData(playerName, playerId, lastRealSector);
-        removeExistingData(playerData);
+        Vector3i lastRealSector = (!isPlayerInAnyBuildSector(playerState) && !(playerState.getCurrentSector().length() > 10000000)) ? playerState.getCurrentSector() : getSpawnSector();
+        PlayerData playerData = new PlayerData(playerName, lastRealSector);
         PersistentObjectUtil.addObject(instance, playerData);
         saveData();
         return playerData;
@@ -171,7 +200,7 @@ public class DataUtils {
     }
 
     public static boolean isPlayerInAnyBuildSector(PlayerState playerState) {
-        return getPlayerCurrentBuildSector(playerState) != null;
+        return getPlayerCurrentBuildSector(playerState) != null || playerState.getCurrentSector().length() > 10000000;
     }
 
     public static ArrayList<SegmentController> getEntitiesInBuildSector(BuildSectorData sectorData) {
@@ -200,17 +229,15 @@ public class DataUtils {
     public static BuildSectorData getBuildSector(PlayerState playerState) {
         for(Object object : PersistentObjectUtil.getObjects(instance, BuildSectorData.class)) {
             BuildSectorData data = (BuildSectorData) object;
-            if(data.ownerId.equals(playerState.getUniqueIdentifier())) return data;
+            if(data.ownerName.equals(playerState.getName())) return data;
         }
         return createNewBuildSector(playerState);
     }
 
     private static BuildSectorData createNewBuildSector(PlayerState playerState) {
         String playerName = playerState.getName();
-        String playerId = playerState.getUniqueIdentifier();
-        Vector3i sector = getRandomSector(69420);
-        BuildSectorData data = new BuildSectorData(playerName, playerId, sector, new HashMap<String, HashMap<String, Boolean>>());
-        removeExistingData(data);
+        Vector3i sector = getRandomSector(100000000);
+        BuildSectorData data = new BuildSectorData(playerName, sector, new HashMap<String, HashMap<String, Boolean>>());
         PersistentObjectUtil.addObject(instance, data);
         saveData();
         return data;
@@ -218,9 +245,9 @@ public class DataUtils {
 
     public static Vector3i getRandomSector(int offset) {
         Random random = new Random();
-        int x = (int) (random.nextInt(offset) + (System.currentTimeMillis() / 1000));
-        int y = (int) (random.nextInt(offset) + (System.currentTimeMillis() / 1000));
-        int z = (int) (random.nextInt(offset) + (System.currentTimeMillis() / 1000));
+        int x = random.nextInt(offset) + 694200;
+        int y = random.nextInt(offset) + 694200;
+        int z = random.nextInt(offset) + 694200;
         return new Vector3i(x, y, z);
     }
 }

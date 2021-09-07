@@ -164,7 +164,7 @@ public class EdenCore extends StarMod {
             public void onEvent(PlayerDeathEvent event) {
                 if(DataUtils.isPlayerInAnyBuildSector(event.getPlayer())) {
                     try {
-                        DataUtils.movePlayerToLastRealSector(event.getPlayer());
+                        DataUtils.movePlayerFromBuildSector(event.getPlayer());
                     } catch(IOException ignored) { }
                 }
             }

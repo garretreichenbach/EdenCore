@@ -11,12 +11,10 @@ import org.schema.common.util.linAlg.Vector3i;
 public class PlayerData implements ComparableData {
 
     public String playerName;
-    public String playerId;
     public Vector3i lastRealSector;
 
-    public PlayerData(String playerName, String playerId, Vector3i lastRealSector) {
+    public PlayerData(String playerName, Vector3i lastRealSector) {
         this.playerName = playerName;
-        this.playerId = playerId;
         this.lastRealSector = lastRealSector;
     }
 
@@ -24,7 +22,7 @@ public class PlayerData implements ComparableData {
     public boolean equalTo(ComparableData data) {
         if(data instanceof PlayerData) {
             PlayerData playerData = (PlayerData) data;
-            return playerData.playerName.equals(playerName) && playerData.playerId.equals(playerId);
+            return playerData.playerName.equals(playerName);
         } else return false;
     }
 }
