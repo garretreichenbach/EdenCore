@@ -44,12 +44,12 @@ public class BuildSectorData implements ComparableData {
 
     public void removePlayer(String player) {
         addPlayer(player);
-        denyPermission(player, "JOIN");
+        denyPermission(player, "ENTER");
     }
 
     public boolean hasPermission(String player, String permission) {
         if(!permissions.containsKey(player)) {
-            denyPermission(player, "JOIN");
+            denyPermission(player, "ENTER");
             return false;
         } else return permissions.get(player).get(permission.toUpperCase());
     }
@@ -73,7 +73,7 @@ public class BuildSectorData implements ComparableData {
     public ArrayList<String> getAllowedPlayersByName() {
         ArrayList<String> allowedPlayers = new ArrayList<>();
         for(Map.Entry<String, HashMap<String, Boolean>> entry : permissions.entrySet()) {
-            if(entry.getValue().get("JOIN")) allowedPlayers.add(entry.getKey());
+            if(entry.getValue().get("ENTER")) allowedPlayers.add(entry.getKey());
         }
         return allowedPlayers;
     }
@@ -81,14 +81,14 @@ public class BuildSectorData implements ComparableData {
     public HashMap<String, Boolean> getPermissions(String player) {
         if(!permissions.containsKey(player)) {
             addPlayer(player);
-            denyPermission(player, "JOIN");
+            denyPermission(player, "ENTER");
         }
         return permissions.get(player);
     }
 
     public static HashMap<String, Boolean> getDefaultPermissions() {
         HashMap<String, Boolean> defaultPermissions = new HashMap<>();
-        defaultPermissions.put("JOIN", true);
+        defaultPermissions.put("ENTER", true);
         defaultPermissions.put("EDIT", false);
         defaultPermissions.put("PICKUP", false);
         defaultPermissions.put("SPAWN", false);
@@ -100,7 +100,7 @@ public class BuildSectorData implements ComparableData {
 
     public static HashMap<String, Boolean> getOwnerPermissions() {
         HashMap<String, Boolean> ownerPermissions = new HashMap<>();
-        ownerPermissions.put("JOIN", true);
+        ownerPermissions.put("ENTER", true);
         ownerPermissions.put("EDIT", true);
         ownerPermissions.put("PICKUP", true);
         ownerPermissions.put("SPAWN", true);

@@ -58,7 +58,7 @@ public class BuildSectorCommand implements CommandInterface {
     @Override
     public String getDescription() {
         return "Main command for managing player build sectors.\n" +
-               "- /%COMMAND% join [player_name] : Enters your build sector or the build sector belonging to the specified player if you have permission.\n" +
+               "- /%COMMAND% enter [player_name] : Enters your build sector or the build sector belonging to the specified player if you have permission.\n" +
                "- /%COMMAND% leave : Leaves the current build sector.\n" +
                "- /%COMMAND% invite <player_name> : Invites the specified player to your build sector.\n" +
                "- /%COMMAND% remove <player_name> : Removes the specified player from your build sector.\n" +
@@ -83,7 +83,7 @@ public class BuildSectorCommand implements CommandInterface {
             try {
                 String subCommand = args[0].toLowerCase();
                 switch(subCommand) {
-                    case "join":
+                    case "enter":
                         if(!DataUtils.isPlayerInAnyBuildSector(sender)) {
                             if(args.length == 1) {
                                 DataUtils.movePlayerToBuildSector(sender, DataUtils.getBuildSector(sender));
@@ -92,7 +92,7 @@ public class BuildSectorCommand implements CommandInterface {
                                 PlayerState target = GameCommon.getPlayerFromName(args[1]);
                                 if(target != null) {
                                     BuildSectorData sectorData = DataUtils.getBuildSector(target);
-                                    if(sectorData.hasPermission(sender.getName(), "JOIN")) DataUtils.movePlayerToBuildSector(sender, sectorData);
+                                    if(sectorData.hasPermission(sender.getName(), "ENTER")) DataUtils.movePlayerToBuildSector(sender, sectorData);
                                     else PlayerUtils.sendMessage(sender, "You don't have permission to do this.");
                                 } else PlayerUtils.sendMessage(sender, "Player \"" + args[1] + "\" doesn't exist or isn't online right now.");
                             } else return false;
