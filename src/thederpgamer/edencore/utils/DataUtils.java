@@ -1,10 +1,10 @@
 package thederpgamer.edencore.utils;
 
-import api.common.GameClient;
 import api.common.GameCommon;
 import api.common.GameServer;
 import api.mod.ModSkeleton;
 import api.mod.config.PersistentObjectUtil;
+import api.network.packets.PacketUtil;
 import api.utils.StarRunnable;
 import api.utils.game.PlayerUtils;
 import org.schema.common.util.linAlg.Vector3i;
@@ -14,12 +14,12 @@ import org.schema.game.common.data.player.faction.FactionRelation;
 import org.schema.game.common.data.world.Sector;
 import org.schema.game.common.data.world.SimpleTransformableSendableObject;
 import org.schema.game.server.data.ServerConfig;
-import org.schema.game.server.data.admin.AdminCommands;
 import thederpgamer.edencore.EdenCore;
 import thederpgamer.edencore.data.BuildSectorData;
 import thederpgamer.edencore.data.ComparableData;
 import thederpgamer.edencore.data.PlayerData;
 import thederpgamer.edencore.manager.LogManager;
+import thederpgamer.edencore.network.server.AdminWarpPacket;
 
 import java.io.IOException;
 import java.util.*;
@@ -105,28 +105,21 @@ public class DataUtils {
 
         try {
             GameServer.getServerState().getUniverse().loadOrGenerateSector(sectorData.sector);
-        } catch(Exception ignored) { }
-
-        new StarRunnable() {
-            @Override
-            public void run() {
-                try {
-                    if(GameServer.getServerState() != null) {
-                        GameServer.getServerState().getUniverse().getSector(sectorData.sector).noEnter(false);
-                        GameServer.getServerState().getUniverse().getSector(sectorData.sector).noExit(false);
-                    }
-                    if(GameClient.getClientState() != null) GameClient.getClientState().getController().sendAdminCommand(AdminCommands.CHANGE_SECTOR, sectorData.sector.x, sectorData.sector.y, sectorData.sector.z);
+            GameServer.getServerState().getUniverse().getSector(sectorData.sector).noEnter(false);
+            GameServer.getServerState().getUniverse().getSector(sectorData.sector).noExit(false);
+            PacketUtil.sendPacket(playerState, new AdminWarpPacket(sectorData.sector));
+            new StarRunnable() {
+                @Override
+                public void run() {
                     playerState.updateInventory();
-                    if(GameServer.getServerState() != null) {
+                    playerState.setGodMode(false);
+                    try {
                         GameServer.getServerState().getUniverse().getSector(sectorData.sector).noEnter(true);
                         GameServer.getServerState().getUniverse().getSector(sectorData.sector).noExit(true);
-                    }
-                    LogManager.logDebug(playerState.getName() + " teleported to a build sector in " + sectorData.sector.toString());
-                } catch(IOException exception) {
-                    exception.printStackTrace();
+                    } catch(IOException ignored) { }
                 }
-            }
-        }.runLater(EdenCore.getInstance(), 10);
+            }.runLater(EdenCore.getInstance(), 10);
+        } catch(Exception ignored) { }
     }
 
     public static void movePlayerFromBuildSector(final PlayerState playerState) throws IOException {
@@ -136,36 +129,27 @@ public class DataUtils {
         if(playerData.lastRealSector.length() > 10000000 || (sectorData != null && playerData.lastRealSector.equals(sectorData.sector))) {
             Vector3i defaultSector = (playerState.getFactionId() != 0) ? GameCommon.getGameState().getFactionManager().getFaction(playerState.getFactionId()).getHomeSector() : new Vector3i(2, 2, 2);
             playerData.lastRealSector.set(defaultSector);
-            saveData();
             PlayerUtils.sendMessage(playerState, "An error occurred while trying to save your last position, so it has been reset to prevent future issues.");
         }
-        final Vector3i pos = new Vector3i(playerState.getCurrentSector());
+        saveData();
 
         try {
             GameServer.getServerState().getUniverse().loadOrGenerateSector(playerData.lastRealSector);
-        } catch(Exception ignored) { }
-
-        new StarRunnable() {
-            @Override
-            public void run() {
-                try {
-                    if(GameServer.getServerState() != null && sectorData != null) {
-                        GameServer.getServerState().getUniverse().getSector(sectorData.sector).noEnter(false);
-                        GameServer.getServerState().getUniverse().getSector(sectorData.sector).noExit(false);
-                    }
-                    if(GameClient.getClientState() != null) GameClient.getClientState().getController().sendAdminCommand(AdminCommands.CHANGE_SECTOR, playerData.lastRealSector.x, playerData.lastRealSector.y, playerData.lastRealSector.z);
+            GameServer.getServerState().getUniverse().getSector(sectorData.sector).noEnter(false);
+            GameServer.getServerState().getUniverse().getSector(sectorData.sector).noExit(false);
+            PacketUtil.sendPacket(playerState, new AdminWarpPacket(playerData.lastRealSector));
+            new StarRunnable() {
+                @Override
+                public void run() {
                     playerState.updateInventory();
                     playerState.setGodMode(false);
-                    if(GameServer.getServerState() != null && sectorData != null) {
+                    try {
                         GameServer.getServerState().getUniverse().getSector(sectorData.sector).noEnter(true);
                         GameServer.getServerState().getUniverse().getSector(sectorData.sector).noExit(true);
-                    }
-                    LogManager.logDebug(playerState.getName() + " teleported from a build sector in " + pos.toString());
-                } catch(IOException exception) {
-                    exception.printStackTrace();
+                    } catch(IOException ignored) { }
                 }
-            }
-        }.runLater(EdenCore.getInstance(), 10);
+            }.runLater(EdenCore.getInstance(), 10);
+        } catch(Exception ignored) { }
     }
     
     public static PlayerData getPlayerData(PlayerState playerState) {

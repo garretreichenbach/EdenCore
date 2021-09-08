@@ -9,6 +9,7 @@ import api.listener.events.player.PlayerPickupFreeItemEvent;
 import api.listener.events.player.PlayerSpawnEvent;
 import api.mod.StarLoader;
 import api.mod.StarMod;
+import api.network.packets.PacketUtil;
 import api.utils.StarRunnable;
 import api.utils.game.PlayerUtils;
 import api.utils.gui.ModGUIHandler;
@@ -22,6 +23,7 @@ import thederpgamer.edencore.gui.admintools.AdminToolsControlManager;
 import thederpgamer.edencore.gui.buildtools.BuildToolsControlManager;
 import thederpgamer.edencore.manager.ConfigManager;
 import thederpgamer.edencore.manager.LogManager;
+import thederpgamer.edencore.network.server.AdminWarpPacket;
 import thederpgamer.edencore.utils.DataUtils;
 
 import java.io.FileInputStream;
@@ -65,6 +67,7 @@ public class EdenCore extends StarMod {
         LogManager.initialize();
         registerListeners();
         registerCommands();
+        registerPackets();
         startRunners();
     }
 
@@ -206,6 +209,10 @@ public class EdenCore extends StarMod {
         StarLoader.registerCommand(new LoadEntityCommand());
         StarLoader.registerCommand(new ListEntityCommand());
         StarLoader.registerCommand(new BuildSectorCommand());
+    }
+
+    private void registerPackets() {
+        PacketUtil.registerPacket(AdminWarpPacket.class);
     }
 
     public void activateAdminToolsMenu() {
