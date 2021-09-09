@@ -1,6 +1,5 @@
 package thederpgamer.edencore.manager;
 
-import api.common.GameCommon;
 import api.common.GameServer;
 import com.bulletphysics.linearmath.Transform;
 import org.apache.commons.io.IOUtils;
@@ -59,16 +58,9 @@ public class TransferManager {
     }
 
     public static File getTransferFolder(PlayerState playerState) {
-        try {
-            if(GameCommon.isDedicatedServer() || GameCommon.isOnSinglePlayer()) {
-                File transferFolder = new File(DataUtils.getWorldDataPath() + "/transfer_data/" + playerState.getName());
-                if(!transferFolder.exists()) transferFolder.mkdirs();
-                return transferFolder;
-            } else throw new IllegalAccessException("Cannot access server transfer data for " + playerState.getName() + " as a client.");
-        } catch(IllegalAccessException exception) {
-            LogManager.logException("Client " + playerState.getName() + " attempted to illegally access server data.", exception);
-        }
-        return null;
+        File transferFolder = new File(DataUtils.getWorldDataPath() + "/transfer_data/" + playerState.getName());
+        if(!transferFolder.exists()) transferFolder.mkdirs();
+        return transferFolder;
     }
 
     public static boolean canTransfer(PlayerState playerState) {
@@ -80,11 +72,11 @@ public class TransferManager {
     }
 
     public static void saveEntity(PlayerState playerState, SegmentController entity) throws Exception {
-        assert GameCommon.getGameState().isOnServer();
+        assert GameServer.getServerState() != null;
         playerState.getControllerState().forcePlayerOutOfSegmentControllers();
         Tag tag = entity.toTagStructure();
         File transferFolder = getTransferFolder(playerState);
-        if(transferFolder != null && transferFolder.isDirectory()) {
+        if(transferFolder.isDirectory()) {
             //Todo: Make the file structure into it's own class
             File entityFile = new File(transferFolder.getPath() + "/" + entity.getUniqueIdentifierFull() + ".zip");
             ZipOutputStream outputStream = new ZipOutputStream(new FileOutputStream(entityFile));
@@ -120,7 +112,7 @@ public class TransferManager {
     }
 
     public static void loadEntity(PlayerState playerState, String entityName) throws Exception {
-        assert GameCommon.getGameState().isOnServer();
+        assert GameServer.getServerState() != null;
         File transferFolder = getTransferFolder(playerState);
         if(transferFolder != null && transferFolder.isDirectory()) {
             if(transferFolder.listFiles() != null && Objects.requireNonNull(transferFolder.listFiles()).length > 0) {
@@ -201,9 +193,10 @@ public class TransferManager {
     }
 
     public static HashMap<String, File> getSavedEntities(PlayerState playerState) {
+        assert GameServer.getServerState() != null;
         HashMap<String, File> savedEntities = new HashMap<>();
         File transferFolder = getTransferFolder(playerState);
-        if(transferFolder != null && transferFolder.isDirectory()) {
+        if(transferFolder.isDirectory()) {
             for(File file : Objects.requireNonNull(transferFolder.listFiles())) {
                 if(file.getName().endsWith(".zip")) {
                     try {

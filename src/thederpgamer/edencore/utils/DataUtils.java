@@ -100,7 +100,6 @@ public class DataUtils {
                 playerData.lastRealSector.set(defaultSector);
                 PlayerUtils.sendMessage(playerState, "An error occurred while trying to save your last position, so it has been reset to prevent future issues.");
             }
-            saveData();
 
             GameServer.getServerState().getUniverse().getStellarSystemFromSecPos(sectorData.sector); //Make sure system is generated
             if(!GameServer.getUniverse().isSectorLoaded(sectorData.sector)) GameServer.getServerState().getUniverse().loadOrGenerateSector(sectorData.sector);
@@ -120,6 +119,7 @@ public class DataUtils {
             playerState.setCurrentSectorId(sector.getSectorId());
 
             playerState.updateInventory();
+            playerState.getInventory().sendAll();
             sector.noEnter(true);
             sector.noExit(true);
             deleteEnemies(sectorData, 60);
@@ -133,12 +133,11 @@ public class DataUtils {
         final PlayerData playerData = getPlayerData(playerState);
         Vector3f lastBuildSectorPos = new Vector3f(playerState.getFirstControlledTransformableWOExc().getWorldTransform().origin);
         playerData.lastBuildSectorPos.set(lastBuildSectorPos);
-        if(playerData.lastRealSector.length() > 10000000 || (sectorData != null && playerData.lastRealSector.equals(sectorData.sector)) || playerState.isInTutorial()) {
+        if(playerData.lastRealSector.length() > 10000000 || (sectorData != null && playerData.lastRealSector.equals(sectorData.sector))) {
             Vector3i defaultSector = (playerState.getFactionId() != 0) ? GameCommon.getGameState().getFactionManager().getFaction(playerState.getFactionId()).getHomeSector() : new Vector3i(2, 2, 2);
             playerData.lastRealSector.set(defaultSector);
             PlayerUtils.sendMessage(playerState, "An error occurred while trying to get your last position, so it has been reset to prevent future issues.");
         }
-        saveData();
 
         GameServer.getServerState().getUniverse().getStellarSystemFromSecPos(playerData.lastRealSector); //Make sure system is generated
         if(!GameServer.getUniverse().isSectorLoaded(playerData.lastRealSector)) GameServer.getServerState().getUniverse().loadOrGenerateSector(playerData.lastRealSector);
@@ -159,6 +158,7 @@ public class DataUtils {
         playerState.setCurrentSectorId(GameServer.getUniverse().getSector(playerData.lastRealSector).getSectorId());
 
         playerState.updateInventory();
+        playerState.getInventory().sendAll();
         if(sectorData != null) {
             GameServer.getServerState().getUniverse().getSector(sectorData.sector).noEnter(true);
             GameServer.getServerState().getUniverse().getSector(sectorData.sector).noExit(true);
@@ -202,7 +202,6 @@ public class DataUtils {
     public static PlayerData createNewPlayerData(PlayerState playerState) {
         PlayerData playerData = new PlayerData(playerState);
         PersistentObjectUtil.addObject(instance, playerData);
-        saveData();
         return playerData;
     }
 
@@ -260,7 +259,6 @@ public class DataUtils {
         Vector3i sector = getRandomSector(100000000);
         BuildSectorData data = new BuildSectorData(playerName, sector, new HashMap<String, HashMap<String, Boolean>>());
         PersistentObjectUtil.addObject(instance, data);
-        saveData();
         try {
             GameServer.getServerState().getUniverse().getStellarSystemFromSecPos(sector); //Make sure system is generated
             GameServer.getServerState().getUniverse().loadOrGenerateSector(sector);

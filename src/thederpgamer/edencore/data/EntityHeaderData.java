@@ -34,9 +34,10 @@ public class EntityHeaderData {
     }
 
     public byte[] serialize() {
+        String type = (entityType.equals(SimpleTransformableSendableObject.EntityType.SPACE_STATION)) ? "SPACE_STATION" : "SHIP";
         return (
                 "NAME: " + entityName + "\n" +
-                "TYPE: " + entityType.toString() + "\n" +
+                "TYPE: " + type + "\n" +
                 "MASS: " + mass + "\n" +
                 "SIZE: " + toStringPure(size) + "\n" +
                 "OWNER: " + owner + "\n" +
@@ -47,7 +48,7 @@ public class EntityHeaderData {
     public void deserialize(byte[] data) {
         String[] rawData = new String(data).split("\n");
         entityName = rawData[0];
-        entityType = SimpleTransformableSendableObject.EntityType.valueOf(rawData[1]);
+        entityType = (!rawData[0].equals("SPACE_STATION")) ? SimpleTransformableSendableObject.EntityType.SHIP : SimpleTransformableSendableObject.EntityType.SPACE_STATION;
         mass = Float.parseFloat(rawData[2]);
         size = fromStringPure(rawData[3]);
         owner = rawData[4];

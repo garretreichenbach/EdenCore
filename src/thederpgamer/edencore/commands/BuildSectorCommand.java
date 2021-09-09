@@ -219,12 +219,16 @@ public class BuildSectorCommand implements CommandInterface {
                             if(sectorData.hasPermission(sender.getName(), "DELETE")) {
                                 if(args.length == 1) {
                                     if(GameCommon.getGameObject(sender.getSelectedEntityId()) != null && GameCommon.getGameObject(sender.getSelectedEntityId()) instanceof SegmentController) {
-                                        destroyEntity((SegmentController) GameCommon.getGameObject(sender.getSelectedEntityId()));
+                                        SegmentController entity = (SegmentController) GameCommon.getGameObject(sender.getSelectedEntityId());
+                                        PlayerUtils.sendMessage(sender, "Successfully deleted entity \"" + entity.getRealName() + "\".");
+                                        destroyEntity(entity);
                                     } else PlayerUtils.sendMessage(sender, "You must either specify a valid entity by name or have one selected to perform this command.");
                                 } else {
                                     SegmentController entity = getEntityByName(sender, args[1]);
-                                    if(entity != null) destroyEntity(entity);
-                                    else PlayerUtils.sendMessage(sender, "You must either specify a valid entity by name or have one selected to perform this command.");
+                                    if(entity != null) {
+                                        PlayerUtils.sendMessage(sender, "Successfully deleted entity \"" + entity.getRealName() + "\".");
+                                        destroyEntity(entity);
+                                    } else PlayerUtils.sendMessage(sender, "You must either specify a valid entity by name or have one selected to perform this command.");
                                 }
                             } else PlayerUtils.sendMessage(sender, "You don't have permission to do this.");
                         }

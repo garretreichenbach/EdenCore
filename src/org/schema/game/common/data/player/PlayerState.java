@@ -325,7 +325,7 @@ public class PlayerState extends AbstractOwnerState implements Sendable, DiskWri
             return cargoInv;
         }else if(isCreativeModeEnabled() && !isInTutorial()){
             return creativeInventory;
-        }else if(getFirstControlledTransformableWOExc() != null && (DataUtils.isPlayerInAnyBuildSector(this) || (getFirstControlledTransformableWOExc() instanceof SegmentController && ((SegmentController)getFirstControlledTransformableWOExc()).isVirtualBlueprint()))) {
+        }else if((getFirstControlledTransformableWOExc() != null && DataUtils.isPlayerInAnyBuildSector(this)) || (getFirstControlledTransformableWOExc() instanceof SegmentController && ((SegmentController) getFirstControlledTransformableWOExc()).isVirtualBlueprint())) {
             return virtualCreativeInventory;
         }
         return inventory;
