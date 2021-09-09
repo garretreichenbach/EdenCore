@@ -4,7 +4,6 @@ import api.common.GameCommon;
 import api.common.GameServer;
 import api.mod.ModSkeleton;
 import api.mod.config.PersistentObjectUtil;
-import api.network.packets.PacketUtil;
 import api.utils.StarRunnable;
 import api.utils.game.PlayerUtils;
 import org.schema.common.util.linAlg.Vector3i;
@@ -13,22 +12,23 @@ import org.schema.game.common.data.player.PlayerState;
 import org.schema.game.common.data.player.faction.FactionRelation;
 import org.schema.game.common.data.world.Sector;
 import org.schema.game.common.data.world.SimpleTransformableSendableObject;
+import org.schema.game.server.controller.SectorSwitch;
 import org.schema.game.server.data.ServerConfig;
 import thederpgamer.edencore.EdenCore;
 import thederpgamer.edencore.data.BuildSectorData;
-import thederpgamer.edencore.data.ComparableData;
 import thederpgamer.edencore.data.PlayerData;
 import thederpgamer.edencore.manager.LogManager;
-import thederpgamer.edencore.network.server.AdminWarpPacket;
 
+import javax.vecmath.Vector3f;
 import java.io.IOException;
+import java.sql.SQLException;
 import java.util.*;
 
 /**
  * Contains misc mod data utilities.
  *
+ * @version 2.0 - [09/08/2021]
  * @author TheDerpGamer
- * @since 06/27/2021
  */
 public class DataUtils {
 
@@ -57,23 +57,17 @@ public class DataUtils {
         return entity.getRealName();
     }
 
-    public static void removeExistingData(ComparableData data) {
+    public static void removeExistingData(Object data) {
         if(data instanceof PlayerData) {
             ArrayList<PlayerData> removeList = new ArrayList<>();
             for(Object obj : PersistentObjectUtil.getObjects(instance, PlayerData.class)) {
-                if(obj instanceof PlayerData) {
-                    PlayerData comp = (PlayerData) obj;
-                    if(comp.equalTo(data)) removeList.add(comp);
-                }
+                if(obj.equals(data)) removeList.add((PlayerData) obj);
             }
             for(PlayerData comparableData : removeList) PersistentObjectUtil.removeObject(instance, comparableData);
         } else if(data instanceof BuildSectorData) {
             ArrayList<BuildSectorData> removeList = new ArrayList<>();
             for(Object obj : PersistentObjectUtil.getObjects(instance, BuildSectorData.class)) {
-                if(obj instanceof BuildSectorData) {
-                    BuildSectorData comp = (BuildSectorData) obj;
-                    if(comp.equalTo(data)) removeList.add(comp);
-                }
+                if(obj.equals(data)) removeList.add((BuildSectorData) obj);
             }
             for(BuildSectorData comparableData : removeList) PersistentObjectUtil.removeObject(instance, comparableData);
         }
@@ -92,10 +86,12 @@ public class DataUtils {
         return false;
     }
 
-    public static void movePlayerToBuildSector(final PlayerState playerState, final BuildSectorData sectorData) throws IOException {
+    public static void movePlayerToBuildSector(final PlayerState playerState, final BuildSectorData sectorData) throws IOException, SQLException, NullPointerException {
         playerState.getControllerState().forcePlayerOutOfSegmentControllers();
-        PlayerData playerData = getPlayerData(playerState);
-        playerData.lastRealSector.set(new Vector3i(playerState.getCurrentSector()));
+        final PlayerData playerData = getPlayerData(playerState);
+        Vector3f lastRealSectorPos = new Vector3f(playerState.getFirstControlledTransformableWOExc().getWorldTransform().origin);
+        playerData.lastRealSectorPos.set(lastRealSectorPos);
+        playerData.lastRealSector.set(playerState.getCurrentSector());
         if(playerData.lastRealSector.length() > 10000000 || playerData.lastRealSector.equals(sectorData.sector)) {
             Vector3i defaultSector = (playerState.getFactionId() != 0) ? GameCommon.getGameState().getFactionManager().getFaction(playerState.getFactionId()).getHomeSector() : new Vector3i(2, 2, 2);
             playerData.lastRealSector.set(defaultSector);
@@ -103,53 +99,92 @@ public class DataUtils {
         }
         saveData();
 
-        try {
-            GameServer.getServerState().getUniverse().loadOrGenerateSector(sectorData.sector);
-            GameServer.getServerState().getUniverse().getSector(sectorData.sector).noEnter(false);
-            GameServer.getServerState().getUniverse().getSector(sectorData.sector).noExit(false);
-            PacketUtil.sendPacket(playerState, new AdminWarpPacket(sectorData.sector));
-            new StarRunnable() {
-                @Override
-                public void run() {
-                    playerState.updateInventory();
-                    playerState.setGodMode(false);
-                    try {
-                        GameServer.getServerState().getUniverse().getSector(sectorData.sector).noEnter(true);
-                        GameServer.getServerState().getUniverse().getSector(sectorData.sector).noExit(true);
-                    } catch(IOException ignored) { }
-                }
-            }.runLater(EdenCore.getInstance(), 10);
-        } catch(Exception ignored) { }
+        GameServer.getServerState().getUniverse().getStellarSystemFromSecPos(sectorData.sector); //Make sure system is generated
+        if(!GameServer.getUniverse().isSectorLoaded(sectorData.sector)) GameServer.getServerState().getUniverse().loadOrGenerateSector(sectorData.sector);
+        final Sector sector = GameServer.getUniverse().getSector(sectorData.sector);
+
+        sector.noEnter(false);
+        sector.noExit(false);
+
+        SectorSwitch sectorSwitch = new SectorSwitch(playerState.getAssingedPlayerCharacter(), sectorData.sector, SectorSwitch.TRANS_JUMP);
+        sectorSwitch.makeCopy = false;
+        sectorSwitch.jumpSpawnPos = playerData.lastBuildSectorPos;
+        sectorSwitch.executionGraphicsEffect = (byte) 2;
+        sectorSwitch.keepJumpBasisWithJumpPos = false;
+        GameServer.getServerState().getSectorSwitches().add(sectorSwitch);
+        playerState.getControllerState().forcePlayerOutOfSegmentControllers();
+        playerState.setCurrentSector(sectorData.sector);
+        playerState.setCurrentSectorId(sector.getSectorId());
+
+        playerState.updateInventory();
+        sector.noEnter(true);
+        sector.noExit(true);
+        deleteEnemies(sectorData, 60);
     }
 
-    public static void movePlayerFromBuildSector(final PlayerState playerState) throws IOException {
+    public static void movePlayerFromBuildSector(final PlayerState playerState) throws IOException, SQLException, NullPointerException {
         playerState.getControllerState().forcePlayerOutOfSegmentControllers();
-        final PlayerData playerData = getPlayerData(playerState);
         final BuildSectorData sectorData = getPlayerCurrentBuildSector(playerState);
-        if(playerData.lastRealSector.length() > 10000000 || (sectorData != null && playerData.lastRealSector.equals(sectorData.sector))) {
+        final PlayerData playerData = getPlayerData(playerState);
+        Vector3f lastBuildSectorPos = new Vector3f(playerState.getFirstControlledTransformableWOExc().getWorldTransform().origin);
+        playerData.lastBuildSectorPos.set(lastBuildSectorPos);
+        if(playerData.lastRealSector.length() > 10000000 || (sectorData != null && playerData.lastRealSector.equals(sectorData.sector)) || playerState.isInTutorial()) {
             Vector3i defaultSector = (playerState.getFactionId() != 0) ? GameCommon.getGameState().getFactionManager().getFaction(playerState.getFactionId()).getHomeSector() : new Vector3i(2, 2, 2);
             playerData.lastRealSector.set(defaultSector);
             PlayerUtils.sendMessage(playerState, "An error occurred while trying to save your last position, so it has been reset to prevent future issues.");
         }
         saveData();
 
-        try {
-            GameServer.getServerState().getUniverse().loadOrGenerateSector(playerData.lastRealSector);
+        GameServer.getServerState().getUniverse().getStellarSystemFromSecPos(playerData.lastRealSector); //Make sure system is generated
+        if(!GameServer.getUniverse().isSectorLoaded(playerData.lastRealSector)) GameServer.getServerState().getUniverse().loadOrGenerateSector(playerData.lastRealSector);
+
+        if(sectorData != null) {
             GameServer.getServerState().getUniverse().getSector(sectorData.sector).noEnter(false);
             GameServer.getServerState().getUniverse().getSector(sectorData.sector).noExit(false);
-            PacketUtil.sendPacket(playerState, new AdminWarpPacket(playerData.lastRealSector));
-            new StarRunnable() {
-                @Override
-                public void run() {
-                    playerState.updateInventory();
-                    playerState.setGodMode(false);
-                    try {
-                        GameServer.getServerState().getUniverse().getSector(sectorData.sector).noEnter(true);
-                        GameServer.getServerState().getUniverse().getSector(sectorData.sector).noExit(true);
-                    } catch(IOException ignored) { }
+        }
+
+        SectorSwitch sectorSwitch = new SectorSwitch(playerState.getAssingedPlayerCharacter(), playerData.lastRealSector, SectorSwitch.TRANS_JUMP);
+        sectorSwitch.makeCopy = false;
+        sectorSwitch.jumpSpawnPos = playerData.lastRealSectorPos;
+        sectorSwitch.executionGraphicsEffect = (byte) 2;
+        sectorSwitch.keepJumpBasisWithJumpPos = false;
+        GameServer.getServerState().getSectorSwitches().add(sectorSwitch);
+        playerState.getControllerState().forcePlayerOutOfSegmentControllers();
+        sectorSwitch.execute(GameServer.getServerState());
+        playerState.setCurrentSector(playerData.lastRealSector);
+        playerState.setCurrentSectorId(GameServer.getUniverse().getSector(playerData.lastRealSector).getSectorId());
+
+        playerState.updateInventory();
+        if(sectorData != null) {
+            GameServer.getServerState().getUniverse().getSector(sectorData.sector).noEnter(true);
+            GameServer.getServerState().getUniverse().getSector(sectorData.sector).noExit(true);
+            deleteEnemies(sectorData, 60);
+        }
+    }
+
+    public static void deleteEnemies(final BuildSectorData sectorData, long delay) {
+        new StarRunnable() {
+            @Override
+            public void run() {
+                if(getPlayersInBuildSector(sectorData).isEmpty()) {
+                    for(SegmentController entity : getEntitiesInBuildSector(sectorData)) if(entity.getFactionId() == 0) entity.destroy();
                 }
-            }.runLater(EdenCore.getInstance(), 10);
-        } catch(Exception ignored) { }
+            }
+        }.runLater(EdenCore.getInstance(), delay);
+    }
+
+    public static void deleteAllEntities(final BuildSectorData sectorData, long delay) {
+        new StarRunnable() {
+            @Override
+            public void run() {
+                try {
+                    for(SegmentController entity : getEntitiesInBuildSector(sectorData)) entity.destroy();
+                    GameServer.getUniverse().getSector(sectorData.sector).clearVicinity();
+                } catch(IOException exception) {
+                    exception.printStackTrace();
+                }
+            }
+        }.runLater(EdenCore.getInstance(), delay);
     }
     
     public static PlayerData getPlayerData(PlayerState playerState) {
@@ -161,9 +196,7 @@ public class DataUtils {
     }
 
     public static PlayerData createNewPlayerData(PlayerState playerState) {
-        String playerName = playerState.getName();
-        Vector3i lastRealSector = (!isPlayerInAnyBuildSector(playerState) && !(playerState.getCurrentSector().length() > 10000000)) ? playerState.getCurrentSector() : getSpawnSector();
-        PlayerData playerData = new PlayerData(playerName, lastRealSector);
+        PlayerData playerData = new PlayerData(playerState);
         PersistentObjectUtil.addObject(instance, playerData);
         saveData();
         return playerData;
@@ -224,6 +257,13 @@ public class DataUtils {
         BuildSectorData data = new BuildSectorData(playerName, sector, new HashMap<String, HashMap<String, Boolean>>());
         PersistentObjectUtil.addObject(instance, data);
         saveData();
+        try {
+            GameServer.getServerState().getUniverse().getStellarSystemFromSecPos(sector); //Make sure system is generated
+            GameServer.getServerState().getUniverse().loadOrGenerateSector(sector);
+            deleteAllEntities(data, 0);
+        } catch(IOException | SQLException exception) {
+            exception.printStackTrace();
+        }
         return data;
     }
 

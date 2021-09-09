@@ -39,6 +39,11 @@ public class TransferManager {
     public static final int SAVE = 1;
     public static final int LOAD = 2;
 
+    public static void initialize() {
+        File transferFolder = new File(DataUtils.getWorldDataPath() + "/transfer_data");
+        if(!transferFolder.exists()) transferFolder.mkdirs();
+    }
+
     public static int getTransferMode() {
         String s = ConfigManager.getMainConfig().getString("entity-transfer-mode");
         switch(s) {
@@ -51,7 +56,7 @@ public class TransferManager {
     public static File getTransferFolder(PlayerState playerState) {
         try {
             if(GameCommon.isDedicatedServer() || GameCommon.isOnSinglePlayer()) {
-                File transferFolder = new File(DataUtils.getWorldDataPath() + "/transfer data/" + playerState.getName());
+                File transferFolder = new File(DataUtils.getWorldDataPath() + "/transfer_data/" + playerState.getName());
                 if(!transferFolder.exists()) transferFolder.mkdirs();
                 return transferFolder;
             } else throw new IllegalAccessException("Cannot access server transfer data for " + playerState.getName() + " as a client.");

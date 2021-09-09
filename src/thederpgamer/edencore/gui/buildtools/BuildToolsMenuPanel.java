@@ -20,6 +20,7 @@ import thederpgamer.edencore.manager.LogManager;
 import thederpgamer.edencore.utils.DataUtils;
 
 import java.io.IOException;
+import java.sql.SQLException;
 
 /**
  * <Description>
@@ -110,11 +111,11 @@ public class BuildToolsMenuPanel extends GUIMenuPanel {
                                 PlayerUtils.sendMessage(GameClient.getClientPlayerState(), "You can't teleport to your build sector right now as there are enemies nearby.");
                                 EdenCore.getInstance().buildToolsControlManager.setActive(false);
                             }
-                        } catch(IOException exception) {
+                        } catch(IOException | SQLException exception) {
                             LogManager.logException("Something went wrong while trying to transport player \"" + GameClient.getClientPlayerState().getName() + "\" to their build sector in " + DataUtils.getBuildSector(GameClient.getClientPlayerState()).sector.toString(), exception);
                             try {
                                 DataUtils.movePlayerFromBuildSector(GameClient.getClientPlayerState());
-                            } catch(IOException ignored) {
+                            } catch(IOException | SQLException ignored) {
                                 PlayerUtils.sendMessage(GameClient.getClientPlayerState(), "Something went wrong while trying to transport you to your build sector! Please report this issue to an admin!");
                             } finally {
                                 redraw();
@@ -149,7 +150,7 @@ public class BuildToolsMenuPanel extends GUIMenuPanel {
                         getState().getController().queueUIAudio("0022_menu_ui - enter");
                         try {
                             DataUtils.movePlayerFromBuildSector(GameClient.getClientPlayerState());
-                        } catch(IOException ignored) {
+                        } catch(IOException | SQLException ignored) {
 
                         } finally {
                             redraw();

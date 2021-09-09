@@ -2619,19 +2619,10 @@ public class PlayerState extends AbstractOwnerState implements Sendable, DiskWri
                                 Sector sector = ((GameServerState) getState()).getUniverse().getSectorWithoutLoading(sec);
                                 if (sector == null) {
                                     //this sector is not loaded. that means it is ok to do tutorial there
-                                    try {
-                                        SectorUtil.importSectorFullDir("./data/prefabSectors", "tutorial-v2.0.smsec", sec, (GameServerState) state);
+                                    //SectorUtil.importSectorFullDir("./data/prefabSectors", "tutorial-v2.0.smsec", sec, (GameServerState) state);
 
-                                        SectorSwitch sw = new SectorSwitch(getAssingedPlayerCharacter(), sec, SectorSwitch.TRANS_JUMP);
-                                        ((GameServerState) getState()).getSectorSwitches().add(sw);
-                                        return;
-                                    } catch (IOException e) {
-                                        e.printStackTrace();
-                                    } catch (SQLException e) {
-                                        e.printStackTrace();
-                                    }
-
-                                    sendServerMessage(new ServerMessage(Lng.astr("Something went wrong!\nPlease tell an admin or\ntry in a new universe.\nReport the error!"), ServerMessage.MESSAGE_TYPE_ERROR, getId()));
+                                    SectorSwitch sw = new SectorSwitch(getAssingedPlayerCharacter(), sec, SectorSwitch.TRANS_JUMP);
+                                    ((GameServerState) getState()).getSectorSwitches().add(sw);
                                     return;
                                 }
                             }
@@ -3834,7 +3825,7 @@ public class PlayerState extends AbstractOwnerState implements Sendable, DiskWri
     }
 
     /**
-     * @param inventoryController the inventoryController to set
+     * @param controller the inventoryController to set
      */
     public void setInventoryController(InventoryController controller) {
         this.inventoryController = controller;

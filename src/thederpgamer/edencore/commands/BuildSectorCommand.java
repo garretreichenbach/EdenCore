@@ -86,21 +86,26 @@ public class BuildSectorCommand implements CommandInterface {
                     case "enter":
                         if(!DataUtils.isPlayerInAnyBuildSector(sender)) {
                             if(args.length == 1) {
-                                DataUtils.movePlayerToBuildSector(sender, DataUtils.getBuildSector(sender));
+                                if(PlayerUtils.getCurrentControl(sender) instanceof SegmentController) PlayerUtils.sendMessage(sender, "You can't do this while in an entity.");
+                                else DataUtils.movePlayerToBuildSector(sender, DataUtils.getBuildSector(sender));
                                 return true;
                             } else if(args.length == 2) {
                                 PlayerState target = GameCommon.getPlayerFromName(args[1]);
                                 if(target != null) {
                                     BuildSectorData sectorData = DataUtils.getBuildSector(target);
-                                    if(sectorData.hasPermission(sender.getName(), "ENTER")) DataUtils.movePlayerToBuildSector(sender, sectorData);
-                                    else PlayerUtils.sendMessage(sender, "You don't have permission to do this.");
+                                    if(sectorData.hasPermission(sender.getName(), "ENTER")) {
+                                        if(PlayerUtils.getCurrentControl(sender) instanceof SegmentController) PlayerUtils.sendMessage(sender, "You can't do this while in an entity.");
+                                        else DataUtils.movePlayerToBuildSector(sender, DataUtils.getBuildSector(sender));
+                                    } else PlayerUtils.sendMessage(sender, "You don't have permission to do this.");
                                 } else PlayerUtils.sendMessage(sender, "Player \"" + args[1] + "\" doesn't exist or isn't online right now.");
                             } else return false;
                         } else PlayerUtils.sendMessage(sender, "You are already in a build sector right now.");
                         return true;
                     case "leave":
-                        if(DataUtils.isPlayerInAnyBuildSector(sender)) DataUtils.movePlayerFromBuildSector(sender);
-                        else PlayerUtils.sendMessage(sender, "You aren't in a build sector right now.");
+                        if(DataUtils.isPlayerInAnyBuildSector(sender)) {
+                            if(PlayerUtils.getCurrentControl(sender) instanceof SegmentController) PlayerUtils.sendMessage(sender, "You can't do this while in an entity.");
+                            else DataUtils.movePlayerFromBuildSector(sender);
+                        } else PlayerUtils.sendMessage(sender, "You aren't in a build sector right now.");
                         return true;
                     case "invite":
                         if(args.length == 2) {

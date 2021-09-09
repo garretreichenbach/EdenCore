@@ -39,7 +39,7 @@ public class ListEntityCommand implements CommandInterface {
 
     @Override
     public boolean onCommand(PlayerState sender, String[] args) {
-        if(args == null || args.length == 0) {
+        if(args == null || args.length == 0 || args[0] == null || args[0].isEmpty()) {
             PlayerUtils.sendMessage(sender, TransferManager.getSavedEntitiesList(sender));
         } else return false;
         return true;

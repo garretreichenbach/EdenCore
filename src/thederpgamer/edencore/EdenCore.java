@@ -3,31 +3,34 @@ package thederpgamer.edencore;
 import api.common.GameClient;
 import api.listener.Listener;
 import api.listener.events.block.*;
+import api.listener.events.draw.RegisterWorldDrawersEvent;
 import api.listener.events.input.KeyPressEvent;
 import api.listener.events.player.PlayerDeathEvent;
 import api.listener.events.player.PlayerPickupFreeItemEvent;
 import api.listener.events.player.PlayerSpawnEvent;
 import api.mod.StarLoader;
 import api.mod.StarMod;
-import api.network.packets.PacketUtil;
 import api.utils.StarRunnable;
 import api.utils.game.PlayerUtils;
 import api.utils.gui.ModGUIHandler;
 import org.apache.commons.io.IOUtils;
+import org.schema.game.common.data.player.PlayerState;
 import thederpgamer.edencore.commands.BuildSectorCommand;
 import thederpgamer.edencore.commands.ListEntityCommand;
 import thederpgamer.edencore.commands.LoadEntityCommand;
 import thederpgamer.edencore.commands.SaveEntityCommand;
 import thederpgamer.edencore.data.BuildSectorData;
+import thederpgamer.edencore.drawer.BuildSectorHudDrawer;
 import thederpgamer.edencore.gui.admintools.AdminToolsControlManager;
 import thederpgamer.edencore.gui.buildtools.BuildToolsControlManager;
 import thederpgamer.edencore.manager.ConfigManager;
 import thederpgamer.edencore.manager.LogManager;
-import thederpgamer.edencore.network.server.AdminWarpPacket;
+import thederpgamer.edencore.manager.TransferManager;
 import thederpgamer.edencore.utils.DataUtils;
 
 import java.io.FileInputStream;
 import java.io.IOException;
+import java.sql.SQLException;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 
@@ -57,6 +60,7 @@ public class EdenCore extends StarMod {
             "GUITopBar",
             "BlueprintEntry"
     };
+    public BuildSectorHudDrawer hudDrawer;
     public AdminToolsControlManager adminToolsControlManager;
     public BuildToolsControlManager buildToolsControlManager;
 
@@ -65,9 +69,9 @@ public class EdenCore extends StarMod {
         instance = this;
         ConfigManager.initialize(this);
         LogManager.initialize();
+        TransferManager.initialize();
         registerListeners();
         registerCommands();
-        registerPackets();
         startRunners();
     }
 
@@ -78,6 +82,14 @@ public class EdenCore extends StarMod {
     }
 
     private void registerListeners() {
+        StarLoader.registerListener(RegisterWorldDrawersEvent.class, new Listener<RegisterWorldDrawersEvent>() {
+            @Override
+            public void onEvent(RegisterWorldDrawersEvent event) {
+                (hudDrawer = new BuildSectorHudDrawer()).onInit();
+                event.getModDrawables().add(hudDrawer);
+            }
+        }, this);
+
         StarLoader.registerListener(SegmentPieceAddEvent.class, new Listener<SegmentPieceAddEvent>() {
             @Override
             public void onEvent(SegmentPieceAddEvent event) {
@@ -165,27 +177,14 @@ public class EdenCore extends StarMod {
         StarLoader.registerListener(PlayerDeathEvent.class, new Listener<PlayerDeathEvent>() {
             @Override
             public void onEvent(PlayerDeathEvent event) {
-                if(DataUtils.isPlayerInAnyBuildSector(event.getPlayer())) {
-                    try {
-                        DataUtils.movePlayerFromBuildSector(event.getPlayer());
-                    } catch(IOException ignored) { }
-                }
+                if(DataUtils.isPlayerInAnyBuildSector(event.getPlayer())) queueSpawnSwitch(event.getPlayer());
             }
         }, this);
 
         StarLoader.registerListener(PlayerSpawnEvent.class, new Listener<PlayerSpawnEvent>() {
             @Override
             public void onEvent(PlayerSpawnEvent event) {
-                if(DataUtils.isPlayerInAnyBuildSector(event.getPlayer().getOwnerState())) {
-                    try {
-                        DataUtils.movePlayerFromBuildSector(event.getPlayer().getOwnerState());
-                    } catch(IOException exception) {
-                        LogManager.logException("Encountered a severe exception while trying to move player \"" + event.getPlayer().getOwnerState().getName() + "\" out of a build sector! Report this ASAP!", exception);
-                        event.getPlayer().getOwnerState().setUseCreativeMode(false);
-                        if(!event.getPlayer().getOwnerState().isAdmin()) event.getPlayer().getOwnerState().setHasCreativeMode(false);
-                        PlayerUtils.sendMessage(event.getPlayer().getOwnerState(), "The server encountered a severe exception while trying to load you in and your player state may be corrupted as a result. Report this to an admin ASAP!");
-                    }
-                }
+                if(DataUtils.isPlayerInAnyBuildSector(event.getPlayer().getOwnerState())) queueSpawnSwitch(event.getPlayer().getOwnerState());
             }
         }, this);
 
@@ -211,8 +210,24 @@ public class EdenCore extends StarMod {
         StarLoader.registerCommand(new BuildSectorCommand());
     }
 
-    private void registerPackets() {
-        PacketUtil.registerPacket(AdminWarpPacket.class);
+    private void queueSpawnSwitch(final PlayerState playerState) {
+        new StarRunnable() {
+            @Override
+            public void run() {
+                if(!DataUtils.isPlayerInAnyBuildSector(playerState)) cancel();
+                if(!playerState.hasSpawnWait) { //Wait until player has spawned, then warp them
+                    try {
+                        DataUtils.movePlayerFromBuildSector(playerState);
+                    } catch(IOException | SQLException exception) {
+                        LogManager.logException("Encountered a severe exception while trying to move player \"" + playerState.getName() + "\" out of a build sector! Report this ASAP!", exception);
+                        playerState.setUseCreativeMode(false);
+                        if(!playerState.isAdmin()) playerState.setHasCreativeMode(false);
+                        PlayerUtils.sendMessage(playerState, "The server encountered a severe exception while trying to load you in and your player state may be corrupted as a result. Report this to an admin ASAP!");
+                    }
+                    cancel();
+                }
+            }
+        }.runTimer(this, 15);
     }
 
     public void activateAdminToolsMenu() {

@@ -7,12 +7,12 @@ import java.util.HashMap;
 import java.util.Map;
 
 /**
- * <Description>
+ * Stores build sector information as persistent data.
  *
  * @version 2.0 - [09/07/2021]
  * @author TheDerpGamer
  */
-public class BuildSectorData implements ComparableData {
+public class BuildSectorData {
 
     public String ownerName;
     public Vector3i sector;
@@ -28,11 +28,8 @@ public class BuildSectorData implements ComparableData {
     }
 
     @Override
-    public boolean equalTo(ComparableData data) {
-        if(data instanceof BuildSectorData) {
-            BuildSectorData sectorData = (BuildSectorData) data;
-            return sectorData.ownerName.equals(ownerName) && sector.equals(sectorData.sector);
-        } else return false;
+    public boolean equals(Object object) {
+        return object instanceof BuildSectorData && ((BuildSectorData) object).ownerName.equals(ownerName) && ((BuildSectorData) object).sector.equals(sector);
     }
 
     public void addPlayer(String player) {
