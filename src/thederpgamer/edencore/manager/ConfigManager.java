@@ -17,7 +17,6 @@ public class ConfigManager {
             "debug-mode: false",
             "auto-save-interval: 10000",
             "max-world-logs: 5",
-            "max-build-sector-warp-attempts: 2",
             "entity-transfer-mode: NONE",
             "build-tools-menu-key: -",
             "admin-tools-menu-key: ="

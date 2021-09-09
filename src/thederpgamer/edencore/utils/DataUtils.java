@@ -9,6 +9,7 @@ import api.utils.game.PlayerUtils;
 import org.schema.common.util.linAlg.Vector3i;
 import org.schema.game.common.controller.SegmentController;
 import org.schema.game.common.data.player.PlayerState;
+import org.schema.game.common.data.player.faction.FactionManager;
 import org.schema.game.common.data.player.faction.FactionRelation;
 import org.schema.game.common.data.world.Sector;
 import org.schema.game.common.data.world.SimpleTransformableSendableObject;
@@ -87,8 +88,10 @@ public class DataUtils {
     }
 
     public static void movePlayerToBuildSector(final PlayerState playerState, final BuildSectorData sectorData) throws IOException, SQLException, NullPointerException {
+        assert GameServer.getServerState() != null && playerState.isOnServer(); //Make sure only the server executes this code
         playerState.getControllerState().forcePlayerOutOfSegmentControllers();
         final PlayerData playerData = getPlayerData(playerState);
+        if(playerData.lastRealSector.equals(sectorData.sector)) return;
         Vector3f lastRealSectorPos = new Vector3f(playerState.getFirstControlledTransformableWOExc().getWorldTransform().origin);
         playerData.lastRealSectorPos.set(lastRealSectorPos);
         playerData.lastRealSector.set(playerState.getCurrentSector());
@@ -110,7 +113,7 @@ public class DataUtils {
         sectorSwitch.makeCopy = false;
         sectorSwitch.jumpSpawnPos = playerData.lastBuildSectorPos;
         sectorSwitch.executionGraphicsEffect = (byte) 2;
-        sectorSwitch.keepJumpBasisWithJumpPos = false;
+        sectorSwitch.keepJumpBasisWithJumpPos = true;
         GameServer.getServerState().getSectorSwitches().add(sectorSwitch);
         playerState.getControllerState().forcePlayerOutOfSegmentControllers();
         playerState.setCurrentSector(sectorData.sector);
@@ -123,9 +126,11 @@ public class DataUtils {
     }
 
     public static void movePlayerFromBuildSector(final PlayerState playerState) throws IOException, SQLException, NullPointerException {
+        assert GameServer.getServerState() != null && playerState.isOnServer(); //Make sure only the server executes this code
         playerState.getControllerState().forcePlayerOutOfSegmentControllers();
         final BuildSectorData sectorData = getPlayerCurrentBuildSector(playerState);
         final PlayerData playerData = getPlayerData(playerState);
+        if(sectorData != null && playerData.lastRealSector.equals(sectorData.sector)) return;
         Vector3f lastBuildSectorPos = new Vector3f(playerState.getFirstControlledTransformableWOExc().getWorldTransform().origin);
         playerData.lastBuildSectorPos.set(lastBuildSectorPos);
         if(playerData.lastRealSector.length() > 10000000 || (sectorData != null && playerData.lastRealSector.equals(sectorData.sector)) || playerState.isInTutorial()) {
@@ -147,10 +152,9 @@ public class DataUtils {
         sectorSwitch.makeCopy = false;
         sectorSwitch.jumpSpawnPos = playerData.lastRealSectorPos;
         sectorSwitch.executionGraphicsEffect = (byte) 2;
-        sectorSwitch.keepJumpBasisWithJumpPos = false;
+        sectorSwitch.keepJumpBasisWithJumpPos = true;
         GameServer.getServerState().getSectorSwitches().add(sectorSwitch);
         playerState.getControllerState().forcePlayerOutOfSegmentControllers();
-        sectorSwitch.execute(GameServer.getServerState());
         playerState.setCurrentSector(playerData.lastRealSector);
         playerState.setCurrentSectorId(GameServer.getUniverse().getSector(playerData.lastRealSector).getSectorId());
 
@@ -167,7 +171,7 @@ public class DataUtils {
             @Override
             public void run() {
                 if(getPlayersInBuildSector(sectorData).isEmpty()) {
-                    for(SegmentController entity : getEntitiesInBuildSector(sectorData)) if(entity.getFactionId() == 0) entity.destroy();
+                    for(SegmentController entity : getEntitiesInBuildSector(sectorData)) if(entity.getFactionId() == FactionManager.PIRATES_ID) entity.destroy();
                 }
             }
         }.runLater(EdenCore.getInstance(), delay);
