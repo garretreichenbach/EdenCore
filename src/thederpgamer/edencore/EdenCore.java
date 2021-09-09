@@ -58,6 +58,7 @@ public class EdenCore extends StarMod {
     private final String[] overwriteClasses = new String[] {
             "PlayerState",
             "GUITopBar",
+            "CatalogExtendedPanel",
             "BlueprintEntry"
     };
     public BuildSectorHudDrawer hudDrawer;

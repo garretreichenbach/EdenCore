@@ -11,6 +11,8 @@ import org.schema.game.common.controller.SegmentController;
 import org.schema.game.common.data.player.PlayerState;
 import org.schema.game.common.data.player.faction.FactionManager;
 import org.schema.game.common.data.player.faction.FactionRelation;
+import org.schema.game.common.data.player.inventory.Inventory;
+import org.schema.game.common.data.player.inventory.InventorySlot;
 import org.schema.game.common.data.world.Sector;
 import org.schema.game.common.data.world.SimpleTransformableSendableObject;
 import org.schema.game.server.controller.SectorSwitch;
@@ -108,6 +110,11 @@ public class DataUtils {
             sector.noEnter(false);
             sector.noExit(false);
 
+            //No funny business >:U
+            playerState.getPersonalFactoryInventoryCapsule().clear();
+            playerState.getPersonalFactoryInventoryMacroBlock().clear();
+            playerState.getPersonalFactoryInventoryMicro().clear();
+
             SectorSwitch sectorSwitch = new SectorSwitch(playerState.getAssingedPlayerCharacter(), sectorData.sector, SectorSwitch.TRANS_JUMP);
             sectorSwitch.makeCopy = false;
             sectorSwitch.jumpSpawnPos = playerData.lastBuildSectorPos;
@@ -147,6 +154,12 @@ public class DataUtils {
             GameServer.getServerState().getUniverse().getSector(sectorData.sector).noExit(false);
         }
 
+        //No funny business >:U
+        playerState.getPersonalFactoryInventoryCapsule().clear();
+        playerState.getPersonalFactoryInventoryMacroBlock().clear();
+        playerState.getPersonalFactoryInventoryMicro().clear();
+        playerState.getInventory().clear();
+
         SectorSwitch sectorSwitch = new SectorSwitch(playerState.getAssingedPlayerCharacter(), playerData.lastRealSector, SectorSwitch.TRANS_JUMP);
         sectorSwitch.makeCopy = false;
         sectorSwitch.jumpSpawnPos = playerData.lastRealSectorPos;
@@ -157,12 +170,29 @@ public class DataUtils {
         playerState.setCurrentSector(playerData.lastRealSector);
         playerState.setCurrentSectorId(GameServer.getUniverse().getSector(playerData.lastRealSector).getSectorId());
 
+        if(!playerState.isAdmin()) playerState.setHasCreativeMode(false);
+        playerState.setUseCreativeMode(false);
         playerState.updateInventory();
         playerState.getInventory().sendAll();
+
         if(sectorData != null) {
             GameServer.getServerState().getUniverse().getSector(sectorData.sector).noEnter(true);
             GameServer.getServerState().getUniverse().getSector(sectorData.sector).noExit(true);
             deleteEnemies(sectorData, 60);
+        }
+
+        runInventoryCheck(playerState);
+    }
+
+    /**
+     * Removes any infinite items in a player's inventory to prevent potential exploits.
+     * @param playerState The playerState
+     */
+    public static void runInventoryCheck(PlayerState playerState) {
+        if(playerState.isHasCreativeMode() && playerState.isUseCreativeMode()) return;
+        Inventory inventory = playerState.getInventory();
+        for(Map.Entry<Integer, InventorySlot> entry : inventory.getMap().entrySet()) {
+            if(entry.getValue().isInfinite() || entry.getValue().count() >= 9999999) inventory.removeSlot(entry.getKey(), true);
         }
     }
 
