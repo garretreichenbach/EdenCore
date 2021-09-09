@@ -1,6 +1,5 @@
 package thederpgamer.edencore.manager;
 
-import api.common.GameClient;
 import api.common.GameCommon;
 import api.common.GameServer;
 import com.bulletphysics.linearmath.Transform;
@@ -24,8 +23,14 @@ import thederpgamer.edencore.utils.DataUtils;
 import javax.vecmath.Vector3f;
 import java.io.*;
 import java.nio.file.Files;
-import java.util.*;
-import java.util.zip.*;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Locale;
+import java.util.Objects;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipFile;
+import java.util.zip.ZipInputStream;
+import java.util.zip.ZipOutputStream;
 
 /**
  * <Description>
@@ -61,7 +66,7 @@ public class TransferManager {
                 return transferFolder;
             } else throw new IllegalAccessException("Cannot access server transfer data for " + playerState.getName() + " as a client.");
         } catch(IllegalAccessException exception) {
-            LogManager.logException("Client " + GameClient.getClientPlayerState().getName() + " attempted to illegally access server data.", exception);
+            LogManager.logException("Client " + playerState.getName() + " attempted to illegally access server data.", exception);
         }
         return null;
     }

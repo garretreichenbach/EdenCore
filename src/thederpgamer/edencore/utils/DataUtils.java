@@ -91,38 +91,39 @@ public class DataUtils {
         assert GameServer.getServerState() != null && playerState.isOnServer(); //Make sure only the server executes this code
         playerState.getControllerState().forcePlayerOutOfSegmentControllers();
         final PlayerData playerData = getPlayerData(playerState);
-        if(playerData.lastRealSector.equals(sectorData.sector)) return;
-        Vector3f lastRealSectorPos = new Vector3f(playerState.getFirstControlledTransformableWOExc().getWorldTransform().origin);
-        playerData.lastRealSectorPos.set(lastRealSectorPos);
-        playerData.lastRealSector.set(playerState.getCurrentSector());
-        if(playerData.lastRealSector.length() > 10000000 || playerData.lastRealSector.equals(sectorData.sector)) {
-            Vector3i defaultSector = (playerState.getFactionId() != 0) ? GameCommon.getGameState().getFactionManager().getFaction(playerState.getFactionId()).getHomeSector() : new Vector3i(2, 2, 2);
-            playerData.lastRealSector.set(defaultSector);
-            PlayerUtils.sendMessage(playerState, "An error occurred while trying to save your last position, so it has been reset to prevent future issues.");
+        if(playerState.getCurrentSector().length() <= 10000000 && !playerState.getCurrentSector().equals(sectorData.sector)) {
+            Vector3f lastRealSectorPos = new Vector3f(playerState.getFirstControlledTransformableWOExc().getWorldTransform().origin);
+            playerData.lastRealSectorPos.set(lastRealSectorPos);
+            playerData.lastRealSector.set(playerState.getCurrentSector());
+            if(playerData.lastRealSector.length() > 10000000 || playerData.lastRealSector.equals(sectorData.sector)) {
+                Vector3i defaultSector = (playerState.getFactionId() != 0) ? GameCommon.getGameState().getFactionManager().getFaction(playerState.getFactionId()).getHomeSector() : new Vector3i(2, 2, 2);
+                playerData.lastRealSector.set(defaultSector);
+                PlayerUtils.sendMessage(playerState, "An error occurred while trying to save your last position, so it has been reset to prevent future issues.");
+            }
+            saveData();
+
+            GameServer.getServerState().getUniverse().getStellarSystemFromSecPos(sectorData.sector); //Make sure system is generated
+            if(!GameServer.getUniverse().isSectorLoaded(sectorData.sector)) GameServer.getServerState().getUniverse().loadOrGenerateSector(sectorData.sector);
+            final Sector sector = GameServer.getUniverse().getSector(sectorData.sector);
+
+            sector.noEnter(false);
+            sector.noExit(false);
+
+            SectorSwitch sectorSwitch = new SectorSwitch(playerState.getAssingedPlayerCharacter(), sectorData.sector, SectorSwitch.TRANS_JUMP);
+            sectorSwitch.makeCopy = false;
+            sectorSwitch.jumpSpawnPos = playerData.lastBuildSectorPos;
+            sectorSwitch.executionGraphicsEffect = (byte) 2;
+            sectorSwitch.keepJumpBasisWithJumpPos = true;
+            GameServer.getServerState().getSectorSwitches().add(sectorSwitch);
+            playerState.getControllerState().forcePlayerOutOfSegmentControllers();
+            playerState.setCurrentSector(sectorData.sector);
+            playerState.setCurrentSectorId(sector.getSectorId());
+
+            playerState.updateInventory();
+            sector.noEnter(true);
+            sector.noExit(true);
+            deleteEnemies(sectorData, 60);
         }
-        saveData();
-
-        GameServer.getServerState().getUniverse().getStellarSystemFromSecPos(sectorData.sector); //Make sure system is generated
-        if(!GameServer.getUniverse().isSectorLoaded(sectorData.sector)) GameServer.getServerState().getUniverse().loadOrGenerateSector(sectorData.sector);
-        final Sector sector = GameServer.getUniverse().getSector(sectorData.sector);
-
-        sector.noEnter(false);
-        sector.noExit(false);
-
-        SectorSwitch sectorSwitch = new SectorSwitch(playerState.getAssingedPlayerCharacter(), sectorData.sector, SectorSwitch.TRANS_JUMP);
-        sectorSwitch.makeCopy = false;
-        sectorSwitch.jumpSpawnPos = playerData.lastBuildSectorPos;
-        sectorSwitch.executionGraphicsEffect = (byte) 2;
-        sectorSwitch.keepJumpBasisWithJumpPos = true;
-        GameServer.getServerState().getSectorSwitches().add(sectorSwitch);
-        playerState.getControllerState().forcePlayerOutOfSegmentControllers();
-        playerState.setCurrentSector(sectorData.sector);
-        playerState.setCurrentSectorId(sector.getSectorId());
-
-        playerState.updateInventory();
-        sector.noEnter(true);
-        sector.noExit(true);
-        deleteEnemies(sectorData, 60);
     }
 
     public static void movePlayerFromBuildSector(final PlayerState playerState) throws IOException, SQLException, NullPointerException {
@@ -130,13 +131,12 @@ public class DataUtils {
         playerState.getControllerState().forcePlayerOutOfSegmentControllers();
         final BuildSectorData sectorData = getPlayerCurrentBuildSector(playerState);
         final PlayerData playerData = getPlayerData(playerState);
-        if(sectorData != null && playerData.lastRealSector.equals(sectorData.sector)) return;
         Vector3f lastBuildSectorPos = new Vector3f(playerState.getFirstControlledTransformableWOExc().getWorldTransform().origin);
         playerData.lastBuildSectorPos.set(lastBuildSectorPos);
         if(playerData.lastRealSector.length() > 10000000 || (sectorData != null && playerData.lastRealSector.equals(sectorData.sector)) || playerState.isInTutorial()) {
             Vector3i defaultSector = (playerState.getFactionId() != 0) ? GameCommon.getGameState().getFactionManager().getFaction(playerState.getFactionId()).getHomeSector() : new Vector3i(2, 2, 2);
             playerData.lastRealSector.set(defaultSector);
-            PlayerUtils.sendMessage(playerState, "An error occurred while trying to save your last position, so it has been reset to prevent future issues.");
+            PlayerUtils.sendMessage(playerState, "An error occurred while trying to get your last position, so it has been reset to prevent future issues.");
         }
         saveData();
 
