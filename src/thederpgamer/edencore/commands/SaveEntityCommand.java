@@ -51,7 +51,7 @@ public class SaveEntityCommand implements CommandInterface {
                 if(TransferManager.isValidTransfer(playerState)) {
                     try {
                         TransferManager.saveEntity(playerState, entity);
-                        PlayerUtils.sendMessage(playerState, "Successfully saved entity \"" + DataUtils.getEntityNameFormatted(entity) + "\" for transferring. Use /load_entity \"" + DataUtils.getEntityNameFormatted(entity) + "\" after the reset to complete the transfer.");
+                        PlayerUtils.sendMessage(playerState, "Successfully saved entity \"" + DataUtils.getEntityNameFormatted(entity) + "\" for transferring. Use /entity_load \"" + DataUtils.getEntityNameFormatted(entity) + "\" after the reset to complete the transfer.");
                         entity.railController.destroyDockedRecursive();
                         for(ElementDocking dock : entity.getDockingController().getDockedOnThis()) {
                             dock.from.getSegment().getSegmentController().markForPermanentDelete(true);

@@ -44,7 +44,7 @@ public class BuildSectorHudDrawer extends ModWorldDrawer {
     }
 
     @Override
-    public void draw() {
+    public void preCameraPrepare() {
         if(DataUtils.isPlayerInAnyBuildSector(GameClient.getClientPlayerState())) {
             MapControllerManager mapControlManager = GameClient.getClientState().getGlobalGameControlManager().getIngameControlManager().getPlayerGameControlManager().getMapControlManager();
             if(mapControlManager.isActive()) { //Don't allow map usage while in a build sector.
@@ -76,6 +76,11 @@ public class BuildSectorHudDrawer extends ModWorldDrawer {
                 LogManager.logException("Something went wrong while trying to update the hud indicator displays" , exception);
             }
         } else cleanUp();
+    }
+
+    @Override
+    public void draw() {
+
     }
 
     @Override

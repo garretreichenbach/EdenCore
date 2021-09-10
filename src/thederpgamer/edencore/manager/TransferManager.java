@@ -64,15 +64,15 @@ public class TransferManager {
     }
 
     public static boolean canTransfer(PlayerState playerState) {
-        return playerState.getFirstControlledTransformableWOExc() != null && (playerState.getFirstControlledTransformableWOExc().getType().equals(SimpleTransformableSendableObject.EntityType.SHIP) || playerState.getFirstControlledTransformableWOExc().getType().equals(SimpleTransformableSendableObject.EntityType.SPACE_STATION));
+        return playerState.getFirstControlledTransformableWOExc() != null && !DataUtils.isPlayerInAnyBuildSector(playerState) && (playerState.getFirstControlledTransformableWOExc().getType().equals(SimpleTransformableSendableObject.EntityType.SHIP) || playerState.getFirstControlledTransformableWOExc().getType().equals(SimpleTransformableSendableObject.EntityType.SPACE_STATION));
     }
 
     public static boolean isValidTransfer(PlayerState playerState) {
-        return playerState.getFirstControlledTransformableWOExc() != null && (playerState.getFirstControlledTransformableWOExc().getType().equals(SimpleTransformableSendableObject.EntityType.SHIP) && !(((Ship) playerState.getFirstControlledTransformableWOExc()).getSpawner().toLowerCase(Locale.ENGLISH).equals("<system>"))) || (playerState.getFirstControlledTransformableWOExc().getType().equals(SimpleTransformableSendableObject.EntityType.SPACE_STATION) && !(((SpaceStation) playerState.getFirstControlledTransformableWOExc()).getSpawner().toLowerCase(Locale.ENGLISH).equals("<system>")));
+        return playerState.getFirstControlledTransformableWOExc() != null && !DataUtils.isPlayerInAnyBuildSector(playerState) && (playerState.getFirstControlledTransformableWOExc().getType().equals(SimpleTransformableSendableObject.EntityType.SHIP) && !(((Ship) playerState.getFirstControlledTransformableWOExc()).getSpawner().toLowerCase(Locale.ENGLISH).equals("<system>"))) || (playerState.getFirstControlledTransformableWOExc().getType().equals(SimpleTransformableSendableObject.EntityType.SPACE_STATION) && !(((SpaceStation) playerState.getFirstControlledTransformableWOExc()).getSpawner().toLowerCase(Locale.ENGLISH).equals("<system>")));
     }
 
     public static void saveEntity(PlayerState playerState, SegmentController entity) throws Exception {
-        assert GameServer.getServerState() != null;
+        assert GameServer.getServerState() != null && !DataUtils.isPlayerInAnyBuildSector(playerState);
         playerState.getControllerState().forcePlayerOutOfSegmentControllers();
         Tag tag = entity.toTagStructure();
         File transferFolder = getTransferFolder(playerState);
@@ -112,7 +112,7 @@ public class TransferManager {
     }
 
     public static void loadEntity(PlayerState playerState, String entityName) throws Exception {
-        assert GameServer.getServerState() != null;
+        assert GameServer.getServerState() != null && !DataUtils.isPlayerInAnyBuildSector(playerState);
         File transferFolder = getTransferFolder(playerState);
         if(transferFolder != null && transferFolder.isDirectory()) {
             if(transferFolder.listFiles() != null && Objects.requireNonNull(transferFolder.listFiles()).length > 0) {

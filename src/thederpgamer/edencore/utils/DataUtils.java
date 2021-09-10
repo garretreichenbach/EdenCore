@@ -126,7 +126,6 @@ public class DataUtils {
             playerState.setCurrentSectorId(sector.getSectorId());
 
             playerState.updateInventory();
-            playerState.getInventory().sendAll();
             sector.noEnter(true);
             sector.noExit(true);
             deleteEnemies(sectorData, 60);
@@ -173,7 +172,6 @@ public class DataUtils {
         if(!playerState.isAdmin()) playerState.setHasCreativeMode(false);
         playerState.setUseCreativeMode(false);
         playerState.updateInventory();
-        playerState.getInventory().sendAll();
 
         if(sectorData != null) {
             GameServer.getServerState().getUniverse().getSector(sectorData.sector).noEnter(true);
