@@ -20,6 +20,8 @@ import java.lang.reflect.Field;
  */
 public class BuildSectorHudDrawer extends ModWorldDrawer {
 
+    private boolean initialized = false;
+
     private String[] buildSectorNameReplace;
     private Vector3i[] buildSectorPosReplace;
     private Transform[] buildSectorTransformReplace;
@@ -41,13 +43,15 @@ public class BuildSectorHudDrawer extends ModWorldDrawer {
             //buildSectorPosReplace[i] = new Vector3i();
             //buildSectorTransformReplace[i] = new Transform();
         }
+        initialized = true;
     }
 
     @Override
-    public void preCameraPrepare() {
+    public void draw() {
+        if(!initialized) onInit();
         if(DataUtils.isPlayerInAnyBuildSector(GameClient.getClientPlayerState())) {
             MapControllerManager mapControlManager = GameClient.getClientState().getGlobalGameControlManager().getIngameControlManager().getPlayerGameControlManager().getMapControlManager();
-            if(mapControlManager.isActive()) { //Don't allow map usage while in a build sector.
+            if(mapControlManager.isActive()) { //Don't allow map usage while in a build sector
                 GameClient.getClientState().getWorldDrawer().getGameMapDrawer().cleanUp();
                 GameClient.getClientState().getGlobalGameControlManager().getIngameControlManager().getPlayerGameControlManager().galaxyMapAction();
                 GameClient.getClientState().getGlobalGameControlManager().getIngameControlManager().getPlayerGameControlManager().getMapControlManager().setActive(false);
@@ -76,11 +80,6 @@ public class BuildSectorHudDrawer extends ModWorldDrawer {
                 LogManager.logException("Something went wrong while trying to update the hud indicator displays" , exception);
             }
         } else cleanUp();
-    }
-
-    @Override
-    public void draw() {
-
     }
 
     @Override

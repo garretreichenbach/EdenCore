@@ -6,6 +6,7 @@ import api.mod.ModSkeleton;
 import api.mod.config.PersistentObjectUtil;
 import api.utils.StarRunnable;
 import api.utils.game.PlayerUtils;
+import it.unimi.dsi.fastutil.ints.IntOpenHashSet;
 import org.schema.common.util.linAlg.Vector3i;
 import org.schema.game.common.controller.SegmentController;
 import org.schema.game.common.data.element.ElementInformation;
@@ -97,13 +98,14 @@ public class DataUtils {
     }
 
     public static void movePlayerToBuildSector(final PlayerState playerState, final BuildSectorData sectorData) throws IOException, SQLException, NullPointerException {
-        assert GameServer.getServerState() != null && playerState.isOnServer() && !DataUtils.isPlayerInAnyBuildSector(playerState); //Make sure only the server executes this code
+        if(GameServer.getServerState() == null || !playerState.isOnServer() || DataUtils.isPlayerInAnyBuildSector(playerState) || playerState.isInTestSector() || playerState.isInPersonalSector() || playerState.isInTutorial()) return; //Make sure only the server executes this code
         playerState.getControllerState().forcePlayerOutOfSegmentControllers();
         final PlayerData playerData = getPlayerData(playerState);
         Vector3f lastRealSectorPos = new Vector3f(playerState.getFirstControlledTransformableWOExc().getWorldTransform().origin);
         playerData.lastRealSectorPos.set(lastRealSectorPos);
-        playerData.lastRealSector.set(playerState.getCurrentSector());
-        if(playerData.lastRealSector.length() > 10000000 || playerData.lastRealSector.equals(sectorData.sector)) {
+        if(playerState.getCurrentSector().length() > 1000000 || playerData.lastRealSector.equals(sectorData.sector)) return;
+        else playerData.lastRealSector.set(playerState.getCurrentSector());
+        if(playerData.lastRealSector.length() > 1000000 || playerData.lastRealSector.equals(sectorData.sector)) {
             Vector3i defaultSector = (playerState.getFactionId() != 0) ? GameCommon.getGameState().getFactionManager().getFaction(playerState.getFactionId()).getHomeSector() : new Vector3i(2, 2, 2);
             playerData.lastRealSector.set(defaultSector);
             PlayerUtils.sendMessage(playerState, "An error occurred while trying to save your last position, so it has been reset to prevent future issues.");
@@ -113,8 +115,6 @@ public class DataUtils {
         if(!GameServer.getUniverse().isSectorLoaded(sectorData.sector)) GameServer.getServerState().getUniverse().loadOrGenerateSector(sectorData.sector);
         final Sector sector = GameServer.getUniverse().getSector(sectorData.sector);
 
-        playerState.instantiateInventoryServer(true); //Backup and clear the player's inventory
-
         sector.noEnter(false);
         sector.noExit(false);
 
@@ -123,6 +123,7 @@ public class DataUtils {
         sectorSwitch.jumpSpawnPos = playerData.lastBuildSectorPos;
         sectorSwitch.executionGraphicsEffect = (byte) 2;
         sectorSwitch.keepJumpBasisWithJumpPos = true;
+        sectorSwitch.delay = System.currentTimeMillis();
         GameServer.getServerState().getSectorSwitches().add(sectorSwitch);
         playerState.getControllerState().forcePlayerOutOfSegmentControllers();
         playerState.setCurrentSector(sectorData.sector);
@@ -132,40 +133,39 @@ public class DataUtils {
         sector.noExit(true);
         deleteEnemies(sectorData, 60);
 
-        playerState.updateInventory();
+        playerState.instantiateInventoryServer(true); //Backup and clear the player's inventory
+        playerState.setInventory(new VirtualCreativeModeInventory(playerState, PlayerState.NORM_INV));
     }
 
     public static void movePlayerFromBuildSector(final PlayerState playerState) throws IOException, SQLException, NullPointerException {
-        assert GameServer.getServerState() != null && playerState.isOnServer(); //Make sure only the server executes this code
+        if(GameServer.getServerState() == null || !playerState.isOnServer()) return; //Make sure only the server executes this code
         playerState.getControllerState().forcePlayerOutOfSegmentControllers();
         final BuildSectorData sectorData = getPlayerCurrentBuildSector(playerState);
         final PlayerData playerData = getPlayerData(playerState);
         Vector3f lastBuildSectorPos = new Vector3f(playerState.getFirstControlledTransformableWOExc().getWorldTransform().origin);
         playerData.lastBuildSectorPos.set(lastBuildSectorPos);
-        if(playerData.lastRealSector.length() > 10000000 || (sectorData != null && playerData.lastRealSector.equals(sectorData.sector))) {
+        if(playerData.lastRealSector.length() > 1000000 || (sectorData != null && playerData.lastRealSector.equals(sectorData.sector))) {
             Vector3i defaultSector = (playerState.getFactionId() != 0) ? GameCommon.getGameState().getFactionManager().getFaction(playerState.getFactionId()).getHomeSector() : new Vector3i(2, 2, 2);
             playerData.lastRealSector.set(defaultSector);
             PlayerUtils.sendMessage(playerState, "An error occurred while trying to get your last position, so it has been reset to prevent future issues.");
         }
 
         GameServer.getServerState().getUniverse().getStellarSystemFromSecPos(playerData.lastRealSector); //Make sure system is generated
-        if(!GameServer.getUniverse().isSectorLoaded(playerData.lastRealSector))
-            GameServer.getServerState().getUniverse().loadOrGenerateSector(playerData.lastRealSector);
+        if(!GameServer.getUniverse().isSectorLoaded(playerData.lastRealSector)) GameServer.getServerState().getUniverse().loadOrGenerateSector(playerData.lastRealSector);
 
         if(sectorData != null) {
             GameServer.getServerState().getUniverse().getSector(sectorData.sector).noEnter(false);
             GameServer.getServerState().getUniverse().getSector(sectorData.sector).noExit(false);
         }
 
-        if(!(playerState.getInventory() instanceof VirtualCreativeModeInventory))
-            LogManager.logWarning(playerState.getName() + " is supposed to have a virtual inventory right now!", null);
-        playerState.getInventory().clear();
+        clearInventory(playerState);
 
         SectorSwitch sectorSwitch = new SectorSwitch(playerState.getAssingedPlayerCharacter(), playerData.lastRealSector, SectorSwitch.TRANS_JUMP);
         sectorSwitch.makeCopy = false;
         sectorSwitch.jumpSpawnPos = playerData.lastRealSectorPos;
         sectorSwitch.executionGraphicsEffect = (byte) 2;
         sectorSwitch.keepJumpBasisWithJumpPos = true;
+        sectorSwitch.delay = System.currentTimeMillis();
         GameServer.getServerState().getSectorSwitches().add(sectorSwitch);
         playerState.getControllerState().forcePlayerOutOfSegmentControllers();
         playerState.setCurrentSector(playerData.lastRealSector);
@@ -178,8 +178,33 @@ public class DataUtils {
         }
 
         playerState.loadInventoryBackupServer(); //Load the player's inventory from backup
-        playerState.updateInventory();
         runInventoryCheck(playerState);
+    }
+
+    public static void clearInventory(PlayerState playerState) {
+        {
+            IntOpenHashSet changed = new IntOpenHashSet();
+            playerState.getInventory().clear(changed);
+            playerState.getInventory().sendInventoryModification(changed);
+        }
+
+        {
+            IntOpenHashSet changed = new IntOpenHashSet();
+            playerState.getPersonalFactoryInventoryCapsule().clear(changed);
+            playerState.getPersonalFactoryInventoryCapsule().sendInventoryModification(changed);
+        }
+
+        {
+            IntOpenHashSet changed = new IntOpenHashSet();
+            playerState.getPersonalFactoryInventoryMicro().clear(changed);
+            playerState.getPersonalFactoryInventoryMicro().sendInventoryModification(changed);
+        }
+
+        {
+            IntOpenHashSet changed = new IntOpenHashSet();
+            playerState.getPersonalFactoryInventoryMacroBlock().clear(changed);
+            playerState.getPersonalFactoryInventoryMacroBlock().sendInventoryModification(changed);
+        }
     }
 
     /**
@@ -188,16 +213,18 @@ public class DataUtils {
      * @param playerState The playerState
      */
     public static void runInventoryCheck(PlayerState playerState) {
-        if(playerState.isHasCreativeMode() && playerState.isUseCreativeMode()) return;
+        if(playerState.isHasCreativeMode() || playerState.isUseCreativeMode() || playerState.getInventory().isInfinite()) return;
         boolean invalid = false;
         StringBuilder builder = new StringBuilder();
         builder.append("Found and removed the following invalid items in ").append(playerState.getName()).append("'s inventory:\n");
         Inventory inventory = playerState.getInventory();
         for(Map.Entry<Integer, InventorySlot> entry : inventory.getMap().entrySet()) {
-            if(entry.getValue().isInfinite() || entry.getValue().count() >= 9999999) {
+            if((entry.getValue().isInfinite() || entry.getValue().count() >= 9999999)) {
                 invalid = true;
-                ElementInformation info = ElementKeyMap.getInfo(entry.getValue().getType());
-                builder.append("- [").append(entry.getKey().toString()).append("]: ").append(info.getName()).append("(").append(info.getId()).append(") x").append(entry.getValue().count()).append("\n");
+                try {
+                    ElementInformation info = ElementKeyMap.getInfo(entry.getValue().getType());
+                    builder.append("- [").append(entry.getKey().toString()).append("]: ").append(info.getName()).append("(").append(info.getId()).append(") x").append(entry.getValue().count()).append("\n");
+                } catch(Exception ignored) { }
                 inventory.removeSlot(entry.getKey(), true);
             }
         }
@@ -262,7 +289,7 @@ public class DataUtils {
     }
 
     public static boolean isPlayerInAnyBuildSector(PlayerState playerState) {
-        return getPlayerCurrentBuildSector(playerState) != null || playerState.getCurrentSector().length() > 10000000;
+        return playerState.getCurrentSector().length() > 1000000 || getPlayerCurrentBuildSector(playerState) != null;
     }
 
     public static ArrayList<SegmentController> getEntitiesInBuildSector(BuildSectorData sectorData) {

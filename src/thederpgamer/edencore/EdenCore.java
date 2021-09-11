@@ -4,7 +4,6 @@ import api.common.GameClient;
 import api.listener.Listener;
 import api.listener.events.block.*;
 import api.listener.events.draw.RegisterWorldDrawersEvent;
-import api.listener.events.input.KeyPressEvent;
 import api.listener.events.player.PlayerDeathEvent;
 import api.listener.events.player.PlayerPickupFreeItemEvent;
 import api.listener.events.player.PlayerSpawnEvent;
@@ -12,7 +11,6 @@ import api.mod.StarLoader;
 import api.mod.StarMod;
 import api.utils.StarRunnable;
 import api.utils.game.PlayerUtils;
-import api.utils.gui.ModGUIHandler;
 import org.apache.commons.io.IOUtils;
 import org.schema.game.common.data.player.PlayerState;
 import thederpgamer.edencore.commands.BuildSectorCommand;
@@ -21,8 +19,6 @@ import thederpgamer.edencore.commands.LoadEntityCommand;
 import thederpgamer.edencore.commands.SaveEntityCommand;
 import thederpgamer.edencore.data.BuildSectorData;
 import thederpgamer.edencore.drawer.BuildSectorHudDrawer;
-import thederpgamer.edencore.gui.admintools.AdminToolsControlManager;
-import thederpgamer.edencore.gui.buildtools.BuildToolsControlManager;
 import thederpgamer.edencore.manager.ConfigManager;
 import thederpgamer.edencore.manager.LogManager;
 import thederpgamer.edencore.manager.TransferManager;
@@ -57,13 +53,9 @@ public class EdenCore extends StarMod {
     //Data
     private final String[] overwriteClasses = new String[] {
             "PlayerState",
-            "GUITopBar",
             "CatalogExtendedPanel",
             "BlueprintEntry"
     };
-    public BuildSectorHudDrawer hudDrawer;
-    public AdminToolsControlManager adminToolsControlManager;
-    public BuildToolsControlManager buildToolsControlManager;
 
     @Override
     public void onEnable() {
@@ -73,7 +65,6 @@ public class EdenCore extends StarMod {
         TransferManager.initialize();
         registerListeners();
         registerCommands();
-        startRunners();
     }
 
     @Override
@@ -86,8 +77,7 @@ public class EdenCore extends StarMod {
         StarLoader.registerListener(RegisterWorldDrawersEvent.class, new Listener<RegisterWorldDrawersEvent>() {
             @Override
             public void onEvent(RegisterWorldDrawersEvent event) {
-                (hudDrawer = new BuildSectorHudDrawer()).onInit();
-                event.getModDrawables().add(hudDrawer);
+                event.getModDrawables().add(new BuildSectorHudDrawer());
             }
         }, this);
 
@@ -188,20 +178,6 @@ public class EdenCore extends StarMod {
                 if(DataUtils.isPlayerInAnyBuildSector(event.getPlayer().getOwnerState())) queueSpawnSwitch(event.getPlayer().getOwnerState());
             }
         }, this);
-
-        StarLoader.registerListener(KeyPressEvent.class, new Listener<KeyPressEvent>() {
-            @Override
-            public void onEvent(KeyPressEvent event) {
-                if(GameClient.getClientState().getPlayerInputs().isEmpty()) {
-                    if(!ConfigManager.getMainConfig().getBoolean("debug-mode")) return; //Todo: Finish build tools and admin tools menus
-                    if(event.getChar() == ConfigManager.getMainConfig().getString("build-tools-menu-key").charAt(0)) {
-                        activateBuildToolsMenu();
-                    } else if(event.getChar() == ConfigManager.getMainConfig().getString("admin-tools-menu-key").charAt(0) && GameClient.getClientPlayerState().isAdmin()) {
-                        activateAdminToolsMenu();
-                    }
-                }
-            }
-        }, this);
     }
 
     private void registerCommands() {
@@ -229,39 +205,6 @@ public class EdenCore extends StarMod {
                 }
             }
         }.runTimer(this, 15);
-    }
-
-    public void activateAdminToolsMenu() {
-        ModGUIHandler.deactivateAll();
-        if(adminToolsControlManager == null) {
-            adminToolsControlManager = new AdminToolsControlManager(GameClient.getClientState());
-            ModGUIHandler.registerNewControlManager(getSkeleton(), adminToolsControlManager);
-        }
-        if(!ConfigManager.getMainConfig().getBoolean("debug-mode")) {
-            PlayerUtils.sendMessage(GameClient.getClientPlayerState(), "This is a WIP feature. Check back later!");
-        } else adminToolsControlManager.setActive(true);
-    }
-
-    public void activateBuildToolsMenu() {
-        if(ConfigManager.getMainConfig().getBoolean("debug-mode")) { //Todo: Finish / fix build tools menu
-            ModGUIHandler.deactivateAll();
-            if(buildToolsControlManager == null) {
-                buildToolsControlManager = new BuildToolsControlManager(GameClient.getClientState());
-                ModGUIHandler.registerNewControlManager(getSkeleton(), buildToolsControlManager);
-            }
-            if(!ConfigManager.getMainConfig().getBoolean("debug-mode")) {
-                PlayerUtils.sendMessage(GameClient.getClientPlayerState(), "This is a WIP feature. Check back later!");
-            } else buildToolsControlManager.setActive(true);
-        }
-    }
-
-    private void startRunners() {
-        new StarRunnable() {
-            @Override
-            public void run() {
-                DataUtils.saveData();
-            }
-        }.runTimer(this, ConfigManager.getMainConfig().getLong("auto-save-interval"));
     }
 
     private byte[] overwriteClass(String className, byte[] byteCode) {

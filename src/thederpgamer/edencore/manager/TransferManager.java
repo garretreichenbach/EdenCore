@@ -32,10 +32,10 @@ import java.util.zip.ZipInputStream;
 import java.util.zip.ZipOutputStream;
 
 /**
- * <Description>
+ * Manages the saving and loading of entity transfer data.
  *
  * @author TheDerpGamer
- * @since 08/21/2021
+ * @version 1.0 - [08/21/2021]
  */
 public class TransferManager {
 
@@ -48,6 +48,12 @@ public class TransferManager {
         if(!transferFolder.exists()) transferFolder.mkdirs();
     }
 
+    public static File getTransferFolder(PlayerState playerState) {
+        File transferFolder = new File(DataUtils.getWorldDataPath() + "/transfer_data/" + playerState.getName());
+        if(!transferFolder.exists()) transferFolder.mkdirs();
+        return transferFolder;
+    }
+
     public static int getTransferMode() {
         String s = ConfigManager.getMainConfig().getString("entity-transfer-mode");
         switch(s) {
@@ -55,12 +61,6 @@ public class TransferManager {
             case "LOAD": return LOAD;
             default: return NONE;
         }
-    }
-
-    public static File getTransferFolder(PlayerState playerState) {
-        File transferFolder = new File(DataUtils.getWorldDataPath() + "/transfer_data/" + playerState.getName());
-        if(!transferFolder.exists()) transferFolder.mkdirs();
-        return transferFolder;
     }
 
     public static boolean canTransfer(PlayerState playerState) {

@@ -17,9 +17,7 @@ public class ConfigManager {
             "debug-mode: false",
             "auto-save-interval: 10000",
             "max-world-logs: 5",
-            "entity-transfer-mode: NONE",
-            "build-tools-menu-key: -",
-            "admin-tools-menu-key: ="
+            "entity-transfer-mode: NONE"
     };
 
     public static void initialize(EdenCore instance) {

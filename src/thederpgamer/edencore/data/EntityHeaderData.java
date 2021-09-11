@@ -47,6 +47,7 @@ public class EntityHeaderData {
 
     public void deserialize(byte[] data) {
         String[] rawData = new String(data).split("\n");
+        for(int i = 0; i < rawData.length; i ++) rawData[i] = rawData[i].split(": ")[1];
         entityName = rawData[0];
         entityType = (!rawData[0].equals("SPACE_STATION")) ? SimpleTransformableSendableObject.EntityType.SHIP : SimpleTransformableSendableObject.EntityType.SPACE_STATION;
         mass = Float.parseFloat(rawData[2]);
