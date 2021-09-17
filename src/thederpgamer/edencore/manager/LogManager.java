@@ -117,7 +117,7 @@ public class LogManager {
             }
             if(messageType.equals(MessageType.CRITICAL)) System.exit(1);
         }
-        if(messageQueue.size() == 5) messageQueue.removeLast(); //Prevent spam from repeated messages
+        if(messageQueue.size() >= 5) messageQueue.removeLast(); //Prevent spam from repeated messages
         messageQueue.addFirst(message);
     }
 

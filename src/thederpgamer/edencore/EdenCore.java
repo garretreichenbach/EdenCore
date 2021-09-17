@@ -1,9 +1,11 @@
 package thederpgamer.edencore;
 
 import api.common.GameClient;
+import api.config.BlockConfig;
 import api.listener.Listener;
 import api.listener.events.block.*;
 import api.listener.events.draw.RegisterWorldDrawersEvent;
+import api.listener.events.gui.GUITopBarCreateEvent;
 import api.listener.events.player.PlayerDeathEvent;
 import api.listener.events.player.PlayerPickupFreeItemEvent;
 import api.listener.events.player.PlayerSpawnEvent;
@@ -12,16 +14,23 @@ import api.mod.StarMod;
 import api.utils.StarRunnable;
 import api.utils.game.PlayerUtils;
 import org.apache.commons.io.IOUtils;
+import org.schema.game.client.view.gui.newgui.GUITopBar;
 import org.schema.game.common.data.player.PlayerState;
+import org.schema.schine.graphicsengine.core.MouseEvent;
+import org.schema.schine.graphicsengine.forms.gui.GUIActivationHighlightCallback;
+import org.schema.schine.graphicsengine.forms.gui.GUICallback;
+import org.schema.schine.graphicsengine.forms.gui.GUIElement;
+import org.schema.schine.input.InputState;
+import org.schema.schine.resource.ResourceLoader;
 import thederpgamer.edencore.commands.BuildSectorCommand;
 import thederpgamer.edencore.commands.ListEntityCommand;
 import thederpgamer.edencore.commands.LoadEntityCommand;
 import thederpgamer.edencore.commands.SaveEntityCommand;
-import thederpgamer.edencore.data.BuildSectorData;
+import thederpgamer.edencore.data.other.BuildSectorData;
 import thederpgamer.edencore.drawer.BuildSectorHudDrawer;
-import thederpgamer.edencore.manager.ConfigManager;
-import thederpgamer.edencore.manager.LogManager;
-import thederpgamer.edencore.manager.TransferManager;
+import thederpgamer.edencore.element.ElementManager;
+import thederpgamer.edencore.element.items.PrizeBars;
+import thederpgamer.edencore.manager.*;
 import thederpgamer.edencore.utils.DataUtils;
 
 import java.io.FileInputStream;
@@ -34,7 +43,7 @@ import java.util.zip.ZipInputStream;
  * Main class for EdenCore mod.
  *
  * @author TheDerpGamer
- * @since 06/27/2021
+ * @version 1.0 - [06/27/2021]
  */
 public class EdenCore extends StarMod {
 
@@ -50,7 +59,7 @@ public class EdenCore extends StarMod {
 
     }
 
-    //Data
+    //Other
     private final String[] overwriteClasses = new String[] {
             "PlayerState",
             "CatalogExtendedPanel",
@@ -63,6 +72,7 @@ public class EdenCore extends StarMod {
         ConfigManager.initialize(this);
         LogManager.initialize();
         TransferManager.initialize();
+        GUIManager.initialize();
         registerListeners();
         registerCommands();
     }
@@ -73,7 +83,57 @@ public class EdenCore extends StarMod {
         return super.onClassTransform(className, byteCode);
     }
 
+    @Override
+    public void onResourceLoad(ResourceLoader resourceLoader) {
+        ResourceManager.loadResources(resourceLoader);
+    }
+
+    @Override
+    public void onBlockConfigLoad(BlockConfig blockConfig) {
+        //Items
+        ElementManager.addItemGroup(new PrizeBars());
+
+        ElementManager.initialize();
+    }
+
+
     private void registerListeners() {
+        StarLoader.registerListener(GUITopBarCreateEvent.class, new Listener<GUITopBarCreateEvent>() {
+            @Override
+            public void onEvent(GUITopBarCreateEvent event) {
+                GUITopBar.ExpandedButton dropDownButton = event.getDropdownButtons().get(event.getDropdownButtons().size() - 1);
+                dropDownButton.addExpandedButton("EXCHANGE", new GUICallback() {
+                    @Override
+                    public void callback(GUIElement guiElement, MouseEvent mouseEvent) {
+                        if(mouseEvent.pressedLeftMouse()) {
+                            GameClient.getClientState().getController().queueUIAudio("0022_menu_ui - enter");
+                            GUIManager.exchangeMenuManager.setActive(true);
+                        }
+                    }
+
+                    @Override
+                    public boolean isOccluded() {
+                        return false;
+                    }
+                }, new GUIActivationHighlightCallback() {
+                    @Override
+                    public boolean isHighlighted(InputState inputState) {
+                        return false;
+                    }
+
+                    @Override
+                    public boolean isVisible(InputState inputState) {
+                        return true;
+                    }
+
+                    @Override
+                    public boolean isActive(InputState inputState) {
+                        return true;
+                    }
+                });
+            }
+        }, this);
+
         StarLoader.registerListener(RegisterWorldDrawersEvent.class, new Listener<RegisterWorldDrawersEvent>() {
             @Override
             public void onEvent(RegisterWorldDrawersEvent event) {

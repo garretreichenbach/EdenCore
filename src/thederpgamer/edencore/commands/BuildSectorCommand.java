@@ -4,7 +4,6 @@ import api.common.GameCommon;
 import api.common.GameServer;
 import api.mod.StarMod;
 import api.utils.game.PlayerUtils;
-import api.utils.game.SegmentControllerUtils;
 import api.utils.game.chat.CommandInterface;
 import com.bulletphysics.linearmath.Transform;
 import org.schema.game.common.controller.SegmentController;
@@ -25,7 +24,7 @@ import org.schema.game.server.data.blueprintnw.BlueprintEntry;
 import org.schema.schine.graphicsengine.core.GlUtil;
 import org.schema.schine.graphicsengine.core.settings.StateParameterNotFoundException;
 import thederpgamer.edencore.EdenCore;
-import thederpgamer.edencore.data.BuildSectorData;
+import thederpgamer.edencore.data.other.BuildSectorData;
 import thederpgamer.edencore.manager.LogManager;
 import thederpgamer.edencore.utils.DataUtils;
 
@@ -216,18 +215,19 @@ public class BuildSectorCommand implements CommandInterface {
                         if(!DataUtils.isPlayerInAnyBuildSector(sender)) PlayerUtils.sendMessage(sender, "You must be in a build sector to perform this command.");
                         else {
                             BuildSectorData sectorData = DataUtils.getPlayerCurrentBuildSector(sender);
+                            assert sectorData != null;
                             if(sectorData.hasPermission(sender.getName(), "DELETE")) {
                                 if(args.length == 1) {
                                     if(GameCommon.getGameObject(sender.getSelectedEntityId()) != null && GameCommon.getGameObject(sender.getSelectedEntityId()) instanceof SegmentController) {
                                         SegmentController entity = (SegmentController) GameCommon.getGameObject(sender.getSelectedEntityId());
                                         PlayerUtils.sendMessage(sender, "Successfully deleted entity \"" + entity.getRealName() + "\".");
-                                        destroyEntity(entity);
+                                        DataUtils.destroyEntity(entity);
                                     } else PlayerUtils.sendMessage(sender, "You must either specify a valid entity by name or have one selected to perform this command.");
                                 } else {
                                     SegmentController entity = getEntityByName(sender, args[1]);
                                     if(entity != null) {
                                         PlayerUtils.sendMessage(sender, "Successfully deleted entity \"" + entity.getRealName() + "\".");
-                                        destroyEntity(entity);
+                                        DataUtils.destroyEntity(entity);
                                     } else PlayerUtils.sendMessage(sender, "You must either specify a valid entity by name or have one selected to perform this command.");
                                 }
                             } else PlayerUtils.sendMessage(sender, "You don't have permission to do this.");
@@ -375,11 +375,6 @@ public class BuildSectorCommand implements CommandInterface {
             }
         }
         return null;
-    }
-
-    private void destroyEntity(SegmentController entity) {
-        for(PlayerState attached : SegmentControllerUtils.getAttachedPlayers(entity)) attached.getControllerState().forcePlayerOutOfSegmentControllers();
-        entity.destroy();
     }
 
     private SegmentControllerAIEntity<?> getAIEntity(SegmentController entity) {

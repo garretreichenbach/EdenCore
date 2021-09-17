@@ -118,6 +118,7 @@ import org.schema.schine.resource.tag.FinishTag;
 import org.schema.schine.resource.tag.ListSpawnObjectCallback;
 import org.schema.schine.resource.tag.Tag;
 import org.schema.schine.resource.tag.Tag.Type;
+import thederpgamer.edencore.manager.LogManager;
 import thederpgamer.edencore.utils.DataUtils;
 
 import javax.vecmath.Matrix3f;
@@ -318,18 +319,27 @@ public class PlayerState extends AbstractOwnerState implements Sendable, DiskWri
     public boolean isCreativeModeEnabled(){
         return isUseCreativeMode() && isHasCreativeMode();
     }
+
+    //INSERTED CODE
     @Override
     public Inventory getInventory() {
         Inventory cargoInv;
-        if((cargoInv = getCargoInventoryIfActive()) != null){
+        if((cargoInv = getCargoInventoryIfActive()) != null) {
+            //LogManager.logInfo(getName() + " has a cargo inventory");
             return cargoInv;
-        }else if(isCreativeModeEnabled() && !isInTutorial()){
+        } else if(isCreativeModeEnabled() && !isInTutorial()) {
+            //LogManager.logInfo(getName() + " has a creative inventory");
             return creativeInventory;
-        }else if((getFirstControlledTransformableWOExc() != null && DataUtils.isPlayerInAnyBuildSector(this)) || (getFirstControlledTransformableWOExc() instanceof SegmentController && ((SegmentController) getFirstControlledTransformableWOExc()).isVirtualBlueprint())) {
+        } else if(DataUtils.isPlayerInAnyBuildSector(this) || (getFirstControlledTransformableWOExc() != null && getFirstControlledTransformableWOExc() instanceof SegmentController && ((SegmentController) getFirstControlledTransformableWOExc()).isVirtualBlueprint())) {
+            //LogManager.logInfo(getName() + " has a virtual inventory");
             return virtualCreativeInventory;
+        } else {
+            //LogManager.logInfo(getName() + " has a normal inventory");
+            return inventory;
         }
-        return inventory;
     }
+    //
+
     public int getSelectedEntityId(){
         return getNetworkObject().selectedEntityId.getInt();
     }
@@ -1334,7 +1344,7 @@ public class PlayerState extends AbstractOwnerState implements Sendable, DiskWri
             getPlayerChannelManager().update(timer);
         }
         if(isOnServer() && checkForOvercap && getAssingedPlayerCharacter() != null){
-            if(getPersonalInventory().isOverCapacity()){
+            if(getPersonalInventory().isOverCapacity()) {
                 BlockStorageMetaItem storage = (BlockStorageMetaItem)MetaObjectManager.instantiate(MetaObjectType.BLOCK_STORAGE, (short) -1, true);
 
                 addAllToStorageMetaItem(storage, getPersonalInventory());

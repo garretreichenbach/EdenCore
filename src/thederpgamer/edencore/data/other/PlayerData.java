@@ -1,4 +1,4 @@
-package thederpgamer.edencore.data;
+package thederpgamer.edencore.data.other;
 
 import api.common.GameCommon;
 import com.bulletphysics.linearmath.Transform;

@@ -16,7 +16,7 @@ import org.schema.game.server.data.blueprint.SegmentControllerSpawnCallbackDirec
 import org.schema.game.server.data.blueprintnw.BlueprintEntry;
 import org.schema.schine.graphicsengine.core.GlUtil;
 import org.schema.schine.resource.tag.Tag;
-import thederpgamer.edencore.data.EntityHeaderData;
+import thederpgamer.edencore.data.other.EntityHeaderData;
 import thederpgamer.edencore.utils.DataUtils;
 
 import javax.vecmath.Vector3f;
