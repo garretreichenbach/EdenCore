@@ -4,10 +4,11 @@ import api.common.GameClient;
 import api.network.PacketReadBuffer;
 import api.network.PacketWriteBuffer;
 import org.schema.game.server.data.blueprintnw.BlueprintEntry;
-import org.schema.schine.graphicsengine.core.Controller;
+import org.schema.schine.graphicsengine.forms.Sprite;
 import org.schema.schine.graphicsengine.forms.gui.GUIOverlay;
+import thederpgamer.edencore.manager.ResourceManager;
+import thederpgamer.edencore.utils.ImageUtils;
 
-import javax.vecmath.Vector3f;
 import java.io.IOException;
 
 /**
@@ -20,33 +21,43 @@ public class BlueprintExchangeItem extends ExchangeItem {
 
     //public static final transient Vector3i SECTOR = new Vector3i(100000000, 100000000, 100000000);
     public transient BlueprintEntry blueprint;
-    public double mass;
-    public Vector3f min;
-    public Vector3f max;
+    public long blocks;
+    public String iconPath = "";
 
     public BlueprintExchangeItem(PacketReadBuffer readBuffer) {
         super(readBuffer);
     }
 
-    public BlueprintExchangeItem(BlueprintEntry blueprint, short barType, int price, String description) {
+    public BlueprintExchangeItem(BlueprintEntry blueprint, short barType, int price, String description, String iconPath) {
         super(barType, price, blueprint.getName(), description);
         this.blueprint = blueprint;
-        this.blueprint.calculateMass();
         this.barType = barType;
         this.price = price;
         this.name = blueprint.getName();
-        this.description = blueprint.getElementCountMapWithChilds().getTotalAmount() + " blocks";
-        this.mass = blueprint.getMass();
-        this.min = blueprint.getBb().min;
-        this.max = blueprint.getBb().max;
+        this.blocks = blueprint.getElementCountMapWithChilds().getTotalAmount();
+        this.iconPath = iconPath;
+        this.description = blocks + " blocks\n";
     }
 
     @Override
     public GUIOverlay getIcon() {
-        GUIOverlay tempOverlay = new GUIOverlay(Controller.getResLoader().getSprite("map-sprites-8x2-c-gui-"), GameClient.getClientState());
-        tempOverlay.setSpriteSubIndex(blueprint.getEntityType().type.mapSprite);
-        return tempOverlay;
-        //return new GUIOverlay(ResourceManager.getSpriteExternal(name + "-icon"), GameClient.getClientState());
+        GUIOverlay overlay = null;
+        if(iconPath != null && !iconPath.isEmpty() && iconPath.startsWith("https://") && iconPath.endsWith(".png")) {
+            ImageUtils.getImage(iconPath);
+            Sprite sprite = ImageUtils.getImage(iconPath);
+            if(sprite != null) {
+                sprite.setWidth(32);
+                sprite.setHeight(32);
+                overlay = new GUIOverlay(sprite, GameClient.getClientState());
+            }
+        }
+        if(overlay == null) {
+            Sprite sprite = ResourceManager.getSprite("default-sprite");
+            sprite.setWidth(32);
+            sprite.setHeight(32);
+            overlay = new GUIOverlay(sprite, GameClient.getClientState());
+        }
+        return overlay;
     }
 
     @Override
@@ -55,9 +66,8 @@ public class BlueprintExchangeItem extends ExchangeItem {
         writeBuffer.writeInt(price);
         writeBuffer.writeString(name);
         writeBuffer.writeString(description);
-        writeBuffer.writeDouble(mass);
-        writeBuffer.writeVector3f(min);
-        writeBuffer.writeVector3f(max);
+        writeBuffer.writeLong(blocks);
+        writeBuffer.writeString(iconPath);
         /* Todo: Somehow generate a preview of the entity that can be used as it's icon
         try {
             writeBuffer.writeSendable(createEntity());
@@ -73,9 +83,8 @@ public class BlueprintExchangeItem extends ExchangeItem {
         price = readBuffer.readInt();
         name = readBuffer.readString();
         description = readBuffer.readString();
-        mass = readBuffer.readDouble();
-        min = readBuffer.readVector3f();
-        max = readBuffer.readVector3f();
+        blocks = readBuffer.readLong();
+        iconPath = readBuffer.readString();
     }
 
     @Override

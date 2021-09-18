@@ -24,7 +24,7 @@ public class ResourceManager {
     };
 
     private static final String[] spriteNames = {
-
+            "default-sprite"
     };
 
     private static final String[] modelNames = {

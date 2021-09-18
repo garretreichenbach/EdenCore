@@ -270,7 +270,7 @@ public class AddResourceExchangePanel extends GUIInputDialogPanel {
         ArrayList<ElementInformation> elementList = new ArrayList<>();
         ElementKeyMap.getCategoryHirarchy().getChild("Manufacturing").getInfoElementsRecursive(elementList);
         for(ElementInformation info : elementList) {
-            if(!info.isDeprecated() && info.isShoppable() && info.isInRecipe() && !info.getName().contains("Paint") && !info.getName().contains("Hardener") && !info.getName().contains("Scrap")) filter.add(info);
+            if(!info.isDeprecated() && info.isShoppable() && info.isInRecipe() && !info.getName().contains("Paint") && !info.getName().contains("Hardener") && !info.getName().contains("Scrap") && !info.getName().contains("Raw")) filter.add(info);
         }
         return filter;
     }

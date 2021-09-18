@@ -112,11 +112,12 @@ public class ExchangeMenuPanel extends GUIMenuPanel {
             });
             GUIOverlay spriteOverlay = item.getIcon();
             spriteOverlay.onInit();
-            spriteOverlay.getSprite().setWidth(200);
-            spriteOverlay.getSprite().setHeight(200);
+            spriteOverlay.getSprite().setWidth(32);
+            spriteOverlay.getSprite().setHeight(32);
+            //spriteOverlay.setScale(new Vector3f(0.25f, 0.25f, 0.25f));
             tile.attach(spriteOverlay);
-            spriteOverlay.getPos().x += 100;
-            spriteOverlay.getPos().y += 150;
+            spriteOverlay.getPos().x += 80;
+            spriteOverlay.getPos().y += 180;
         }
         contentPane.getContent(0).attach(blueprintsTilePane);
 
@@ -237,8 +238,8 @@ public class ExchangeMenuPanel extends GUIMenuPanel {
             spriteOverlay.getSprite().setWidth(200);
             spriteOverlay.getSprite().setHeight(200);
             tile.attach(spriteOverlay);
-            spriteOverlay.getPos().x += 100;
-            spriteOverlay.getPos().y += 150;
+            spriteOverlay.getPos().x += 65;
+            spriteOverlay.getPos().y += 180;
         }
         contentPane.getContent(0).attach(resourcesTilePane);
 

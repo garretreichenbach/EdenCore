@@ -77,5 +77,6 @@ public class ExchangeItemRemovePacket extends Packet {
             PersistentObjectUtil.removeObject(EdenCore.getInstance().getSkeleton(), toRemove);
             PersistentObjectUtil.save(EdenCore.getInstance().getSkeleton());
         }
+        EdenCore.getInstance().updateClientCacheData();
     }
 }

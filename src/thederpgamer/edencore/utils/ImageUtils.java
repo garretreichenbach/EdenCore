@@ -1,6 +1,7 @@
 package thederpgamer.edencore.utils;
 
 import api.common.GameClient;
+import api.utils.textures.StarLoaderTexture;
 import org.lwjgl.opengl.GL11;
 import org.schema.game.common.controller.SegmentController;
 import org.schema.schine.graphicsengine.camera.Camera;
@@ -9,9 +10,20 @@ import org.schema.schine.graphicsengine.core.FrameBufferObjects;
 import org.schema.schine.graphicsengine.core.GLFrame;
 import org.schema.schine.graphicsengine.core.GlUtil;
 import org.schema.schine.graphicsengine.core.Timer;
+import org.schema.schine.graphicsengine.forms.Sprite;
 import org.schema.schine.network.StateInterface;
+import thederpgamer.edencore.EdenCore;
+import thederpgamer.edencore.manager.ResourceManager;
 
+import javax.annotation.Nullable;
+import javax.imageio.ImageIO;
 import java.awt.image.BufferedImage;
+import java.io.IOException;
+import java.io.InputStream;
+import java.net.URL;
+import java.net.URLConnection;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentLinkedQueue;
 
 /**
  * <Description>
@@ -20,6 +32,61 @@ import java.awt.image.BufferedImage;
  * @version 1.0 - [09/17/2021]
  */
 public class ImageUtils {
+
+    public static final int SPRITE_WIDTH = 64;
+    public static final int SPRITE_HEIGHT = 64;
+
+    private final static ConcurrentHashMap<String, Sprite> imgCache = new ConcurrentHashMap<>();
+    private final static ConcurrentLinkedQueue<String> downloadingImages = new ConcurrentLinkedQueue<>();
+
+    @Nullable
+    public static Sprite getImage(String url) {
+        Sprite bufferedImage = imgCache.get(url);
+        if(bufferedImage != null) return bufferedImage;
+        else {
+            fetchImage(url);
+            return ResourceManager.getSprite("default-sprite");
+        }
+    }
+
+    private static void fetchImage(final String url) {
+        if (!downloadingImages.contains(url)) {
+            new Thread() {
+                @Override
+                public void run() {
+                    try {
+                        downloadingImages.add(url);
+                        final BufferedImage bufferedImage = fromURL(url);
+                        StarLoaderTexture.runOnGraphicsThread(new Runnable() {
+                            @Override
+                            public void run() {
+                                try {
+                                    Sprite sprite = StarLoaderTexture.newSprite(bufferedImage, EdenCore.getInstance(), url);
+                                    sprite.setPositionCenter(false);
+                                    sprite.setWidth(SPRITE_WIDTH);
+                                    sprite.setHeight(SPRITE_HEIGHT);
+                                    imgCache.put(url, sprite);
+                                } catch(Exception ignored) { }
+                            }
+                        });
+                        downloadingImages.remove(url);
+                    } catch(Exception ignored) { }
+                }
+            }.start();
+        }
+    }
+
+    private static BufferedImage fromURL(String u) {
+        BufferedImage image = null;
+        try {
+            URL url = new URL(u);
+            URLConnection urlConnection = url.openConnection();
+            urlConnection.setRequestProperty("User-Agent", "NING/1.0");
+            InputStream stream = urlConnection.getInputStream();
+            image = ImageIO.read(stream);
+        } catch (IOException ignored) { }
+        return image;
+    }
 
     public static BufferedImage generateEntityPreview(SegmentController entity) {
         try {

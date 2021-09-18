@@ -39,6 +39,8 @@ public class AddBlueprintExchangePanel extends GUIInputDialogPanel { ;
     private boolean bpTextChanged;
     private String currentBPText = "";
 
+    public String currentIconText = "";
+
     public AddBlueprintExchangePanel(InputState inputState, GUICallback guiCallback) {
         super(inputState, "blueprint_exchange_add_panel", "Add Exchange Entry", "", 650, 350, guiCallback);
     }
@@ -72,7 +74,7 @@ public class AddBlueprintExchangePanel extends GUIInputDialogPanel { ;
                 if(!t.equals(currentBarText)) currentBarText = t;
                 return text;
             }
-        }, 30);
+        }, 0);
 
         addDropdown(new DropdownResult() {
             private List<GUIElement> bars;
@@ -123,7 +125,7 @@ public class AddBlueprintExchangePanel extends GUIInputDialogPanel { ;
             public void flagListNeedsUpdate(boolean flag) {
 
             }
-        }, 60);
+        }, 30);
 
         addTextBar(new TextBarResult() {
 
@@ -151,7 +153,7 @@ public class AddBlueprintExchangePanel extends GUIInputDialogPanel { ;
                 }
                 return text;
             }
-        }, 90);
+        }, 60);
 
         addDropdown(new DropdownResult() {
             private List<GUIElement> blueprints;
@@ -201,6 +203,31 @@ public class AddBlueprintExchangePanel extends GUIInputDialogPanel { ;
             @Override
             public void flagListNeedsUpdate(boolean flag) {
                 bpTextChanged = flag;
+            }
+        }, 90);
+
+        addTextBar(new TextBarResult() {
+
+            @Override
+            public TextBarCallback initCallback() {
+                return callback;
+            }
+
+            @Override
+            public String getToolTipText() {
+                return "Enter icon link";
+            }
+
+            @Override
+            public String getName() {
+                return "Icon link";
+            }
+
+            @Override
+            public String onTextChanged(String text) {
+                String t = text.trim();
+                if(!t.equals(currentIconText)) currentIconText = t;
+                return text;
             }
         }, 120);
     }

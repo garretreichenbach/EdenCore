@@ -51,13 +51,13 @@ public class SendCacheUpdatePacket extends Packet {
 
     @Override
     public void processPacketOnClient() {
-        for(BlueprintExchangeItem exchangeItem : blueprintExchangeItems) {
-            if(!ClientCacheManager.blueprintExchangeItems.contains(exchangeItem)) ClientCacheManager.blueprintExchangeItems.add(exchangeItem);
-        }
+        ClientCacheManager.blueprintExchangeItems.clear();
+        ClientCacheManager.blueprintExchangeItems.addAll(blueprintExchangeItems);
 
-        for(ResourceExchangeItem exchangeItem : resourceExchangeItems) {
-            if(!ClientCacheManager.resourceExchangeItems.contains(exchangeItem)) ClientCacheManager.resourceExchangeItems.add(exchangeItem);
-        }
+        ClientCacheManager.resourceExchangeItems.clear();
+        ClientCacheManager.resourceExchangeItems.addAll(resourceExchangeItems);
+
+        EdenCore.getInstance().exchangeMenuControlManager.getMenuPanel().recreateTabs();
     }
 
     @Override

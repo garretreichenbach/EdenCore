@@ -9,6 +9,7 @@ import api.listener.events.block.*;
 import api.listener.events.draw.RegisterWorldDrawersEvent;
 import api.listener.events.gui.GUITopBarCreateEvent;
 import api.listener.events.player.PlayerDeathEvent;
+import api.listener.events.player.PlayerJoinWorldEvent;
 import api.listener.events.player.PlayerPickupFreeItemEvent;
 import api.listener.events.player.PlayerSpawnEvent;
 import api.mod.StarLoader;
@@ -20,6 +21,7 @@ import api.utils.gui.ModGUIHandler;
 import org.apache.commons.io.IOUtils;
 import org.schema.game.client.view.gui.newgui.GUITopBar;
 import org.schema.game.common.data.player.PlayerState;
+import org.schema.game.server.data.PlayerNotFountException;
 import org.schema.schine.graphicsengine.core.MouseEvent;
 import org.schema.schine.graphicsengine.forms.gui.GUIActivationHighlightCallback;
 import org.schema.schine.graphicsengine.forms.gui.GUICallback;
@@ -60,12 +62,8 @@ public class EdenCore extends StarMod {
     public static EdenCore getInstance() {
         return instance;
     }
-    public EdenCore() {
-
-    }
-    public static void main(String[] args) {
-
-    }
+    public EdenCore() { }
+    public static void main(String[] args) { }
 
     //Other
     private final String[] overwriteClasses = new String[] {
@@ -262,6 +260,24 @@ public class EdenCore extends StarMod {
                 if(DataUtils.isPlayerInAnyBuildSector(event.getPlayer().getOwnerState())) queueSpawnSwitch(event.getPlayer().getOwnerState());
             }
         }, this);
+
+        StarLoader.registerListener(PlayerJoinWorldEvent.class, new Listener<PlayerJoinWorldEvent>() {
+            @Override
+            public void onEvent(final PlayerJoinWorldEvent event) {
+                if(GameCommon.isDedicatedServer()) {
+                    new StarRunnable() {
+                        @Override
+                        public void run() {
+                            try {
+                                PacketUtil.sendPacket(GameServer.getServerState().getPlayerFromName(event.getPlayerName()), new SendCacheUpdatePacket());
+                            } catch(PlayerNotFountException exception) {
+                                exception.printStackTrace();
+                            }
+                        }
+                    }.runLater(EdenCore.this, 100);
+                }
+            }
+        }, this);
     }
 
     private void registerCommands() {
@@ -283,7 +299,7 @@ public class EdenCore extends StarMod {
                 public void run() {
                     updateClientCacheData();
                 }
-            }.runTimer(this, 1500);
+            }.runTimer(this, 1000);
         }
     }
 
