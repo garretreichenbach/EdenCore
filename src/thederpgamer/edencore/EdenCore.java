@@ -3,6 +3,7 @@ package thederpgamer.edencore;
 import api.common.GameClient;
 import api.listener.Listener;
 import api.listener.events.block.*;
+import api.listener.events.controller.ServerInitializeEvent;
 import api.listener.events.draw.RegisterWorldDrawersEvent;
 import api.listener.events.player.PlayerDeathEvent;
 import api.listener.events.player.PlayerPickupFreeItemEvent;
@@ -21,6 +22,7 @@ import thederpgamer.edencore.data.BuildSectorData;
 import thederpgamer.edencore.drawer.BuildSectorHudDrawer;
 import thederpgamer.edencore.manager.ConfigManager;
 import thederpgamer.edencore.manager.LogManager;
+import thederpgamer.edencore.manager.NavigationUtilManager;
 import thederpgamer.edencore.manager.TransferManager;
 import thederpgamer.edencore.utils.DataUtils;
 
@@ -65,6 +67,8 @@ public class EdenCore extends StarMod {
         TransferManager.initialize();
         registerListeners();
         registerCommands();
+
+        new NavigationUtilManager(); //util to have public saved coordinates
     }
 
     @Override
