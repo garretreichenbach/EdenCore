@@ -103,6 +103,11 @@ public class ResourceManager {
         return spriteMap.get(name);
     }
 
+    public static Sprite getSpriteExternal(String name) {
+        //Todo: Get entity preview
+        return null;
+    }
+
     public static Mesh getMesh(String name) {
         if(meshMap.containsKey(name)) return (Mesh) meshMap.get(name).getChilds().get(0);
         else return null;
