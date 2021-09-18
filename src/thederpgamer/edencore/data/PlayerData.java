@@ -4,10 +4,13 @@ import api.common.GameCommon;
 import com.bulletphysics.linearmath.Transform;
 import org.schema.common.util.linAlg.Vector3i;
 import org.schema.game.common.data.player.PlayerState;
+import thederpgamer.edencore.data.other.BankingTransactionLog;
 import thederpgamer.edencore.utils.DataUtils;
 
 import javax.vecmath.Vector3f;
+import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Locale;
 
 /**
@@ -56,12 +59,25 @@ public class PlayerData {
     }
 
     //collection of banking transactions that player has sent or received.
-    private HashSet<BankingTransactionLog> transactions = new HashSet<>();
+    private List<BankingTransactionLog> transactions = new ArrayList<>();
+
     public void addTransaction(BankingTransactionLog transaction) {
         //neither sender nor receiver?
-        if (!transaction.from.equals(playerName.toLowerCase(Locale.ENGLISH)) && !transaction.to.equals(playerName.toLowerCase(Locale.ENGLISH)))
+        String from = transaction.from.toLowerCase(Locale.ENGLISH);
+        String to = transaction.to.toLowerCase(Locale.ENGLISH);
+        String name = playerName.toLowerCase(Locale.ENGLISH);
+        if (!from.equals(name) && !to.equals(name))
             return; //dont add.
 
         transactions.add(transaction);
+
+        //remove oldest ones if list >10
+        while (transactions.size()>10) {
+            transactions.remove(0);
+        }
+    }
+
+    public List<BankingTransactionLog> getTransactions() {
+        return transactions;
     }
 }

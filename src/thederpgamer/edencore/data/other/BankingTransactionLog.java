@@ -2,9 +2,13 @@ package thederpgamer.edencore.data.other;
 
 import org.schema.game.common.data.player.PlayerState;
 import org.schema.game.server.data.GameServerState;
+import org.schema.schine.common.language.Lng;
+import org.schema.schine.network.server.ServerMessage;
 import thederpgamer.edencore.utils.DataUtils;
 
 import java.io.Serializable;
+import java.text.SimpleDateFormat;
+import java.util.Date;
 import java.util.Locale;
 
 /**
@@ -15,11 +19,11 @@ import java.util.Locale;
  * used to log transactions persistently. provides static helper methods for banking
  */
 public class BankingTransactionLog implements Serializable {
-    String from;
-    String to;
-    int credits;
-    String mssg;
-    long time;
+    public String from;
+    public String to;
+    public int credits;
+    public String mssg;
+    public long time;
     public BankingTransactionLog(String from, String to, int credits, String mssg) {
         time = System.currentTimeMillis();
         this.from = from;
@@ -46,26 +50,51 @@ public class BankingTransactionLog implements Serializable {
      * @param mssg mssg for this transaction
      * @return
      */
-    public static boolean sendMoney(String from, String to, int credits, String mssg) {
-        if (!(isExistingPlayer(from) && isExistingPlayer(to)))
-            return false;
+    public static BankingTransactionLog sendMoney(String from, String to, int credits, String mssg) {
+        from = from.toLowerCase(Locale.ENGLISH);
+        to = to.toLowerCase(Locale.ENGLISH);
+
+        if (!isExistingPlayer(from) || !isExistingPlayer(to))
+            return null;
         PlayerState fromP = getPlayer(from);
         PlayerState toP = getPlayer(to);
-        if (fromP == null || toP == null)
-            return false;
+
+        if (fromP == null || toP == null || fromP.equals(toP))
+            return null;
+
+        if (credits <= 0)
+            return null;
 
         if (!hasMoney(fromP,credits))
-            return false;
+            return null;
+
         fromP.setCredits(fromP.getCredits()-credits);
         toP.setCredits(toP.getCredits()+credits);
 
-        //log transaction on success
+        //log transaction on success for sender and receiver
         BankingTransactionLog transaction = new BankingTransactionLog(from,to,credits, mssg);
         DataUtils.getPlayerData(fromP).addTransaction(transaction);
-        return true;
+        DataUtils.getPlayerData(toP).addTransaction(transaction);
+
+        //notify receiver
+        toP.sendServerMessage(Lng.astr("You have received money: \n"+transaction.toStringPretty()), ServerMessage.MESSAGE_TYPE_DIALOG);
+
+        return transaction;
     }
 
     private static PlayerState getPlayer(String name) {
         return GameServerState.instance.getPlayerFromNameIgnoreCaseWOException(name);
+    }
+
+    public String toStringPretty() {
+        SimpleDateFormat sdf = new SimpleDateFormat("dd MMM,yyyy HH:mm z");
+        Date resultdate = new Date(time);
+
+        return "Banking transaction:" + "\n"+
+                "from: '" + from + '\'' + "\n"+
+                "to: '" + to + '\'' + "\n"+
+                "credits: " + credits + "\n"+
+                "time: " + sdf.format(resultdate) + "\n"+
+                "mssg: '" + mssg + '\'';
     }
 }
