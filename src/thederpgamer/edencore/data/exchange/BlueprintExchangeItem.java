@@ -92,6 +92,14 @@ public class BlueprintExchangeItem extends ExchangeItem {
         return exchangeItem instanceof BlueprintExchangeItem && exchangeItem.name.equals(name) && exchangeItem.barType == barType && exchangeItem.price == price;
     }
 
+    private String toSerializable(String s) {
+        return s.replace("/", "\\");
+    }
+
+    private String fromSerializable(String s) {
+        return s.replace("\\", "/");
+    }
+
     /*
     private SegmentController createEntity() throws IOException, StateParameterNotFoundException, EntityAlreadyExistsException, EntityNotFountException {
         SegmentControllerOutline<?> outline = BluePrintController.active.loadBluePrint(
