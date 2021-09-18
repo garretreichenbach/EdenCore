@@ -24,6 +24,10 @@ public class BlueprintExchangeItem extends ExchangeItem {
     public Vector3f min;
     public Vector3f max;
 
+    public BlueprintExchangeItem(PacketReadBuffer readBuffer) {
+        super(readBuffer);
+    }
+
     public BlueprintExchangeItem(BlueprintEntry blueprint, short barType, int price, String description) {
         super(barType, price, blueprint.getName(), description);
         this.blueprint = blueprint;
@@ -72,6 +76,11 @@ public class BlueprintExchangeItem extends ExchangeItem {
         mass = readBuffer.readDouble();
         min = readBuffer.readVector3f();
         max = readBuffer.readVector3f();
+    }
+
+    @Override
+    public boolean equals(ExchangeItem exchangeItem) {
+        return exchangeItem instanceof BlueprintExchangeItem && exchangeItem.name.equals(name) && exchangeItem.barType == barType && exchangeItem.price == price;
     }
 
     /*

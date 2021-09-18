@@ -1,6 +1,8 @@
 package thederpgamer.edencore;
 
 import api.common.GameClient;
+import api.common.GameCommon;
+import api.common.GameServer;
 import api.config.BlockConfig;
 import api.listener.Listener;
 import api.listener.events.block.*;
@@ -11,6 +13,7 @@ import api.listener.events.player.PlayerPickupFreeItemEvent;
 import api.listener.events.player.PlayerSpawnEvent;
 import api.mod.StarLoader;
 import api.mod.StarMod;
+import api.network.packets.PacketUtil;
 import api.utils.StarRunnable;
 import api.utils.game.PlayerUtils;
 import api.utils.gui.ModGUIHandler;
@@ -33,6 +36,9 @@ import thederpgamer.edencore.manager.ConfigManager;
 import thederpgamer.edencore.manager.LogManager;
 import thederpgamer.edencore.manager.ResourceManager;
 import thederpgamer.edencore.manager.TransferManager;
+import thederpgamer.edencore.network.client.ExchangeItemCreatePacket;
+import thederpgamer.edencore.network.client.ExchangeItemRemovePacket;
+import thederpgamer.edencore.network.server.SendCacheUpdatePacket;
 import thederpgamer.edencore.utils.DataUtils;
 
 import java.io.FileInputStream;
@@ -77,8 +83,11 @@ public class EdenCore extends StarMod {
         ConfigManager.initialize(this);
         LogManager.initialize();
         TransferManager.initialize();
+
+        registerPackets();
         registerListeners();
         registerCommands();
+        startRunners();
     }
 
     @Override
@@ -100,6 +109,11 @@ public class EdenCore extends StarMod {
         ElementManager.initialize();
     }
 
+    private void registerPackets() {
+        PacketUtil.registerPacket(ExchangeItemCreatePacket.class);
+        PacketUtil.registerPacket(ExchangeItemRemovePacket.class);
+        PacketUtil.registerPacket(SendCacheUpdatePacket.class);
+    }
 
     private void registerListeners() {
         StarLoader.registerListener(GUITopBarCreateEvent.class, new Listener<GUITopBarCreateEvent>() {
@@ -262,6 +276,17 @@ public class EdenCore extends StarMod {
         StarLoader.registerCommand(new BankingAdminListCommand());
     }
 
+    private void startRunners() {
+        if(GameCommon.isOnSinglePlayer() || GameCommon.isDedicatedServer()) {
+            new StarRunnable() {
+                @Override
+                public void run() {
+                    updateClientCacheData();
+                }
+            }.runTimer(this, 1500);
+        }
+    }
+
     private void queueSpawnSwitch(final PlayerState playerState) {
         new StarRunnable() {
             @Override
@@ -297,5 +322,13 @@ public class EdenCore extends StarMod {
         }
         if(bytes != null) return bytes;
         else return byteCode;
+    }
+
+    public void updateClientCacheData() {
+        if(GameCommon.isOnSinglePlayer() || GameCommon.isDedicatedServer()) {
+            for(PlayerState playerState : GameServer.getServerState().getPlayerStatesByName().values()) {
+                PacketUtil.sendPacket(playerState, new SendCacheUpdatePacket());
+            }
+        }
     }
 }

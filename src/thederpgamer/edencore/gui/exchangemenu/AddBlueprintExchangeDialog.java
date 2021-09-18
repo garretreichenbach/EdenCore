@@ -1,12 +1,13 @@
 package thederpgamer.edencore.gui.exchangemenu;
 
-import api.mod.config.PersistentObjectUtil;
+import api.network.packets.PacketUtil;
 import api.utils.gui.GUIInputDialog;
 import org.apache.commons.lang3.math.NumberUtils;
 import org.schema.schine.graphicsengine.core.MouseEvent;
 import org.schema.schine.graphicsengine.forms.gui.GUIElement;
 import thederpgamer.edencore.EdenCore;
 import thederpgamer.edencore.data.exchange.BlueprintExchangeItem;
+import thederpgamer.edencore.network.client.ExchangeItemCreatePacket;
 
 /**
  * <Description>
@@ -45,10 +46,9 @@ public class AddBlueprintExchangeDialog extends GUIInputDialog {
     }
 
     private BlueprintExchangeItem createItem() {
-        if(NumberUtils.isNumber(getInputPanel().currentBarText) && getInputPanel().blueprintEntry != null && getInputPanel().barId != 0) {
-            BlueprintExchangeItem item = new BlueprintExchangeItem(getInputPanel().blueprintEntry, getInputPanel().barId, Integer.parseInt(getInputPanel().currentBarText), "");
-            PersistentObjectUtil.addObject(EdenCore.getInstance().getSkeleton(), item);
-            PersistentObjectUtil.save(EdenCore.getInstance().getSkeleton());
+        if(NumberUtils.isNumber(getInputPanel().currentBarText) && getInputPanel().blueprintEntry != null && getInputPanel().barId > 0) {
+            BlueprintExchangeItem item = new BlueprintExchangeItem(getInputPanel().blueprintEntry, getInputPanel().barId, Math.abs(Integer.parseInt(getInputPanel().currentBarText)), "");
+            PacketUtil.sendPacketToServer(new ExchangeItemCreatePacket(0, item));
             return item;
         } else return null;
     }

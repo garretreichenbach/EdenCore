@@ -20,6 +20,10 @@ public class ResourceExchangeItem extends ExchangeItem {
     public short itemId;
     public int itemCount;
 
+    public ResourceExchangeItem(PacketReadBuffer readBuffer) {
+        super(readBuffer);
+    }
+
     public ResourceExchangeItem(short barType, int price, String name, String description, short itemId, int itemCount) {
         super(barType, price, name, description);
         this.itemId = itemId;
@@ -49,5 +53,10 @@ public class ResourceExchangeItem extends ExchangeItem {
         description = readBuffer.readString();
         itemId = readBuffer.readShort();
         itemCount = readBuffer.readInt();
+    }
+
+    @Override
+    public boolean equals(ExchangeItem exchangeItem) {
+        return exchangeItem instanceof ResourceExchangeItem && exchangeItem.name.equals(name) && exchangeItem.barType == barType && exchangeItem.price == price;
     }
 }

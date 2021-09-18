@@ -56,6 +56,13 @@ public class ElementManager {
         return null;
     }
 
+    public static Item getItem(short itemId) {
+        for(Item item : getAllItems()) {
+            if(item.getItemInfo().getId() == itemId) return item;
+        }
+        return null;
+    }
+
     public static Item getItem(String itemName) {
         for(Item item : getAllItems()) {
             if(item.getItemInfo().getName().equalsIgnoreCase(itemName)) return item;

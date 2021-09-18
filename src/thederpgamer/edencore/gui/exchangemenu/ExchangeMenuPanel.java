@@ -1,9 +1,10 @@
 package thederpgamer.edencore.gui.exchangemenu;
 
 import api.common.GameClient;
-import api.mod.config.PersistentObjectUtil;
+import api.network.packets.PacketUtil;
 import api.utils.game.inventory.InventoryUtils;
 import api.utils.gui.GUIMenuPanel;
+import org.schema.game.client.controller.PlayerOkCancelInput;
 import org.schema.game.common.controller.ElementCountMap;
 import org.schema.game.common.data.element.meta.BlueprintMetaItem;
 import org.schema.game.common.data.element.meta.MetaObjectManager;
@@ -16,10 +17,12 @@ import org.schema.schine.graphicsengine.forms.gui.GUIElement;
 import org.schema.schine.graphicsengine.forms.gui.GUIOverlay;
 import org.schema.schine.graphicsengine.forms.gui.newgui.*;
 import org.schema.schine.input.InputState;
-import thederpgamer.edencore.EdenCore;
 import thederpgamer.edencore.data.exchange.BlueprintExchangeItem;
 import thederpgamer.edencore.data.exchange.ExchangeItem;
 import thederpgamer.edencore.data.exchange.ResourceExchangeItem;
+import thederpgamer.edencore.element.ElementManager;
+import thederpgamer.edencore.manager.ClientCacheManager;
+import thederpgamer.edencore.network.client.ExchangeItemRemovePacket;
 import thederpgamer.edencore.utils.DataUtils;
 
 import java.util.ArrayList;
@@ -59,6 +62,9 @@ public class ExchangeMenuPanel extends GUIMenuPanel {
         exchangeTab.setTextBoxHeightLast(600);
         createExchangeTab(exchangeTab);
         guiWindow.setSelectedTab(lastTab);
+
+        lastClickedBP = null;
+        lastClickedResource = null;
     }
 
     private void createBlueprintsTab(GUIContentPane contentPane) {
@@ -70,9 +76,21 @@ public class ExchangeMenuPanel extends GUIMenuPanel {
                     if(mouseEvent.pressedLeftMouse()) {
                         lastClickedBP = item;
                         if(canAffordItem(item)) {
-                            GameClient.getClientState().getController().queueUIAudio("0022_menu_ui - highlight 1");
-                            givePlayerItem(item);
-                            InventoryUtils.consumeItems(GameClient.getClientPlayerState().getInventory(), item.barType, item.price);
+                            (new PlayerOkCancelInput("ConfirmExchangePanel", getState(), "CONFIRM EXCHANGE", "Are you sure you wish to exchange " + item.price + " " + getBarTypeName(item) + "s for this item?") {
+                                @Override
+                                public void onDeactivate() {
+
+                                }
+
+                                @Override
+                                public void pressedOK() {
+                                    GameClient.getClientState().getController().queueUIAudio("0022_menu_ui - highlight 1");
+                                    givePlayerItem(item);
+                                    InventoryUtils.consumeItems(GameClient.getClientPlayerState().getInventory(), item.barType, item.price);
+                                    lastClickedBP = null;
+                                    deactivate();
+                                }
+                            }).activate();
                         } else GameClient.getClientState().getController().queueUIAudio("0022_menu_ui - error 1");
                     }
                 }
@@ -136,10 +154,19 @@ public class ExchangeMenuPanel extends GUIMenuPanel {
                 @Override
                 public void callback(GUIElement guiElement, MouseEvent mouseEvent) {
                     if(mouseEvent.pressedLeftMouse() && lastClickedBP != null) {
-                        PersistentObjectUtil.removeObject(EdenCore.getInstance().getSkeleton(), lastClickedBP);
-                        PersistentObjectUtil.save(EdenCore.getInstance().getSkeleton());
-                        lastClickedBP = null;
-                        recreateTabs();
+                        (new PlayerOkCancelInput("ConfirmExchangeRemovalPanel", getState(), "CONFIRM REMOVAL", "Are you sure you wish to remove this item?") {
+                            @Override
+                            public void onDeactivate() {
+
+                            }
+
+                            @Override
+                            public void pressedOK() {
+                                sendExchangeItemRemoval(0, lastClickedBP);
+                                recreateTabs();
+                                deactivate();
+                            }
+                        }).activate();
                     }
                 }
 
@@ -169,10 +196,23 @@ public class ExchangeMenuPanel extends GUIMenuPanel {
                 @Override
                 public void callback(GUIElement guiElement, MouseEvent mouseEvent) {
                     if(mouseEvent.pressedLeftMouse()) {
+                        lastClickedResource = item;
                         if(canAffordItem(item)) {
-                            GameClient.getClientState().getController().queueUIAudio("0022_menu_ui - highlight 1");
-                            givePlayerItem(item);
-                            InventoryUtils.consumeItems(GameClient.getClientPlayerState().getInventory(), item.barType, item.price);
+                            (new PlayerOkCancelInput("ConfirmExchangePanel", getState(), "CONFIRM EXCHANGE", "Are you sure you wish to exchange " + item.price + " " + getBarTypeName(item) + "s for this item?") {
+                                @Override
+                                public void onDeactivate() {
+
+                                }
+
+                                @Override
+                                public void pressedOK() {
+                                    GameClient.getClientState().getController().queueUIAudio("0022_menu_ui - highlight 1");
+                                    givePlayerItem(item);
+                                    InventoryUtils.consumeItems(GameClient.getClientPlayerState().getInventory(), item.barType, item.price);
+                                    lastClickedResource = null;
+                                    deactivate();
+                                }
+                            }).activate();
                         } else GameClient.getClientState().getController().queueUIAudio("0022_menu_ui - error 1");
                     }
                 }
@@ -211,7 +251,8 @@ public class ExchangeMenuPanel extends GUIMenuPanel {
                 @Override
                 public void callback(GUIElement guiElement, MouseEvent mouseEvent) {
                     if(mouseEvent.pressedLeftMouse()) {
-                        //Todo
+                        (new AddResourceExchangeDialog()).activate();
+                        recreateTabs();
                     }
                 }
 
@@ -235,10 +276,19 @@ public class ExchangeMenuPanel extends GUIMenuPanel {
                 @Override
                 public void callback(GUIElement guiElement, MouseEvent mouseEvent) {
                     if(mouseEvent.pressedLeftMouse() && lastClickedResource != null) {
-                        PersistentObjectUtil.removeObject(EdenCore.getInstance().getSkeleton(), lastClickedResource);
-                        PersistentObjectUtil.save(EdenCore.getInstance().getSkeleton());
-                        lastClickedResource = null;
-                        recreateTabs();
+                        (new PlayerOkCancelInput("ConfirmExchangeRemovalPanel", getState(), "CONFIRM REMOVAL", "Are you sure you wish to remove this item?") {
+                            @Override
+                            public void onDeactivate() {
+
+                            }
+
+                            @Override
+                            public void pressedOK() {
+                                sendExchangeItemRemoval(1, lastClickedResource);
+                                recreateTabs();
+                                deactivate();
+                            }
+                        }).activate();
                     }
                 }
 
@@ -270,19 +320,11 @@ public class ExchangeMenuPanel extends GUIMenuPanel {
     }
 
     private ArrayList<BlueprintExchangeItem> getBlueprints() {
-        ArrayList<BlueprintExchangeItem> blueprintList = new ArrayList<>();
-        for(Object obj : PersistentObjectUtil.getObjects(EdenCore.getInstance().getSkeleton(), BlueprintExchangeItem.class)) {
-            blueprintList.add((BlueprintExchangeItem) obj);
-        }
-        return blueprintList;
+        return ClientCacheManager.blueprintExchangeItems;
     }
 
     private ArrayList<ResourceExchangeItem> getResources() {
-        ArrayList<ResourceExchangeItem> resourceList = new ArrayList<>();
-        for(Object obj : PersistentObjectUtil.getObjects(EdenCore.getInstance().getSkeleton(), ResourceExchangeItem.class)) {
-            resourceList.add((ResourceExchangeItem) obj);
-        }
-        return resourceList;
+        return ClientCacheManager.resourceExchangeItems;
     }
 
     private GUIHorizontalArea.HButtonColor getTileColor(ExchangeItem item) {
@@ -291,6 +333,10 @@ public class ExchangeMenuPanel extends GUIMenuPanel {
             else if(item instanceof ResourceExchangeItem) return GUIHorizontalArea.HButtonColor.YELLOW;
         }
         return GUIHorizontalArea.HButtonColor.RED;
+    }
+
+    private String getBarTypeName(ExchangeItem item) {
+        return ElementManager.getItem(item.barType).getItemInfo().getName();
     }
 
     private boolean canAffordItem(ExchangeItem item) {
@@ -314,5 +360,9 @@ public class ExchangeMenuPanel extends GUIMenuPanel {
                 exception.printStackTrace();
             }
         } else if(item instanceof ResourceExchangeItem) InventoryUtils.addItem(inventory, ((ResourceExchangeItem) item).itemId, ((ResourceExchangeItem) item).itemCount);
+    }
+
+    private void sendExchangeItemRemoval(int type, ExchangeItem item) {
+        PacketUtil.sendPacketToServer(new ExchangeItemRemovePacket(type, item));
     }
 }
