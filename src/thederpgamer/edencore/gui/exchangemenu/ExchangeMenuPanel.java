@@ -33,36 +33,42 @@ import java.util.ArrayList;
 public class ExchangeMenuPanel extends GUIMenuPanel {
 
     private GUITilePane<BlueprintExchangeItem> blueprintsTilePane;
+    private BlueprintExchangeItem lastClickedBP;
+
     private GUITilePane<ResourceExchangeItem> resourcesTilePane;
+    private ResourceExchangeItem lastClickedResource;
 
     public ExchangeMenuPanel(InputState inputState) {
-        super(inputState, "ServerExchange", 750, 500);
+        super(inputState, "ServerExchange", 800, 700);
     }
 
     @Override
     public void recreateTabs() {
+        int lastTab = guiWindow.getSelectedTab();
         guiWindow.clearTabs();
 
         GUIContentPane blueprintsTab = guiWindow.addTab("BLUEPRINTS");
-        blueprintsTab.setTextBoxHeightLast(500);
+        blueprintsTab.setTextBoxHeightLast(600);
         createBlueprintsTab(blueprintsTab);
 
         GUIContentPane resourcesTab = guiWindow.addTab("RESOURCES");
-        resourcesTab.setTextBoxHeightLast(500);
+        resourcesTab.setTextBoxHeightLast(600);
         createResourcesTab(resourcesTab);
 
         GUIContentPane exchangeTab = guiWindow.addTab("EXCHANGE");
-        exchangeTab.setTextBoxHeightLast(500);
+        exchangeTab.setTextBoxHeightLast(600);
         createExchangeTab(exchangeTab);
+        guiWindow.setSelectedTab(lastTab);
     }
 
     private void createBlueprintsTab(GUIContentPane contentPane) {
-        (blueprintsTilePane = new GUITilePane<>(getState(), guiWindow, 130, 180)).onInit();
+        (blueprintsTilePane = new GUITilePane<>(getState(), guiWindow, 200, 256)).onInit();
         for(final BlueprintExchangeItem item : getBlueprints()) {
-            GUITile tile = blueprintsTilePane.addButtonTile("EXCHANGE", item.description, getTileColor(item), new GUICallback() {
+            GUITile tile = blueprintsTilePane.addButtonTile("EXCHANGE", item.createDescription(), getTileColor(item), new GUICallback() {
                 @Override
                 public void callback(GUIElement guiElement, MouseEvent mouseEvent) {
                     if(mouseEvent.pressedLeftMouse()) {
+                        lastClickedBP = item;
                         if(canAffordItem(item)) {
                             GameClient.getClientState().getController().queueUIAudio("0022_menu_ui - highlight 1");
                             givePlayerItem(item);
@@ -73,7 +79,7 @@ public class ExchangeMenuPanel extends GUIMenuPanel {
 
                 @Override
                 public boolean isOccluded() {
-                    return false;
+                    return !getState().getController().getPlayerInputs().isEmpty();
                 }
             }, new GUIActivationCallback() {
                 @Override
@@ -88,11 +94,11 @@ public class ExchangeMenuPanel extends GUIMenuPanel {
             });
             GUIOverlay spriteOverlay = item.getIcon();
             spriteOverlay.onInit();
-            spriteOverlay.getSprite().setWidth(130);
-            spriteOverlay.getSprite().setHeight(115);
+            spriteOverlay.getSprite().setWidth(200);
+            spriteOverlay.getSprite().setHeight(200);
             tile.attach(spriteOverlay);
-            spriteOverlay.getPos().x += 5;
-            spriteOverlay.getPos().y += 70;
+            spriteOverlay.getPos().x += 100;
+            spriteOverlay.getPos().y += 150;
         }
         contentPane.getContent(0).attach(blueprintsTilePane);
 
@@ -105,14 +111,14 @@ public class ExchangeMenuPanel extends GUIMenuPanel {
                 @Override
                 public void callback(GUIElement guiElement, MouseEvent mouseEvent) {
                     if(mouseEvent.pressedLeftMouse()) {
-                        (new AddBlueprintExchangeDialog(ExchangeMenuPanel.this)).activate();
+                        (new AddBlueprintExchangeDialog()).activate();
                         recreateTabs();
                     }
                 }
 
                 @Override
                 public boolean isOccluded() {
-                    return false;
+                    return !getState().getController().getPlayerInputs().isEmpty();
                 }
             }, new GUIActivationCallback() {
                 @Override
@@ -122,21 +128,24 @@ public class ExchangeMenuPanel extends GUIMenuPanel {
 
                 @Override
                 public boolean isActive(InputState inputState) {
-                    return true;
+                    return getState().getController().getPlayerInputs().isEmpty();
                 }
             });
 
             adminPane.addButton(1, 0, "REMOVE", GUIHorizontalArea.HButtonColor.ORANGE, new GUICallback() {
                 @Override
                 public void callback(GUIElement guiElement, MouseEvent mouseEvent) {
-                    if(mouseEvent.pressedLeftMouse()) {
-                        //Todo
+                    if(mouseEvent.pressedLeftMouse() && lastClickedBP != null) {
+                        PersistentObjectUtil.removeObject(EdenCore.getInstance().getSkeleton(), lastClickedBP);
+                        PersistentObjectUtil.save(EdenCore.getInstance().getSkeleton());
+                        lastClickedBP = null;
+                        recreateTabs();
                     }
                 }
 
                 @Override
                 public boolean isOccluded() {
-                    return false;
+                    return !getState().getController().getPlayerInputs().isEmpty();
                 }
             }, new GUIActivationCallback() {
                 @Override
@@ -146,7 +155,7 @@ public class ExchangeMenuPanel extends GUIMenuPanel {
 
                 @Override
                 public boolean isActive(InputState inputState) {
-                    return true;
+                    return getState().getController().getPlayerInputs().isEmpty();
                 }
             });
             contentPane.getContent(1).attach(adminPane);
@@ -154,9 +163,9 @@ public class ExchangeMenuPanel extends GUIMenuPanel {
     }
 
     private void createResourcesTab(GUIContentPane contentPane) {
-        (resourcesTilePane = new GUITilePane<>(getState(), guiWindow, 130, 180)).onInit();
+        (resourcesTilePane = new GUITilePane<>(getState(), guiWindow, 200, 256)).onInit();
         for(final ResourceExchangeItem item : getResources()) {
-            GUITile tile = resourcesTilePane.addButtonTile("EXCHANGE", item.description, getTileColor(item), new GUICallback() {
+            GUITile tile = resourcesTilePane.addButtonTile("EXCHANGE", item.createDescription(), getTileColor(item), new GUICallback() {
                 @Override
                 public void callback(GUIElement guiElement, MouseEvent mouseEvent) {
                     if(mouseEvent.pressedLeftMouse()) {
@@ -170,7 +179,7 @@ public class ExchangeMenuPanel extends GUIMenuPanel {
 
                 @Override
                 public boolean isOccluded() {
-                    return false;
+                    return !getState().getController().getPlayerInputs().isEmpty();
                 }
             }, new GUIActivationCallback() {
                 @Override
@@ -180,16 +189,16 @@ public class ExchangeMenuPanel extends GUIMenuPanel {
 
                 @Override
                 public boolean isActive(InputState inputState) {
-                    return true;
+                    return getState().getController().getPlayerInputs().isEmpty();
                 }
             });
             GUIOverlay spriteOverlay = item.getIcon();
             spriteOverlay.onInit();
-            spriteOverlay.getSprite().setWidth(130);
-            spriteOverlay.getSprite().setHeight(115);
+            spriteOverlay.getSprite().setWidth(200);
+            spriteOverlay.getSprite().setHeight(200);
             tile.attach(spriteOverlay);
-            spriteOverlay.getPos().x += 5;
-            spriteOverlay.getPos().y += 70;
+            spriteOverlay.getPos().x += 100;
+            spriteOverlay.getPos().y += 150;
         }
         contentPane.getContent(0).attach(resourcesTilePane);
 
@@ -208,7 +217,7 @@ public class ExchangeMenuPanel extends GUIMenuPanel {
 
                 @Override
                 public boolean isOccluded() {
-                    return false;
+                    return !getState().getController().getPlayerInputs().isEmpty();
                 }
             }, new GUIActivationCallback() {
                 @Override
@@ -218,21 +227,24 @@ public class ExchangeMenuPanel extends GUIMenuPanel {
 
                 @Override
                 public boolean isActive(InputState inputState) {
-                    return true;
+                    return getState().getController().getPlayerInputs().isEmpty();
                 }
             });
 
             adminPane.addButton(1, 0, "REMOVE", GUIHorizontalArea.HButtonColor.ORANGE, new GUICallback() {
                 @Override
                 public void callback(GUIElement guiElement, MouseEvent mouseEvent) {
-                    if(mouseEvent.pressedLeftMouse()) {
-                        //Todo
+                    if(mouseEvent.pressedLeftMouse() && lastClickedResource != null) {
+                        PersistentObjectUtil.removeObject(EdenCore.getInstance().getSkeleton(), lastClickedResource);
+                        PersistentObjectUtil.save(EdenCore.getInstance().getSkeleton());
+                        lastClickedResource = null;
+                        recreateTabs();
                     }
                 }
 
                 @Override
                 public boolean isOccluded() {
-                    return false;
+                    return !getState().getController().getPlayerInputs().isEmpty();
                 }
             }, new GUIActivationCallback() {
                 @Override
@@ -242,7 +254,7 @@ public class ExchangeMenuPanel extends GUIMenuPanel {
 
                 @Override
                 public boolean isActive(InputState inputState) {
-                    return true;
+                    return getState().getController().getPlayerInputs().isEmpty();
                 }
             });
             contentPane.getContent(1).attach(adminPane);

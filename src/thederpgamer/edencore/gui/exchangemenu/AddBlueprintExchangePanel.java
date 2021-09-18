@@ -33,7 +33,6 @@ public class AddBlueprintExchangePanel extends GUIInputDialogPanel { ;
     private GUIContentPane contentPane;
 
     public short barId;
-    private boolean barTextChanged;
     public String currentBarText = "";
 
     public BlueprintEntry blueprintEntry;
@@ -41,7 +40,7 @@ public class AddBlueprintExchangePanel extends GUIInputDialogPanel { ;
     private String currentBPText = "";
 
     public AddBlueprintExchangePanel(InputState inputState, GUICallback guiCallback) {
-        super(inputState, "blueprint_exchange_add_panel", "Add Exchange Entry", "", 600, 350, guiCallback);
+        super(inputState, "blueprint_exchange_add_panel", "Add Exchange Entry", "", 650, 350, guiCallback);
     }
 
     @Override
@@ -70,13 +69,10 @@ public class AddBlueprintExchangePanel extends GUIInputDialogPanel { ;
             @Override
             public String onTextChanged(String text) {
                 String t = text.trim();
-                if(!t.equals(currentBarText)) {
-                    currentBarText = t;
-                    barTextChanged = true;
-                }
+                if(!t.equals(currentBarText)) currentBarText = t;
                 return text;
             }
-        }, 60);
+        }, 30);
 
         addDropdown(new DropdownResult() {
             private List<GUIElement> bars;
@@ -103,7 +99,7 @@ public class AddBlueprintExchangePanel extends GUIInputDialogPanel { ;
 
             @Override
             public boolean needsListUpdate() {
-                return barTextChanged;
+                return false;
             }
 
             @Override
@@ -125,9 +121,9 @@ public class AddBlueprintExchangePanel extends GUIInputDialogPanel { ;
 
             @Override
             public void flagListNeedsUpdate(boolean flag) {
-                barTextChanged = flag;
+
             }
-        }, 80);
+        }, 60);
 
         addTextBar(new TextBarResult() {
 
@@ -155,7 +151,7 @@ public class AddBlueprintExchangePanel extends GUIInputDialogPanel { ;
                 }
                 return text;
             }
-        }, 100);
+        }, 90);
 
         addDropdown(new DropdownResult() {
             private List<GUIElement> blueprints;
@@ -225,13 +221,17 @@ public class AddBlueprintExchangePanel extends GUIInputDialogPanel { ;
         ArrayList<GUIElement> blueprintList = new ArrayList<>();
         List<BlueprintEntry> blueprints = BluePrintController.active.readBluePrints();
         for(BlueprintEntry entry : blueprints) {
-            GUIAncor anchor = new GUIAncor(GameClient.getClientState(), 200.0f, 26.0f);
-            GUITextOverlay textOverlay = new GUITextOverlay(100, 26, FontLibrary.getBoldArial12White(), GameClient.getClientState());
-            textOverlay.onInit();
-            textOverlay.setTextSimple(entry.getName());
-            anchor.setUserPointer(entry);
-            anchor.attach(textOverlay);
-            blueprintList.add(anchor);
+            if(currentBPText.isEmpty() || entry.getName().toLowerCase().contains(currentBPText.toLowerCase())) {
+                GUIAncor anchor = new GUIAncor(GameClient.getClientState(), 300.0f, 26.0f);
+                GUITextOverlay textOverlay = new GUITextOverlay(100, 26, FontLibrary.getBoldArial12White(), GameClient.getClientState());
+                textOverlay.onInit();
+                textOverlay.setTextSimple(entry.getName());
+                anchor.setUserPointer(entry);
+                anchor.attach(textOverlay);
+                textOverlay.getPos().x = 7.0F;
+                textOverlay.getPos().y = 7.0F;
+                blueprintList.add(anchor);
+            }
         }
         return blueprintList;
     }
@@ -257,6 +257,8 @@ public class AddBlueprintExchangePanel extends GUIInputDialogPanel { ;
             blockSprite.getScale().set(0.4F, 0.4F, 0.0F);
             anchor.attach(blockSprite);
 
+            textOverlay.getPos().x = 30.0F;
+            textOverlay.getPos().y = 7.0F;
             barList.add(anchor);
         }
         return barList;

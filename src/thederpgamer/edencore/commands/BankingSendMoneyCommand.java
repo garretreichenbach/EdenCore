@@ -28,8 +28,8 @@ public class BankingSendMoneyCommand implements CommandInterface {
 
     @Override
     public String getDescription() {
-        return "sends money from your account to another player. both players need to be online, and you need to have the amount of money in your account.\n" +
-                "/%COMMAND% Schema 500 \"payback for the beer yesterday\"";
+        return "Sends money from your account to another player. Both players need to be online, and you need to have enough money in your account.\n" +
+                "- /%COMMAND% <player> 500 <\"description\">";
     }
 
     @Override
@@ -40,9 +40,7 @@ public class BankingSendMoneyCommand implements CommandInterface {
     @Override
     public boolean onCommand(PlayerState sender, String[] strings) {
         // /bank send player_name amount mssg
-        if (strings.length!=3) {
-            return false;
-        }
+        if(strings.length != 3) return false;
         String to = strings[0];
         int amount = 0;
         try {
@@ -52,11 +50,8 @@ public class BankingSendMoneyCommand implements CommandInterface {
         }
         String mssg = strings[2];
         BankingTransactionLog transactionLog = BankingTransactionLog.sendMoney(sender.getName(),to,amount,mssg);
-        if (transactionLog == null) {
-            PlayerUtils.sendMessage(sender,"Unable to complete transaction. Either player does not exist or you dont have enough money.");
-        } else {
-            PlayerUtils.sendMessage(sender,transactionLog.toStringPretty());
-        }
+        if(transactionLog == null) PlayerUtils.sendMessage(sender,"Unable to complete transaction. Either player does not exist or you don't have enough money.");
+        else PlayerUtils.sendMessage(sender,transactionLog.toStringPretty());
         return true;
     }
 

@@ -3,14 +3,12 @@ package thederpgamer.edencore.commands;
 import api.mod.StarMod;
 import api.utils.game.PlayerUtils;
 import api.utils.game.chat.CommandInterface;
-import com.ctc.wstx.util.DataUtil;
 import org.schema.game.common.data.player.PlayerState;
 import thederpgamer.edencore.EdenCore;
 import thederpgamer.edencore.data.other.BankingTransactionLog;
 import thederpgamer.edencore.utils.DataUtils;
 
 import javax.annotation.Nullable;
-import java.util.HashSet;
 import java.util.List;
 
 /**
@@ -32,7 +30,8 @@ public class BankingListCommand implements CommandInterface {
 
     @Override
     public String getDescription() {
-        return "lists your past transactions. up to 10 transactions are saved. older ones get automatically deleted.";
+        return "Lists your previous transactions. Up to 10 transactions are saved, and older ones get automatically deleted.\n" +
+               "- /%COMMAND% : Lists up to 10 previous transactions.";
     }
 
     @Override

@@ -13,15 +13,26 @@ import api.mod.StarLoader;
 import api.mod.StarMod;
 import api.utils.StarRunnable;
 import api.utils.game.PlayerUtils;
+import api.utils.gui.ModGUIHandler;
 import org.apache.commons.io.IOUtils;
 import org.schema.game.client.view.gui.newgui.GUITopBar;
 import org.schema.game.common.data.player.PlayerState;
+import org.schema.schine.graphicsengine.core.MouseEvent;
+import org.schema.schine.graphicsengine.forms.gui.GUIActivationHighlightCallback;
+import org.schema.schine.graphicsengine.forms.gui.GUICallback;
+import org.schema.schine.graphicsengine.forms.gui.GUIElement;
+import org.schema.schine.input.InputState;
+import org.schema.schine.resource.ResourceLoader;
 import thederpgamer.edencore.commands.*;
-import thederpgamer.edencore.data.BuildSectorData;
+import thederpgamer.edencore.data.other.BuildSectorData;
 import thederpgamer.edencore.drawer.BuildSectorHudDrawer;
 import thederpgamer.edencore.element.ElementManager;
 import thederpgamer.edencore.element.items.PrizeBars;
-import thederpgamer.edencore.manager.*;
+import thederpgamer.edencore.gui.exchangemenu.ExchangeMenuControlManager;
+import thederpgamer.edencore.manager.ConfigManager;
+import thederpgamer.edencore.manager.LogManager;
+import thederpgamer.edencore.manager.ResourceManager;
+import thederpgamer.edencore.manager.TransferManager;
 import thederpgamer.edencore.utils.DataUtils;
 
 import java.io.FileInputStream;
@@ -57,13 +68,15 @@ public class EdenCore extends StarMod {
             "BlueprintEntry"
     };
 
+    //GUI
+    public ExchangeMenuControlManager exchangeMenuControlManager;
+
     @Override
     public void onEnable() {
         instance = this;
         ConfigManager.initialize(this);
         LogManager.initialize();
         TransferManager.initialize();
-        GUIManager.initialize();
         registerListeners();
         registerCommands();
     }
@@ -91,14 +104,20 @@ public class EdenCore extends StarMod {
     private void registerListeners() {
         StarLoader.registerListener(GUITopBarCreateEvent.class, new Listener<GUITopBarCreateEvent>() {
             @Override
-            public void onEvent(GUITopBarCreateEvent event) {
+            public void onEvent(final GUITopBarCreateEvent event) {
+                if(exchangeMenuControlManager == null) {
+                    exchangeMenuControlManager = new ExchangeMenuControlManager();
+                    ModGUIHandler.registerNewControlManager(getSkeleton(), exchangeMenuControlManager);
+                }
+
                 GUITopBar.ExpandedButton dropDownButton = event.getDropdownButtons().get(event.getDropdownButtons().size() - 1);
                 dropDownButton.addExpandedButton("EXCHANGE", new GUICallback() {
                     @Override
                     public void callback(GUIElement guiElement, MouseEvent mouseEvent) {
                         if(mouseEvent.pressedLeftMouse()) {
                             GameClient.getClientState().getController().queueUIAudio("0022_menu_ui - enter");
-                            GUIManager.exchangeMenuManager.setActive(true);
+                            GameClient.getClientState().getGlobalGameControlManager().getIngameControlManager().getPlayerGameControlManager().deactivateAll();
+                            exchangeMenuControlManager.setActive(true);
                         }
                     }
 

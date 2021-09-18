@@ -1,9 +1,10 @@
 package thederpgamer.edencore.element.items;
 
 import api.config.BlockConfig;
-import api.utils.element.Blocks;
 import org.schema.game.common.data.element.ElementCategory;
+import org.schema.game.common.data.element.ElementKeyMap;
 import org.schema.schine.graphicsengine.core.GraphicsContext;
+import thederpgamer.edencore.element.ElementManager;
 
 /**
  * <Description>
@@ -20,7 +21,7 @@ public class PrizeBars implements ItemGroup {
 
     @Override
     public ElementCategory getCategory() {
-        return Blocks.GOLD_BAR.getInfo().getType();
+        return ElementManager.getCategory("Items");
     }
 
     @Override
@@ -37,9 +38,10 @@ public class PrizeBars implements ItemGroup {
         @Override
         public void initialize() {
             if(GraphicsContext.initialized) {
-                itemInfo.setBuildIconNum(Blocks.BRONZE_BAR.getInfo().getBuildIconNum());
+                itemInfo.setTextureId(ElementKeyMap.getInfo(341).getTextureIds());
+                itemInfo.setBuildIconNum(ElementKeyMap.getInfo(341).getBuildIconNum());
             }
-            itemInfo.setDescription("A rare bronze token which can be redeemed for unique prizes at the server shop.");
+            itemInfo.setDescription("A rare bronze bar which can be redeemed for unique prizes at the server shop.");
             itemInfo.setInRecipe(false);
             itemInfo.setShoppable(false);
             itemInfo.setPlacable(false);
@@ -57,9 +59,10 @@ public class PrizeBars implements ItemGroup {
         @Override
         public void initialize() {
             if(GraphicsContext.initialized) {
-                itemInfo.setBuildIconNum(Blocks.SILVER_BAR.getInfo().getBuildIconNum());
+                itemInfo.setTextureId(ElementKeyMap.getInfo(342).getTextureIds());
+                itemInfo.setBuildIconNum(ElementKeyMap.getInfo(342).getBuildIconNum());
             }
-            itemInfo.setDescription("An esteemed silver token which can be redeemed for unique prizes at the server shop.");
+            itemInfo.setDescription("An esteemed silver bar which can be redeemed for unique prizes at the server shop.");
             itemInfo.setInRecipe(false);
             itemInfo.setShoppable(false);
             itemInfo.setPlacable(false);
@@ -77,9 +80,10 @@ public class PrizeBars implements ItemGroup {
         @Override
         public void initialize() {
             if(GraphicsContext.initialized) {
-                itemInfo.setBuildIconNum(Blocks.GOLD_BAR.getInfo().getBuildIconNum());
+                itemInfo.setTextureId(ElementKeyMap.getInfo(343).getTextureIds());
+                itemInfo.setBuildIconNum(ElementKeyMap.getInfo(343).getBuildIconNum());
             }
-            itemInfo.setDescription("An exquisite gold token which can be redeemed for unique prizes at the server shop.");
+            itemInfo.setDescription("An exquisite gold bar which can be redeemed for unique prizes at the server shop.");
             itemInfo.setInRecipe(false);
             itemInfo.setShoppable(false);
             itemInfo.setPlacable(false);

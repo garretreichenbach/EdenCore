@@ -5,7 +5,6 @@ import org.schema.game.common.data.element.ElementCategory;
 import org.schema.game.common.data.element.ElementInformation;
 import thederpgamer.edencore.EdenCore;
 import thederpgamer.edencore.element.ElementManager;
-import thederpgamer.edencore.manager.ResourceManager;
 
 /**
  * Base abstract item class.
@@ -18,10 +17,7 @@ public abstract class Item {
     protected ElementInformation itemInfo;
 
     public Item(String name, ElementCategory category) {
-        String internalName = name.toLowerCase().replace(" ", "-").trim();
-        short textureId = (short) ResourceManager.getTexture(internalName).getTextureId();
-        itemInfo = BlockConfig.newElement(EdenCore.getInstance(), name, textureId);
-        itemInfo.setBuildIconNum(textureId);
+        itemInfo = BlockConfig.newElement(EdenCore.getInstance(), name, new short[6]);
         itemInfo.setPlacable(false);
         itemInfo.setPhysical(false);
         BlockConfig.setElementCategory(itemInfo, category);

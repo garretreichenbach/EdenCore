@@ -16,12 +16,6 @@ import thederpgamer.edencore.data.exchange.BlueprintExchangeItem;
  */
 public class AddBlueprintExchangeDialog extends GUIInputDialog {
 
-    private final ExchangeMenuPanel exchangeMenu;
-
-    public AddBlueprintExchangeDialog(ExchangeMenuPanel exchangeMenu) {
-        this.exchangeMenu = exchangeMenu;
-    }
-
     @Override
     public AddBlueprintExchangePanel createPanel() {
         return new AddBlueprintExchangePanel(getState(), this);
@@ -36,8 +30,10 @@ public class AddBlueprintExchangeDialog extends GUIInputDialog {
                     deactivate();
                     break;
                 case "OK":
-                    BlueprintExchangeItem item = createItem();
-                    if(item != null) exchangeMenu.givePlayerItem(item);
+                    if(createItem() != null) {
+                        deactivate();
+                        EdenCore.getInstance().exchangeMenuControlManager.getMenuPanel().recreateTabs();
+                    }
                     break;
             }
         }

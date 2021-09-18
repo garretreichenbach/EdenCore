@@ -2,6 +2,7 @@ package thederpgamer.edencore.data.exchange;
 
 import api.network.PacketReadBuffer;
 import api.network.PacketWriteBuffer;
+import org.schema.game.common.data.element.ElementKeyMap;
 import org.schema.schine.graphicsengine.forms.gui.GUIOverlay;
 
 import java.io.IOException;
@@ -24,6 +25,10 @@ public abstract class ExchangeItem {
         this.price = price;
         this.name = name;
         this.description = description;
+    }
+
+    public String createDescription() {
+        return name + "\n" + price + " " + ElementKeyMap.getInfo(barType).getName() + "s\n" + description;
     }
 
     public abstract GUIOverlay getIcon();

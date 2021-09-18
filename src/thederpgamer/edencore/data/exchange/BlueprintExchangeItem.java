@@ -27,10 +27,11 @@ public class BlueprintExchangeItem extends ExchangeItem {
     public BlueprintExchangeItem(BlueprintEntry blueprint, short barType, int price, String description) {
         super(barType, price, blueprint.getName(), description);
         this.blueprint = blueprint;
+        this.blueprint.calculateMass();
         this.barType = barType;
         this.price = price;
         this.name = blueprint.getName();
-        this.description = description;
+        this.description = blueprint.getElementCountMapWithChilds().getTotalAmount() + " blocks";
         this.mass = blueprint.getMass();
         this.min = blueprint.getBb().min;
         this.max = blueprint.getBb().max;
