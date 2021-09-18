@@ -7,6 +7,8 @@ import org.schema.game.common.data.player.PlayerState;
 import thederpgamer.edencore.utils.DataUtils;
 
 import javax.vecmath.Vector3f;
+import java.util.HashSet;
+import java.util.Locale;
 
 /**
  * Stores player information as persistent data.
@@ -51,5 +53,15 @@ public class PlayerData {
 
     public static Vector3i getDefaultSector(PlayerState playerState) {
         return (playerState.getFactionId() != 0) ? GameCommon.getGameState().getFactionManager().getFaction(playerState.getFactionId()).getHomeSector() : DataUtils.getSpawnSector();
+    }
+
+    //collection of banking transactions that player has sent or received.
+    private HashSet<BankingTransactionLog> transactions = new HashSet<>();
+    public void addTransaction(BankingTransactionLog transaction) {
+        //neither sender nor receiver?
+        if (!transaction.from.equals(playerName.toLowerCase(Locale.ENGLISH)) && !transaction.to.equals(playerName.toLowerCase(Locale.ENGLISH)))
+            return; //dont add.
+
+        transactions.add(transaction);
     }
 }
