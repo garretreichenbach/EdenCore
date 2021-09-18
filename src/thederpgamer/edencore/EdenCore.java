@@ -16,17 +16,8 @@ import api.utils.game.PlayerUtils;
 import org.apache.commons.io.IOUtils;
 import org.schema.game.client.view.gui.newgui.GUITopBar;
 import org.schema.game.common.data.player.PlayerState;
-import org.schema.schine.graphicsengine.core.MouseEvent;
-import org.schema.schine.graphicsengine.forms.gui.GUIActivationHighlightCallback;
-import org.schema.schine.graphicsengine.forms.gui.GUICallback;
-import org.schema.schine.graphicsengine.forms.gui.GUIElement;
-import org.schema.schine.input.InputState;
-import org.schema.schine.resource.ResourceLoader;
-import thederpgamer.edencore.commands.BuildSectorCommand;
-import thederpgamer.edencore.commands.ListEntityCommand;
-import thederpgamer.edencore.commands.LoadEntityCommand;
-import thederpgamer.edencore.commands.SaveEntityCommand;
-import thederpgamer.edencore.data.other.BuildSectorData;
+import thederpgamer.edencore.commands.*;
+import thederpgamer.edencore.data.BuildSectorData;
 import thederpgamer.edencore.drawer.BuildSectorHudDrawer;
 import thederpgamer.edencore.element.ElementManager;
 import thederpgamer.edencore.element.items.PrizeBars;
@@ -245,6 +236,11 @@ public class EdenCore extends StarMod {
         StarLoader.registerCommand(new LoadEntityCommand());
         StarLoader.registerCommand(new ListEntityCommand());
         StarLoader.registerCommand(new BuildSectorCommand());
+
+        //banking stuff by ironsight
+        StarLoader.registerCommand(new BankingSendMoneyCommand());
+        StarLoader.registerCommand(new BankingListCommand());
+        StarLoader.registerCommand(new BankingAdminListCommand());
     }
 
     private void queueSpawnSwitch(final PlayerState playerState) {
