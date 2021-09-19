@@ -358,7 +358,7 @@ public class ExchangeMenuPanel extends GUIMenuPanel {
 
     public void givePlayerItem(ExchangeItem item) {
         Inventory inventory = GameClient.getClientPlayerState().getInventory();
-        if(item instanceof BlueprintExchangeItem) {
+        if(item instanceof BlueprintExchangeItem && ((BlueprintExchangeItem) item).blueprint != null) {
             BlueprintMetaItem metaItem = (BlueprintMetaItem) MetaObjectManager.instantiate(MetaObjectManager.MetaObjectType.BLUEPRINT, (short) -1, true);
             metaItem.blueprintName = item.name;
             metaItem.goal = new ElementCountMap(((BlueprintExchangeItem) item).blueprint.getElementCountMapWithChilds());

@@ -51,13 +51,15 @@ public class SendCacheUpdatePacket extends Packet {
 
     @Override
     public void processPacketOnClient() {
-        ClientCacheManager.blueprintExchangeItems.clear();
-        ClientCacheManager.blueprintExchangeItems.addAll(blueprintExchangeItems);
+        try {
+            ClientCacheManager.blueprintExchangeItems.clear();
+            ClientCacheManager.blueprintExchangeItems.addAll(blueprintExchangeItems);
 
-        ClientCacheManager.resourceExchangeItems.clear();
-        ClientCacheManager.resourceExchangeItems.addAll(resourceExchangeItems);
+            ClientCacheManager.resourceExchangeItems.clear();
+            ClientCacheManager.resourceExchangeItems.addAll(resourceExchangeItems);
 
-        EdenCore.getInstance().exchangeMenuControlManager.getMenuPanel().recreateTabs();
+            EdenCore.getInstance().exchangeMenuControlManager.getMenuPanel().recreateTabs();
+        } catch(Exception ignored) { }
     }
 
     @Override

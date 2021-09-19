@@ -3,6 +3,8 @@ package thederpgamer.edencore.data.exchange;
 import api.common.GameClient;
 import api.network.PacketReadBuffer;
 import api.network.PacketWriteBuffer;
+import org.schema.game.server.controller.BluePrintController;
+import org.schema.game.server.controller.EntityNotFountException;
 import org.schema.game.server.data.blueprintnw.BlueprintEntry;
 import org.schema.schine.graphicsengine.forms.Sprite;
 import org.schema.schine.graphicsengine.forms.gui.GUIOverlay;
@@ -88,6 +90,11 @@ public class BlueprintExchangeItem extends ExchangeItem {
         description = readBuffer.readString();
         blocks = readBuffer.readLong();
         iconPath = readBuffer.readString();
+        try {
+            blueprint = BluePrintController.active.getBlueprint(name);
+        } catch(EntityNotFountException exception) {
+            exception.printStackTrace();
+        }
     }
 
     @Override
