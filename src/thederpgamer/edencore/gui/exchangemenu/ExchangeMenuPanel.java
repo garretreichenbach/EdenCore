@@ -1,6 +1,7 @@
 package thederpgamer.edencore.gui.exchangemenu;
 
 import api.common.GameClient;
+import api.common.GameCommon;
 import api.network.packets.PacketUtil;
 import api.utils.game.inventory.InventoryUtils;
 import api.utils.gui.GUIMenuPanel;
@@ -24,6 +25,7 @@ import thederpgamer.edencore.element.ElementManager;
 import thederpgamer.edencore.manager.ClientCacheManager;
 import thederpgamer.edencore.network.client.ExchangeItemRemovePacket;
 import thederpgamer.edencore.utils.DataUtils;
+import thederpgamer.edencore.utils.InventoryUtil;
 
 import java.util.ArrayList;
 
@@ -88,7 +90,7 @@ public class ExchangeMenuPanel extends GUIMenuPanel {
                                 public void pressedOK() {
                                     GameClient.getClientState().getController().queueUIAudio("0022_menu_ui - highlight 1");
                                     givePlayerItem(item);
-                                    InventoryUtils.consumeItems(GameClient.getClientPlayerState().getInventory(), item.barType, item.price);
+                                    InventoryUtil.consumeItems(GameClient.getClientPlayerState().getInventory(), item.barType, item.price);
                                     lastClickedBP = null;
                                     deactivate();
                                 }
@@ -215,7 +217,7 @@ public class ExchangeMenuPanel extends GUIMenuPanel {
                                 public void pressedOK() {
                                     GameClient.getClientState().getController().queueUIAudio("0022_menu_ui - highlight 1");
                                     givePlayerItem(item);
-                                    InventoryUtils.consumeItems(GameClient.getClientPlayerState().getInventory(), item.barType, item.price);
+                                    InventoryUtil.consumeItems(GameClient.getClientPlayerState().getInventory(), item.barType, item.price);
                                     lastClickedResource = null;
                                     deactivate();
                                 }
@@ -366,8 +368,7 @@ public class ExchangeMenuPanel extends GUIMenuPanel {
             try {
                 int slot = inventory.getFreeSlot();
                 inventory.put(slot, metaItem);
-                inventory.sendAll();
-                //inventory.sendInventoryModification(slot);
+                if(GameCommon.isClientConnectedToServer()) inventory.sendInventoryModification(slot);
             } catch(NoSlotFreeException exception) {
                 exception.printStackTrace();
             }
