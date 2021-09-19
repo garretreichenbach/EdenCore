@@ -27,6 +27,7 @@ import thederpgamer.edencore.EdenCore;
 import thederpgamer.edencore.data.other.BuildSectorData;
 import thederpgamer.edencore.manager.LogManager;
 import thederpgamer.edencore.utils.DataUtils;
+import thederpgamer.edencore.utils.ServerDatabase;
 
 import javax.annotation.Nullable;
 import javax.vecmath.Vector3f;
@@ -51,7 +52,9 @@ public class BuildSectorCommand implements CommandInterface {
 
     @Override
     public String[] getAliases() {
-        return new String[0];
+        return new String[] {
+                "build_sector"
+        };
     }
 
     @Override
@@ -89,14 +92,14 @@ public class BuildSectorCommand implements CommandInterface {
                                 else DataUtils.movePlayerToBuildSector(sender, DataUtils.getBuildSector(sender));
                                 return true;
                             } else if(args.length == 2) {
-                                PlayerState target = GameCommon.getPlayerFromName(args[1]);
+                                PlayerState target = ServerDatabase.getPlayerByName(args[1]);
                                 if(target != null) {
                                     BuildSectorData sectorData = DataUtils.getBuildSector(target);
                                     if(sectorData.hasPermission(sender.getName(), "ENTER")) {
                                         if(PlayerUtils.getCurrentControl(sender) instanceof SegmentController) PlayerUtils.sendMessage(sender, "You can't do this while in an entity.");
                                         else DataUtils.movePlayerToBuildSector(sender, DataUtils.getBuildSector(sender));
                                     } else PlayerUtils.sendMessage(sender, "You don't have permission to do this.");
-                                } else PlayerUtils.sendMessage(sender, "Player \"" + args[1] + "\" doesn't exist or isn't online right now.");
+                                } else PlayerUtils.sendMessage(sender, "Player \"" + args[1] + "\" doesn't exist.");
                             } else return false;
                         } else PlayerUtils.sendMessage(sender, "You are already in a build sector right now.");
                         return true;
@@ -108,7 +111,7 @@ public class BuildSectorCommand implements CommandInterface {
                         return true;
                     case "invite":
                         if(args.length == 2) {
-                            PlayerState target = GameCommon.getPlayerFromName(args[1]);
+                            PlayerState target = ServerDatabase.getPlayerByName(args[1]);
                             if(target != null) {
                                 if(target.equals(sender)) PlayerUtils.sendMessage(sender, "You can't invite yourself!");
                                 else {
@@ -116,12 +119,12 @@ public class BuildSectorCommand implements CommandInterface {
                                     sectorData.addPlayer(target.getName());
                                     PlayerUtils.sendMessage(sender, "Successfully added \"" + target.getName() + "\" to your build sector.");
                                 }
-                            } else PlayerUtils.sendMessage(sender, "Player \"" + args[1] + "\" doesn't exist or isn't online right now.");
+                            } else PlayerUtils.sendMessage(sender, "Player \"" + args[1] + "\" doesn't exist.");
                         } else return false;
                         return true;
                     case "remove":
                         if(args.length == 2) {
-                            PlayerState target = GameCommon.getPlayerFromName(args[1]);
+                            PlayerState target = ServerDatabase.getPlayerByName(args[1]);
                             if(target != null) {
                                 if(target.equals(sender)) PlayerUtils.sendMessage(sender, "You can't remove yourself from your own build sector!");
                                 else {
@@ -130,7 +133,7 @@ public class BuildSectorCommand implements CommandInterface {
                                     if(DataUtils.getPlayerCurrentBuildSector(target) == sectorData) DataUtils.movePlayerFromBuildSector(target);
                                     PlayerUtils.sendMessage(sender, "Successfully removed \"" + target.getName() + "\" from your build sector.");
                                 }
-                            } else PlayerUtils.sendMessage(sender, "Player \"" + args[1] + "\" doesn't exist or isn't online right now.");
+                            } else PlayerUtils.sendMessage(sender, "Player \"" + args[1] + "\" doesn't exist.");
                         } else return false;
                         return true;
                     case "list":
@@ -144,7 +147,7 @@ public class BuildSectorCommand implements CommandInterface {
                         return true;
                     case "allow":
                         if(args.length == 3) {
-                            PlayerState target = GameCommon.getPlayerFromName(args[1]);
+                            PlayerState target = ServerDatabase.getPlayerByName(args[1]);
                             if(target != null) {
                                 if(target.equals(sender)) PlayerUtils.sendMessage(sender, "You can't edit your own permissions!");
                                 else {
@@ -152,12 +155,12 @@ public class BuildSectorCommand implements CommandInterface {
                                     sectorData.allowPermission(target.getName(), args[2]);
                                     PlayerUtils.sendMessage(sender, "Successfully set permission \"" + args[2] + "\" for \"" + target.getName() + "\" to ALLOW.");
                                 }
-                            } else PlayerUtils.sendMessage(sender, "Player \"" + args[1] + "\" doesn't exist or isn't online right now.");
+                            } else PlayerUtils.sendMessage(sender, "Player \"" + args[1] + "\" doesn't exist.");
                         } else return false;
                         return true;
                     case "deny":
                         if(args.length == 3) {
-                            PlayerState target = GameCommon.getPlayerFromName(args[1]);
+                            PlayerState target = ServerDatabase.getPlayerByName(args[1]);
                             if(target != null) {
                                 if(target.equals(sender)) PlayerUtils.sendMessage(sender, "You can't edit your own permissions!");
                                 else {
@@ -165,19 +168,19 @@ public class BuildSectorCommand implements CommandInterface {
                                     sectorData.denyPermission(target.getName(), args[2]);
                                     PlayerUtils.sendMessage(sender, "Successfully set permission \"" + args[2] + "\" for \"" + target.getName() + "\" to DENY.");
                                 }
-                              } else PlayerUtils.sendMessage(sender, "Player \"" + args[1] + "\" doesn't exist or isn't online right now.");
+                              } else PlayerUtils.sendMessage(sender, "Player \"" + args[1] + "\" doesn't exist.");
                         } else return false;
                         return true;
                     case "permissions":
                         if(args.length == 2) {
-                            PlayerState target = GameCommon.getPlayerFromName(args[1]);
+                            PlayerState target = ServerDatabase.getPlayerByName(args[1]);
                             if(target != null) {
                                 BuildSectorData sectorData = DataUtils.getBuildSector(sender);
                                 StringBuilder builder = new StringBuilder();
                                 builder.append("Current Permissions for \"").append(target.getName()).append("\":\n");
                                 for(Map.Entry<String, Boolean> entry : sectorData.getPermissions(target.getName()).entrySet()) builder.append(entry.getKey()).append(" : ").append(entry.getValue().toString().toUpperCase()).append("\n");
                                 PlayerUtils.sendMessage(sender, builder.toString().trim());
-                            } else PlayerUtils.sendMessage(sender, "Player \"" + args[1] + "\" doesn't exist or isn't online right now.");
+                            } else PlayerUtils.sendMessage(sender, "Player \"" + args[1] + "\" doesn't exist.");
                         } else return false;
                         return true;
                     case "spawn":

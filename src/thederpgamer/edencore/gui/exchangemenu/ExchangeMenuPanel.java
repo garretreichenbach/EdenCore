@@ -35,10 +35,7 @@ import java.util.ArrayList;
  */
 public class ExchangeMenuPanel extends GUIMenuPanel {
 
-    private GUITilePane<BlueprintExchangeItem> blueprintsTilePane;
     private BlueprintExchangeItem lastClickedBP;
-
-    private GUITilePane<ResourceExchangeItem> resourcesTilePane;
     private ResourceExchangeItem lastClickedResource;
 
     public ExchangeMenuPanel(InputState inputState) {
@@ -58,16 +55,21 @@ public class ExchangeMenuPanel extends GUIMenuPanel {
         resourcesTab.setTextBoxHeightLast(600);
         createResourcesTab(resourcesTab);
 
+        GUIContentPane servicesTab = guiWindow.addTab("SERVICES");
+        servicesTab.setTextBoxHeightLast(600);
+        createServicesTab(servicesTab);
+
         GUIContentPane exchangeTab = guiWindow.addTab("EXCHANGE");
         exchangeTab.setTextBoxHeightLast(600);
         createExchangeTab(exchangeTab);
-        guiWindow.setSelectedTab(lastTab);
 
+        guiWindow.setSelectedTab(lastTab);
         lastClickedBP = null;
         lastClickedResource = null;
     }
 
     private void createBlueprintsTab(GUIContentPane contentPane) {
+        GUITilePane<BlueprintExchangeItem> blueprintsTilePane;
         (blueprintsTilePane = new GUITilePane<>(getState(), guiWindow, 200, 300)).onInit();
         for(final BlueprintExchangeItem item : getBlueprints()) {
             GUITile tile = blueprintsTilePane.addButtonTile("EXCHANGE", item.createDescription(), getTileColor(item), new GUICallback() {
@@ -194,6 +196,7 @@ public class ExchangeMenuPanel extends GUIMenuPanel {
     }
 
     private void createResourcesTab(GUIContentPane contentPane) {
+        GUITilePane<ResourceExchangeItem> resourcesTilePane;
         (resourcesTilePane = new GUITilePane<>(getState(), guiWindow, 200, 256)).onInit();
         for(final ResourceExchangeItem item : getResources()) {
             GUITile tile = resourcesTilePane.addButtonTile("EXCHANGE", item.createDescription(), getTileColor(item), new GUICallback() {
@@ -313,6 +316,10 @@ public class ExchangeMenuPanel extends GUIMenuPanel {
             });
             contentPane.getContent(1).attach(adminPane);
         }
+    }
+
+    private void createServicesTab(GUIContentPane contentPane) {
+
     }
 
     private void createExchangeTab(GUIContentPane contentPane) {

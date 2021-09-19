@@ -285,8 +285,7 @@ public class EdenCore extends StarMod {
         StarLoader.registerCommand(new LoadEntityCommand());
         StarLoader.registerCommand(new ListEntityCommand());
         StarLoader.registerCommand(new BuildSectorCommand());
-
-        //banking stuff by ironsight
+        StarLoader.registerCommand(new AwardBarsCommand());
         StarLoader.registerCommand(new BankingSendMoneyCommand());
         StarLoader.registerCommand(new BankingListCommand());
         StarLoader.registerCommand(new BankingAdminListCommand());

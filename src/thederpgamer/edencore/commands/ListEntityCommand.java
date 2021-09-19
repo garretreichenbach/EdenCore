@@ -23,7 +23,9 @@ public class ListEntityCommand implements CommandInterface {
 
     @Override
     public String[] getAliases() {
-        return new String[0];
+        return new String[] {
+                "entity_list"
+        };
     }
 
     @Override
