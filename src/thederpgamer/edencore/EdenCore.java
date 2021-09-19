@@ -264,7 +264,7 @@ public class EdenCore extends StarMod {
         StarLoader.registerListener(PlayerJoinWorldEvent.class, new Listener<PlayerJoinWorldEvent>() {
             @Override
             public void onEvent(final PlayerJoinWorldEvent event) {
-                if(GameCommon.isDedicatedServer()) {
+                if(GameCommon.isDedicatedServer() || GameCommon.isOnSinglePlayer()) {
                     new StarRunnable() {
                         @Override
                         public void run() {

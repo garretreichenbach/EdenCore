@@ -48,7 +48,7 @@ public class AddBlueprintExchangeDialog extends GUIInputDialog {
     private BlueprintExchangeItem createItem() {
         if(NumberUtils.isNumber(getInputPanel().currentBarText) && getInputPanel().blueprintEntry != null && getInputPanel().barId > 0) {
             String iconPath = "";
-            if(getInputPanel().currentIconText != null) iconPath = getInputPanel().currentIconText;
+            if(getInputPanel().currentIconText != null && getInputPanel().currentIconText.startsWith("https://") && getInputPanel().currentIconText.endsWith(".png")) iconPath = getInputPanel().currentIconText;
             BlueprintExchangeItem item = new BlueprintExchangeItem(getInputPanel().blueprintEntry, getInputPanel().barId, Math.abs(Integer.parseInt(getInputPanel().currentBarText)), "", iconPath);
             PacketUtil.sendPacketToServer(new ExchangeItemCreatePacket(0, item));
             return item;

@@ -22,7 +22,7 @@ public class BlueprintExchangeItem extends ExchangeItem {
     //public static final transient Vector3i SECTOR = new Vector3i(100000000, 100000000, 100000000);
     public transient BlueprintEntry blueprint;
     public long blocks;
-    public String iconPath = "";
+    public String iconPath;
 
     public BlueprintExchangeItem(PacketReadBuffer readBuffer) {
         super(readBuffer);
@@ -46,9 +46,11 @@ public class BlueprintExchangeItem extends ExchangeItem {
             ImageUtils.getImage(iconPath);
             Sprite sprite = ImageUtils.getImage(iconPath);
             if(sprite != null) {
-                sprite.setWidth(32);
-                sprite.setHeight(32);
+                sprite.setPositionCenter(true);
+                sprite.setWidth(200);
+                sprite.setHeight(200);
                 overlay = new GUIOverlay(sprite, GameClient.getClientState());
+                overlay.setUserPointer(iconPath);
             }
         }
         if(overlay == null) {
@@ -56,6 +58,7 @@ public class BlueprintExchangeItem extends ExchangeItem {
             sprite.setWidth(32);
             sprite.setHeight(32);
             overlay = new GUIOverlay(sprite, GameClient.getClientState());
+            overlay.setUserPointer("default-sprite");
         }
         return overlay;
     }
@@ -90,14 +93,6 @@ public class BlueprintExchangeItem extends ExchangeItem {
     @Override
     public boolean equals(ExchangeItem exchangeItem) {
         return exchangeItem instanceof BlueprintExchangeItem && exchangeItem.name.equals(name) && exchangeItem.barType == barType && exchangeItem.price == price;
-    }
-
-    private String toSerializable(String s) {
-        return s.replace("/", "\\");
-    }
-
-    private String fromSerializable(String s) {
-        return s.replace("\\", "/");
     }
 
     /*

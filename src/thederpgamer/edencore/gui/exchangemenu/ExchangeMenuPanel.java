@@ -68,7 +68,7 @@ public class ExchangeMenuPanel extends GUIMenuPanel {
     }
 
     private void createBlueprintsTab(GUIContentPane contentPane) {
-        (blueprintsTilePane = new GUITilePane<>(getState(), guiWindow, 200, 256)).onInit();
+        (blueprintsTilePane = new GUITilePane<>(getState(), guiWindow, 200, 300)).onInit();
         for(final BlueprintExchangeItem item : getBlueprints()) {
             GUITile tile = blueprintsTilePane.addButtonTile("EXCHANGE", item.createDescription(), getTileColor(item), new GUICallback() {
                 @Override
@@ -112,12 +112,15 @@ public class ExchangeMenuPanel extends GUIMenuPanel {
             });
             GUIOverlay spriteOverlay = item.getIcon();
             spriteOverlay.onInit();
-            spriteOverlay.getSprite().setWidth(32);
-            spriteOverlay.getSprite().setHeight(32);
             //spriteOverlay.setScale(new Vector3f(0.25f, 0.25f, 0.25f));
             tile.attach(spriteOverlay);
-            spriteOverlay.getPos().x += 80;
-            spriteOverlay.getPos().y += 180;
+            if(spriteOverlay.getUserPointer().equals("default-icon")) {
+                spriteOverlay.getPos().x += 80;
+                spriteOverlay.getPos().y += 180;
+            } else {
+                spriteOverlay.getPos().x += 100;
+                spriteOverlay.getPos().y += 200;
+            }
         }
         contentPane.getContent(0).attach(blueprintsTilePane);
 
