@@ -320,7 +320,7 @@ public class EdenCore extends StarMod {
                     cancel();
                 }
             }
-        }.runTimer(this, 15);
+        }.runTimer(this, 50);
     }
 
     private byte[] overwriteClass(String className, byte[] byteCode) {

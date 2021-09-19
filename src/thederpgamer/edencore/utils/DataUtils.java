@@ -100,10 +100,10 @@ public class DataUtils {
 
     public static void movePlayerFromBuildSector(final PlayerState playerState) throws IOException, SQLException, NullPointerException {
         if(GameServer.getServerState() == null || !playerState.isOnServer()) return; //Make sure only the server executes this code
+        Vector3f lastBuildSectorPos = new Vector3f(playerState.getFirstControlledTransformableWOExc().getWorldTransform().origin);
         playerState.getControllerState().forcePlayerOutOfSegmentControllers();
         final BuildSectorData sectorData = getPlayerCurrentBuildSector(playerState);
         final PlayerData playerData = getPlayerData(playerState);
-        Vector3f lastBuildSectorPos = new Vector3f(playerState.getFirstControlledTransformableWOExc().getWorldTransform().origin);
         playerData.lastBuildSectorPos.set(lastBuildSectorPos);
         if(isBuildSector(playerData.lastRealSector)) {
             Vector3i defaultSector = (playerState.getFactionId() != 0) ? GameCommon.getGameState().getFactionManager().getFaction(playerState.getFactionId()).getHomeSector() : getSpawnSector();
