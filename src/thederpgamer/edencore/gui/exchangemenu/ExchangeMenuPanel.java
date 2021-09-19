@@ -366,7 +366,8 @@ public class ExchangeMenuPanel extends GUIMenuPanel {
             try {
                 int slot = inventory.getFreeSlot();
                 inventory.put(slot, metaItem);
-                inventory.sendInventoryModification(slot);
+                inventory.sendAll();
+                //inventory.sendInventoryModification(slot);
             } catch(NoSlotFreeException exception) {
                 exception.printStackTrace();
             }
