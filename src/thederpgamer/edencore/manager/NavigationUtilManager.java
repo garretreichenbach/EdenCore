@@ -5,17 +5,21 @@ import api.listener.events.player.PlayerJoinWorldEvent;
 import api.mod.StarLoader;
 import api.network.packets.PacketUtil;
 import api.utils.StarRunnable;
+import it.unimi.dsi.fastutil.objects.ObjectArrayList;
 import org.schema.common.util.linAlg.Vector3i;
 import org.schema.game.common.data.player.PlayerState;
 import org.schema.game.common.data.player.SavedCoordinate;
-import org.schema.game.network.objects.remote.RemoteSavedCoordinate;
-import org.schema.game.network.objects.remote.RemoteSavedCoordinatesBuffer;
+import org.schema.game.server.controller.EntityNotFountException;
 import org.schema.game.server.data.GameServerState;
+import org.schema.schine.resource.tag.ListSpawnObjectCallback;
+import org.schema.schine.resource.tag.Tag;
 import thederpgamer.edencore.EdenCore;
 import thederpgamer.edencore.commands.NavigationAdminCommand;
 import thederpgamer.edencore.data.NavigationListContainer;
 import thederpgamer.edencore.data.NavigationUtilPacket;
+import thederpgamer.edencore.data.PlayerDataUtil;
 
+import java.io.*;
 import java.util.*;
 
 /**
@@ -43,7 +47,7 @@ public class NavigationUtilManager {
         }
 
         PacketUtil.registerPacket(NavigationUtilPacket.class);
-        addPlayerJoinEH();
+    //    addPlayerJoinEH();
         addAdminCommands();
     }
 
@@ -175,5 +179,94 @@ public class NavigationUtilManager {
         PacketUtil.sendPacket(p,new NavigationUtilPacket(coordsAddList,coordsRemoveList));
     }
 
+    /**
+     * merges the adminCoords into the playerCoords, no doubles allowed, admin overwrites player.
+     * mutates playerCoords.
+     * @param adminCoords source to be merged into the second list
+     * @param playerCoords receiver of merge
+     */
+    private void mergeLists(Collection<SavedCoordinate> adminCoords, Collection<SavedCoordinate> playerCoords) {
+        HashMap<Long,SavedCoordinate> adminMap = listToSectorCodeMap(adminCoords); //=> will become new playerCoords list
+        HashMap<Long,SavedCoordinate> playerMap = listToSectorCodeMap(playerCoords);
 
+        Long sectorCode;
+        for (Map.Entry<Long,SavedCoordinate> entry: playerMap.entrySet()) {
+            sectorCode = entry.getKey();
+            if (!adminMap.containsKey(sectorCode)) {
+                //coord is not in admin map, add to map
+                adminMap.put(entry.getKey(),entry.getValue());
+            }
+        }
+
+        //admin map now contains all admin set coords + all non admin coords from player
+        playerCoords.clear();
+        playerCoords.addAll(adminMap.values());
+    }
+
+    /**
+     * maps sector code vs saved coord
+     * @param coords
+     * @return
+     */
+    private HashMap<Long,SavedCoordinate> listToSectorCodeMap(Collection<SavedCoordinate> coords) {
+        HashMap<Long,SavedCoordinate> map = new HashMap<>(coords.size());
+        for (SavedCoordinate c: coords) {
+            map.put(c.getSector().code(),c);
+        }
+        return map;
+    }
+
+    /**
+     * will add given coordinates to the savefile of this player. merges given newCoords into existing savefile.
+     * existing newCoords in savefile will be overwritten.
+     * @param playername
+     */
+    public void updatePlayerCoordsInSaveFile(String playername, Collection<SavedCoordinate> newCoords, HashSet<Long> blacklist) {
+    //get tag
+        Tag tag;
+        try {
+            tag = PlayerDataUtil.getTagFromFile(playername);
+        } catch (IOException e) {
+            e.printStackTrace();return;
+        } catch (EntityNotFountException e) {
+            e.printStackTrace();return;
+        }
+
+    //edit tag
+        if (!(tag.getValue() instanceof Tag[]))
+            return;
+
+        Tag[] arr = (Tag[]) tag.getValue();
+
+        final ObjectArrayList<SavedCoordinate> playersCoords = new ObjectArrayList<SavedCoordinate>();
+
+        //save existing coords into "savedCoordinates" list
+        Tag.listFromTagStructSPElimDouble(playersCoords, arr[23], new ListSpawnObjectCallback<SavedCoordinate>() {
+            @Override
+            public SavedCoordinate get(Object fromValue) {
+                SavedCoordinate d = new SavedCoordinate();
+                d.fromTagStructure((Tag) fromValue);
+                return d;
+            }
+        });
+
+        mergeLists(newCoords,playersCoords);
+        for (SavedCoordinate c: playersCoords) {
+            if (blacklist.contains(c.getSector().code()))
+                playersCoords.remove(c);
+        }
+
+        arr[23] = Tag.listToTagStruct(playersCoords,null);
+
+    //write tag
+        try {
+            PlayerDataUtil.writeTagForPlayer(tag,playername);
+        } catch (IOException e) {
+            e.printStackTrace();
+            return;
+        }
+
+    //control debug
+        PlayerState schema = PlayerDataUtil.loadControlPlayer(playername);
+    }
 }

@@ -6,9 +6,14 @@ import api.utils.game.chat.CommandInterface;
 import org.schema.common.util.linAlg.Vector3i;
 import org.schema.game.common.data.player.PlayerState;
 import org.schema.game.common.data.player.SavedCoordinate;
+import thederpgamer.edencore.data.PlayerDataUtil;
 import thederpgamer.edencore.manager.NavigationUtilManager;
 
 import javax.annotation.Nullable;
+import java.sql.SQLException;
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.List;
 
 /**
  * STARMADE MOD
@@ -87,6 +92,22 @@ public class NavigationAdminCommand implements CommandInterface {
                 NavigationUtilManager.instance.updateAllPlayers();
                 PlayerUtils.sendMessage(admin,"updated all nav points");
                 return true;
+            }
+
+            case "sql": {
+                try {
+                    PlayerDataUtil.getAllPlayerNamesEver();
+                } catch (SQLException throwables) {
+                    throwables.printStackTrace();
+                }
+            }
+            case "insert": {
+                SavedCoordinate c = new SavedCoordinate(new Vector3i(0,0,0),"spawn",false);
+                HashSet<Long> blackList = new HashSet<>();
+                List<SavedCoordinate> toAdd = Collections.singletonList(c);
+                blackList.add(new Vector3i(0,420,69).code());
+                blackList.add(new Vector3i(10,10,10).code());
+                NavigationUtilManager.instance.updatePlayerCoordsInSaveFile("schema", toAdd,blackList);
             }
         }
         return false;
