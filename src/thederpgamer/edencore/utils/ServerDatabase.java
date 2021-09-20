@@ -2,8 +2,10 @@ package thederpgamer.edencore.utils;
 
 import api.common.GameCommon;
 import api.common.GameServer;
+import org.schema.game.common.controller.database.DatabaseIndex;
 import org.schema.game.common.data.player.PlayerState;
 import org.schema.game.server.data.GameServerState;
+import org.schema.game.server.data.ServerConfig;
 import org.schema.schine.resource.FileExt;
 import org.schema.schine.resource.tag.Tag;
 import thederpgamer.edencore.manager.LogManager;
@@ -12,6 +14,7 @@ import java.io.BufferedInputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FilenameFilter;
+import java.sql.*;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
@@ -46,10 +49,16 @@ public class ServerDatabase {
             try {
                 HashMap<String, Tag> entries = getEntriesOfType(EntryType.PLAYER_STATE);
                 if(!entries.isEmpty() && entries.containsKey(playerName)) {
+                    String[] fields = getPlayerDatabaseFields(playerName);
                     playerState = new PlayerState(GameServer.getServerState());
                     playerState.initialize();
                     playerState.fromTagStructure(entries.get(playerName));
+                    playerState.setId(Integer.parseInt(fields[0].trim()));
                     playerState.setName(playerName);
+                    playerState.setStarmadeName(fields[2]);
+                    playerState.getFactionController().setFactionId(Integer.parseInt(fields[3].trim()));
+                    playerState.offlinePermssion[0] = playerState.getFactionId();
+                    playerState.offlinePermssion[1] = Long.parseLong(fields[4].trim());
                 }
             } catch(Exception exception) {
                 LogManager.logException("Encountered an exception while trying to fetch a player from database", exception);
@@ -64,10 +73,15 @@ public class ServerDatabase {
         try {
             HashMap<String, Tag> entries = getEntriesOfType(EntryType.PLAYER_STATE);
             for(Map.Entry<String, Tag> entry : entries.entrySet()) {
+                String[] fields = getPlayerDatabaseFields(entry.getKey());
                 PlayerState playerState = new PlayerState(GameServer.getServerState());
                 playerState.initialize();
                 playerState.fromTagStructure(entry.getValue());
                 playerState.setName(entry.getKey());
+                playerState.setStarmadeName(fields[2]);
+                playerState.getFactionController().setFactionId(Integer.parseInt(fields[3].trim()));
+                playerState.offlinePermssion[0] = playerState.getFactionId();
+                playerState.offlinePermssion[1] = Long.parseLong(fields[4].trim());
                 if(!allPlayers.contains(playerState)) allPlayers.add(playerState);
             }
         } catch(Exception exception) {
@@ -102,5 +116,31 @@ public class ServerDatabase {
             }
         }
         return new HashMap<>();
+    }
+
+    public static String[] getPlayerDatabaseFields(String playerName) {
+        assert GameCommon.isOnSinglePlayer() || GameCommon.isDedicatedServer();
+        String[] fields = new String[5];
+        try {
+            String maxNIOSize = ";hsqldb.nio_max_size=" + ServerConfig.SQL_NIO_FILE_SIZE.getCurrentState() + ";";
+            Connection c = DriverManager.getConnection("jdbc:hsqldb:file:" + DatabaseIndex.getDbPath() + ";shutdown=true" + maxNIOSize, "SA", "");
+            Statement s = c.createStatement();
+            ResultSet q = s.executeQuery("SELECT * FROM PLAYERS;");
+            while(q.next()) {
+                String name = q.getString(1);
+                if(name.equals(playerName)) {
+                    fields = new String[] {
+                            String.valueOf(q.getInt(0)),
+                            name,
+                            q.getString(2),
+                            String.valueOf(q.getInt(3)),
+                            String.valueOf(q.getLong(4))
+                    };
+                }
+            }
+        } catch(SQLException exception) {
+            exception.printStackTrace();
+        }
+        return fields;
     }
 }

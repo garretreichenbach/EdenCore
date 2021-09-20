@@ -40,6 +40,7 @@ import thederpgamer.edencore.manager.ResourceManager;
 import thederpgamer.edencore.manager.TransferManager;
 import thederpgamer.edencore.network.client.ExchangeItemCreatePacket;
 import thederpgamer.edencore.network.client.ExchangeItemRemovePacket;
+import thederpgamer.edencore.network.client.RequestSpawnEntryPacket;
 import thederpgamer.edencore.network.server.SendCacheUpdatePacket;
 import thederpgamer.edencore.utils.DataUtils;
 
@@ -108,6 +109,7 @@ public class EdenCore extends StarMod {
     }
 
     private void registerPackets() {
+        PacketUtil.registerPacket(RequestSpawnEntryPacket.class);
         PacketUtil.registerPacket(ExchangeItemCreatePacket.class);
         PacketUtil.registerPacket(ExchangeItemRemovePacket.class);
         PacketUtil.registerPacket(SendCacheUpdatePacket.class);

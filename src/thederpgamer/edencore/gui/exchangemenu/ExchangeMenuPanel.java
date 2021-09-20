@@ -1,16 +1,11 @@
 package thederpgamer.edencore.gui.exchangemenu;
 
 import api.common.GameClient;
-import api.common.GameCommon;
 import api.network.packets.PacketUtil;
 import api.utils.game.inventory.InventoryUtils;
 import api.utils.gui.GUIMenuPanel;
 import org.schema.game.client.controller.PlayerOkCancelInput;
-import org.schema.game.common.controller.ElementCountMap;
-import org.schema.game.common.data.element.meta.BlueprintMetaItem;
-import org.schema.game.common.data.element.meta.MetaObjectManager;
 import org.schema.game.common.data.player.inventory.Inventory;
-import org.schema.game.common.data.player.inventory.NoSlotFreeException;
 import org.schema.schine.graphicsengine.core.MouseEvent;
 import org.schema.schine.graphicsengine.forms.gui.GUIActivationCallback;
 import org.schema.schine.graphicsengine.forms.gui.GUICallback;
@@ -24,6 +19,7 @@ import thederpgamer.edencore.data.exchange.ResourceExchangeItem;
 import thederpgamer.edencore.element.ElementManager;
 import thederpgamer.edencore.manager.ClientCacheManager;
 import thederpgamer.edencore.network.client.ExchangeItemRemovePacket;
+import thederpgamer.edencore.network.client.RequestSpawnEntryPacket;
 import thederpgamer.edencore.utils.DataUtils;
 import thederpgamer.edencore.utils.InventoryUtil;
 
@@ -41,7 +37,7 @@ public class ExchangeMenuPanel extends GUIMenuPanel {
     private ResourceExchangeItem lastClickedResource;
 
     public ExchangeMenuPanel(InputState inputState) {
-        super(inputState, "ServerExchange", 800, 700);
+        super(inputState, "ServerExchange", 750, 500);
     }
 
     @Override
@@ -49,20 +45,20 @@ public class ExchangeMenuPanel extends GUIMenuPanel {
         int lastTab = guiWindow.getSelectedTab();
         guiWindow.clearTabs();
 
-        GUIContentPane blueprintsTab = guiWindow.addTab("BLUEPRINTS");
-        blueprintsTab.setTextBoxHeightLast(600);
+        GUIContentPane blueprintsTab = guiWindow.addTab("SHIPS AND STATIONS");
+        blueprintsTab.setTextBoxHeightLast(500);
         createBlueprintsTab(blueprintsTab);
 
         GUIContentPane resourcesTab = guiWindow.addTab("RESOURCES");
-        resourcesTab.setTextBoxHeightLast(600);
+        resourcesTab.setTextBoxHeightLast(500);
         createResourcesTab(resourcesTab);
 
         GUIContentPane servicesTab = guiWindow.addTab("SERVICES");
-        servicesTab.setTextBoxHeightLast(600);
+        servicesTab.setTextBoxHeightLast(500);
         createServicesTab(servicesTab);
 
         GUIContentPane exchangeTab = guiWindow.addTab("EXCHANGE");
-        exchangeTab.setTextBoxHeightLast(600);
+        exchangeTab.setTextBoxHeightLast(500);
         createExchangeTab(exchangeTab);
 
         guiWindow.setSelectedTab(lastTab);
@@ -116,7 +112,6 @@ public class ExchangeMenuPanel extends GUIMenuPanel {
             });
             GUIOverlay spriteOverlay = item.getIcon();
             spriteOverlay.onInit();
-            //spriteOverlay.setScale(new Vector3f(0.25f, 0.25f, 0.25f));
             tile.attach(spriteOverlay);
             if(spriteOverlay.getUserPointer().equals("default-icon")) {
                 spriteOverlay.getPos().x += 80;
@@ -361,17 +356,20 @@ public class ExchangeMenuPanel extends GUIMenuPanel {
     public void givePlayerItem(ExchangeItem item) {
         Inventory inventory = GameClient.getClientPlayerState().getInventory();
         if(item instanceof BlueprintExchangeItem && ((BlueprintExchangeItem) item).blueprint != null) {
-            BlueprintMetaItem metaItem = (BlueprintMetaItem) MetaObjectManager.instantiate(MetaObjectManager.MetaObjectType.BLUEPRINT, (short) -1, true);
+            PacketUtil.sendPacketToServer(new RequestSpawnEntryPacket(((BlueprintExchangeItem) item).blueprint.getName()));
+            /* This doesn't work because the game won't see the item as valid and won't spawn it
+            BlueprintMetaItem metaItem = (BlueprintMetaItem) MetaObjectManager.instantiate(MetaObjectManager.MetaObjectType.BLUEPRINT, (short) -1, false);
             metaItem.blueprintName = item.name;
             metaItem.goal = new ElementCountMap(((BlueprintExchangeItem) item).blueprint.getElementCountMapWithChilds());
-            metaItem.progress = new ElementCountMap(metaItem.goal);
+            metaItem.progress = new ElementCountMap(((BlueprintExchangeItem) item).blueprint.getElementCountMapWithChilds());
             try {
                 int slot = inventory.getFreeSlot();
                 inventory.put(slot, metaItem);
-                if(GameCommon.isClientConnectedToServer()) inventory.sendInventoryModification(slot);
-            } catch(NoSlotFreeException exception) {
+                if(GameCommon.isOnSinglePlayer() || GameCommon.isClientConnectedToServer()) inventory.sendInventoryModification(slot);
+            } catch(Exception exception) {
                 exception.printStackTrace();
             }
+             */
         } else if(item instanceof ResourceExchangeItem) InventoryUtils.addItem(inventory, ((ResourceExchangeItem) item).itemId, ((ResourceExchangeItem) item).itemCount);
     }
 
