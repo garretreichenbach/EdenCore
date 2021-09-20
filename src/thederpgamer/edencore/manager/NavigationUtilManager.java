@@ -45,6 +45,8 @@ public class NavigationUtilManager {
             coordsRemoveList = c.coordsRemoveList;
         }
 
+        updateAllPlayerFiles();
+
         addAdminCommands();
     }
 
@@ -63,6 +65,7 @@ public class NavigationUtilManager {
                 NavigationUtilManager.instance.updatePlayerCoordsInSaveFile(playerName, coordsAddList,coordsRemoveList);
             }
             coordsRemoveList.clear(); //clears list, bc all players have been cleared.
+            saveListsPersistent();
         } catch (SQLException throwables) {
             throwables.printStackTrace();
         }
@@ -71,6 +74,7 @@ public class NavigationUtilManager {
     public void addCoordinateToList(Vector3i sector, String name) {
         name = "[p]"+name;
         coordsAddList.put(sector.code(),new SavedCoordinate(sector,name, false));
+        saveListsPersistent();
     }
 
     /**
@@ -84,6 +88,7 @@ public class NavigationUtilManager {
         coordsAddList.remove(sector.code());
         //save into remove list
         coordsRemoveList.add(sector.code());
+        saveListsPersistent();
     }
 
     public void saveListsPersistent() {
@@ -188,6 +193,6 @@ public class NavigationUtilManager {
         }
 
     //control debug
-        PlayerState schema = PlayerDataUtil.loadControlPlayer(playername);
+    //    PlayerState schema = PlayerDataUtil.loadControlPlayer(playername);
     }
 }
