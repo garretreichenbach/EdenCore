@@ -376,7 +376,7 @@ public class BlueprintEntry implements BlueprintInterface {
         return mass;
     }
 
-    private void calculateMass() {
+    public void calculateMass() {
         this.mass = elementMap.getMass();
         if (getChilds() != null) {
             for (BlueprintEntry c : getChilds()) {
@@ -1399,7 +1399,6 @@ public class BlueprintEntry implements BlueprintInterface {
 
         ElementCountMap elementClassCountMap = map;
         elementClassCountMap.serialize(stream);
-
     }
 
     public void writeMeta(SegmentController controller, DataOutputStream stream, FileOutputStream fileOutputStreamForSize) throws IOException {

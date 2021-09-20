@@ -1,4 +1,4 @@
-package thederpgamer.edencore.data;
+package thederpgamer.edencore.data.other;
 
 import org.schema.game.common.controller.SegmentController;
 import org.schema.game.common.data.player.PlayerState;

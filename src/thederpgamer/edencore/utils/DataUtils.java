@@ -6,6 +6,7 @@ import api.mod.ModSkeleton;
 import api.mod.config.PersistentObjectUtil;
 import api.utils.StarRunnable;
 import api.utils.game.PlayerUtils;
+import api.utils.game.SegmentControllerUtils;
 import it.unimi.dsi.fastutil.ints.IntOpenHashSet;
 import org.schema.common.util.linAlg.Vector3i;
 import org.schema.game.common.controller.SegmentController;
@@ -19,8 +20,8 @@ import org.schema.game.common.data.world.Sector;
 import org.schema.game.server.controller.SectorSwitch;
 import org.schema.game.server.data.ServerConfig;
 import thederpgamer.edencore.EdenCore;
-import thederpgamer.edencore.data.BuildSectorData;
-import thederpgamer.edencore.data.PlayerData;
+import thederpgamer.edencore.data.other.BuildSectorData;
+import thederpgamer.edencore.data.other.PlayerData;
 import thederpgamer.edencore.manager.LogManager;
 
 import javax.vecmath.Vector3f;
@@ -65,7 +66,7 @@ public class DataUtils {
         playerData.lastRealSectorPos.set(lastRealSectorPos);
         playerData.lastRealSector.set(playerState.getCurrentSector());
         if(isBuildSector(playerData.lastRealSector)) {
-            Vector3i defaultSector = (playerState.getFactionId() != 0) ? GameCommon.getGameState().getFactionManager().getFaction(playerState.getFactionId()).getHomeSector() : new Vector3i(2, 2, 2);
+            Vector3i defaultSector = (playerState.getFactionId() != 0) ? GameCommon.getGameState().getFactionManager().getFaction(playerState.getFactionId()).getHomeSector() : getSpawnSector();
             playerData.lastRealSector.set(defaultSector);
             PlayerUtils.sendMessage(playerState, "An error occurred while trying to save your last position, so it has been reset to prevent future issues.");
         }
@@ -76,6 +77,7 @@ public class DataUtils {
 
         sector.noEnter(false);
         sector.noExit(false);
+        clearInventory(playerState, true);
 
         SectorSwitch sectorSwitch = new SectorSwitch(playerState.getAssingedPlayerCharacter(), sectorData.sector, SectorSwitch.TRANS_JUMP);
         sectorSwitch.makeCopy = false;
@@ -91,19 +93,20 @@ public class DataUtils {
         sector.noEnter(true);
         sector.noExit(true);
         deleteEnemies(sectorData, 60);
+
         playerState.getInventory().sendAll();
-        clearInventory(playerState, true);
+        playerState.updateInventory();
     }
 
     public static void movePlayerFromBuildSector(final PlayerState playerState) throws IOException, SQLException, NullPointerException {
         if(GameServer.getServerState() == null || !playerState.isOnServer()) return; //Make sure only the server executes this code
+        Vector3f lastBuildSectorPos = new Vector3f(playerState.getFirstControlledTransformableWOExc().getWorldTransform().origin);
         playerState.getControllerState().forcePlayerOutOfSegmentControllers();
         final BuildSectorData sectorData = getPlayerCurrentBuildSector(playerState);
         final PlayerData playerData = getPlayerData(playerState);
-        Vector3f lastBuildSectorPos = new Vector3f(playerState.getFirstControlledTransformableWOExc().getWorldTransform().origin);
         playerData.lastBuildSectorPos.set(lastBuildSectorPos);
         if(isBuildSector(playerData.lastRealSector)) {
-            Vector3i defaultSector = (playerState.getFactionId() != 0) ? GameCommon.getGameState().getFactionManager().getFaction(playerState.getFactionId()).getHomeSector() : new Vector3i(2, 2, 2);
+            Vector3i defaultSector = (playerState.getFactionId() != 0) ? GameCommon.getGameState().getFactionManager().getFaction(playerState.getFactionId()).getHomeSector() : getSpawnSector();
             playerData.lastRealSector.set(defaultSector);
             PlayerUtils.sendMessage(playerState, "An error occurred while trying to get your last position, so it has been reset to prevent future issues.");
         }
@@ -199,18 +202,24 @@ public class DataUtils {
         }.runLater(EdenCore.getInstance(), delay);
     }
 
+
     public static void deleteAllEntities(final BuildSectorData sectorData, long delay) {
         new StarRunnable() {
             @Override
             public void run() {
                 try {
-                    for(SegmentController entity : getEntitiesInBuildSector(sectorData)) entity.destroy();
+                    for(SegmentController entity : getEntitiesInBuildSector(sectorData)) destroyEntity(entity);
                     GameServer.getUniverse().getSector(sectorData.sector).clearVicinity();
                 } catch(IOException exception) {
                     exception.printStackTrace();
                 }
             }
         }.runLater(EdenCore.getInstance(), delay);
+    }
+
+    public static void destroyEntity(SegmentController entity) {
+        for(PlayerState attached : SegmentControllerUtils.getAttachedPlayers(entity)) attached.getControllerState().forcePlayerOutOfSegmentControllers();
+        entity.setMarkedForDeletePermanentIncludingDocks(true);
     }
 
     public static PlayerData getPlayerData(PlayerState playerState) {

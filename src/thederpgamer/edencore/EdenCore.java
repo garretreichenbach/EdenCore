@@ -1,29 +1,49 @@
 package thederpgamer.edencore;
 
 import api.common.GameClient;
+import api.common.GameCommon;
+import api.common.GameServer;
+import api.config.BlockConfig;
 import api.listener.Listener;
 import api.listener.events.block.*;
 import api.listener.events.controller.ServerInitializeEvent;
 import api.listener.events.draw.RegisterWorldDrawersEvent;
+import api.listener.events.gui.GUITopBarCreateEvent;
 import api.listener.events.player.PlayerDeathEvent;
+import api.listener.events.player.PlayerJoinWorldEvent;
 import api.listener.events.player.PlayerPickupFreeItemEvent;
 import api.listener.events.player.PlayerSpawnEvent;
 import api.mod.StarLoader;
 import api.mod.StarMod;
+import api.network.packets.PacketUtil;
 import api.utils.StarRunnable;
 import api.utils.game.PlayerUtils;
+import api.utils.gui.ModGUIHandler;
 import org.apache.commons.io.IOUtils;
+import org.schema.game.client.view.gui.newgui.GUITopBar;
 import org.schema.game.common.data.player.PlayerState;
-import thederpgamer.edencore.commands.BuildSectorCommand;
-import thederpgamer.edencore.commands.ListEntityCommand;
-import thederpgamer.edencore.commands.LoadEntityCommand;
-import thederpgamer.edencore.commands.SaveEntityCommand;
-import thederpgamer.edencore.data.BuildSectorData;
+import org.schema.game.server.data.PlayerNotFountException;
+import org.schema.schine.graphicsengine.core.MouseEvent;
+import org.schema.schine.graphicsengine.forms.gui.GUIActivationHighlightCallback;
+import org.schema.schine.graphicsengine.forms.gui.GUICallback;
+import org.schema.schine.graphicsengine.forms.gui.GUIElement;
+import org.schema.schine.input.InputState;
+import org.schema.schine.resource.ResourceLoader;
+import thederpgamer.edencore.commands.*;
+import thederpgamer.edencore.data.other.BuildSectorData;
 import thederpgamer.edencore.drawer.BuildSectorHudDrawer;
+import thederpgamer.edencore.element.ElementManager;
+import thederpgamer.edencore.element.items.PrizeBars;
+import thederpgamer.edencore.gui.exchangemenu.ExchangeMenuControlManager;
 import thederpgamer.edencore.manager.ConfigManager;
 import thederpgamer.edencore.manager.LogManager;
 import thederpgamer.edencore.manager.NavigationUtilManager;
+import thederpgamer.edencore.manager.ResourceManager;
 import thederpgamer.edencore.manager.TransferManager;
+import thederpgamer.edencore.network.client.ExchangeItemCreatePacket;
+import thederpgamer.edencore.network.client.ExchangeItemRemovePacket;
+import thederpgamer.edencore.network.client.RequestSpawnEntryPacket;
+import thederpgamer.edencore.network.server.SendCacheUpdatePacket;
 import thederpgamer.edencore.utils.DataUtils;
 
 import java.io.FileInputStream;
@@ -36,7 +56,7 @@ import java.util.zip.ZipInputStream;
  * Main class for EdenCore mod.
  *
  * @author TheDerpGamer
- * @since 06/27/2021
+ * @version 1.0 - [06/27/2021]
  */
 public class EdenCore extends StarMod {
 
@@ -45,19 +65,18 @@ public class EdenCore extends StarMod {
     public static EdenCore getInstance() {
         return instance;
     }
-    public EdenCore() {
+    public EdenCore() { }
+    public static void main(String[] args) { }
 
-    }
-    public static void main(String[] args) {
-
-    }
-
-    //Data
+    //Other
     private final String[] overwriteClasses = new String[] {
             "PlayerState",
             "CatalogExtendedPanel",
             "BlueprintEntry"
     };
+
+    //GUI
+    public ExchangeMenuControlManager exchangeMenuControlManager;
 
     @Override
     public void onEnable() {
@@ -65,8 +84,11 @@ public class EdenCore extends StarMod {
         ConfigManager.initialize(this);
         LogManager.initialize();
         TransferManager.initialize();
+
+        registerPackets();
         registerListeners();
         registerCommands();
+        startRunners();
     }
 
     @Override
@@ -81,7 +103,69 @@ public class EdenCore extends StarMod {
         return super.onClassTransform(className, byteCode);
     }
 
+    @Override
+    public void onResourceLoad(ResourceLoader resourceLoader) {
+        ResourceManager.loadResources(resourceLoader);
+    }
+
+    @Override
+    public void onBlockConfigLoad(BlockConfig blockConfig) {
+        //Items
+        ElementManager.addItemGroup(new PrizeBars());
+
+        ElementManager.initialize();
+    }
+
+    private void registerPackets() {
+        PacketUtil.registerPacket(RequestSpawnEntryPacket.class);
+        PacketUtil.registerPacket(ExchangeItemCreatePacket.class);
+        PacketUtil.registerPacket(ExchangeItemRemovePacket.class);
+        PacketUtil.registerPacket(SendCacheUpdatePacket.class);
+    }
+
     private void registerListeners() {
+        StarLoader.registerListener(GUITopBarCreateEvent.class, new Listener<GUITopBarCreateEvent>() {
+            @Override
+            public void onEvent(final GUITopBarCreateEvent event) {
+                if(exchangeMenuControlManager == null) {
+                    exchangeMenuControlManager = new ExchangeMenuControlManager();
+                    ModGUIHandler.registerNewControlManager(getSkeleton(), exchangeMenuControlManager);
+                }
+
+                GUITopBar.ExpandedButton dropDownButton = event.getDropdownButtons().get(event.getDropdownButtons().size() - 1);
+                dropDownButton.addExpandedButton("EXCHANGE", new GUICallback() {
+                    @Override
+                    public void callback(GUIElement guiElement, MouseEvent mouseEvent) {
+                        if(mouseEvent.pressedLeftMouse()) {
+                            GameClient.getClientState().getController().queueUIAudio("0022_menu_ui - enter");
+                            GameClient.getClientState().getGlobalGameControlManager().getIngameControlManager().getPlayerGameControlManager().deactivateAll();
+                            exchangeMenuControlManager.setActive(true);
+                        }
+                    }
+
+                    @Override
+                    public boolean isOccluded() {
+                        return false;
+                    }
+                }, new GUIActivationHighlightCallback() {
+                    @Override
+                    public boolean isHighlighted(InputState inputState) {
+                        return false;
+                    }
+
+                    @Override
+                    public boolean isVisible(InputState inputState) {
+                        return true;
+                    }
+
+                    @Override
+                    public boolean isActive(InputState inputState) {
+                        return true;
+                    }
+                });
+            }
+        }, this);
+
         StarLoader.registerListener(RegisterWorldDrawersEvent.class, new Listener<RegisterWorldDrawersEvent>() {
             @Override
             public void onEvent(RegisterWorldDrawersEvent event) {
@@ -186,6 +270,24 @@ public class EdenCore extends StarMod {
                 if(DataUtils.isPlayerInAnyBuildSector(event.getPlayer().getOwnerState())) queueSpawnSwitch(event.getPlayer().getOwnerState());
             }
         }, this);
+
+        StarLoader.registerListener(PlayerJoinWorldEvent.class, new Listener<PlayerJoinWorldEvent>() {
+            @Override
+            public void onEvent(final PlayerJoinWorldEvent event) {
+                if(GameCommon.isDedicatedServer() || GameCommon.isOnSinglePlayer()) {
+                    new StarRunnable() {
+                        @Override
+                        public void run() {
+                            try {
+                                PacketUtil.sendPacket(GameServer.getServerState().getPlayerFromName(event.getPlayerName()), new SendCacheUpdatePacket());
+                            } catch(PlayerNotFountException exception) {
+                                exception.printStackTrace();
+                            }
+                        }
+                    }.runLater(EdenCore.this, 100);
+                }
+            }
+        }, this);
     }
 
     private void registerCommands() {
@@ -193,6 +295,21 @@ public class EdenCore extends StarMod {
         StarLoader.registerCommand(new LoadEntityCommand());
         StarLoader.registerCommand(new ListEntityCommand());
         StarLoader.registerCommand(new BuildSectorCommand());
+        StarLoader.registerCommand(new AwardBarsCommand());
+        StarLoader.registerCommand(new BankingSendMoneyCommand());
+        StarLoader.registerCommand(new BankingListCommand());
+        StarLoader.registerCommand(new BankingAdminListCommand());
+    }
+
+    private void startRunners() {
+        if(GameCommon.isOnSinglePlayer() || GameCommon.isDedicatedServer()) {
+            new StarRunnable() {
+                @Override
+                public void run() {
+                    updateClientCacheData();
+                }
+            }.runTimer(this, 1000);
+        }
     }
 
     private void queueSpawnSwitch(final PlayerState playerState) {
@@ -212,7 +329,7 @@ public class EdenCore extends StarMod {
                     cancel();
                 }
             }
-        }.runTimer(this, 15);
+        }.runTimer(this, 50);
     }
 
     private byte[] overwriteClass(String className, byte[] byteCode) {
@@ -230,5 +347,13 @@ public class EdenCore extends StarMod {
         }
         if(bytes != null) return bytes;
         else return byteCode;
+    }
+
+    public void updateClientCacheData() {
+        if(GameCommon.isOnSinglePlayer() || GameCommon.isDedicatedServer()) {
+            for(PlayerState playerState : GameServer.getServerState().getPlayerStatesByName().values()) {
+                PacketUtil.sendPacket(playerState, new SendCacheUpdatePacket());
+            }
+        }
     }
 }

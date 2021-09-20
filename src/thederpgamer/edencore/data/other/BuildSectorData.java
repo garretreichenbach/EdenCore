@@ -1,4 +1,4 @@
-package thederpgamer.edencore.data;
+package thederpgamer.edencore.data.other;
 
 import org.schema.common.util.linAlg.Vector3i;
 
