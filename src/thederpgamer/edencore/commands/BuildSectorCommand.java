@@ -45,6 +45,8 @@ public class BuildSectorCommand implements CommandInterface {
 
     //Todo: Make this into a GUI instead at some point
 
+    public static final long MAX_WAIT_TIME = 10000; //How long to wait for the the AI toggling method to finish before killing it due to stall
+
     @Override
     public String getCommand() {
         return "build_sector";
@@ -393,21 +395,38 @@ public class BuildSectorCommand implements CommandInterface {
         return null;
     }
 
-    private void toggleAI(SegmentController entity, boolean toggle) {
-        SegmentControllerAIEntity<?> aiEntity = getAIEntity(entity);
-        if(aiEntity != null) {
-            if(!toggle && aiEntity.getCurrentProgram() != null) aiEntity.getCurrentProgram().suspend(true);
-            else if(aiEntity.getCurrentProgram() != null) aiEntity.getCurrentProgram().suspend(false);
+    private void toggleAI(SegmentController entity, final boolean toggle) {
+        final SegmentControllerAIEntity<?>[] aiEntity = {getAIEntity(entity)};
+        if(aiEntity[0] != null) {
+            if(!toggle && aiEntity[0].getCurrentProgram() != null) aiEntity[0].getCurrentProgram().suspend(true);
+            else if(aiEntity[0].getCurrentProgram() != null) aiEntity[0].getCurrentProgram().suspend(false);
         }
-        ArrayList<SegmentController> dockedList = new ArrayList<SegmentController>();
+        final ArrayList<SegmentController> dockedList = new ArrayList<SegmentController>();
         entity.railController.getDockedRecusive(dockedList);
-        for(SegmentController docked : dockedList) {
-            aiEntity = getAIEntity(docked);
-            if(aiEntity != null) {
-                if(!toggle && aiEntity.getCurrentProgram() != null) aiEntity.getCurrentProgram().suspend(true);
-                else if(aiEntity.getCurrentProgram() != null) aiEntity.getCurrentProgram().suspend(false);
 
+        final long time = System.currentTimeMillis();
+        new Thread(new Runnable() {
+            @Override
+            public void run() {
+                for(SegmentController docked : dockedList) {
+                    long current = System.currentTimeMillis();
+                    long diff = current - time;
+                    if(diff >= MAX_WAIT_TIME) { //Shitty method to make sure game thread doesn't stall
+                        LogManager.logWarning("Toggling ai on entity \"" + docked.getRealName() + "\" took more than " + MAX_WAIT_TIME + " (" + diff + "ms)", null);
+                        return;
+                    }
+
+                    try {
+                        aiEntity[0] = getAIEntity(docked);
+                        if(aiEntity[0] != null) {
+                            if(!toggle && aiEntity[0].getCurrentProgram() != null) aiEntity[0].getCurrentProgram().suspend(true);
+                            else if(aiEntity[0].getCurrentProgram() != null) aiEntity[0].getCurrentProgram().suspend(false);
+                        }
+                    } catch(Exception exception) {
+                        LogManager.logException("Encountered an exception while toggling ai for entity \"" + docked.getRealName() + "\".", exception);
+                    }
+                }
             }
-        }
+        });
     }
 }

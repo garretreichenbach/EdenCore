@@ -1,12 +1,10 @@
 package thederpgamer.edencore.utils;
 
 import api.common.GameServer;
+import api.utils.game.PlayerUtils;
 import com.bulletphysics.linearmath.Transform;
 import org.schema.game.common.controller.SegmentController;
-import org.schema.game.common.controller.Ship;
-import org.schema.game.common.controller.SpaceStation;
 import org.schema.game.common.data.player.PlayerState;
-import org.schema.game.server.ai.SegmentControllerAIEntity;
 import org.schema.game.server.controller.BluePrintController;
 import org.schema.game.server.controller.EntityAlreadyExistsException;
 import org.schema.game.server.controller.EntityNotFountException;
@@ -17,11 +15,9 @@ import org.schema.game.server.data.blueprint.SegmentControllerSpawnCallbackDirec
 import org.schema.game.server.data.blueprintnw.BlueprintEntry;
 import org.schema.schine.graphicsengine.core.GlUtil;
 import org.schema.schine.graphicsengine.core.settings.StateParameterNotFoundException;
-import thederpgamer.edencore.manager.LogManager;
 
 import javax.vecmath.Vector3f;
 import java.io.IOException;
-import java.util.ArrayList;
 
 /**
  * <Description>
@@ -60,40 +56,9 @@ public class EntityUtils {
 
                 }
             });
-            toggleAI(entity, aiEnabled);
+            PlayerUtils.sendMessage(owner, "Successfully spawned entity \"" + entity.getRealName() + "\".");
         } catch(EntityNotFountException | IOException | EntityAlreadyExistsException | StateParameterNotFoundException exception) {
             exception.printStackTrace();
-        }
-    }
-
-    public static SegmentControllerAIEntity<?> getAIEntity(SegmentController entity) {
-        try {
-            switch(entity.getType()) {
-                case SHIP: return ((Ship) entity).getAiConfiguration().getAiEntityState();
-                case SPACE_STATION: return ((SpaceStation) entity).getAiConfiguration().getAiEntityState();
-                default: throw new IllegalArgumentException("Entity must either be a Ship or Station!");
-            }
-        } catch(IllegalArgumentException exception) {
-            LogManager.logCritical("A critical exception occurred while trying to get an AIEntityState from an invalid or corrupted entity!", exception);
-        }
-        return null;
-    }
-
-    public static void toggleAI(SegmentController entity, boolean toggle) {
-        SegmentControllerAIEntity<?> aiEntity = getAIEntity(entity);
-        if(aiEntity != null) {
-            if(!toggle && aiEntity.getCurrentProgram() != null) aiEntity.getCurrentProgram().suspend(true);
-            else if(aiEntity.getCurrentProgram() != null) aiEntity.getCurrentProgram().suspend(false);
-        }
-        ArrayList<SegmentController> dockedList = new ArrayList<SegmentController>();
-        entity.railController.getDockedRecusive(dockedList);
-        for(SegmentController docked : dockedList) {
-            aiEntity = getAIEntity(docked);
-            if(aiEntity != null) {
-                if(!toggle && aiEntity.getCurrentProgram() != null) aiEntity.getCurrentProgram().suspend(true);
-                else if(aiEntity.getCurrentProgram() != null) aiEntity.getCurrentProgram().suspend(false);
-
-            }
         }
     }
 }

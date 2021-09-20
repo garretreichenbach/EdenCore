@@ -37,7 +37,7 @@ public class ExchangeMenuPanel extends GUIMenuPanel {
     private ResourceExchangeItem lastClickedResource;
 
     public ExchangeMenuPanel(InputState inputState) {
-        super(inputState, "ServerExchange", 750, 500);
+        super(inputState, "ServerExchange", 750, 450);
     }
 
     @Override
@@ -45,20 +45,20 @@ public class ExchangeMenuPanel extends GUIMenuPanel {
         int lastTab = guiWindow.getSelectedTab();
         guiWindow.clearTabs();
 
-        GUIContentPane blueprintsTab = guiWindow.addTab("SHIPS AND STATIONS");
-        blueprintsTab.setTextBoxHeightLast(500);
+        GUIContentPane blueprintsTab = guiWindow.addTab("ENTITIES");
+        blueprintsTab.setTextBoxHeightLast(438);
         createBlueprintsTab(blueprintsTab);
 
         GUIContentPane resourcesTab = guiWindow.addTab("RESOURCES");
-        resourcesTab.setTextBoxHeightLast(500);
+        resourcesTab.setTextBoxHeightLast(438);
         createResourcesTab(resourcesTab);
 
         GUIContentPane servicesTab = guiWindow.addTab("SERVICES");
-        servicesTab.setTextBoxHeightLast(500);
+        servicesTab.setTextBoxHeightLast(450);
         createServicesTab(servicesTab);
 
         GUIContentPane exchangeTab = guiWindow.addTab("EXCHANGE");
-        exchangeTab.setTextBoxHeightLast(500);
+        exchangeTab.setTextBoxHeightLast(450);
         createExchangeTab(exchangeTab);
 
         guiWindow.setSelectedTab(lastTab);
@@ -357,6 +357,7 @@ public class ExchangeMenuPanel extends GUIMenuPanel {
         Inventory inventory = GameClient.getClientPlayerState().getInventory();
         if(item instanceof BlueprintExchangeItem && ((BlueprintExchangeItem) item).blueprint != null) {
             PacketUtil.sendPacketToServer(new RequestSpawnEntryPacket(((BlueprintExchangeItem) item).blueprint.getName()));
+
             /* This doesn't work because the game won't see the item as valid and won't spawn it
             BlueprintMetaItem metaItem = (BlueprintMetaItem) MetaObjectManager.instantiate(MetaObjectManager.MetaObjectType.BLUEPRINT, (short) -1, false);
             metaItem.blueprintName = item.name;

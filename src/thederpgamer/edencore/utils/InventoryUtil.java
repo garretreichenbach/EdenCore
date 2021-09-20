@@ -13,6 +13,7 @@ import org.schema.game.common.data.player.inventory.InventorySlot;
 public class InventoryUtil {
 
     public static void consumeItems(Inventory inventory, short id, int toConsume) {
+
         if(!inventory.containsAny(id)) DebugFile.err("Tried to consume x" + toConsume + " " + id + "in an inventory, however the inventory did not contain any!");
         else {
             while(toConsume > 0) {
