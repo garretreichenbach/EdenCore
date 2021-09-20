@@ -1,10 +1,7 @@
 package thederpgamer.edencore.manager;
 
-import api.listener.Listener;
-import api.listener.events.player.PlayerJoinWorldEvent;
 import api.mod.StarLoader;
 import api.network.packets.PacketUtil;
-import api.utils.StarRunnable;
 import it.unimi.dsi.fastutil.objects.ObjectArrayList;
 import org.schema.common.util.linAlg.Vector3i;
 import org.schema.game.common.data.player.PlayerState;
@@ -13,14 +10,16 @@ import org.schema.game.server.controller.EntityNotFountException;
 import org.schema.game.server.data.GameServerState;
 import org.schema.schine.resource.tag.ListSpawnObjectCallback;
 import org.schema.schine.resource.tag.Tag;
-import thederpgamer.edencore.EdenCore;
 import thederpgamer.edencore.commands.NavigationAdminCommand;
 import thederpgamer.edencore.data.NavigationListContainer;
-import thederpgamer.edencore.data.NavigationUtilPacket;
 import thederpgamer.edencore.data.PlayerDataUtil;
 
 import java.io.*;
+import java.lang.reflect.Array;
+import java.sql.SQLException;
 import java.util.*;
+
+import static org.schema.common.util.linAlg.Vector3i.*;
 
 /**
  * STARMADE MOD
@@ -33,7 +32,7 @@ public class NavigationUtilManager {
     public static NavigationUtilManager instance;
 
     private HashMap<Long,SavedCoordinate> coordsAddList = new HashMap<>();
-    private HashMap<Long,SavedCoordinate> coordsRemoveList = new HashMap<>();
+    private HashSet<Long> coordsRemoveList = new HashSet<>();
 
     public NavigationUtilManager() {
         instance = this;
@@ -46,33 +45,7 @@ public class NavigationUtilManager {
             coordsRemoveList = c.coordsRemoveList;
         }
 
-        PacketUtil.registerPacket(NavigationUtilPacket.class);
-    //    addPlayerJoinEH();
         addAdminCommands();
-    }
-
-    private void addPlayerJoinEH() {
-        StarLoader.registerListener(PlayerJoinWorldEvent.class, new Listener<PlayerJoinWorldEvent>() {
-            @Override
-            public void onEvent(PlayerJoinWorldEvent event) {
-                final String playerName = event.getPlayerName();
-                new StarRunnable(){
-                    long max = System.currentTimeMillis()+120*1000;
-                    PlayerState p;
-                    @Override
-                    public void run() {
-                        if (max < System.currentTimeMillis()) {
-                            cancel();
-                        }
-                        p = GameServerState.instance.getPlayerFromNameIgnoreCaseWOException(playerName);
-                        if (p != null) {
-                            updatePlayerList(p);
-                            cancel();
-                        }
-                    }
-                }.runTimer(EdenCore.getInstance(),10);
-            }
-        }, EdenCore.getInstance());
     }
 
     private void addAdminCommands() {
@@ -80,62 +53,24 @@ public class NavigationUtilManager {
     }
 
     /**
-     * can run client or serverside, will update the players saved list to match the managers lists.
-     * @param player
+     * will update all existing playerfiles by adding in the addList, removing the removeList, updating the names of already
+     * existing addList coords.
      */
-    public void updatePlayerList(PlayerState player) {
-        if (player==null)
-            return;
-
-        //delete playercoords that are in removeList
-        HashMap<Long,SavedCoordinate> playerCoords = new HashMap<>();
-        for (SavedCoordinate c: player.getSavedCoordinates()) {
-            playerCoords.put(c.getSector().code(),c);
-        }
-        for (SavedCoordinate c: coordsRemoveList.values()) {
-            long code = c.getSector().code();
-            if (playerCoords.containsKey(code)) {
-                player.getSavedCoordinates().remove(code);
+    public void updateAllPlayerFiles() {
+        try {
+            ArrayList<String> names = PlayerDataUtil.getAllPlayerNamesEver();
+            for (String playerName: names) {
+                NavigationUtilManager.instance.updatePlayerCoordsInSaveFile(playerName, coordsAddList,coordsRemoveList);
             }
+            coordsRemoveList.clear(); //clears list, bc all players have been cleared.
+        } catch (SQLException throwables) {
+            throwables.printStackTrace();
         }
-
-        //update existing customCoords
-        HashSet<Long> existing = new HashSet<>();
-        for (SavedCoordinate c: player.getSavedCoordinates()) {
-            if (coordsAddList.containsKey(c.getSector().code())) {
-                c.setName(coordsAddList.get(c.getSector().code()).getName());
-                existing.add(c.getSector().code());
-            }
-        }
-
-        //add all coords that dont exist yet in players list
-        for (SavedCoordinate c: coordsAddList.values()) {
-            if (existing.contains(c.getSector().code()))
-                continue;
-
-            player.getSavedCoordinates().add(c);
-            existing.add(c.getSector().code());
-        }
-    }
-
-    private void updateAllPlayers(HashMap<Long,SavedCoordinate> customCoords) {
-        for(PlayerState p: GameServerState.instance.getPlayerStatesByName().values()) {
-            updatePlayerList(p);
-            synchToClient(p);
-        }
-
-        savePersistent();
-    }
-
-    public void updateAllPlayers() {
-        updateAllPlayers(this.coordsAddList);
     }
 
     public void addCoordinateToList(Vector3i sector, String name) {
         name = "[p]"+name;
         coordsAddList.put(sector.code(),new SavedCoordinate(sector,name, false));
-
-        updateAllPlayers(coordsAddList);
     }
 
     /**
@@ -148,10 +83,10 @@ public class NavigationUtilManager {
         //remove from add list
         coordsAddList.remove(sector.code());
         //save into remove list
-        coordsRemoveList.put(sector.code(),new SavedCoordinate(sector,name,true));
+        coordsRemoveList.add(sector.code());
     }
 
-    public void savePersistent() {
+    public void saveListsPersistent() {
         NavigationListContainer c = NavigationListContainer.getContainer();
         c.coordsAddList = this.coordsAddList;
         c.coordsRemoveList = this.coordsRemoveList;
@@ -162,21 +97,8 @@ public class NavigationUtilManager {
         return coordsAddList;
     }
 
-    public void setCoordsAddList(HashMap<Long, SavedCoordinate> coordsAddList) {
-        this.coordsAddList = coordsAddList;
-    }
-
-    public HashMap<Long, SavedCoordinate> getCoordsRemoveList() {
+    public HashSet<Long> getCoordsRemoveList() {
         return coordsRemoveList;
-    }
-
-    public void setCoordsRemoveList(HashMap<Long, SavedCoordinate> coordsRemoveList) {
-        this.coordsRemoveList = coordsRemoveList;
-    }
-
-    private void synchToClient(PlayerState p) {
-        //send a packet
-        PacketUtil.sendPacket(p,new NavigationUtilPacket(coordsAddList,coordsRemoveList));
     }
 
     /**
@@ -185,16 +107,15 @@ public class NavigationUtilManager {
      * @param adminCoords source to be merged into the second list
      * @param playerCoords receiver of merge
      */
-    private void mergeLists(Collection<SavedCoordinate> adminCoords, Collection<SavedCoordinate> playerCoords) {
-        HashMap<Long,SavedCoordinate> adminMap = listToSectorCodeMap(adminCoords); //=> will become new playerCoords list
-        HashMap<Long,SavedCoordinate> playerMap = listToSectorCodeMap(playerCoords);
+    private void mergeLists(HashMap<Long,SavedCoordinate> adminCoords, Collection<SavedCoordinate> playerCoords) {
+        HashMap<Long,SavedCoordinate> adminMap = new HashMap<>(adminCoords);
 
         Long sectorCode;
-        for (Map.Entry<Long,SavedCoordinate> entry: playerMap.entrySet()) {
-            sectorCode = entry.getKey();
+        for (SavedCoordinate coordinate: playerCoords) {
+            sectorCode = coordinate.getSector().code();
             if (!adminMap.containsKey(sectorCode)) {
                 //coord is not in admin map, add to map
-                adminMap.put(entry.getKey(),entry.getValue());
+                adminMap.put(sectorCode,coordinate);
             }
         }
 
@@ -221,7 +142,7 @@ public class NavigationUtilManager {
      * existing newCoords in savefile will be overwritten.
      * @param playername
      */
-    public void updatePlayerCoordsInSaveFile(String playername, Collection<SavedCoordinate> newCoords, HashSet<Long> blacklist) {
+    public void updatePlayerCoordsInSaveFile(String playername, HashMap<Long,SavedCoordinate> newCoords, HashSet<Long> blacklist) {
     //get tag
         Tag tag;
         try {

@@ -67,8 +67,12 @@ public class EdenCore extends StarMod {
         TransferManager.initialize();
         registerListeners();
         registerCommands();
+    }
 
+    @Override
+    public void onServerCreated(ServerInitializeEvent serverInitializeEvent) {
         new NavigationUtilManager(); //util to have public saved coordinates
+        super.onServerCreated(serverInitializeEvent);
     }
 
     @Override

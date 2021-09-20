@@ -17,7 +17,7 @@ import java.util.HashSet;
  */
 public class NavigationListContainer implements Serializable {
     public HashMap<Long,SavedCoordinate> coordsAddList = new HashMap<>();
-    public HashMap<Long,SavedCoordinate> coordsRemoveList = new HashMap<>();
+    public HashSet<Long> coordsRemoveList = new HashSet<>();
 
     /**
      * auto adds itself to persisntence.
