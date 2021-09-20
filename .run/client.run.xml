@@ -1,0 +1,15 @@
+<component name="ProjectRunConfigurationManager">
+  <configuration default="false" name="client" type="JarApplication" singleton="true">
+    <option name="JAR_PATH" value="$USER_HOME$/Desktop/Starmade/server testarea/client/StarMade/StarMade.jar" />
+    <option name="VM_PARAMETERS" value="-Xmx3g -Xms3g" />
+    <option name="PROGRAM_PARAMETERS" value="-force -uplink 127.0.0.1 4242 8289,-1" />
+    <option name="WORKING_DIRECTORY" value="C:\Users\Max1M\Desktop\Starmade\server testarea\client\StarMade" />
+    <option name="ALTERNATIVE_JRE_PATH_ENABLED" value="true" />
+    <option name="ALTERNATIVE_JRE_PATH" value="1.7" />
+    <method v="2">
+      <option name="BuildArtifacts" enabled="true">
+        <artifact name="edenCore" />
+      </option>
+    </method>
+  </configuration>
+</component>
