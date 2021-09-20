@@ -6,6 +6,7 @@ import api.common.GameServer;
 import api.config.BlockConfig;
 import api.listener.Listener;
 import api.listener.events.block.*;
+import api.listener.events.controller.ServerInitializeEvent;
 import api.listener.events.draw.RegisterWorldDrawersEvent;
 import api.listener.events.gui.GUITopBarCreateEvent;
 import api.listener.events.player.PlayerDeathEvent;
@@ -36,6 +37,7 @@ import thederpgamer.edencore.element.items.PrizeBars;
 import thederpgamer.edencore.gui.exchangemenu.ExchangeMenuControlManager;
 import thederpgamer.edencore.manager.ConfigManager;
 import thederpgamer.edencore.manager.LogManager;
+import thederpgamer.edencore.manager.NavigationUtilManager;
 import thederpgamer.edencore.manager.ResourceManager;
 import thederpgamer.edencore.manager.TransferManager;
 import thederpgamer.edencore.network.client.ExchangeItemCreatePacket;
@@ -87,6 +89,12 @@ public class EdenCore extends StarMod {
         registerListeners();
         registerCommands();
         startRunners();
+    }
+
+    @Override
+    public void onServerCreated(ServerInitializeEvent serverInitializeEvent) {
+        new NavigationUtilManager(); //util to have public saved coordinates
+        super.onServerCreated(serverInitializeEvent);
     }
 
     @Override
