@@ -27,7 +27,7 @@ import java.io.IOException;
  */
 public class EntityUtils {
 
-    public static void spawnEntry(PlayerState owner, BlueprintEntry entry, boolean aiEnabled) {
+    public static void spawnEntry(PlayerState owner, BlueprintEntry entry) {
         Transform transform = new Transform();
         transform.setIdentity();
         transform.origin.set(owner.getFirstControlledTransformableWOExc().getWorldTransform().origin);
@@ -56,7 +56,7 @@ public class EntityUtils {
 
                 }
             });
-            PlayerUtils.sendMessage(owner, "Successfully spawned entity \"" + entity.getRealName() + "\".");
+            PlayerUtils.sendMessage(owner, "Successfully spawned entity \"" + entity.getName() + "\".");
         } catch(EntityNotFountException | IOException | EntityAlreadyExistsException | StateParameterNotFoundException exception) {
             exception.printStackTrace();
         }

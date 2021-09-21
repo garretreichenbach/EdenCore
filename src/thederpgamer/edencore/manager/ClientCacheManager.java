@@ -6,7 +6,7 @@ import thederpgamer.edencore.data.exchange.ResourceExchangeItem;
 import java.util.ArrayList;
 
 /**
- * <Description>
+ * Stores client cache data for periodical updates from server.
  *
  * @author TheDerpGamer
  * @version 1.0 - [09/18/2021]

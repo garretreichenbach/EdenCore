@@ -13,7 +13,8 @@ import thederpgamer.edencore.utils.EntityUtils;
 import java.io.IOException;
 
 /**
- * <Description>
+ * Requests an entity to be spawned from an exchange purchase.
+ * <p>[CLIENT] -> [SERVER]</p>
  *
  * @author TheDerpGamer
  * @version 1.0 - [09/20/2021]
@@ -49,7 +50,7 @@ public class RequestSpawnEntryPacket extends Packet {
     public void processPacketOnServer(PlayerState playerState) {
         try {
             BlueprintEntry entry = BluePrintController.active.getBlueprint(entryName);
-            EntityUtils.spawnEntry(playerState, entry, false);
+            EntityUtils.spawnEntry(playerState, entry);
         } catch(EntityNotFountException exception) {
             exception.printStackTrace();
             PlayerUtils.sendMessage(playerState, "There was a severe error in spawning your entity! Please notify an admin ASAP!");

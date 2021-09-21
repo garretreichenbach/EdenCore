@@ -15,9 +15,11 @@ import api.listener.events.player.PlayerPickupFreeItemEvent;
 import api.listener.events.player.PlayerSpawnEvent;
 import api.mod.StarLoader;
 import api.mod.StarMod;
+import api.mod.config.PersistentObjectUtil;
 import api.network.packets.PacketUtil;
 import api.utils.StarRunnable;
 import api.utils.game.PlayerUtils;
+import api.utils.game.inventory.InventoryUtils;
 import api.utils.gui.ModGUIHandler;
 import org.apache.commons.io.IOUtils;
 import org.schema.game.client.view.gui.newgui.GUITopBar;
@@ -31,23 +33,22 @@ import org.schema.schine.input.InputState;
 import org.schema.schine.resource.ResourceLoader;
 import thederpgamer.edencore.commands.*;
 import thederpgamer.edencore.data.other.BuildSectorData;
+import thederpgamer.edencore.data.other.PlayerData;
 import thederpgamer.edencore.drawer.BuildSectorHudDrawer;
 import thederpgamer.edencore.element.ElementManager;
 import thederpgamer.edencore.element.items.PrizeBars;
 import thederpgamer.edencore.gui.exchangemenu.ExchangeMenuControlManager;
-import thederpgamer.edencore.manager.ConfigManager;
-import thederpgamer.edencore.manager.LogManager;
-import thederpgamer.edencore.manager.NavigationUtilManager;
-import thederpgamer.edencore.manager.ResourceManager;
-import thederpgamer.edencore.manager.TransferManager;
+import thederpgamer.edencore.manager.*;
 import thederpgamer.edencore.network.client.ExchangeItemCreatePacket;
 import thederpgamer.edencore.network.client.ExchangeItemRemovePacket;
 import thederpgamer.edencore.network.client.RequestSpawnEntryPacket;
 import thederpgamer.edencore.network.server.SendCacheUpdatePacket;
 import thederpgamer.edencore.utils.DataUtils;
+import thederpgamer.edencore.utils.DateUtils;
 
 import java.io.FileInputStream;
 import java.io.IOException;
+import java.sql.Date;
 import java.sql.SQLException;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
@@ -285,6 +286,21 @@ public class EdenCore extends StarMod {
                             }
                         }
                     }.runLater(EdenCore.this, 100);
+
+                    new StarRunnable() {
+                        @Override
+                        public void run() {
+                            PlayerState playerState = GameCommon.getPlayerFromName(event.getPlayerName());
+                            PlayerData playerData = DataUtils.getPlayerData(playerState);
+                            Date date = new Date(playerData.lastDailyPrizeClaim);
+                            if(DateUtils.getAgeDays(date) >= 1.0f) {
+                                InventoryUtils.addItem(playerState.getInventory(), ElementManager.getItem("Bronze Bar").getId(), 2);
+                                playerData.lastDailyPrizeClaim = System.currentTimeMillis();
+                                PersistentObjectUtil.save(EdenCore.this.getSkeleton());
+                                PlayerUtils.sendMessage(playerState, "You have been given 2 Bronze Bars for logging in. Thanks for playing!");
+                            }
+                        }
+                    }.runLater(EdenCore.this, 10000);
                 }
             }
         }, this);

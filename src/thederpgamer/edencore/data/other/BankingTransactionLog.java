@@ -19,11 +19,13 @@ import java.util.Locale;
  * used to log transactions persistently. provides static helper methods for banking
  */
 public class BankingTransactionLog implements Serializable {
+
     public String from;
     public String to;
     public int credits;
     public String mssg;
     public long time;
+
     public BankingTransactionLog(String from, String to, int credits, String mssg) {
         time = System.currentTimeMillis();
         this.from = from;
@@ -54,8 +56,7 @@ public class BankingTransactionLog implements Serializable {
         from = from.toLowerCase(Locale.ENGLISH);
         to = to.toLowerCase(Locale.ENGLISH);
 
-        if (!isExistingPlayer(from) || !isExistingPlayer(to))
-            return null;
+        if (!isExistingPlayer(from) || !isExistingPlayer(to)) return null;
         PlayerState fromP = getPlayer(from);
         PlayerState toP = getPlayer(to);
 
@@ -87,7 +88,8 @@ public class BankingTransactionLog implements Serializable {
     }
 
     public String toStringPretty() {
-        SimpleDateFormat sdf = new SimpleDateFormat("dd MMM,yyyy HH:mm z");
+        //SimpleDateFormat sdf = new SimpleDateFormat("dd MMM,yyyy HH:mm z"); Cringe European format
+        SimpleDateFormat sdf = new SimpleDateFormat("MM/dd/yyyy '-' hh:mm:ss z"); //Chad American format
         Date resultdate = new Date(time);
 
         return "Banking transaction:" + "\n"+
