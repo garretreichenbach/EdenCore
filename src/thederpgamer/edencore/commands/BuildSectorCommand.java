@@ -99,7 +99,7 @@ public class BuildSectorCommand implements CommandInterface {
                                     BuildSectorData sectorData = DataUtils.getBuildSector(target);
                                     if(sectorData.hasPermission(sender.getName(), "ENTER")) {
                                         if(PlayerUtils.getCurrentControl(sender) instanceof SegmentController) PlayerUtils.sendMessage(sender, "You can't do this while in an entity.");
-                                        else DataUtils.movePlayerToBuildSector(sender, DataUtils.getBuildSector(sender));
+                                        else DataUtils.movePlayerToBuildSector(sender, DataUtils.getBuildSector(target));
                                     } else PlayerUtils.sendMessage(sender, "You don't have permission to do this.");
                                 } else PlayerUtils.sendMessage(sender, "Player \"" + args[1] + "\" doesn't exist.");
                             } else return false;
