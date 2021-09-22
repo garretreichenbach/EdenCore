@@ -367,9 +367,11 @@ public class EdenCore extends StarMod {
 
     public void updateClientCacheData() {
         if(GameCommon.isOnSinglePlayer() || GameCommon.isDedicatedServer()) {
-            for(PlayerState playerState : GameServer.getServerState().getPlayerStatesByName().values()) {
-                PacketUtil.sendPacket(playerState, new SendCacheUpdatePacket());
-            }
+            try {
+                for(PlayerState playerState : GameServer.getServerState().getPlayerStatesByName().values()) {
+                    PacketUtil.sendPacket(playerState, new SendCacheUpdatePacket());
+                }
+            } catch(Exception ignored) { }
         }
     }
 }

@@ -6,7 +6,7 @@ import api.utils.game.chat.CommandInterface;
 import org.schema.common.util.linAlg.Vector3i;
 import org.schema.game.common.data.player.PlayerState;
 import org.schema.game.common.data.player.SavedCoordinate;
-import thederpgamer.edencore.data.PlayerDataUtil;
+import thederpgamer.edencore.utils.PlayerDataUtil;
 import thederpgamer.edencore.manager.NavigationUtilManager;
 
 import javax.annotation.Nullable;

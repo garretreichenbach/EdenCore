@@ -1,4 +1,4 @@
-package thederpgamer.edencore.data;
+package thederpgamer.edencore.data.other;
 
 import api.mod.config.PersistentObjectUtil;
 import org.schema.game.common.data.player.SavedCoordinate;

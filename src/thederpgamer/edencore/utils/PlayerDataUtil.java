@@ -1,4 +1,4 @@
-package thederpgamer.edencore.data;
+package thederpgamer.edencore.utils;
 
 import org.schema.game.common.controller.database.DatabaseIndex;
 import org.schema.game.common.data.player.PlayerState;
