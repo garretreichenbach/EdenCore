@@ -4,7 +4,6 @@ import api.config.BlockConfig;
 import org.schema.game.common.data.element.ElementCategory;
 import org.schema.game.common.data.element.ElementInformation;
 import thederpgamer.edencore.EdenCore;
-import thederpgamer.edencore.element.ElementManager;
 
 /**
  * Base abstract item class.
@@ -21,7 +20,6 @@ public abstract class Item {
         itemInfo.setPlacable(false);
         itemInfo.setPhysical(false);
         BlockConfig.setElementCategory(itemInfo, category);
-        ElementManager.addItem(this);
     }
 
     public final ElementInformation getItemInfo() {
