@@ -49,7 +49,6 @@ import thederpgamer.edencore.utils.DateUtils;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.sql.Date;
-import java.sql.SQLException;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 
@@ -336,7 +335,7 @@ public class EdenCore extends StarMod {
                 if(!playerState.hasSpawnWait) { //Wait until player has spawned, then warp them
                     try {
                         DataUtils.movePlayerFromBuildSector(playerState);
-                    } catch(IOException | SQLException exception) {
+                    } catch(Exception exception) {
                         LogManager.logException("Encountered a severe exception while trying to move player \"" + playerState.getName() + "\" out of a build sector! Report this ASAP!", exception);
                         playerState.setUseCreativeMode(false);
                         if(!playerState.isAdmin()) playerState.setHasCreativeMode(false);
