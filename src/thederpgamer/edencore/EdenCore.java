@@ -39,6 +39,7 @@ import thederpgamer.edencore.element.ElementManager;
 import thederpgamer.edencore.element.items.PrizeBars;
 import thederpgamer.edencore.gui.exchangemenu.ExchangeMenuControlManager;
 import thederpgamer.edencore.manager.*;
+import thederpgamer.edencore.navigation.NavigationUtilManager;
 import thederpgamer.edencore.network.client.ExchangeItemCreatePacket;
 import thederpgamer.edencore.network.client.ExchangeItemRemovePacket;
 import thederpgamer.edencore.network.client.RequestSpawnEntryPacket;

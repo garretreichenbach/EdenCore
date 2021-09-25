@@ -32,14 +32,17 @@ public class NavigationListContainer implements Serializable {
 
     /**
      * get the container object. only one allowed. will auto deleted anything over index 0
+     * @param autoAdd automatically add to skeleton
      * @return existing or new object
      */
-    public static NavigationListContainer getContainer() {
+    public static NavigationListContainer getContainer(boolean autoAdd) {
         ArrayList<Object> objs = PersistentObjectUtil.getObjects(EdenCore.getInstance().getSkeleton(),NavigationListContainer.class);
         if (objs.size()==0) {
             NavigationListContainer c = new NavigationListContainer();
-            //add to persisntence
-            PersistentObjectUtil.addObject(EdenCore.getInstance().getSkeleton(), c);
+            if (autoAdd) {
+                //add to persisntence
+                PersistentObjectUtil.addObject(EdenCore.getInstance().getSkeleton(), c);
+            }
             return c;
         }
         for (int i = objs.size()-1; i>0; i--) {

@@ -9,6 +9,7 @@ import org.schema.game.server.controller.EntityNotFountException;
 import org.schema.game.server.data.GameServerState;
 import org.schema.schine.resource.tag.ListSpawnObjectCallback;
 import org.schema.schine.resource.tag.Tag;
+import thederpgamer.edencore.commands.NavigationAdminCommand;
 import thederpgamer.edencore.data.other.NavigationListContainer;
 import thederpgamer.edencore.utils.PlayerDataUtil;
 
@@ -32,18 +33,10 @@ public class NavigationUtilManager {
 
     public NavigationUtilManager() {
         instance = this;
-        NavigationListContainer c = NavigationListContainer.getContainer();
+        NavigationListContainer c = NavigationListContainer.getContainer(true);
         if (c.coordsAddList != null) {
             coordsAddList = c.coordsAddList;
         }
-
-        if (c.coordsRemoveList != null) {
-            coordsRemoveList = c.coordsRemoveList;
-            //TODO transition period: remove all existing markers from players savefile
-            coordsRemoveList.addAll(coordsAddList.keySet());
-        }
-
-        updateAllPlayerFiles();
 
         addAdminCommands();
     }
@@ -91,7 +84,7 @@ public class NavigationUtilManager {
     }
 
     public void saveListsPersistent() {
-        NavigationListContainer c = NavigationListContainer.getContainer();
+        NavigationListContainer c = NavigationListContainer.getContainer(true);
         c.coordsAddList = this.coordsAddList;
         c.coordsRemoveList = this.coordsRemoveList;
         c.save();
