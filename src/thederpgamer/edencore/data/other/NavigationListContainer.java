@@ -3,6 +3,7 @@ package thederpgamer.edencore.data.other;
 import api.mod.config.PersistentObjectUtil;
 import org.schema.game.common.data.player.SavedCoordinate;
 import thederpgamer.edencore.EdenCore;
+import thederpgamer.edencore.navigation.MapMarker;
 
 import java.io.Serializable;
 import java.util.ArrayList;
@@ -16,8 +17,7 @@ import java.util.HashSet;
  * TIME: 14:12
  */
 public class NavigationListContainer implements Serializable {
-    public HashMap<Long,SavedCoordinate> coordsAddList = new HashMap<>();
-    public HashSet<Long> coordsRemoveList = new HashSet<>();
+    public HashMap<Long, MapMarker> publicMarkers = new HashMap<>();
 
     /**
      * auto adds itself to persisntence.
