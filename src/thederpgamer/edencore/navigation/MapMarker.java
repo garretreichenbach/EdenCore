@@ -76,12 +76,12 @@ public class MapMarker implements PositionableSubColorSprite, SelectableSprite, 
     @Override
     public boolean isDrawIndication() {
         return drawIndication;
-    }
+    } //??
 
     @Override
     public void setDrawIndication(boolean b) {
 
-    }
+    }//??
 
     public MapIcon getIcon() {
         return icon;
@@ -163,5 +163,9 @@ public class MapMarker implements PositionableSubColorSprite, SelectableSprite, 
                 ", scaleFactor=" + scaleFactor +
                 ", drawIndication=" + drawIndication +
                 '}';
+    }
+
+    public boolean getSelected() {
+        return selected;
     }
 }

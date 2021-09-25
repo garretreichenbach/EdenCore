@@ -2,13 +2,17 @@ package thederpgamer.edencore.navigation;
 
 import api.listener.fastevents.FastListenerCommon;
 import api.listener.fastevents.GameMapDrawListener;
+import com.bulletphysics.linearmath.Transform;
 import it.unimi.dsi.fastutil.objects.ObjectArrayList;
 import org.schema.common.util.linAlg.Vector3i;
 import org.schema.game.client.data.GameClientState;
 import org.schema.game.client.view.camera.GameMapCamera;
+import org.schema.game.client.view.effects.ConstantIndication;
 import org.schema.game.client.view.gamemap.GameMapDrawer;
+import org.schema.game.client.view.gui.shiphud.HudIndicatorOverlay;
 import org.schema.game.common.data.player.SavedCoordinate;
 import org.schema.game.common.data.world.VoidSystem;
+import org.schema.schine.common.language.Lng;
 import org.schema.schine.graphicsengine.forms.Sprite;
 
 import javax.vecmath.Vector3f;
@@ -76,10 +80,13 @@ public class EdenMapDrawer implements GameMapDrawListener {
 
         HashMap<Sprite, HashSet<MapMarker>> sprite_to_subsprites_set = new HashMap<>();
         sprite_to_subsprites.clear();
-
+/////-------------------
         //collect all markers, sorted by their sprite: PUBLIC
         for (Map.Entry<Long, MapMarker> entry: publicMarkers.entrySet()) {
             Sprite sprite = entry.getValue().getSprite();
+            if (sprite == null)
+                continue;
+
             //get set
             HashSet<MapMarker> subsprites = sprite_to_subsprites_set.get(sprite);
             if (subsprites == null) {
@@ -88,7 +95,9 @@ public class EdenMapDrawer implements GameMapDrawListener {
             }
             subsprites.add(entry.getValue());
         }
-                                                     //PRIVATE
+/////---------------
+
+        // PRIVATE
         for (Map.Entry<Long, MapMarker> entry: privateMarkers.entrySet()) {
             Sprite sprite = entry.getValue().getSprite();
             //get set
@@ -103,6 +112,10 @@ public class EdenMapDrawer implements GameMapDrawListener {
         //build the sprite vs SubSprite[] list for drawing
         for (Map.Entry<Sprite,HashSet<MapMarker>> entry: sprite_to_subsprites_set.entrySet()) {
             MapMarker[] arr = entry.getValue().toArray(new MapMarker[0]);
+            //TODO remove
+            if (entry.getKey() == null)
+                continue;
+
             sprite_to_subsprites.put(entry.getKey(),arr);
         }
     }
@@ -123,7 +136,7 @@ public class EdenMapDrawer implements GameMapDrawListener {
 
     @Override
     public void galaxy_PostDraw(GameMapDrawer gameMapDrawer) {
-
+        drawText(new Vector3i(4,4,4),"UWUW BOY 9000");
     }
 
     @Override
@@ -137,6 +150,9 @@ public class EdenMapDrawer implements GameMapDrawListener {
             entry.getKey().setBillboard(true);
             for (MapMarker m: entry.getValue()) {
                 scaleMarkerWithCamDist(m,gameMapDrawer.getCamera());
+                if (m.getSelected()) {
+                    drawText(m.pos,m.name);
+                }
             }
 
             DrawUtils.drawSprite(gameMapDrawer,entry.getKey(),entry.getValue());
@@ -162,6 +178,18 @@ public class EdenMapDrawer implements GameMapDrawListener {
 
     public HashMap<Long,MapMarker> getPublicMarkers() {
         return publicMarkers;
+    }
+
+    public void drawText(Vector3i sector, String text) {
+        drawText(posFromSector(sector,true),text);
+    }
+
+    public void drawText(Vector3f mapPos, String text) {
+        Transform t = new Transform();
+        t.setIdentity();
+        t.origin.set(mapPos);
+        ConstantIndication indication = new ConstantIndication(t, Lng.str(text));
+        HudIndicatorOverlay.toDrawMapTexts.add(indication);
     }
 
     //helper stuff //TODO move to UTIL
