@@ -1,9 +1,7 @@
 package thederpgamer.edencore.navigation;
 
-import api.ModPlayground;
 import org.schema.common.util.linAlg.Vector3i;
 import org.schema.game.client.data.gamemap.entry.SelectableMapEntry;
-import org.schema.game.common.data.player.SavedCoordinate;
 import org.schema.schine.graphicsengine.forms.PositionableSubColorSprite;
 import org.schema.schine.graphicsengine.forms.SelectableSprite;
 import org.schema.schine.graphicsengine.forms.Sprite;
@@ -37,6 +35,8 @@ public class MapMarker implements PositionableSubColorSprite, SelectableSprite, 
     String name;
     Vector4f color;
     Vector3f pos;
+
+    private boolean selected;
     private float scale = 0.4f;
     public float scaleFactor = 1;
 
@@ -48,12 +48,14 @@ public class MapMarker implements PositionableSubColorSprite, SelectableSprite, 
 
     @Override
     public Vector4f getColor() {
+        if (getIcon().equals(MapIcon.MC_DONALDS))
+            return new Vector4f(1,1,0,1);
         return color;
     }
 
     @Override
     public float getScale(long l) {
-        return scale * scaleFactor;
+        return scale * scaleFactor * (selected?2:1);
     }
 
     @Override
@@ -141,12 +143,12 @@ public class MapMarker implements PositionableSubColorSprite, SelectableSprite, 
 
     @Override
     public void onSelect(float v) {
-        scaleFactor = 2;
+        selected = true;
     }
 
     @Override
     public void onUnSelect() {
-        scaleFactor = 1;
+        selected = false;
     }
 
     @Override

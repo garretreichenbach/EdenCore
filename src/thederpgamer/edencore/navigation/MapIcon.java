@@ -17,7 +17,7 @@ public enum MapIcon {
     ERROR             ("edencore_sprites",0),
     WARPGATE          ("edencore_sprites",1),
     PRIVATE           ("edencore_sprites",2),
-    WAYPOINT_PICKUP   ("edencore_sprites",3),
+    MC_DONALDS("edencore_sprites",3),
     WAYPOINT_DELIVER  ("edencore_sprites",4),
     RAUTE             ("edencore_sprites",5);
 
