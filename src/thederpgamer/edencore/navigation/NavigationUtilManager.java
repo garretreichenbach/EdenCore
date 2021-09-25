@@ -1,16 +1,18 @@
-package thederpgamer.edencore.manager;
+package thederpgamer.edencore.navigation;
 
 import api.mod.StarLoader;
+import api.network.packets.PacketUtil;
 import it.unimi.dsi.fastutil.objects.ObjectArrayList;
 import org.schema.common.util.linAlg.Vector3i;
 import org.schema.game.common.data.player.SavedCoordinate;
 import org.schema.game.server.controller.EntityNotFountException;
+import org.schema.game.server.data.GameServerState;
 import org.schema.schine.resource.tag.ListSpawnObjectCallback;
 import org.schema.schine.resource.tag.Tag;
-import thederpgamer.edencore.commands.NavigationAdminCommand;
 import thederpgamer.edencore.data.other.NavigationListContainer;
 import thederpgamer.edencore.utils.PlayerDataUtil;
 
+import javax.vecmath.Vector4f;
 import java.io.*;
 import java.sql.SQLException;
 import java.util.*;
@@ -37,6 +39,8 @@ public class NavigationUtilManager {
 
         if (c.coordsRemoveList != null) {
             coordsRemoveList = c.coordsRemoveList;
+            //TODO transition period: remove all existing markers from players savefile
+            coordsRemoveList.addAll(coordsAddList.keySet());
         }
 
         updateAllPlayerFiles();
@@ -56,7 +60,8 @@ public class NavigationUtilManager {
         try {
             ArrayList<String> names = PlayerDataUtil.getAllPlayerNamesEver();
             for (String playerName: names) {
-                NavigationUtilManager.instance.updatePlayerCoordsInSaveFile(playerName, coordsAddList,coordsRemoveList);
+                //TODO addList removed to not write coords to file again.
+                NavigationUtilManager.instance.updatePlayerCoordsInSaveFile(playerName, new HashMap<Long, SavedCoordinate>(),coordsRemoveList);
             }
             coordsRemoveList.clear(); //clears list, bc all players have been cleared.
             saveListsPersistent();
