@@ -6,8 +6,8 @@ import api.utils.game.chat.CommandInterface;
 import org.schema.common.util.linAlg.Vector3i;
 import org.schema.game.common.data.player.PlayerState;
 import org.schema.game.common.data.player.SavedCoordinate;
+import thederpgamer.edencore.navigation.NavigationUtilManager;
 import thederpgamer.edencore.utils.PlayerDataUtil;
-import thederpgamer.edencore.manager.NavigationUtilManager;
 
 import javax.annotation.Nullable;
 import java.sql.SQLException;
@@ -94,7 +94,9 @@ public class NavigationAdminCommand implements CommandInterface {
                 }
                 return true;
             }
-            case "insert": {
+            case "killcontainer": {
+                NavigationUtilManager.instance.removeOldSaveContainer();
+                PlayerUtils.sendMessage(admin,"removed data container");
                 return true;
             }
         }

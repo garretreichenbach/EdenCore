@@ -39,7 +39,7 @@ public class NavigationListContainer implements Serializable {
         if (objs.size()==0) {
             NavigationListContainer c = new NavigationListContainer();
             //add to persisntence
-            PersistentObjectUtil.addObject(EdenCore.getInstance().getSkeleton(), c);
+        //    PersistentObjectUtil.addObject(EdenCore.getInstance().getSkeleton(), c);
             return c;
         }
         for (int i = objs.size()-1; i>0; i--) {
