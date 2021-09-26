@@ -43,21 +43,24 @@ public class NavigationUtilManager {
         StarLoader.registerCommand(new NavigationAdminCommand());
     }
 
+    /**
+     * add marker to list.
+     * requires synching and saving to have effect
+     * @param marker
+     */
     public void addCoordinateToList(MapMarker marker) {
         publicMarkers.put(marker.sector.code(),marker);
-        saveListsPersistent();
-        synchPlayers();
     }
 
     /**
      * adds coord to a list that will be removed upon joining from each players list.
+     * requires synching and saving to have effect
      * @param sector
      */
     public void removeCoordinateFromList(Vector3i sector) {
         //remove from add list
         publicMarkers.remove(sector.code());
-        saveListsPersistent();
-        synchPlayers();
+
     }
 
     public void saveListsPersistent() {

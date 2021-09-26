@@ -151,7 +151,11 @@ public class EdenMapDrawer implements GameMapDrawListener {
 
     @Override
     public void galaxy_DrawLines(GameMapDrawer gameMapDrawer) {
-
+        for (MapMarker marker: publicMarkers.values()) {
+            if (marker instanceof LineDrawer) {
+                ((LineDrawer) marker).drawLines(gameMapDrawer);
+            }
+        }
     }
 
     @Override
@@ -169,7 +173,7 @@ public class EdenMapDrawer implements GameMapDrawListener {
 
     }
 
-    private void drawLinesSector(Vector3i from, Vector3i to, Vector4f startColor, Vector4f endColor) {
+    public void drawLinesSector(Vector3i from, Vector3i to, Vector4f startColor, Vector4f endColor) {
         Vector3f start = posFromSector(from,false);
         Vector3f end = posFromSector(to,false);
         DrawUtils.drawFTLLine(start,end,startColor,endColor);

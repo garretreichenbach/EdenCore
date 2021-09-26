@@ -1,5 +1,6 @@
 package thederpgamer.edencore.navigation;
 
+import api.DebugFile;
 import api.mod.StarMod;
 import api.utils.game.PlayerUtils;
 import api.utils.game.chat.CommandInterface;
@@ -12,6 +13,7 @@ import javax.annotation.Nullable;
 import javax.vecmath.Vector4f;
 import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.Random;
 
 /**
  * STARMADE MOD
@@ -108,6 +110,34 @@ public class NavigationAdminCommand implements CommandInterface {
             }
 
             case "synch": {
+                NavigationUtilManager.instance.synchPlayers();
+                return true;
+            }
+
+            case "clear": {
+                NavigationUtilManager.instance.getPublicMarkers().clear();
+                NavigationUtilManager.instance.saveListsPersistent();
+                NavigationUtilManager.instance.synchPlayers();
+                PlayerUtils.sendMessage(admin,"deleted all public markers");
+                return true;
+            }
+
+            case "mock": {
+                ArrayList<MapMarker> markers = DebugUtil.mockGateNetwork( new Vector3i(2,2,2),20,420);
+                Random rand = new Random(420);
+                for (MapMarker m: markers) {
+                    //make arm with 20
+                    if (rand.nextBoolean()) {
+                        //add a splitoff arm to the gate
+                        ArrayList<MapMarker> arm = DebugUtil.mockGateNetwork(m.sector, 1+ rand.nextInt(4), rand.nextLong());
+                        for (MapMarker armM : arm) {
+                            ((GateMarker)armM).addLine(new SectorConnection(m.sector,armM.sector,DebugUtil.lineColor,DebugUtil.lineColor)); //connect to arm start
+                            NavigationUtilManager.instance.addCoordinateToList(armM);
+                        }
+                    }
+                    NavigationUtilManager.instance.addCoordinateToList(m);
+                }
+                NavigationUtilManager.instance.saveListsPersistent();
                 NavigationUtilManager.instance.synchPlayers();
                 return true;
             }
