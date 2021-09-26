@@ -24,7 +24,8 @@ public enum MapIcon {
     GATE_4  ("edencore_sprites",7),
     GATE_5  ("edencore_sprites",8),
     GATE_LIGHTS            ("edencore_sprites",9),
-    GATE_WORMHOLE  ("edencore_sprites",10);
+    GATE_WORMHOLE  ("edencore_sprites",10),
+    GATE_GLOWHOLE ("edencore_sprites",11);
 
     int index;
     String resourceName;
