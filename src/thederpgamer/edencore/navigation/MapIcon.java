@@ -18,8 +18,13 @@ public enum MapIcon {
     WARPGATE          ("edencore_sprites",1),
     PRIVATE           ("edencore_sprites",2),
     MC_DONALDS("edencore_sprites",3),
-    WAYPOINT_DELIVER  ("edencore_sprites",4),
-    RAUTE             ("edencore_sprites",5);
+    GATE_1  ("edencore_sprites",4),
+    GATE_2  ("edencore_sprites",5),
+    GATE_3  ("edencore_sprites",6),
+    GATE_4  ("edencore_sprites",7),
+    GATE_5  ("edencore_sprites",8),
+    GATE_LIGHTS            ("edencore_sprites",9),
+    GATE_WORMHOLE  ("edencore_sprites",10);
 
     int index;
     String resourceName;
