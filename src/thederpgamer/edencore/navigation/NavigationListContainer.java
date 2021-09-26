@@ -1,14 +1,12 @@
-package thederpgamer.edencore.data.other;
+package thederpgamer.edencore.navigation;
 
 import api.mod.config.PersistentObjectUtil;
-import org.schema.game.common.data.player.SavedCoordinate;
 import thederpgamer.edencore.EdenCore;
-import thederpgamer.edencore.navigation.MapMarker;
 
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashMap;
-import java.util.HashSet;
 
 /**
  * STARMADE MOD
@@ -17,13 +15,33 @@ import java.util.HashSet;
  * TIME: 14:12
  */
 public class NavigationListContainer implements Serializable {
-    public HashMap<Long, MapMarker> publicMarkers = new HashMap<>();
+    public Collection<MapMarker> mapMarkers = new ArrayList<>();
+    public Collection<GateMarker> gateMarkers = new ArrayList<>();
+
+    public void setPublicMarkers(Collection<MapMarker> markers) {
+        for (MapMarker m: markers) {
+            //get the markers actual class, store it in a list mapped to this class
+            Class clazz = m.getClass();
+            if (m instanceof GateMarker) {
+                gateMarkers.add((GateMarker) m);
+            } else {
+                mapMarkers.add(m);
+            }
+        }
+    }
 
     /**
      * auto adds itself to persisntence.
      */
     public NavigationListContainer() {
 
+    }
+
+
+
+    public void getPublicMarkers(Collection<MapMarker> in) {
+        in.addAll(mapMarkers);
+        in.addAll(gateMarkers);
     }
 
     public void save() {

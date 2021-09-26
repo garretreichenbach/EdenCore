@@ -38,7 +38,8 @@ public class MapMarker implements PositionableSubColorSprite, SelectableSprite, 
     Vector4f color;
     Vector3f pos;
 
-    private boolean selected;
+    transient private boolean selected;
+    transient private boolean drawIndication;
     private float scale = 0.4f;
     public float scaleFactor = 1;
 
@@ -97,8 +98,6 @@ public class MapMarker implements PositionableSubColorSprite, SelectableSprite, 
     public Vector3f getPos() {
         return pos;
     }
-
-    private boolean drawIndication;
 
     @Override
     public boolean isDrawIndication() {

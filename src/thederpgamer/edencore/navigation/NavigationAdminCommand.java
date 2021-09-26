@@ -141,6 +141,14 @@ public class NavigationAdminCommand implements CommandInterface {
                 NavigationUtilManager.instance.synchPlayers();
                 return true;
             }
+            case "load": {
+                NavigationListContainer container = NavigationListContainer.getContainer(false);
+                return true;
+            }
+
+            case "save": {
+                NavigationUtilManager.instance.saveListsPersistent();
+            }
         }
         return false;
     }

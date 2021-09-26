@@ -1,17 +1,8 @@
 package thederpgamer.edencore.navigation;
 
 import api.mod.StarLoader;
-import it.unimi.dsi.fastutil.objects.ObjectArrayList;
 import org.schema.common.util.linAlg.Vector3i;
-import org.schema.game.common.data.player.SavedCoordinate;
-import org.schema.game.server.controller.EntityNotFountException;
-import org.schema.schine.resource.tag.ListSpawnObjectCallback;
-import org.schema.schine.resource.tag.Tag;
-import thederpgamer.edencore.data.other.NavigationListContainer;
-import thederpgamer.edencore.utils.PlayerDataUtil;
 
-import java.io.*;
-import java.sql.SQLException;
 import java.util.*;
 
 /**
@@ -34,8 +25,12 @@ public class NavigationUtilManager {
 
     private void loadFromPersistent() {
         NavigationListContainer c = NavigationListContainer.getContainer(true);
-        if (c.publicMarkers != null) {
-            publicMarkers = c.publicMarkers;
+        ArrayList<MapMarker> markers = new ArrayList<>();
+        c.getPublicMarkers(markers);
+        for (MapMarker m: markers) {
+            if (m.sector == null)
+                continue;
+            publicMarkers.put(m.sector.code(),m);
         }
     }
 
@@ -65,7 +60,7 @@ public class NavigationUtilManager {
 
     public void saveListsPersistent() {
         NavigationListContainer c = NavigationListContainer.getContainer(true);
-        c.publicMarkers = this.publicMarkers;
+        c.setPublicMarkers(publicMarkers.values());
         c.save();
     }
 

@@ -28,7 +28,11 @@
     - get relevant info from DB for gate and connection
     - automated update for gate
     - automated marker creation for admin-faction stations
-    
+#### PERSISTENCE
+- ~~allow saving of childs inerhiting from MapMarker~~
+- ~~get rid of sectorCode in savefile (unnecessary)~~
+- save icon index instead of name
+
 #### Personal saved coords
 - ~~icon~~
 - update
