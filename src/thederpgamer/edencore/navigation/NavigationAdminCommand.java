@@ -130,8 +130,8 @@ public class NavigationAdminCommand implements CommandInterface {
                     if (rand.nextBoolean()) {
                         //add a splitoff arm to the gate
                         ArrayList<MapMarker> arm = DebugUtil.mockGateNetwork(m.sector, 1+ rand.nextInt(4), rand.nextLong());
+                        ((GateMarker)arm.get(0)).addLine(new SectorConnection(m.sector,arm.get(0).sector,DebugUtil.lineColor,DebugUtil.lineColor)); //connect to arm start
                         for (MapMarker armM : arm) {
-                            ((GateMarker)armM).addLine(new SectorConnection(m.sector,armM.sector,DebugUtil.lineColor,DebugUtil.lineColor)); //connect to arm start
                             NavigationUtilManager.instance.addCoordinateToList(armM);
                         }
                     }
