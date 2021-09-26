@@ -48,8 +48,9 @@ public class NavigationMapPacket extends Packet {
     public void processPacketOnClient() {
 
         //write Markers to display on map
+        EdenMapDrawer drawer = EdenMapDrawer.instance;
+        drawer.getPublicMarkers().clear();
         for (MapMarker m: markers) {
-            EdenMapDrawer drawer = EdenMapDrawer.instance;
             drawer.addMarker(m, true);
         }
         EdenMapDrawer.instance.updateInternalList();

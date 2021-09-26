@@ -52,10 +52,8 @@ public class NavigationUtilManager {
     /**
      * adds coord to a list that will be removed upon joining from each players list.
      * @param sector
-     * @param name exact name as logged for the players
      */
-    public void removeCoordinateFromList(Vector3i sector, String name) {
-        name = "[p]"+name;
+    public void removeCoordinateFromList(Vector3i sector) {
         //remove from add list
         publicMarkers.remove(sector.code());
         saveListsPersistent();

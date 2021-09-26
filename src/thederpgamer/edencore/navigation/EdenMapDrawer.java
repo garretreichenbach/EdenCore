@@ -73,6 +73,19 @@ public class EdenMapDrawer implements GameMapDrawListener {
     }
 
     /**
+     * will remove a marker from the lists. requires updateInternalList to be applied
+     * @param marker
+     */
+    public void removeMarker(MapMarker marker) {
+        removeMarker(marker.sector);
+    }
+
+    public void removeMarker(Vector3i sector) {
+        publicMarkers.remove(sector.code());
+        privateMarkers.remove(sector.code());
+    }
+
+    /**
      * will copy internal mapping of sprite->subsprite hashset to sprite->subsprite[]
      */
     public void updateInternalList() {
@@ -80,7 +93,6 @@ public class EdenMapDrawer implements GameMapDrawListener {
 
         HashMap<Sprite, HashSet<MapMarker>> sprite_to_subsprites_set = new HashMap<>();
         sprite_to_subsprites.clear();
-/////-------------------
         //collect all markers, sorted by their sprite: PUBLIC
         for (Map.Entry<Long, MapMarker> entry: publicMarkers.entrySet()) {
             Sprite sprite = entry.getValue().getSprite();
@@ -95,7 +107,6 @@ public class EdenMapDrawer implements GameMapDrawListener {
             }
             subsprites.add(entry.getValue());
         }
-/////---------------
 
         // PRIVATE
         for (Map.Entry<Long, MapMarker> entry: privateMarkers.entrySet()) {

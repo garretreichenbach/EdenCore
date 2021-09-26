@@ -72,23 +72,25 @@ public class NavigationAdminCommand implements CommandInterface {
                 }
                 MapMarker marker = new MapMarker(pos,name,MapIcon.values()[iconIdx],new Vector4f(0,0,1,1)); //TODO add way to parse color
                 NavigationUtilManager.instance.addCoordinateToList(marker);
+
                 PlayerUtils.sendMessage(admin,"Added " + marker.toString() +" to list");
                 return true;
             }
             case "remove": {
-                //remove 3 3 3 "burgerking"
-                if(strings.length != 5) return false;
+                //remove 3 3 3 || remove
+                if(strings.length != 4 && strings.length != 1) return false;
+
                 Vector3i pos = new Vector3i();
-                try {
+                if (strings.length == 4) {
                     pos.x = Integer.parseInt(strings[1]);
                     pos.y = Integer.parseInt(strings[2]);
                     pos.z = Integer.parseInt(strings[3]);
-                } catch(NumberFormatException ex) {
-                    return false;
+                } else {
+                    pos.set(admin.getCurrentSector());
                 }
-                String name = strings[4];
-                NavigationUtilManager.instance.removeCoordinateFromList(pos,name);
-                PlayerUtils.sendMessage(admin,"Removing coords for all players");
+                NavigationUtilManager.instance.removeCoordinateFromList(pos);
+
+                PlayerUtils.sendMessage(admin,"Removed marker at " + pos);
                 return true;
             }
             case "list": {
@@ -96,8 +98,17 @@ public class NavigationAdminCommand implements CommandInterface {
                 return true;
             }
 
+            case "blue": {
+                for (MapMarker marker: NavigationUtilManager.instance.getPublicMarkers().values()) {
+                    if (marker.getIcon().subSpriteIndex==3)
+                        continue;//magges
+                    marker.color = new Vector4f(0,0.667f,1,1);
+                }
+                NavigationUtilManager.instance.synchPlayers();
+            }
+
             case "synch": {
-                new NavigationMapPacket(NavigationUtilManager.instance.getPublicMarkers().values()).sendToAllServer();
+                NavigationUtilManager.instance.synchPlayers();
                 return true;
             }
         }
