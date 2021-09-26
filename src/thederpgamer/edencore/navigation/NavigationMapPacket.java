@@ -32,7 +32,15 @@ public class NavigationMapPacket extends Packet {
     public void readPacketData(PacketReadBuffer packetReadBuffer) throws IOException {
         int size = packetReadBuffer.readInt();
         for (int i = 0; i < size; i++) {
-            markers.add(packetReadBuffer.readObject(MapMarker.class));
+            try {
+                Class clazz = Class.forName(packetReadBuffer.readString());
+                Object o = packetReadBuffer.readObject(clazz);
+                if (!(o instanceof MapMarker))
+                    continue;
+                markers.add((MapMarker) o);
+            } catch (ClassNotFoundException e) {
+                e.printStackTrace();
+            }
         }
     }
 
@@ -40,6 +48,7 @@ public class NavigationMapPacket extends Packet {
     public void writePacketData(PacketWriteBuffer packetWriteBuffer) throws IOException {
         packetWriteBuffer.writeInt(markers.size());
         for (MapMarker marker: markers) {
+            packetWriteBuffer.writeString(marker.getClass().getName());
             packetWriteBuffer.writeObject(marker);
         }
     }
