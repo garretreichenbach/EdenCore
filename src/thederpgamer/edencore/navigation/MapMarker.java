@@ -2,6 +2,8 @@ package thederpgamer.edencore.navigation;
 
 import org.schema.common.util.linAlg.Vector3i;
 import org.schema.game.client.data.gamemap.entry.SelectableMapEntry;
+import org.schema.game.client.view.camera.GameMapCamera;
+import org.schema.game.client.view.gamemap.GameMapDrawer;
 import org.schema.schine.graphicsengine.forms.PositionableSubColorSprite;
 import org.schema.schine.graphicsengine.forms.SelectableSprite;
 import org.schema.schine.graphicsengine.forms.Sprite;
@@ -40,6 +42,31 @@ public class MapMarker implements PositionableSubColorSprite, SelectableSprite, 
     private float scale = 0.4f;
     public float scaleFactor = 1;
 
+    /**
+     * code that gets called before the marker is drawn.
+     */
+    public void preDraw(GameMapDrawer drawer) {
+        autoScale(drawer.getCamera());
+        if (selected)
+            EdenMapDrawer.instance.drawText(pos,name);
+    }
+
+    public void addToDrawList(boolean isPublic) {
+        EdenMapDrawer.instance.addMarker(this,isPublic);
+    }
+
+    public void removeFromDrawList() {
+        //TODO remove method in drawer
+        //EdenMapDrawer.instance.
+    }
+
+    private void autoScale(GameMapCamera camera) {
+        Vector3f distanceToCam = new Vector3f(camera.getPos());
+        distanceToCam.sub(pos);
+        float dist = distanceToCam.length();
+        scaleFactor = Math.min(10,Math.max(1,dist/300));
+    }
+
     public Sprite getSprite() {
         if (icon == null)
             return null;
@@ -48,8 +75,6 @@ public class MapMarker implements PositionableSubColorSprite, SelectableSprite, 
 
     @Override
     public Vector4f getColor() {
-        if (getIcon().equals(MapIcon.MC_DONALDS))
-            return new Vector4f(1,1,0,1);
         return color;
     }
 
@@ -72,7 +97,9 @@ public class MapMarker implements PositionableSubColorSprite, SelectableSprite, 
     public Vector3f getPos() {
         return pos;
     }
+
     private boolean drawIndication;
+
     @Override
     public boolean isDrawIndication() {
         return drawIndication;

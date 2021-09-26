@@ -136,7 +136,6 @@ public class EdenMapDrawer implements GameMapDrawListener {
 
     @Override
     public void galaxy_PostDraw(GameMapDrawer gameMapDrawer) {
-        drawText(new Vector3i(4,4,4),"UWUW BOY 9000");
     }
 
     @Override
@@ -147,24 +146,13 @@ public class EdenMapDrawer implements GameMapDrawListener {
     @Override
     public void galaxy_DrawSprites(GameMapDrawer gameMapDrawer) {
         for (Map.Entry<Sprite,MapMarker[]> entry: sprite_to_subsprites.entrySet()) {
-            entry.getKey().setBillboard(true);
             for (MapMarker m: entry.getValue()) {
-                scaleMarkerWithCamDist(m,gameMapDrawer.getCamera());
-                if (m.getSelected()) {
-                    drawText(m.pos,m.name);
-                }
+                m.preDraw(gameMapDrawer);
             }
-
             DrawUtils.drawSprite(gameMapDrawer,entry.getKey(),entry.getValue());
         }
     }
 
-    private void scaleMarkerWithCamDist(MapMarker marker, GameMapCamera camera) {
-        Vector3f distanceToCam = new Vector3f(camera.getPos());
-        distanceToCam.sub(marker.getPos());
-        float dist = distanceToCam.length();
-        marker.scaleFactor = Math.min(10,Math.max(1,dist/300));
-    }
     @Override
     public void galaxy_DrawQuads(GameMapDrawer gameMapDrawer) {
 
