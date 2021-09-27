@@ -1,7 +1,9 @@
 package thederpgamer.edencore.navigation;
 
 import api.mod.StarLoader;
+import api.network.packets.PacketUtil;
 import org.schema.common.util.linAlg.Vector3i;
+import org.schema.game.common.data.player.PlayerState;
 
 import java.util.*;
 
@@ -11,6 +13,7 @@ import java.util.*;
  * DATE: 18.09.2021
  * TIME: 14:57
  * used to inject saved coords into players "saved coords" list, defined by admin commands, stored persistnetly
+ * fully serverside
  */
 public class NavigationUtilManager {
     public static NavigationUtilManager instance;
@@ -21,6 +24,7 @@ public class NavigationUtilManager {
         instance = this;
         loadFromPersistent();
         addAdminCommands();
+        NavigationEventManager.serverInit();
     }
 
     private void loadFromPersistent() {
@@ -73,5 +77,8 @@ public class NavigationUtilManager {
      */
     public void synchPlayers() {
         new NavigationMapPacket(publicMarkers.values()).sendToAllServer();
+    }
+    public void synchPlayer(PlayerState p) {
+        PacketUtil.sendPacket(p,new NavigationMapPacket(publicMarkers.values()));
     }
 }

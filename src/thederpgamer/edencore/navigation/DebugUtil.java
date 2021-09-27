@@ -32,7 +32,7 @@ public class DebugUtil {
             GateMarker gate = new GateMarker(new Vector3i(sector),"Gate "+i,MapIcon.values()[iconIdx],new Vector4f(gateColor));
             gates.add(gate);
             if (i > 0) { //connect to previous gate
-                gate.addLine(new SectorConnection(gates.get(i-1).sector,new Vector3i(sector),new Vector4f(lineColor),new Vector4f(lineColor)));
+                gate.addLine(gates.get(i-1).sector);
             }
         }
         return gates;

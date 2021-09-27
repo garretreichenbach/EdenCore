@@ -12,26 +12,29 @@
 
 #### Marker UI
 - ~~leave out coords, use current sector~~
-- allow automated marker creation for selected entity (station/warpgate)
 - allow color manipulation from command
-- allow overwriting of existing coords
+- ~~allow overwriting of existing coords~~
 - ~~list command~~
 
 #### Public markers
 - event based update system
-    - add through command
-    - remove through command
+    - ~~add through command~~
+    - ~~remove through command~~
+    - ~~player spawns (server + client)~~
+    - player saves coord
     
 #### GATES
 - always draw public warpgate routes
-    - childclass exclusivley for gates that includes connections <<<<<<<<<<<<<
-    - get relevant info from DB for gate and connection
-    - automated update for gate
-    - automated marker creation for admin-faction stations
+    - ~~childclass exclusivley for gates that includes connections~~ <<<<<<<<<<<<<
+    - creation of gatemarker with line(s)
+        - ~~selected entity + automated lines~~
+            - ~~get relevant info from gameserver (all connections that are type "warpgate" from this sector)~~
+            - automated update for gate
+        - automated marker creation for admin-faction stations (?) (delayed to a later point)
+            - how to notice station is wanted gatestation ? (special gate faction?)
 #### PERSISTENCE
 - ~~allow saving of childs inerhiting from MapMarker~~
 - ~~get rid of sectorCode in savefile (unnecessary)~~
-- save icon index instead of name
 
 #### Personal saved coords
 - ~~icon~~

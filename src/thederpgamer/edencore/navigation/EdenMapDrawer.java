@@ -41,8 +41,7 @@ public class EdenMapDrawer implements GameMapDrawListener {
         super();
         instance = this;
         FastListenerCommon.gameMapListeners.add(this);
-        //updatePrivateMarkers();
-        //updateInternalList();
+        NavigationEventManager.clientInit();
     }
 
     /**
@@ -89,7 +88,6 @@ public class EdenMapDrawer implements GameMapDrawListener {
      * will copy internal mapping of sprite->subsprite hashset to sprite->subsprite[]
      */
     public void updateInternalList() {
-        updatePrivateMarkers(); //TODO find event for that
 
         HashMap<Sprite, HashSet<MapMarker>> sprite_to_subsprites_set = new HashMap<>();
         sprite_to_subsprites.clear();
