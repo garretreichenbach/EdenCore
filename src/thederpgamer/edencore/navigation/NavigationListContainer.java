@@ -19,6 +19,8 @@ public class NavigationListContainer implements Serializable {
     public Collection<GateMarker> gateMarkers = new ArrayList<>();
 
     public void setPublicMarkers(Collection<MapMarker> markers) {
+        mapMarkers.clear();
+        gateMarkers.clear();
         for (MapMarker m: markers) {
             //get the markers actual class, store it in a list mapped to this class
             Class clazz = m.getClass();

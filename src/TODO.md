@@ -21,7 +21,7 @@
     - ~~add through command~~
     - ~~remove through command~~
     - ~~player spawns (server + client)~~
-    - player saves coord
+    - ~~player saves coord~~ (good enough, could use improvement)
     
 #### GATES
 - always draw public warpgate routes
@@ -32,11 +32,12 @@
             - automated update for gate
         - automated marker creation for admin-faction stations (?) (delayed to a later point)
             - how to notice station is wanted gatestation ? (special gate faction?)
+            
 #### PERSISTENCE
 - ~~allow saving of childs inerhiting from MapMarker~~
 - ~~get rid of sectorCode in savefile (unnecessary)~~
 
 #### Personal saved coords
 - ~~icon~~
-- update
+- ~~update~~
 - ~~drawing~~
