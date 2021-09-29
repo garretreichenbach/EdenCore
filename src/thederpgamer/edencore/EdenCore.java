@@ -6,6 +6,7 @@ import api.common.GameServer;
 import api.config.BlockConfig;
 import api.listener.Listener;
 import api.listener.events.block.*;
+import api.listener.events.controller.ClientInitializeEvent;
 import api.listener.events.controller.ServerInitializeEvent;
 import api.listener.events.draw.RegisterWorldDrawersEvent;
 import api.listener.events.gui.GUITopBarCreateEvent;
@@ -39,6 +40,9 @@ import thederpgamer.edencore.element.ElementManager;
 import thederpgamer.edencore.element.items.PrizeBars;
 import thederpgamer.edencore.gui.exchangemenu.ExchangeMenuControlManager;
 import thederpgamer.edencore.manager.*;
+import thederpgamer.edencore.navigation.EdenMapDrawer;
+import thederpgamer.edencore.navigation.MapIcon;
+import thederpgamer.edencore.navigation.NavigationMapPacket;
 import thederpgamer.edencore.navigation.NavigationUtilManager;
 import thederpgamer.edencore.network.client.ExchangeItemCreatePacket;
 import thederpgamer.edencore.network.client.ExchangeItemRemovePacket;
@@ -46,7 +50,6 @@ import thederpgamer.edencore.network.client.RequestSpawnEntryPacket;
 import thederpgamer.edencore.network.server.SendCacheUpdatePacket;
 import thederpgamer.edencore.utils.DataUtils;
 import thederpgamer.edencore.utils.DateUtils;
-
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.sql.Date;
@@ -62,9 +65,9 @@ import java.util.zip.ZipInputStream;
 public class EdenCore extends StarMod {
 
     //Instance
-    private static EdenCore instance;
+    private static EdenCore getInstance;
     public static EdenCore getInstance() {
-        return instance;
+        return getInstance;
     }
     public EdenCore() { }
     public static void main(String[] args) { }
@@ -81,7 +84,7 @@ public class EdenCore extends StarMod {
 
     @Override
     public void onEnable() {
-        instance = this;
+        getInstance = this;
         ConfigManager.initialize(this);
         LogManager.initialize();
         TransferManager.initialize();
@@ -90,6 +93,12 @@ public class EdenCore extends StarMod {
         registerListeners();
         registerCommands();
         startRunners();
+    }
+
+    @Override
+    public void onClientCreated(ClientInitializeEvent clientInitializeEvent) {
+        super.onClientCreated(clientInitializeEvent);
+        new EdenMapDrawer();
     }
 
     @Override
@@ -107,6 +116,7 @@ public class EdenCore extends StarMod {
     @Override
     public void onResourceLoad(ResourceLoader resourceLoader) {
         ResourceManager.loadResources(resourceLoader);
+        MapIcon.loadSprites();
     }
 
     @Override
@@ -122,6 +132,9 @@ public class EdenCore extends StarMod {
         PacketUtil.registerPacket(ExchangeItemCreatePacket.class);
         PacketUtil.registerPacket(ExchangeItemRemovePacket.class);
         PacketUtil.registerPacket(SendCacheUpdatePacket.class);
+
+        //navigation packet
+        PacketUtil.registerPacket(NavigationMapPacket.class);
     }
 
     private void registerListeners() {
