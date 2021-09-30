@@ -170,11 +170,14 @@ public class MapMarker implements PositionableSubColorSprite, SelectableSprite, 
     @Override
     public void onSelect(float v) {
         selected = true;
+        if (EdenMapDrawer.instance != null)
+            EdenMapDrawer.instance.setSelected(this);
     }
 
     @Override
     public void onUnSelect() {
         selected = false;
+        EdenMapDrawer.instance.unSelect(this);
     }
 
     @Override

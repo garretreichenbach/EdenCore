@@ -1,9 +1,14 @@
 package thederpgamer.edencore.navigation;
 
+import api.common.GameClient;
+import api.listener.Listener;
+import api.listener.events.input.MousePressEvent;
 import api.listener.fastevents.FastListenerCommon;
 import api.listener.fastevents.GameMapDrawListener;
+import api.mod.StarLoader;
 import com.bulletphysics.linearmath.Transform;
 import it.unimi.dsi.fastutil.objects.ObjectArrayList;
+import org.lwjgl.util.vector.Vector;
 import org.schema.common.util.linAlg.Vector3i;
 import org.schema.game.client.data.GameClientState;
 import org.schema.game.client.view.camera.GameMapCamera;
@@ -14,6 +19,7 @@ import org.schema.game.common.data.player.SavedCoordinate;
 import org.schema.game.common.data.world.VoidSystem;
 import org.schema.schine.common.language.Lng;
 import org.schema.schine.graphicsengine.forms.Sprite;
+import thederpgamer.edencore.EdenCore;
 
 import javax.vecmath.Vector3f;
 import javax.vecmath.Vector4f;
@@ -33,15 +39,22 @@ public class EdenMapDrawer implements GameMapDrawListener {
     private static final float sectorScale = 100f/ VoidSystem.SYSTEM_SIZE;
     private static final Vector3f halfSectorOffset = new Vector3f(sectorScale/2f,sectorScale/2f,sectorScale/2f);
 
+
+
     private HashMap<Sprite,MapMarker[]> sprite_to_subsprites = new HashMap<>(); //internal mapping from sprite->subsprite for drawer
 
     private HashMap<Long, MapMarker> publicMarkers = new HashMap<>(); //list of all markers to draw, provided by server
     private HashMap<Long, MapMarker> privateMarkers = new HashMap<>(); //list of all markers to draw, provided by player
+
+    private Vector3i centerOn;
+    private MapMarker selected;
+
     public EdenMapDrawer() {
         super();
         instance = this;
         FastListenerCommon.gameMapListeners.add(this);
         NavigationEventManager.clientInit();
+        addMouseListener();
     }
 
     /**
@@ -131,6 +144,10 @@ public class EdenMapDrawer implements GameMapDrawListener {
 
     @Override
     public void system_PreDraw(GameMapDrawer gameMapDrawer, Vector3i vector3i, boolean b) {
+        if (centerOn != null) {
+            gameMapDrawer.getGameMapPosition().set(centerOn.x,centerOn.y,centerOn.z,true);
+            centerOn = null;
+        }
     }
 
     @Override
@@ -191,6 +208,46 @@ public class EdenMapDrawer implements GameMapDrawListener {
         t.origin.set(mapPos);
         ConstantIndication indication = new ConstantIndication(t, Lng.str(text));
         HudIndicatorOverlay.toDrawMapTexts.add(indication);
+    }
+
+    //map navigation util stuff
+
+    /**
+     * set waypoint to this sector
+     * @param sector
+     */
+    public void navigateTo(Vector3i sector) {
+        GameClient.getClientController().getClientGameData().setWaypoint(sector);
+    }
+
+    /**
+     * move map camera and selection to this sector on next draw
+     * @param sector
+     */
+    public void centerOn(Vector3i sector) {
+        centerOn = new Vector3i(sector);
+    }
+
+    public void setSelected(MapMarker selected) {
+        this.selected = selected;
+    }
+
+    public void unSelect(MapMarker selected) {
+        if (selected.equals(this.selected))
+            this.selected = null;
+    }
+    private void addMouseListener() {
+        StarLoader.registerListener(MousePressEvent.class, new Listener<MousePressEvent>() {
+            @Override
+            public void onEvent(MousePressEvent event) {
+                if (event.getRawEvent().pressedLeftMouse() && selected != null) {
+                    centerOn(selected.getSector());
+                }
+                if (event.getRawEvent().pressedRightMouse() && selected != null) {
+                    navigateTo(selected.getSector());
+                }
+            }
+        }, EdenCore.getInstance());
     }
 
     //helper stuff //TODO move to UTIL
