@@ -132,8 +132,6 @@ public class EdenCore extends StarMod {
         PacketUtil.registerPacket(ExchangeItemCreatePacket.class);
         PacketUtil.registerPacket(ExchangeItemRemovePacket.class);
         PacketUtil.registerPacket(SendCacheUpdatePacket.class);
-
-        //navigation packet
         PacketUtil.registerPacket(NavigationMapPacket.class);
     }
 

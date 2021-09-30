@@ -92,7 +92,7 @@ public class DataUtils {
 
         sector.noEnter(true);
         sector.noExit(true);
-        deleteEnemies(sectorData, 60);
+        deleteEnemies(sectorData, 0);
 
         playerState.getInventory().sendAll();
         playerState.updateInventory();
@@ -117,7 +117,7 @@ public class DataUtils {
         if(sectorData != null) {
             GameServer.getServerState().getUniverse().getSector(sectorData.sector).noEnter(false);
             GameServer.getServerState().getUniverse().getSector(sectorData.sector).noExit(false);
-            clearInventory(playerState, false);
+            clearInventory(playerState, true);
         }
 
         SectorSwitch sectorSwitch = new SectorSwitch(playerState.getAssingedPlayerCharacter(), playerData.lastRealSector, SectorSwitch.TRANS_JUMP);
@@ -190,16 +190,22 @@ public class DataUtils {
     }
 
     public static void deleteEnemies(final BuildSectorData sectorData, long delay) {
-        new StarRunnable() {
-            @Override
-            public void run() {
-                if(getPlayersInBuildSector(sectorData).isEmpty()) {
-                    for(SegmentController entity : getEntitiesInBuildSector(sectorData)) {
-                        if(entity.getFactionId() == FactionManager.PIRATES_ID) entity.destroy();
+        if(delay <= 0) {
+            for(SegmentController entity : getEntitiesInBuildSector(sectorData)) {
+                if(entity.getFactionId() == FactionManager.PIRATES_ID) entity.destroy();
+            }
+        } else {
+            new StarRunnable() {
+                @Override
+                public void run() {
+                    if(getPlayersInBuildSector(sectorData).isEmpty()) {
+                        for(SegmentController entity : getEntitiesInBuildSector(sectorData)) {
+                            if(entity.getFactionId() == FactionManager.PIRATES_ID) entity.destroy();
+                        }
                     }
                 }
-            }
-        }.runLater(EdenCore.getInstance(), delay);
+            }.runLater(EdenCore.getInstance(), delay);
+        }
     }
 
 
