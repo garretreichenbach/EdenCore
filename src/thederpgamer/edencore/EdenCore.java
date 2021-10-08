@@ -10,6 +10,7 @@ import api.listener.events.controller.ClientInitializeEvent;
 import api.listener.events.controller.ServerInitializeEvent;
 import api.listener.events.draw.RegisterWorldDrawersEvent;
 import api.listener.events.gui.GUITopBarCreateEvent;
+import api.listener.events.input.KeyPressEvent;
 import api.listener.events.player.PlayerDeathEvent;
 import api.listener.events.player.PlayerJoinWorldEvent;
 import api.listener.events.player.PlayerPickupFreeItemEvent;
@@ -136,6 +137,25 @@ public class EdenCore extends StarMod {
     }
 
     private void registerListeners() {
+        StarLoader.registerListener(KeyPressEvent.class, new Listener<KeyPressEvent>() {
+            @Override
+            public void onEvent(KeyPressEvent event) {
+                char exchangeKey = ConfigManager.getKeyBinding("exchange-menu-key");
+                if(exchangeKey != '\0' && event.getChar() == exchangeKey) {
+                    if(exchangeMenuControlManager == null) {
+                        exchangeMenuControlManager = new ExchangeMenuControlManager();
+                        ModGUIHandler.registerNewControlManager(getSkeleton(), exchangeMenuControlManager);
+                    }
+
+                    if(!GameClient.getClientState().getController().isChatActive() && GameClient.getClientState().getController().getPlayerInputs().isEmpty()) {
+                        GameClient.getClientState().getController().queueUIAudio("0022_menu_ui - enter");
+                        GameClient.getClientState().getGlobalGameControlManager().getIngameControlManager().getPlayerGameControlManager().deactivateAll();
+                        exchangeMenuControlManager.setActive(true);
+                    }
+                }
+            }
+        }, this);
+
         StarLoader.registerListener(GUITopBarCreateEvent.class, new Listener<GUITopBarCreateEvent>() {
             @Override
             public void onEvent(final GUITopBarCreateEvent event) {

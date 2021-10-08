@@ -25,15 +25,15 @@ public class BuildSectorHudDrawer extends ModWorldDrawer {
         if(DataUtils.isPlayerInAnyBuildSector(GameClient.getClientPlayerState())) {
             try {
                 hud.getRadar().getLocation().setTextSimple("<Build Sector>");
-                //hud.getIndicator().drawSectorIndicators = false;
-                //hud.getIndicator().drawWaypoints = false;
+                hud.getIndicator().drawSectorIndicators = false;
+                hud.getIndicator().drawWaypoints = false;
                 if(GameClient.getClientState().getController().getClientGameData().getWaypoint() != null) GameClient.getClientState().getController().getClientGameData().setWaypoint(null);
             } catch(Exception ignored) { }
         } else {
             try {
                 hud.getRadar().getLocation().setTextSimple(GameClient.getClientPlayerState().getCurrentSector().toStringPure());
-                //hud.getIndicator().drawSectorIndicators = true;
-                //hud.getIndicator().drawWaypoints = true;
+                hud.getIndicator().drawSectorIndicators = true;
+                hud.getIndicator().drawWaypoints = true;
             } catch(Exception ignored) { }
         }
     }
