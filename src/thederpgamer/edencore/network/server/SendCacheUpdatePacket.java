@@ -6,6 +6,8 @@ import api.network.PacketReadBuffer;
 import api.network.PacketWriteBuffer;
 import org.schema.game.common.data.player.PlayerState;
 import thederpgamer.edencore.EdenCore;
+import thederpgamer.edencore.data.event.EventData;
+import thederpgamer.edencore.data.event.SortieData;
 import thederpgamer.edencore.data.exchange.BlueprintExchangeItem;
 import thederpgamer.edencore.data.exchange.ResourceExchangeItem;
 import thederpgamer.edencore.manager.ClientCacheManager;
@@ -22,8 +24,13 @@ import java.util.ArrayList;
  */
 public class SendCacheUpdatePacket extends Packet {
 
+    //Exchange
     private final ArrayList<BlueprintExchangeItem> blueprintExchangeItems = new ArrayList<>();
     private final ArrayList<ResourceExchangeItem> resourceExchangeItems = new ArrayList<>();
+
+    //Events
+    private final ArrayList<EventData> eventData = new ArrayList<>();
+    private final ArrayList<SortieData> sortieData = new ArrayList<>();
 
     public SendCacheUpdatePacket() {
 
@@ -31,11 +38,19 @@ public class SendCacheUpdatePacket extends Packet {
 
     @Override
     public void readPacketData(PacketReadBuffer packetReadBuffer) throws IOException {
+        //Exchange
         int bpSize = packetReadBuffer.readInt();
         for(int i = 0; i < bpSize; i ++) blueprintExchangeItems.add(new BlueprintExchangeItem(packetReadBuffer));
 
         int resSize = packetReadBuffer.readInt();
         for(int i = 0; i < resSize; i ++) resourceExchangeItems.add(new ResourceExchangeItem(packetReadBuffer));
+
+        //Events
+        //int eventSize = packetReadBuffer.readInt();
+        //for(int i = 0; i < eventSize; i ++) eventData.add(new EventData(packetReadBuffer));
+
+        //int sortieSize = packetReadBuffer.readInt();
+        //for(int i = 0; i < sortieSize; i ++) sortieData.add(new SortieData(packetReadBuffer));
     }
 
     @Override
@@ -51,7 +66,8 @@ public class SendCacheUpdatePacket extends Packet {
 
     @Override
     public void processPacketOnClient() {
-        try {
+        //Todo: Only add the ones that actually need updating rather than just resending all of them
+        try { //Exchange
             ClientCacheManager.blueprintExchangeItems.clear();
             ClientCacheManager.blueprintExchangeItems.addAll(blueprintExchangeItems);
 
@@ -59,6 +75,14 @@ public class SendCacheUpdatePacket extends Packet {
             ClientCacheManager.resourceExchangeItems.addAll(resourceExchangeItems);
 
             EdenCore.getInstance().exchangeMenuControlManager.getMenuPanel().recreateTabs();
+        } catch(Exception ignored) { }
+
+        try { //Events
+            //ClientCacheManager.eventData.clear();
+            //ClientCacheManager.eventData.addAll(eventData);
+
+            //ClientCacheManager.sortieData.clear();
+            //ClientCacheManager.sortieData.addAll(sortieData);
         } catch(Exception ignored) { }
     }
 

@@ -6,9 +6,11 @@ import api.mod.StarMod;
 import api.utils.game.PlayerUtils;
 import api.utils.game.chat.CommandInterface;
 import com.bulletphysics.linearmath.Transform;
+import org.schema.game.client.view.BuildModeDrawer;
 import org.schema.game.common.controller.SegmentController;
 import org.schema.game.common.controller.Ship;
 import org.schema.game.common.controller.SpaceStation;
+import org.schema.game.common.data.SegmentPiece;
 import org.schema.game.common.data.player.PlayerState;
 import org.schema.game.common.data.player.catalog.CatalogPermission;
 import org.schema.game.common.data.player.faction.FactionManager;
@@ -303,6 +305,7 @@ public class BuildSectorCommand implements CommandInterface {
     }
 
     private void spawnEntry(PlayerState sender, BlueprintEntry entry, boolean aiEnabled) {
+        SegmentPiece spawnOnBlock = BuildModeDrawer.currentPiece;
         Transform transform = new Transform();
         transform.setIdentity();
         transform.origin.set(sender.getFirstControlledTransformableWOExc().getWorldTransform().origin);
@@ -311,6 +314,7 @@ public class BuildSectorCommand implements CommandInterface {
         size.scale(0.5f);
         forward.scaleAdd(1.15f, size);
         transform.origin.set(forward);
+
         try {
             SegmentControllerOutline<?> outline = BluePrintController.active.loadBluePrint(
                     GameServerState.instance,
@@ -322,7 +326,7 @@ public class BuildSectorCommand implements CommandInterface {
                     sender.getCurrentSector(),
                     sender.getName(),
                     PlayerState.buffer,
-                    null,
+                    spawnOnBlock,
                     false,
                     new ChildStats(false));
             SegmentController entity = outline.spawn(sender.getCurrentSector(), false, new ChildStats(false), new SegmentControllerSpawnCallbackDirect(GameServer.getServerState(), sender.getCurrentSector()) {

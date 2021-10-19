@@ -46,6 +46,8 @@ public class PrizeBars implements ItemGroup {
             itemInfo.setShoppable(false);
             itemInfo.setPlacable(false);
             itemInfo.setPhysical(false);
+            itemInfo.volume = 0.05f;
+            itemInfo.mass = 0.05f;
             BlockConfig.add(itemInfo);
         }
     }
@@ -67,6 +69,8 @@ public class PrizeBars implements ItemGroup {
             itemInfo.setShoppable(false);
             itemInfo.setPlacable(false);
             itemInfo.setPhysical(false);
+            itemInfo.volume = 0.05f;
+            itemInfo.mass = 0.05f;
             BlockConfig.add(itemInfo);
         }
     }
@@ -88,6 +92,8 @@ public class PrizeBars implements ItemGroup {
             itemInfo.setShoppable(false);
             itemInfo.setPlacable(false);
             itemInfo.setPhysical(false);
+            itemInfo.volume = 0.05f;
+            itemInfo.mass = 0.05f;
             BlockConfig.add(itemInfo);
         }
     }

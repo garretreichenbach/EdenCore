@@ -14,4 +14,12 @@ public class EventData {
     public Vector3i sector;
     public EventType eventType;
 
+    public enum EventType {
+        ALL,
+        CAPTURE,
+        DEFENSE,
+        DESTROY,
+        ESCORT,
+        PURSUIT
+    }
 }
