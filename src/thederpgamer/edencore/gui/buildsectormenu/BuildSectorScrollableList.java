@@ -2,7 +2,6 @@ package thederpgamer.edencore.gui.buildsectormenu;
 
 import api.common.GameClient;
 import api.network.packets.PacketUtil;
-import org.schema.game.client.data.GameClientState;
 import org.schema.schine.graphicsengine.core.GLFrame;
 import org.schema.schine.graphicsengine.core.MouseEvent;
 import org.schema.schine.graphicsengine.forms.gui.*;
@@ -29,10 +28,9 @@ public class BuildSectorScrollableList extends ScrollableTableList<BuildSectorDa
     private final BuildSectorMenuPanel panel;
 
     public BuildSectorScrollableList(InputState state, GUIElement p, BuildSectorMenuPanel panel) {
-        super(state, (float) GLFrame.getWidth() / 6, (float) GLFrame.getHeight() / 2, p);
+        super(state, (float) GLFrame.getWidth() / 1.5f, (float) GLFrame.getHeight() / 2.0f, p);
         this.panel = panel;
         p.attach(this);
-        ((GameClientState) state).getFactionManager().addObserver(this);
     }
 
     private GUIHorizontalButtonTablePane redrawButtonPane(final BuildSectorData sectorData, GUIAncor anchor) {
@@ -136,7 +134,7 @@ public class BuildSectorScrollableList extends ScrollableTableList<BuildSectorDa
                 (ownerRowElement = new GUIClippedRow(this.getState())).attach(ownerTextElement);
 
                 BuildSectorScrollableListRow listRow = new BuildSectorScrollableListRow(getState(), sectorData, ownerRowElement);
-                GUIAncor anchor = new GUIAncor(getState(), (float) GLFrame.getWidth() / 6, 28.0f);
+                GUIAncor anchor = new GUIAncor(getState(), (float) GLFrame.getWidth() / 2.5f, 28.0f);
                 anchor.attach(redrawButtonPane(sectorData, anchor));
                 listRow.expanded = new GUIElementList(getState());
                 listRow.expanded.add(new GUIListElement(anchor, getState()));

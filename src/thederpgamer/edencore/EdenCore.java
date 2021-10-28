@@ -44,7 +44,7 @@ import thederpgamer.edencore.gui.exchangemenu.ExchangeMenuControlManager;
 import thederpgamer.edencore.manager.*;
 import thederpgamer.edencore.navigation.EdenMapDrawer;
 import thederpgamer.edencore.navigation.MapIcon;
-import thederpgamer.edencore.navigation.NavigationMapPacket;
+import thederpgamer.edencore.network.client.NavigationMapPacket;
 import thederpgamer.edencore.navigation.NavigationUtilManager;
 import thederpgamer.edencore.network.client.*;
 import thederpgamer.edencore.network.server.SendCacheUpdatePacket;
@@ -129,13 +129,14 @@ public class EdenCore extends StarMod {
     }
 
     private void registerPackets() {
+        PacketUtil.registerPacket(RequestClientCacheUpdatePacket.class);
+        PacketUtil.registerPacket(RequestMoveToBuildSectorPacket.class);
+        PacketUtil.registerPacket(RequestMoveFromBuildSectorPacket.class);
         PacketUtil.registerPacket(RequestSpawnEntryPacket.class);
         PacketUtil.registerPacket(ExchangeItemCreatePacket.class);
         PacketUtil.registerPacket(ExchangeItemRemovePacket.class);
         PacketUtil.registerPacket(SendCacheUpdatePacket.class);
         PacketUtil.registerPacket(NavigationMapPacket.class);
-        PacketUtil.registerPacket(RequestMoveToBuildSectorPacket.class);
-        PacketUtil.registerPacket(RequestMoveFromBuildSectorPacket.class);
     }
 
     private void registerListeners() {

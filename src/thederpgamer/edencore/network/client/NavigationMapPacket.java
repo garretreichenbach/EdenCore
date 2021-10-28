@@ -1,4 +1,4 @@
-package thederpgamer.edencore.navigation;
+package thederpgamer.edencore.network.client;
 
 import api.network.Packet;
 import api.network.PacketReadBuffer;
@@ -6,6 +6,8 @@ import api.network.PacketWriteBuffer;
 import api.network.packets.PacketUtil;
 import org.schema.game.common.data.player.PlayerState;
 import org.schema.game.server.data.GameServerState;
+import thederpgamer.edencore.navigation.EdenMapDrawer;
+import thederpgamer.edencore.navigation.MapMarker;
 
 import java.io.IOException;
 import java.util.ArrayList;

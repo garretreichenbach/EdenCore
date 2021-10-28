@@ -4,6 +4,7 @@ import api.mod.StarLoader;
 import api.network.packets.PacketUtil;
 import org.schema.common.util.linAlg.Vector3i;
 import org.schema.game.common.data.player.PlayerState;
+import thederpgamer.edencore.network.client.NavigationMapPacket;
 
 import java.util.ArrayList;
 import java.util.HashMap;

@@ -40,7 +40,7 @@ public class ExchangeMenuPanel extends GUIMenuPanel {
     private ResourceExchangeItem lastClickedResource;
 
     public ExchangeMenuPanel(InputState inputState) {
-        super(inputState, "ServerExchange", GLFrame.getWidth() / 3, GLFrame.getHeight() / 2);
+        super(inputState, "ServerExchange", GLFrame.getWidth() / 2, (int) (GLFrame.getHeight() / 2.5f));
         BRONZE = ElementManager.getItem("Bronze Bar").getId();
         SILVER = ElementManager.getItem("Silver Bar").getId();
         GOLD = ElementManager.getItem("Gold Bar").getId();
@@ -52,11 +52,11 @@ public class ExchangeMenuPanel extends GUIMenuPanel {
         guiWindow.clearTabs();
 
         GUIContentPane blueprintsTab = guiWindow.addTab("ENTITIES");
-        blueprintsTab.setTextBoxHeightLast((int) (GLFrame.getHeight() / 1.5));
+        blueprintsTab.setTextBoxHeightLast(GLFrame.getHeight() / 2);
         createBlueprintsTab(blueprintsTab);
 
         GUIContentPane resourcesTab = guiWindow.addTab("RESOURCES");
-        resourcesTab.setTextBoxHeightLast((int) (GLFrame.getHeight() / 1.5));
+        resourcesTab.setTextBoxHeightLast(GLFrame.getHeight() / 2);
         createResourcesTab(resourcesTab);
 
         //Todo: Figure out some sort of service voucher system for this
@@ -65,7 +65,7 @@ public class ExchangeMenuPanel extends GUIMenuPanel {
         //createServicesTab(servicesTab);
 
         GUIContentPane exchangeTab = guiWindow.addTab("EXCHANGE");
-        exchangeTab.setTextBoxHeightLast((int) (GLFrame.getHeight() / 1.5));
+        exchangeTab.setTextBoxHeightLast(GLFrame.getHeight() / 2);
         createExchangeTab(exchangeTab);
 
         guiWindow.setSelectedTab(lastTab);

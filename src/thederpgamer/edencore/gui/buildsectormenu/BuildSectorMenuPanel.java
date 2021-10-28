@@ -16,7 +16,7 @@ import thederpgamer.edencore.network.client.RequestClientCacheUpdatePacket;
 public class BuildSectorMenuPanel extends GUIMenuPanel {
 
     public BuildSectorMenuPanel(InputState inputState) {
-        super(inputState, "BuildSectorMenu", GLFrame.getWidth() / 3, GLFrame.getHeight() / 2);
+        super(inputState, "BuildSectorMenu", GLFrame.getWidth() / 2, (int) (GLFrame.getHeight() / 2.5f));
     }
 
     @Override
@@ -41,9 +41,9 @@ public class BuildSectorMenuPanel extends GUIMenuPanel {
     }
 
     private void createManagementTab(GUIContentPane contentPane) {
-        contentPane.addDivider(GLFrame.getWidth() / 3);
-
+        contentPane.addDivider((int) (GLFrame.getWidth() / 2.5f));
         (new BuildSectorScrollableList(getState(), contentPane.getContent(0, 0), this)).onInit();
+        (new BuildSectorUserScrollableList(getState(), contentPane.getContent(1, 0), this)).onInit();
     }
 
     private void createEntitiesTab(GUIContentPane contentPane) {
@@ -51,6 +51,6 @@ public class BuildSectorMenuPanel extends GUIMenuPanel {
     }
 
     private void createCatalogTab(GUIContentPane contentPane) {
-        contentPane.addDivider(GLFrame.getWidth() / 3);
+        contentPane.addDivider((int) (GLFrame.getWidth() / 2.5f));
     }
 }
