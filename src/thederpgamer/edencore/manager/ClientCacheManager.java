@@ -4,6 +4,7 @@ import thederpgamer.edencore.data.event.EventData;
 import thederpgamer.edencore.data.event.SortieData;
 import thederpgamer.edencore.data.exchange.BlueprintExchangeItem;
 import thederpgamer.edencore.data.exchange.ResourceExchangeItem;
+import thederpgamer.edencore.data.other.BuildSectorData;
 
 import java.util.ArrayList;
 
@@ -22,4 +23,7 @@ public class ClientCacheManager {
     //Events
     public static final ArrayList<EventData> eventData = new ArrayList<>();
     public static final ArrayList<SortieData> sortieData = new ArrayList<>();
+
+    //Build Sector
+    public static final ArrayList<BuildSectorData> accessibleSectors = new ArrayList<>();
 }

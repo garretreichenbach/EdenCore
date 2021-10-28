@@ -40,7 +40,7 @@ public class ExchangeMenuPanel extends GUIMenuPanel {
     private ResourceExchangeItem lastClickedResource;
 
     public ExchangeMenuPanel(InputState inputState) {
-        super(inputState, "ServerExchange", GLFrame.getWidth() / 3, (int) (GLFrame.getHeight() / 1.5));
+        super(inputState, "ServerExchange", GLFrame.getWidth() / 3, GLFrame.getHeight() / 2);
         BRONZE = ElementManager.getItem("Bronze Bar").getId();
         SILVER = ElementManager.getItem("Silver Bar").getId();
         GOLD = ElementManager.getItem("Gold Bar").getId();
@@ -627,8 +627,8 @@ public class ExchangeMenuPanel extends GUIMenuPanel {
 
     public void givePlayerItem(ExchangeItem item) {
         Inventory inventory = GameClient.getClientPlayerState().getInventory();
-        if(item instanceof BlueprintExchangeItem && ((BlueprintExchangeItem) item).blueprint != null) {
-            PacketUtil.sendPacketToServer(new RequestSpawnEntryPacket(((BlueprintExchangeItem) item).blueprint.getName()));
+        if(item instanceof BlueprintExchangeItem) {
+            PacketUtil.sendPacketToServer(new RequestSpawnEntryPacket(item.name));
             /* This doesn't work because the game won't see the item as valid and won't spawn it
             BlueprintMetaItem metaItem = (BlueprintMetaItem) MetaObjectManager.instantiate(MetaObjectManager.MetaObjectType.BLUEPRINT, (short) -1, false);
             metaItem.blueprintName = item.name;

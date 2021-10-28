@@ -39,15 +39,14 @@ import thederpgamer.edencore.data.other.PlayerData;
 import thederpgamer.edencore.drawer.BuildSectorHudDrawer;
 import thederpgamer.edencore.element.ElementManager;
 import thederpgamer.edencore.element.items.PrizeBars;
+import thederpgamer.edencore.gui.buildsectormenu.BuildSectorMenuControlManager;
 import thederpgamer.edencore.gui.exchangemenu.ExchangeMenuControlManager;
 import thederpgamer.edencore.manager.*;
 import thederpgamer.edencore.navigation.EdenMapDrawer;
 import thederpgamer.edencore.navigation.MapIcon;
 import thederpgamer.edencore.navigation.NavigationMapPacket;
 import thederpgamer.edencore.navigation.NavigationUtilManager;
-import thederpgamer.edencore.network.client.ExchangeItemCreatePacket;
-import thederpgamer.edencore.network.client.ExchangeItemRemovePacket;
-import thederpgamer.edencore.network.client.RequestSpawnEntryPacket;
+import thederpgamer.edencore.network.client.*;
 import thederpgamer.edencore.network.server.SendCacheUpdatePacket;
 import thederpgamer.edencore.utils.DataUtils;
 import thederpgamer.edencore.utils.DateUtils;
@@ -82,6 +81,7 @@ public class EdenCore extends StarMod {
 
     //GUI
     public ExchangeMenuControlManager exchangeMenuControlManager;
+    public BuildSectorMenuControlManager buildSectorMenuControlManager;
 
     @Override
     public void onEnable() {
@@ -134,12 +134,28 @@ public class EdenCore extends StarMod {
         PacketUtil.registerPacket(ExchangeItemRemovePacket.class);
         PacketUtil.registerPacket(SendCacheUpdatePacket.class);
         PacketUtil.registerPacket(NavigationMapPacket.class);
+        PacketUtil.registerPacket(RequestMoveToBuildSectorPacket.class);
+        PacketUtil.registerPacket(RequestMoveFromBuildSectorPacket.class);
     }
 
     private void registerListeners() {
         StarLoader.registerListener(KeyPressEvent.class, new Listener<KeyPressEvent>() {
             @Override
             public void onEvent(KeyPressEvent event) {
+                char buildSectorKey = ConfigManager.getKeyBinding("build-sector-key");
+                if(buildSectorKey != '\0' && event.getChar() == buildSectorKey) {
+                    if(buildSectorMenuControlManager == null) {
+                        buildSectorMenuControlManager = new BuildSectorMenuControlManager();
+                        ModGUIHandler.registerNewControlManager(getSkeleton(), buildSectorMenuControlManager);
+                    }
+
+                    if(!GameClient.getClientState().getController().isChatActive() && GameClient.getClientState().getController().getPlayerInputs().isEmpty()) {
+                        GameClient.getClientState().getController().queueUIAudio("0022_menu_ui - enter");
+                        GameClient.getClientState().getGlobalGameControlManager().getIngameControlManager().getPlayerGameControlManager().deactivateAll();
+                        buildSectorMenuControlManager.setActive(true);
+                    }
+                }
+
                 char exchangeKey = ConfigManager.getKeyBinding("exchange-menu-key");
                 if(exchangeKey != '\0' && event.getChar() == exchangeKey) {
                     if(exchangeMenuControlManager == null) {
@@ -159,12 +175,49 @@ public class EdenCore extends StarMod {
         StarLoader.registerListener(GUITopBarCreateEvent.class, new Listener<GUITopBarCreateEvent>() {
             @Override
             public void onEvent(final GUITopBarCreateEvent event) {
+                if(buildSectorMenuControlManager == null) {
+                    buildSectorMenuControlManager = new BuildSectorMenuControlManager();
+                    ModGUIHandler.registerNewControlManager(getSkeleton(), buildSectorMenuControlManager);
+                }
+
                 if(exchangeMenuControlManager == null) {
                     exchangeMenuControlManager = new ExchangeMenuControlManager();
                     ModGUIHandler.registerNewControlManager(getSkeleton(), exchangeMenuControlManager);
                 }
 
                 GUITopBar.ExpandedButton dropDownButton = event.getDropdownButtons().get(event.getDropdownButtons().size() - 1);
+
+                dropDownButton.addExpandedButton("BUILD SECTOR", new GUICallback() {
+                    @Override
+                    public void callback(GUIElement guiElement, MouseEvent mouseEvent) {
+                        if(mouseEvent.pressedLeftMouse()) {
+                            GameClient.getClientState().getController().queueUIAudio("0022_menu_ui - enter");
+                            GameClient.getClientState().getGlobalGameControlManager().getIngameControlManager().getPlayerGameControlManager().deactivateAll();
+                            buildSectorMenuControlManager.setActive(true);
+                        }
+                    }
+
+                    @Override
+                    public boolean isOccluded() {
+                        return false;
+                    }
+                }, new GUIActivationHighlightCallback() {
+                    @Override
+                    public boolean isHighlighted(InputState inputState) {
+                        return false;
+                    }
+
+                    @Override
+                    public boolean isVisible(InputState inputState) {
+                        return true;
+                    }
+
+                    @Override
+                    public boolean isActive(InputState inputState) {
+                        return true;
+                    }
+                });
+
                 dropDownButton.addExpandedButton("EXCHANGE", new GUICallback() {
                     @Override
                     public void callback(GUIElement guiElement, MouseEvent mouseEvent) {

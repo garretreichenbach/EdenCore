@@ -1,7 +1,11 @@
 package thederpgamer.edencore.data.other;
 
+import api.network.PacketReadBuffer;
+import api.network.PacketWriteBuffer;
 import org.schema.common.util.linAlg.Vector3i;
+import thederpgamer.edencore.manager.LogManager;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
@@ -27,9 +31,31 @@ public class BuildSectorData {
         this.addPlayer(ownerName);
     }
 
+    public BuildSectorData(PacketReadBuffer packetReadBuffer) {
+        try {
+            deserialize(packetReadBuffer);
+        } catch(IOException exception) {
+            LogManager.logException("Encountered an exception while trying to deserialize build sector data", exception);
+        }
+    }
+
     @Override
     public boolean equals(Object object) {
         return object instanceof BuildSectorData && ((BuildSectorData) object).ownerName.equals(ownerName) && ((BuildSectorData) object).sector.equals(sector);
+    }
+
+    public void serialize(PacketWriteBuffer writeBuffer) throws IOException {
+        writeBuffer.writeString(ownerName);
+        writeBuffer.writeVector(sector);
+        writeBuffer.writeObject(permissions);
+        writeBuffer.writeBoolean(allAIDisabled);
+    }
+
+    public void deserialize(PacketReadBuffer readBuffer) throws IOException {
+        if(permissions == null) permissions = new HashMap<>();
+        ownerName = readBuffer.readString();
+        sector = readBuffer.readVector();
+        permissions = readBuffer.readObject(permissions.getClass());
     }
 
     public void addPlayer(String player) {

@@ -23,7 +23,8 @@ public class ConfigManager {
     //Key Config
     private static FileConfiguration keyConfig;
     public static final String[] defaultKeyConfig = {
-            "exchange-menu-key: *"
+            "exchange-menu-key: *",
+            "build-sector-key: -"
     };
 
     public static void initialize(EdenCore instance) {

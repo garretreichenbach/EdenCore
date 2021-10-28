@@ -8,4 +8,14 @@ package thederpgamer.edencore.data.event;
  */
 public class SquadData {
 
+    public SquadMemberData[] squadMembers;
+
+    public SquadData() {
+
+    }
+
+    public boolean ready() {
+        for(SquadMemberData memberData : squadMembers) if(!memberData.ready) return false;
+        return true;
+    }
 }

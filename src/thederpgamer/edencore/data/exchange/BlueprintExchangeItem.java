@@ -3,8 +3,6 @@ package thederpgamer.edencore.data.exchange;
 import api.common.GameClient;
 import api.network.PacketReadBuffer;
 import api.network.PacketWriteBuffer;
-import org.schema.game.server.controller.BluePrintController;
-import org.schema.game.server.controller.EntityNotFountException;
 import org.schema.game.server.data.blueprintnw.BlueprintEntry;
 import org.schema.schine.graphicsengine.forms.Sprite;
 import org.schema.schine.graphicsengine.forms.gui.GUIOverlay;
@@ -22,7 +20,6 @@ import java.io.IOException;
 public class BlueprintExchangeItem extends ExchangeItem {
 
     //public static final transient Vector3i SECTOR = new Vector3i(100000000, 100000000, 100000000);
-    public transient BlueprintEntry blueprint;
     public long blocks;
     public String iconPath;
 
@@ -32,7 +29,6 @@ public class BlueprintExchangeItem extends ExchangeItem {
 
     public BlueprintExchangeItem(BlueprintEntry blueprint, short barType, int price, String description, String iconPath) {
         super(barType, price, blueprint.getName(), description);
-        this.blueprint = blueprint;
         this.barType = barType;
         this.price = price;
         this.name = blueprint.getName();
@@ -90,11 +86,6 @@ public class BlueprintExchangeItem extends ExchangeItem {
         description = readBuffer.readString();
         blocks = readBuffer.readLong();
         iconPath = readBuffer.readString();
-        try {
-            blueprint = BluePrintController.active.getBlueprint(name);
-        } catch(EntityNotFountException exception) {
-            exception.printStackTrace();
-        }
     }
 
     @Override

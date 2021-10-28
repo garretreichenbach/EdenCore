@@ -12,7 +12,7 @@ import thederpgamer.edencore.EdenCore;
 import thederpgamer.edencore.element.ElementManager;
 import thederpgamer.edencore.element.items.Item;
 import thederpgamer.edencore.manager.LogManager;
-import thederpgamer.edencore.utils.ServerDatabase;
+import thederpgamer.edencore.utils.ServerUtils;
 
 import javax.annotation.Nullable;
 import java.sql.SQLException;
@@ -70,7 +70,7 @@ public class AwardBarsCommand implements CommandInterface {
             if(NumberUtils.isNumber(args[2].trim()) && bar != null) {
                 int amount = Integer.parseInt(args[2].trim());
                 if(amount <= 0) return false;
-                ArrayList<PlayerState> allPlayers = ServerDatabase.getAllPlayers();
+                ArrayList<PlayerState> allPlayers = ServerUtils.getAllPlayers();
                 for(PlayerState playerState : allPlayers) {
                     if(onlineOnly && (!playerState.isOnServer() || GameCommon.getPlayerFromName(playerState.getName()) == null)) continue;
 
@@ -91,7 +91,7 @@ public class AwardBarsCommand implements CommandInterface {
                 }
             }
         } else {
-            PlayerState targetPlayer = ServerDatabase.getPlayerByName(args[0]);
+            PlayerState targetPlayer = ServerUtils.getPlayerByName(args[0]);
             if(targetPlayer == null) PlayerUtils.sendMessage(sender, "Player \"" + args[0] + "\" doesn't exist.");
             else {
                 Item bar;

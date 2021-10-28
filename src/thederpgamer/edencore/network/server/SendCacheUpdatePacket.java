@@ -1,5 +1,6 @@
 package thederpgamer.edencore.network.server;
 
+import api.common.GameClient;
 import api.mod.config.PersistentObjectUtil;
 import api.network.Packet;
 import api.network.PacketReadBuffer;
@@ -10,6 +11,7 @@ import thederpgamer.edencore.data.event.EventData;
 import thederpgamer.edencore.data.event.SortieData;
 import thederpgamer.edencore.data.exchange.BlueprintExchangeItem;
 import thederpgamer.edencore.data.exchange.ResourceExchangeItem;
+import thederpgamer.edencore.data.other.BuildSectorData;
 import thederpgamer.edencore.manager.ClientCacheManager;
 
 import java.io.IOException;
@@ -32,6 +34,9 @@ public class SendCacheUpdatePacket extends Packet {
     private final ArrayList<EventData> eventData = new ArrayList<>();
     private final ArrayList<SortieData> sortieData = new ArrayList<>();
 
+    //Build Sector
+    private final ArrayList<BuildSectorData> sectorData = new ArrayList<>();
+
     public SendCacheUpdatePacket() {
 
     }
@@ -51,6 +56,10 @@ public class SendCacheUpdatePacket extends Packet {
 
         //int sortieSize = packetReadBuffer.readInt();
         //for(int i = 0; i < sortieSize; i ++) sortieData.add(new SortieData(packetReadBuffer));
+
+        //Build Sectors
+        int sectorSize = packetReadBuffer.readInt();
+        for(int i = 0; i < sectorSize; i ++) sectorData.add(new BuildSectorData(packetReadBuffer));
     }
 
     @Override
@@ -62,6 +71,10 @@ public class SendCacheUpdatePacket extends Packet {
         getResourceItems();
         packetWriteBuffer.writeInt(resourceExchangeItems.size());
         for(ResourceExchangeItem exchangeItem : resourceExchangeItems) exchangeItem.serialize(packetWriteBuffer);
+
+        getBuildSectors();
+        packetWriteBuffer.writeInt(sectorData.size());
+        for(BuildSectorData sector : sectorData) sector.serialize(packetWriteBuffer);
     }
 
     @Override
@@ -84,6 +97,14 @@ public class SendCacheUpdatePacket extends Packet {
             //ClientCacheManager.sortieData.clear();
             //ClientCacheManager.sortieData.addAll(sortieData);
         } catch(Exception ignored) { }
+
+        //Build Sectors
+        try {
+            ClientCacheManager.accessibleSectors.clear();
+            for(BuildSectorData data : sectorData) {
+                if(data.hasPermission(GameClient.getClientPlayerState().getName(), "ENTER")) ClientCacheManager.accessibleSectors.add(data);
+            }
+        } catch(Exception ignored) { }
     }
 
     @Override
@@ -105,5 +126,13 @@ public class SendCacheUpdatePacket extends Packet {
             exchangeItems.add((ResourceExchangeItem) obj);
         }
         resourceExchangeItems.addAll(exchangeItems);
+    }
+
+    private void getBuildSectors() {
+        ArrayList<BuildSectorData> sectorDataList = new ArrayList<>();
+        for(Object obj : PersistentObjectUtil.getObjects(EdenCore.getInstance().getSkeleton(), BuildSectorData.class)) {
+            sectorDataList.add((BuildSectorData) obj);
+        }
+        sectorData.addAll(sectorDataList);
     }
 }

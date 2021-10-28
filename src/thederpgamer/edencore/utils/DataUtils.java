@@ -22,6 +22,8 @@ import org.schema.game.server.data.ServerConfig;
 import thederpgamer.edencore.EdenCore;
 import thederpgamer.edencore.data.other.BuildSectorData;
 import thederpgamer.edencore.data.other.PlayerData;
+import thederpgamer.edencore.manager.ClientCacheManager;
+import thederpgamer.edencore.manager.DataManager;
 import thederpgamer.edencore.manager.LogManager;
 
 import javax.vecmath.Vector3f;
@@ -243,11 +245,14 @@ public class DataUtils {
     }
 
     public static ArrayList<BuildSectorData> getAllBuildSectors() {
-        ArrayList<BuildSectorData> dataList = new ArrayList<>();
-        for(Object obj : PersistentObjectUtil.getObjects(instance, BuildSectorData.class)) {
-            dataList.add((BuildSectorData) obj);
+        if(DataManager.getGameStateType().equals(DataManager.GameStateType.CLIENT)) return ClientCacheManager.accessibleSectors;
+        else {
+            ArrayList<BuildSectorData> dataList = new ArrayList<>();
+            for(Object obj : PersistentObjectUtil.getObjects(instance, BuildSectorData.class)) {
+                dataList.add((BuildSectorData) obj);
+            }
+            return dataList;
         }
-        return dataList;
     }
 
     public static BuildSectorData getPlayerCurrentBuildSector(PlayerState playerState) {
@@ -295,16 +300,23 @@ public class DataUtils {
         return playerList;
     }
 
-    public static BuildSectorData getBuildSector(PlayerState playerState) {
+    public static BuildSectorData getBuildSector(String playerName) {
         for(Object object : PersistentObjectUtil.getObjects(instance, BuildSectorData.class)) {
             BuildSectorData data = (BuildSectorData) object;
-            if(data.ownerName.equals(playerState.getName())) return data;
+            if(data.ownerName.equals(playerName)) return data;
         }
-        return createNewBuildSector(playerState);
+        return createNewBuildSector(playerName);
     }
 
-    private static BuildSectorData createNewBuildSector(PlayerState playerState) {
-        String playerName = playerState.getName();
+    public static boolean playerExists(String playerName) {
+        for(Object object : PersistentObjectUtil.getObjects(instance, BuildSectorData.class)) {
+            BuildSectorData data = (BuildSectorData) object;
+            if(data.ownerName.equals(playerName)) return true;
+        }
+        return false;
+    }
+
+    private static BuildSectorData createNewBuildSector(String playerName) {
         Vector3i sector = getRandomSector(1000000000);
         BuildSectorData data = new BuildSectorData(playerName, sector, new HashMap<String, HashMap<String, Boolean>>());
         PersistentObjectUtil.addObject(instance, data);
