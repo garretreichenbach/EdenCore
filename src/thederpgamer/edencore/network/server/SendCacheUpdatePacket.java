@@ -13,6 +13,7 @@ import thederpgamer.edencore.data.exchange.BlueprintExchangeItem;
 import thederpgamer.edencore.data.exchange.ResourceExchangeItem;
 import thederpgamer.edencore.data.other.BuildSectorData;
 import thederpgamer.edencore.manager.ClientCacheManager;
+import thederpgamer.edencore.manager.LogManager;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -45,10 +46,10 @@ public class SendCacheUpdatePacket extends Packet {
     public void readPacketData(PacketReadBuffer packetReadBuffer) throws IOException {
         //Exchange
         int bpSize = packetReadBuffer.readInt();
-        for(int i = 0; i < bpSize; i ++) blueprintExchangeItems.add(new BlueprintExchangeItem(packetReadBuffer));
+        if(bpSize > 0) for(int i = 0; i < bpSize; i ++) blueprintExchangeItems.add(new BlueprintExchangeItem(packetReadBuffer));
 
         int resSize = packetReadBuffer.readInt();
-        for(int i = 0; i < resSize; i ++) resourceExchangeItems.add(new ResourceExchangeItem(packetReadBuffer));
+        if(resSize > 0) for(int i = 0; i < resSize; i ++) resourceExchangeItems.add(new ResourceExchangeItem(packetReadBuffer));
 
         //Events
         //int eventSize = packetReadBuffer.readInt();
@@ -59,7 +60,15 @@ public class SendCacheUpdatePacket extends Packet {
 
         //Build Sectors
         int sectorSize = packetReadBuffer.readInt();
-        for(int i = 0; i < sectorSize; i ++) sectorData.add(new BuildSectorData(packetReadBuffer));
+        if(sectorSize > 0) {
+            for(int i = 0; i < sectorSize; i ++) {
+                try {
+                    sectorData.add(new BuildSectorData(packetReadBuffer));
+                } catch(Exception exception) {
+                    LogManager.logException("Encountered an exception while trying to deserialize Build Sector Data", exception);
+                }
+            }
+        }
     }
 
     @Override
@@ -90,13 +99,13 @@ public class SendCacheUpdatePacket extends Packet {
             EdenCore.getInstance().exchangeMenuControlManager.getMenuPanel().recreateTabs();
         } catch(Exception ignored) { }
 
-        try { //Events
+        //try { //Events
             //ClientCacheManager.eventData.clear();
             //ClientCacheManager.eventData.addAll(eventData);
 
             //ClientCacheManager.sortieData.clear();
             //ClientCacheManager.sortieData.addAll(sortieData);
-        } catch(Exception ignored) { }
+        //} catch(Exception ignored) { }
 
         //Build Sectors
         try {

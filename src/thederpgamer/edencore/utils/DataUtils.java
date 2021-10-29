@@ -21,6 +21,7 @@ import org.schema.game.server.controller.SectorSwitch;
 import org.schema.game.server.data.ServerConfig;
 import thederpgamer.edencore.EdenCore;
 import thederpgamer.edencore.data.other.BuildSectorData;
+import thederpgamer.edencore.data.other.PermissionData;
 import thederpgamer.edencore.data.other.PlayerData;
 import thederpgamer.edencore.manager.ClientCacheManager;
 import thederpgamer.edencore.manager.DataManager;
@@ -318,7 +319,7 @@ public class DataUtils {
 
     private static BuildSectorData createNewBuildSector(String playerName) {
         Vector3i sector = getRandomSector(1000000000);
-        BuildSectorData data = new BuildSectorData(playerName, sector, new HashMap<String, HashMap<String, Boolean>>());
+        BuildSectorData data = new BuildSectorData(playerName, sector, new HashMap<String, PermissionData>());
         PersistentObjectUtil.addObject(instance, data);
         try {
             GameServer.getServerState().getUniverse().getStellarSystemFromSecPos(sector); //Make sure system is generated

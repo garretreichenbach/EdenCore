@@ -20,10 +20,10 @@ public class BuildSectorData {
 
     public String ownerName;
     public Vector3i sector;
-    public HashMap<String, HashMap<String, Boolean>> permissions;
+    public HashMap<String, PermissionData> permissions;
     public boolean allAIDisabled;
 
-    public BuildSectorData(String ownerName, Vector3i sector, HashMap<String, HashMap<String, Boolean>> permissions) {
+    public BuildSectorData(String ownerName, Vector3i sector, HashMap<String, PermissionData> permissions) {
         this.ownerName = ownerName;
         this.sector = sector;
         this.permissions = permissions;
@@ -31,12 +31,8 @@ public class BuildSectorData {
         this.addPlayer(ownerName);
     }
 
-    public BuildSectorData(PacketReadBuffer packetReadBuffer) {
-        try {
-            deserialize(packetReadBuffer);
-        } catch(IOException exception) {
-            LogManager.logException("Encountered an exception while trying to deserialize build sector data", exception);
-        }
+    public BuildSectorData(PacketReadBuffer packetReadBuffer) throws IOException {
+        deserialize(packetReadBuffer);
     }
 
     @Override
@@ -47,21 +43,40 @@ public class BuildSectorData {
     public void serialize(PacketWriteBuffer writeBuffer) throws IOException {
         writeBuffer.writeString(ownerName);
         writeBuffer.writeVector(sector);
-        writeBuffer.writeObject(permissions);
         writeBuffer.writeBoolean(allAIDisabled);
+        writeBuffer.writeInt(permissions.size());
+        if(permissions.size() > 0) {
+            for(PermissionData permissionData : permissions.values()) {
+                try {
+                    permissionData.serialize(writeBuffer);
+                } catch(Exception exception) {
+                    LogManager.logException("Encountered an exception while trying to serialize PermissionData", exception);
+                }
+            }
+        }
     }
 
     public void deserialize(PacketReadBuffer readBuffer) throws IOException {
         if(permissions == null) permissions = new HashMap<>();
         ownerName = readBuffer.readString();
         sector = readBuffer.readVector();
-        permissions = readBuffer.readObject(permissions.getClass());
+        int size = readBuffer.readInt();
+        if(size > 0) {
+            for(int i = 0; i < size; i ++) {
+                try {
+                    PermissionData permissionData = new PermissionData(readBuffer);
+                    permissions.put(permissionData.playerName, permissionData);
+                } catch(Exception exception) {
+                    LogManager.logException("Encountered an exception while trying to deserialize PermissionData", exception);
+                }
+            }
+        }
     }
 
     public void addPlayer(String player) {
         permissions.remove(player);
-        if(player.equals(ownerName)) permissions.put(player, getOwnerPermissions());
-        else permissions.put(player, getDefaultPermissions());
+        if(player.equals(ownerName)) permissions.put(player, getOwnerPermissions(ownerName));
+        else permissions.put(player, getDefaultPermissions(player));
     }
 
     public void removePlayer(String player) {
@@ -74,29 +89,29 @@ public class BuildSectorData {
             if(!player.equals(ownerName)) denyPermission(player, "ENTER");
             else addPlayer(player);
             return false;
-        } else return permissions.get(player).get(permission.toUpperCase());
+        } else return permissions.get(player).permissions.get(permission.toUpperCase());
     }
 
     public void allowPermission(String player, String permission) {
         if(!permissions.containsKey(player)) addPlayer(player);
-        if(permissions.get(player).containsKey(permission.toUpperCase())) {
-            permissions.get(player).remove(permission.toUpperCase());
-            permissions.get(player).put(permission.toUpperCase(), true);
+        if(permissions.get(player).permissions.containsKey(permission.toUpperCase())) {
+            permissions.get(player).permissions.remove(permission.toUpperCase());
+            permissions.get(player).permissions.put(permission.toUpperCase(), true);
         }
     }
 
     public void denyPermission(String player, String permission) {
         if(!permissions.containsKey(player)) addPlayer(player);
-        if(permissions.get(player).containsKey(permission.toUpperCase())) {
-            permissions.get(player).remove(permission.toUpperCase());
-            permissions.get(player).put(permission.toUpperCase(), false);
+        if(permissions.get(player).permissions.containsKey(permission.toUpperCase())) {
+            permissions.get(player).permissions.remove(permission.toUpperCase());
+            permissions.get(player).permissions.put(permission.toUpperCase(), false);
         }
     }
 
     public ArrayList<String> getAllowedPlayersByName() {
         ArrayList<String> allowedPlayers = new ArrayList<>();
-        for(Map.Entry<String, HashMap<String, Boolean>> entry : permissions.entrySet()) {
-            if(entry.getValue().get("ENTER")) allowedPlayers.add(entry.getKey());
+        for(Map.Entry<String, PermissionData> entry : permissions.entrySet()) {
+            if(entry.getValue().permissions.get("ENTER")) allowedPlayers.add(entry.getKey());
         }
         return allowedPlayers;
     }
@@ -106,10 +121,10 @@ public class BuildSectorData {
             addPlayer(player);
             denyPermission(player, "ENTER");
         }
-        return permissions.get(player);
+        return permissions.get(player).permissions;
     }
 
-    public static HashMap<String, Boolean> getDefaultPermissions() {
+    public static PermissionData getDefaultPermissions(String playerName) {
         HashMap<String, Boolean> defaultPermissions = new HashMap<>();
         defaultPermissions.put("ENTER", true);
         defaultPermissions.put("EDIT", false);
@@ -118,10 +133,10 @@ public class BuildSectorData {
         defaultPermissions.put("SPAWN_ENEMIES", false);
         defaultPermissions.put("DELETE", false);
         defaultPermissions.put("TOGGLE_AI", false);
-        return defaultPermissions;
+        return new PermissionData(playerName, defaultPermissions);
     }
 
-    public static HashMap<String, Boolean> getOwnerPermissions() {
+    public static PermissionData getOwnerPermissions(String ownerName) {
         HashMap<String, Boolean> ownerPermissions = new HashMap<>();
         ownerPermissions.put("ENTER", true);
         ownerPermissions.put("EDIT", true);
@@ -130,6 +145,6 @@ public class BuildSectorData {
         ownerPermissions.put("SPAWN_ENEMIES", true);
         ownerPermissions.put("DELETE", true);
         ownerPermissions.put("TOGGLE_AI", true);
-        return ownerPermissions;
+        return new PermissionData(ownerName, ownerPermissions);
     }
 }
