@@ -68,7 +68,6 @@ public class BuildSectorScrollableList extends ScrollableTableList<BuildSectorDa
             public void callback(GUIElement guiElement, MouseEvent mouseEvent) {
                 if(mouseEvent.pressedLeftMouse() && inSector) {
                     PacketUtil.sendPacketToServer(new RequestMoveFromBuildSectorPacket());
-                    //DataUtils.movePlayerFromBuildSector(GameClient.getClientPlayerState());
                     panel.recreateTabs();
                 }
             }

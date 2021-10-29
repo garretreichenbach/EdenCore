@@ -1,11 +1,9 @@
 package thederpgamer.edencore.gui.buildsectormenu;
 
-import api.network.packets.PacketUtil;
 import api.utils.gui.GUIMenuPanel;
 import org.schema.schine.graphicsengine.core.GLFrame;
 import org.schema.schine.graphicsengine.forms.gui.newgui.GUIContentPane;
 import org.schema.schine.input.InputState;
-import thederpgamer.edencore.network.client.RequestClientCacheUpdatePacket;
 
 /**
  * <Description>
@@ -21,7 +19,6 @@ public class BuildSectorMenuPanel extends GUIMenuPanel {
 
     @Override
     public void recreateTabs() {
-        PacketUtil.sendPacketToServer(new RequestClientCacheUpdatePacket());
         int lastTab = guiWindow.getSelectedTab();
         guiWindow.clearTabs();
 
