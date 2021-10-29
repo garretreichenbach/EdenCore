@@ -29,7 +29,7 @@ public class BuildSectorScrollableList extends ScrollableTableList<BuildSectorDa
     private final BuildSectorMenuPanel panel;
 
     public BuildSectorScrollableList(InputState state, GUIElement p, BuildSectorMenuPanel panel) {
-        super(state, (float) GLFrame.getWidth() / 1.5f, (float) GLFrame.getHeight() / 2.0f, p);
+        super(state, (float) GLFrame.getWidth() / 2.5f, (float) GLFrame.getHeight() / 2.0f, p);
         this.panel = panel;
         PacketUtil.sendPacketToServer(new RequestClientCacheUpdatePacket());
         p.attach(this);
@@ -38,12 +38,11 @@ public class BuildSectorScrollableList extends ScrollableTableList<BuildSectorDa
     private GUIHorizontalButtonTablePane redrawButtonPane(final BuildSectorData sectorData, GUIAncor anchor) {
         GUIHorizontalButtonTablePane buttonPane = new GUIHorizontalButtonTablePane(getState(), 2, 1, anchor);
         buttonPane.onInit();
-        final boolean inSector = DataUtils.isPlayerInAnyBuildSector(GameClient.getClientPlayerState());
 
         buttonPane.addButton(0, 0, "ENTER SECTOR", GUIHorizontalArea.HButtonColor.BLUE, new GUICallback() {
             @Override
             public void callback(GUIElement guiElement, MouseEvent mouseEvent) {
-                if(mouseEvent.pressedLeftMouse() && sectorData.hasPermission(GameClient.getClientPlayerState().getName(), "ENTER") && !inSector) {
+                if(mouseEvent.pressedLeftMouse() && sectorData.hasPermission(GameClient.getClientPlayerState().getName(), "ENTER") && !DataUtils.isPlayerInAnyBuildSector(GameClient.getClientPlayerState())) {
                     PacketUtil.sendPacketToServer(new RequestMoveToBuildSectorPacket(sectorData));
                     panel.recreateTabs();
                 }
@@ -51,7 +50,7 @@ public class BuildSectorScrollableList extends ScrollableTableList<BuildSectorDa
 
             @Override
             public boolean isOccluded() {
-                return inSector;
+                return DataUtils.isPlayerInAnyBuildSector(GameClient.getClientPlayerState());
             }
         }, new GUIActivationCallback() {
             @Override
@@ -61,14 +60,14 @@ public class BuildSectorScrollableList extends ScrollableTableList<BuildSectorDa
 
             @Override
             public boolean isActive(InputState inputState) {
-                return !inSector;
+                return !DataUtils.isPlayerInAnyBuildSector(GameClient.getClientPlayerState());
             }
         });
 
         buttonPane.addButton(1, 0, "LEAVE SECTOR", GUIHorizontalArea.HButtonColor.ORANGE, new GUICallback() {
             @Override
             public void callback(GUIElement guiElement, MouseEvent mouseEvent) {
-                if(mouseEvent.pressedLeftMouse() && inSector) {
+                if(mouseEvent.pressedLeftMouse() && DataUtils.isPlayerInAnyBuildSector(GameClient.getClientPlayerState())) {
                     PacketUtil.sendPacketToServer(new RequestMoveFromBuildSectorPacket());
                     panel.recreateTabs();
                 }
@@ -76,7 +75,7 @@ public class BuildSectorScrollableList extends ScrollableTableList<BuildSectorDa
 
             @Override
             public boolean isOccluded() {
-                return !inSector;
+                return !DataUtils.isPlayerInAnyBuildSector(GameClient.getClientPlayerState());
             }
         }, new GUIActivationCallback() {
             @Override
@@ -86,7 +85,7 @@ public class BuildSectorScrollableList extends ScrollableTableList<BuildSectorDa
 
             @Override
             public boolean isActive(InputState inputState) {
-                return inSector;
+                return DataUtils.isPlayerInAnyBuildSector(GameClient.getClientPlayerState());
             }
         });
         return buttonPane;
@@ -99,7 +98,7 @@ public class BuildSectorScrollableList extends ScrollableTableList<BuildSectorDa
 
     @Override
     public void initColumns() {
-        addColumn("Owner", 15.0f, new Comparator<BuildSectorData>() {
+        addColumn("Sectors", 15.0f, new Comparator<BuildSectorData>() {
             @Override
             public int compare(BuildSectorData o1, BuildSectorData o2) {
                 return o1.ownerName.compareTo(o2.ownerName);
@@ -130,12 +129,12 @@ public class BuildSectorScrollableList extends ScrollableTableList<BuildSectorDa
         for(BuildSectorData sectorData : set) {
             if(sectorData.hasPermission(GameClient.getClientPlayerState().getName(), "ENTER")) {
                 GUITextOverlayTable ownerTextElement;
-                (ownerTextElement = new GUITextOverlayTable(10, 10, this.getState())).setTextSimple(sectorData.ownerName);
+                (ownerTextElement = new GUITextOverlayTable(10, 10, this.getState())).setTextSimple(sectorData.ownerName + "'s Build Sector");
                 GUIClippedRow ownerRowElement;
                 (ownerRowElement = new GUIClippedRow(this.getState())).attach(ownerTextElement);
 
                 BuildSectorScrollableListRow listRow = new BuildSectorScrollableListRow(getState(), sectorData, ownerRowElement);
-                GUIAncor anchor = new GUIAncor(getState(), (float) GLFrame.getWidth() / 2.5f, 28.0f);
+                GUIAncor anchor = new GUIAncor(getState(), (float) GLFrame.getWidth() / 2.695f, 28.0f);
                 anchor.attach(redrawButtonPane(sectorData, anchor));
                 listRow.expanded = new GUIElementList(getState());
                 listRow.expanded.add(new GUIListElement(anchor, getState()));

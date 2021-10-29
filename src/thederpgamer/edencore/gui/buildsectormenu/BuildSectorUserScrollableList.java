@@ -3,10 +3,8 @@ package thederpgamer.edencore.gui.buildsectormenu;
 import api.common.GameClient;
 import api.network.packets.PacketUtil;
 import org.schema.schine.graphicsengine.core.GLFrame;
-import org.schema.schine.graphicsengine.forms.gui.GUIAncor;
-import org.schema.schine.graphicsengine.forms.gui.GUIElement;
-import org.schema.schine.graphicsengine.forms.gui.GUIElementList;
-import org.schema.schine.graphicsengine.forms.gui.GUIListElement;
+import org.schema.schine.graphicsengine.core.MouseEvent;
+import org.schema.schine.graphicsengine.forms.gui.*;
 import org.schema.schine.graphicsengine.forms.gui.newgui.*;
 import org.schema.schine.input.InputState;
 import thederpgamer.edencore.data.other.BuildSectorData;
@@ -37,8 +35,80 @@ public class BuildSectorUserScrollableList extends ScrollableTableList<String> {
     }
 
     private GUIHorizontalButtonTablePane redrawButtonPane(final String playerName, GUIAncor anchor) {
-        GUIHorizontalButtonTablePane buttonPane = new GUIHorizontalButtonTablePane(getState(), 2, 1, anchor);
+        GUIHorizontalButtonTablePane buttonPane = new GUIHorizontalButtonTablePane(getState(), 3, 1, anchor);
         buttonPane.onInit();
+
+        buttonPane.addButton(0, 0, "MANAGE PERMISSIONS", GUIHorizontalArea.HButtonColor.YELLOW, new GUICallback() {
+            @Override
+            public void callback(GUIElement guiElement, MouseEvent mouseEvent) {
+                if(mouseEvent.pressedLeftMouse()) {
+
+                }
+            }
+
+            @Override
+            public boolean isOccluded() {
+                return playerName.equals(sectorData.ownerName);
+            }
+        }, new GUIActivationCallback() {
+            @Override
+            public boolean isVisible(InputState inputState) {
+                return true;
+            }
+
+            @Override
+            public boolean isActive(InputState inputState) {
+                return !playerName.equals(sectorData.ownerName);
+            }
+        });
+
+        buttonPane.addButton(1, 0, "KICK", GUIHorizontalArea.HButtonColor.ORANGE, new GUICallback() {
+            @Override
+            public void callback(GUIElement guiElement, MouseEvent mouseEvent) {
+                if(mouseEvent.pressedLeftMouse()) {
+
+                }
+            }
+
+            @Override
+            public boolean isOccluded() {
+                return playerName.equals(sectorData.ownerName);
+            }
+        }, new GUIActivationCallback() {
+            @Override
+            public boolean isVisible(InputState inputState) {
+                return true;
+            }
+
+            @Override
+            public boolean isActive(InputState inputState) {
+                return !playerName.equals(sectorData.ownerName);
+            }
+        });
+
+        buttonPane.addButton(2, 0, "BAN", GUIHorizontalArea.HButtonColor.RED, new GUICallback() {
+            @Override
+            public void callback(GUIElement guiElement, MouseEvent mouseEvent) {
+                if(mouseEvent.pressedLeftMouse()) {
+
+                }
+            }
+
+            @Override
+            public boolean isOccluded() {
+                return playerName.equals(sectorData.ownerName);
+            }
+        }, new GUIActivationCallback() {
+            @Override
+            public boolean isVisible(InputState inputState) {
+                return true;
+            }
+
+            @Override
+            public boolean isActive(InputState inputState) {
+                return !playerName.equals(sectorData.ownerName);
+            }
+        });
 
         return buttonPane;
     }
@@ -56,7 +126,7 @@ public class BuildSectorUserScrollableList extends ScrollableTableList<String> {
 
     @Override
     public void initColumns() {
-        addColumn("Name", 15.0f, new Comparator<String>() {
+        addColumn("Users", 15.0f, new Comparator<String>() {
             @Override
             public int compare(String o1, String o2) {
                 return o1.compareTo(o2);
@@ -77,13 +147,14 @@ public class BuildSectorUserScrollableList extends ScrollableTableList<String> {
         guiElementList.addObserver(this);
         for(String playerName : set) {
             if(sectorData.hasPermission(playerName, "ENTER")) {
+                String name = (playerName.equals(sectorData.ownerName)) ? playerName + " (Owner)" : playerName;
                 GUITextOverlayTable nameTextElement;
-                (nameTextElement = new GUITextOverlayTable(10, 10, this.getState())).setTextSimple(playerName);
+                (nameTextElement = new GUITextOverlayTable(10, 10, this.getState())).setTextSimple(name);
                 GUIClippedRow nameRowElement;
                 (nameRowElement = new GUIClippedRow(this.getState())).attach(nameTextElement);
 
                 BuildSectorUserScrollableListRow listRow = new BuildSectorUserScrollableListRow(getState(), playerName, nameRowElement);
-                GUIAncor anchor = new GUIAncor(getState(), (float) GLFrame.getWidth() / 2.5f, 28.0f);
+                GUIAncor anchor = new GUIAncor(getState(), (float) GLFrame.getWidth() / 2.695f, 28.0f);
                 anchor.attach(redrawButtonPane(playerName, anchor));
                 listRow.expanded = new GUIElementList(getState());
                 listRow.expanded.add(new GUIListElement(anchor, getState()));
