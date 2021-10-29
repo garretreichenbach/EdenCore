@@ -4,6 +4,7 @@ import api.common.GameCommon;
 import api.common.GameServer;
 import api.mod.ModSkeleton;
 import api.mod.config.PersistentObjectUtil;
+import api.network.packets.PacketUtil;
 import api.utils.StarRunnable;
 import api.utils.game.PlayerUtils;
 import api.utils.game.SegmentControllerUtils;
@@ -26,6 +27,7 @@ import thederpgamer.edencore.data.other.PlayerData;
 import thederpgamer.edencore.manager.ClientCacheManager;
 import thederpgamer.edencore.manager.DataManager;
 import thederpgamer.edencore.manager.LogManager;
+import thederpgamer.edencore.network.client.RequestClientCacheUpdatePacket;
 
 import javax.vecmath.Vector3f;
 import java.io.IOException;
@@ -302,11 +304,17 @@ public class DataUtils {
     }
 
     public static BuildSectorData getBuildSector(String playerName) {
-        for(Object object : PersistentObjectUtil.getObjects(instance, BuildSectorData.class)) {
-            BuildSectorData data = (BuildSectorData) object;
-            if(data.ownerName.equals(playerName)) return data;
+        if(DataManager.getGameStateType().equals(DataManager.GameStateType.CLIENT)) {
+            PacketUtil.sendPacketToServer(new RequestClientCacheUpdatePacket());
+            for(BuildSectorData sectorData : ClientCacheManager.accessibleSectors) if(sectorData.ownerName.equals(playerName)) return sectorData;
+        } else if(DataManager.getGameStateType().equals(DataManager.GameStateType.SERVER)) {
+            for(Object object : PersistentObjectUtil.getObjects(instance, BuildSectorData.class)) {
+                BuildSectorData data = (BuildSectorData) object;
+                if(data.ownerName.equals(playerName)) return data;
+            }
+            return createNewBuildSector(playerName);
         }
-        return createNewBuildSector(playerName);
+        return null;
     }
 
     public static boolean playerExists(String playerName) {

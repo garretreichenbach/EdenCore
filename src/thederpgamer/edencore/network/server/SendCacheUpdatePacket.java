@@ -47,9 +47,11 @@ public class SendCacheUpdatePacket extends Packet {
         //Exchange
         int bpSize = packetReadBuffer.readInt();
         if(bpSize > 0) for(int i = 0; i < bpSize; i ++) blueprintExchangeItems.add(new BlueprintExchangeItem(packetReadBuffer));
+        LogManager.logDebug("Received " + bpSize + " updated bp exchange items.");
 
         int resSize = packetReadBuffer.readInt();
         if(resSize > 0) for(int i = 0; i < resSize; i ++) resourceExchangeItems.add(new ResourceExchangeItem(packetReadBuffer));
+        LogManager.logDebug("Received " + resSize + " updated resource exchange items.");
 
         //Events
         //int eventSize = packetReadBuffer.readInt();
@@ -69,21 +71,22 @@ public class SendCacheUpdatePacket extends Packet {
                 }
             }
         }
+        LogManager.logDebug("Received " + sectorSize + " updated build sector data.");
     }
 
     @Override
     public void writePacketData(PacketWriteBuffer packetWriteBuffer) throws IOException {
         getBlueprintItems();
         packetWriteBuffer.writeInt(blueprintExchangeItems.size());
-        for(BlueprintExchangeItem exchangeItem : blueprintExchangeItems) exchangeItem.serialize(packetWriteBuffer);
+        if(blueprintExchangeItems.size() > 0) for(BlueprintExchangeItem exchangeItem : blueprintExchangeItems) exchangeItem.serialize(packetWriteBuffer);
 
         getResourceItems();
         packetWriteBuffer.writeInt(resourceExchangeItems.size());
-        for(ResourceExchangeItem exchangeItem : resourceExchangeItems) exchangeItem.serialize(packetWriteBuffer);
+        if(resourceExchangeItems.size() > 0) for(ResourceExchangeItem exchangeItem : resourceExchangeItems) exchangeItem.serialize(packetWriteBuffer);
 
         getBuildSectors();
         packetWriteBuffer.writeInt(sectorData.size());
-        for(BuildSectorData sector : sectorData) sector.serialize(packetWriteBuffer);
+        if(sectorData.size() > 0) for(BuildSectorData sector : sectorData) sector.serialize(packetWriteBuffer);
     }
 
     @Override
