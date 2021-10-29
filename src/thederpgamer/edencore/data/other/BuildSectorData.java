@@ -60,6 +60,7 @@ public class BuildSectorData {
         if(permissions == null) permissions = new HashMap<>();
         ownerName = readBuffer.readString();
         sector = readBuffer.readVector();
+        allAIDisabled = readBuffer.readBoolean();
         int size = readBuffer.readInt();
         if(size > 0) {
             for(int i = 0; i < size; i ++) {

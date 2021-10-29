@@ -116,6 +116,9 @@ public class SendCacheUpdatePacket extends Packet {
             for(BuildSectorData data : sectorData) {
                 if(data.hasPermission(GameClient.getClientPlayerState().getName(), "ENTER")) ClientCacheManager.accessibleSectors.add(data);
             }
+
+            EdenCore.getInstance().buildSectorMenuControlManager.getMenuPanel().guiWindow.clearTabs();
+            EdenCore.getInstance().buildSectorMenuControlManager.getMenuPanel().recreateTabs();
         } catch(Exception ignored) { }
     }
 

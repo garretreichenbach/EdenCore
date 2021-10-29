@@ -5,6 +5,7 @@ import api.network.PacketReadBuffer;
 import api.network.PacketWriteBuffer;
 import api.network.packets.PacketUtil;
 import org.schema.game.common.data.player.PlayerState;
+import thederpgamer.edencore.data.other.BuildSectorData;
 import thederpgamer.edencore.network.server.SendCacheUpdatePacket;
 import thederpgamer.edencore.utils.DataUtils;
 
@@ -40,7 +41,7 @@ public class RequestClientCacheUpdatePacket extends Packet {
 
     @Override
     public void processPacketOnServer(PlayerState playerState) {
-        DataUtils.getBuildSector(playerState.getName());
+        BuildSectorData data = DataUtils.getBuildSector(playerState.getName());
         PacketUtil.sendPacket(playerState, new SendCacheUpdatePacket());
     }
 }

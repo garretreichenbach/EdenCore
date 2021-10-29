@@ -9,6 +9,7 @@ import org.schema.schine.graphicsengine.forms.gui.newgui.*;
 import org.schema.schine.input.InputState;
 import thederpgamer.edencore.data.other.BuildSectorData;
 import thederpgamer.edencore.manager.ClientCacheManager;
+import thederpgamer.edencore.network.client.RequestClientCacheUpdatePacket;
 import thederpgamer.edencore.network.client.RequestMoveFromBuildSectorPacket;
 import thederpgamer.edencore.network.client.RequestMoveToBuildSectorPacket;
 import thederpgamer.edencore.utils.DataUtils;
@@ -30,6 +31,7 @@ public class BuildSectorScrollableList extends ScrollableTableList<BuildSectorDa
     public BuildSectorScrollableList(InputState state, GUIElement p, BuildSectorMenuPanel panel) {
         super(state, (float) GLFrame.getWidth() / 1.5f, (float) GLFrame.getHeight() / 2.0f, p);
         this.panel = panel;
+        PacketUtil.sendPacketToServer(new RequestClientCacheUpdatePacket());
         p.attach(this);
     }
 

@@ -29,12 +29,14 @@ public class PermissionData implements SerializableData {
 
     @Override
     public void deserialize(PacketReadBuffer readBuffer) throws IOException {
+        playerName = readBuffer.readString();
         if(permissions == null) permissions = new HashMap<>();
         permissions = readBuffer.readObject(permissions.getClass());
     }
 
     @Override
     public void serialize(PacketWriteBuffer writeBuffer) throws IOException {
+        writeBuffer.writeString(playerName);
         writeBuffer.writeObject(permissions);
     }
 }

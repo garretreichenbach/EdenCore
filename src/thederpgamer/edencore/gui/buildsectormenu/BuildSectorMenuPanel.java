@@ -20,7 +20,7 @@ public class BuildSectorMenuPanel extends GUIMenuPanel {
     @Override
     public void recreateTabs() {
         int lastTab = guiWindow.getSelectedTab();
-        guiWindow.clearTabs();
+        //guiWindow.clearTabs();
 
         GUIContentPane managementTab = guiWindow.addTab("MANAGEMENT");
         managementTab.setTextBoxHeightLast(GLFrame.getHeight() / 2);

@@ -304,10 +304,10 @@ public class DataUtils {
     }
 
     public static BuildSectorData getBuildSector(String playerName) {
-        if(DataManager.getGameStateType().equals(DataManager.GameStateType.CLIENT)) {
+        if(GameCommon.isClientConnectedToServer()) {
             PacketUtil.sendPacketToServer(new RequestClientCacheUpdatePacket());
             for(BuildSectorData sectorData : ClientCacheManager.accessibleSectors) if(sectorData.ownerName.equals(playerName)) return sectorData;
-        } else if(DataManager.getGameStateType().equals(DataManager.GameStateType.SERVER)) {
+        } else if(GameCommon.isDedicatedServer() || GameCommon.isOnSinglePlayer()) {
             for(Object object : PersistentObjectUtil.getObjects(instance, BuildSectorData.class)) {
                 BuildSectorData data = (BuildSectorData) object;
                 if(data.ownerName.equals(playerName)) return data;

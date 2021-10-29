@@ -1,6 +1,7 @@
 package thederpgamer.edencore.gui.buildsectormenu;
 
 import api.common.GameClient;
+import api.network.packets.PacketUtil;
 import org.schema.schine.graphicsengine.core.GLFrame;
 import org.schema.schine.graphicsengine.forms.gui.GUIAncor;
 import org.schema.schine.graphicsengine.forms.gui.GUIElement;
@@ -9,8 +10,10 @@ import org.schema.schine.graphicsengine.forms.gui.GUIListElement;
 import org.schema.schine.graphicsengine.forms.gui.newgui.*;
 import org.schema.schine.input.InputState;
 import thederpgamer.edencore.data.other.BuildSectorData;
+import thederpgamer.edencore.network.client.RequestClientCacheUpdatePacket;
 import thederpgamer.edencore.utils.DataUtils;
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Comparator;
 import java.util.Set;
@@ -24,7 +27,7 @@ import java.util.Set;
 public class BuildSectorUserScrollableList extends ScrollableTableList<String> {
 
     private final BuildSectorMenuPanel panel;
-    private final BuildSectorData sectorData;
+    private BuildSectorData sectorData;
 
     public BuildSectorUserScrollableList(InputState state, GUIElement p, BuildSectorMenuPanel panel) {
         super(state, (float) GLFrame.getWidth() / 2, (float) GLFrame.getHeight() / 2, p);
@@ -42,7 +45,13 @@ public class BuildSectorUserScrollableList extends ScrollableTableList<String> {
 
     @Override
     protected Collection<String> getElementList() {
-        return sectorData.permissions.keySet();
+        ArrayList<String> permissions = new ArrayList<>();
+        if(sectorData == null) {
+            PacketUtil.sendPacketToServer(new RequestClientCacheUpdatePacket());
+            sectorData = DataUtils.getBuildSector(GameClient.getClientPlayerState().getName());
+        }
+        if(sectorData != null) permissions.addAll(sectorData.permissions.keySet());
+        return permissions;
     }
 
     @Override
