@@ -59,7 +59,7 @@ public class BuildSectorUserScrollableList extends ScrollableTableList<String> {
 
             @Override
             public boolean isOccluded() {
-                return playerName.equals(sectorData.ownerName) && !ConfigManager.getMainConfig().getBoolean("debug-mode");
+                return (playerName.equals(sectorData.ownerName) && !ConfigManager.getMainConfig().getBoolean("debug-mode")) || !getState().getController().getPlayerInputs().isEmpty();
             }
         }, new GUIActivationCallback() {
             @Override
@@ -69,7 +69,7 @@ public class BuildSectorUserScrollableList extends ScrollableTableList<String> {
 
             @Override
             public boolean isActive(InputState inputState) {
-                return !playerName.equals(sectorData.ownerName) || ConfigManager.getMainConfig().getBoolean("debug-mode");
+                return (!playerName.equals(sectorData.ownerName) || ConfigManager.getMainConfig().getBoolean("debug-mode")) && getState().getController().getPlayerInputs().isEmpty();
             }
         });
 
@@ -98,7 +98,7 @@ public class BuildSectorUserScrollableList extends ScrollableTableList<String> {
 
             @Override
             public boolean isOccluded() {
-                return playerName.equals(sectorData.ownerName);
+                return (playerName.equals(sectorData.ownerName) && !ConfigManager.getMainConfig().getBoolean("debug-mode")) || !getState().getController().getPlayerInputs().isEmpty();
             }
         }, new GUIActivationCallback() {
             @Override
@@ -108,7 +108,7 @@ public class BuildSectorUserScrollableList extends ScrollableTableList<String> {
 
             @Override
             public boolean isActive(InputState inputState) {
-                return !playerName.equals(sectorData.ownerName);
+                return (!playerName.equals(sectorData.ownerName) || ConfigManager.getMainConfig().getBoolean("debug-mode")) && getState().getController().getPlayerInputs().isEmpty();
             }
         });
 
@@ -137,7 +137,7 @@ public class BuildSectorUserScrollableList extends ScrollableTableList<String> {
 
             @Override
             public boolean isOccluded() {
-                return playerName.equals(sectorData.ownerName);
+                return (playerName.equals(sectorData.ownerName) && !ConfigManager.getMainConfig().getBoolean("debug-mode")) || !getState().getController().getPlayerInputs().isEmpty();
             }
         }, new GUIActivationCallback() {
             @Override
@@ -147,7 +147,7 @@ public class BuildSectorUserScrollableList extends ScrollableTableList<String> {
 
             @Override
             public boolean isActive(InputState inputState) {
-                return !playerName.equals(sectorData.ownerName);
+                return (!playerName.equals(sectorData.ownerName) || ConfigManager.getMainConfig().getBoolean("debug-mode")) && getState().getController().getPlayerInputs().isEmpty();
             }
         });
 
