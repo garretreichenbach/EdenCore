@@ -90,6 +90,7 @@ public class EdenCore extends StarMod {
 
     @Override
     public void onEnable() {
+        super.onEnable();
         getInstance = this;
         ConfigManager.initialize(this);
         LogManager.initialize();
@@ -139,7 +140,9 @@ public class EdenCore extends StarMod {
         PacketUtil.registerPacket(RequestMoveFromBuildSectorPacket.class);
         PacketUtil.registerPacket(RequestBuildSectorInvitePacket.class);
         PacketUtil.registerPacket(RequestBuildSectorKickPacket.class);
+        PacketUtil.registerPacket(RequestBuildSectorBanPacket.class);
         PacketUtil.registerPacket(RequestSpawnEntryPacket.class);
+        PacketUtil.registerPacket(UpdateBuildSectorPermissionsPacket.class);
         PacketUtil.registerPacket(ExchangeItemCreatePacket.class);
         PacketUtil.registerPacket(ExchangeItemRemovePacket.class);
         PacketUtil.registerPacket(SendCacheUpdatePacket.class);

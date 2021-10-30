@@ -9,6 +9,7 @@ import org.schema.schine.graphicsengine.forms.gui.newgui.*;
 import org.schema.schine.input.InputState;
 import thederpgamer.edencore.data.other.BuildSectorData;
 import thederpgamer.edencore.manager.LogManager;
+import thederpgamer.edencore.network.client.RequestBuildSectorBanPacket;
 import thederpgamer.edencore.network.client.RequestBuildSectorKickPacket;
 import thederpgamer.edencore.network.client.RequestClientCacheUpdatePacket;
 import thederpgamer.edencore.utils.DataUtils;
@@ -44,7 +45,10 @@ public class BuildSectorUserScrollableList extends ScrollableTableList<String> {
             @Override
             public void callback(GUIElement guiElement, MouseEvent mouseEvent) {
                 if(mouseEvent.pressedLeftMouse()) {
-
+                    if(GameClient.getClientPlayerState().getName().equals(sectorData.ownerName)) {
+                        getState().getController().queueUIAudio("0022_menu_ui - select 1");
+                        (new BuildSectorPermissionsDialog(sectorData, playerName)).activate();
+                    } else getState().getController().queueUIAudio("0022_menu_ui - error 1");
                 }
             }
 
@@ -68,14 +72,22 @@ public class BuildSectorUserScrollableList extends ScrollableTableList<String> {
             @Override
             public void callback(GUIElement guiElement, MouseEvent mouseEvent) {
                 if(mouseEvent.pressedLeftMouse()) {
-                    (new SimplePlayerTextInput("Enter Kick Reason", "") {
-                        @Override
-                        public boolean onInput(String s) {
-                            PacketUtil.sendPacketToServer(new RequestBuildSectorKickPacket(sectorData.ownerName, playerName, s));
-                            panel.recreateTabs();
-                            return true;
-                        }
-                    }).activate();
+                    if(GameClient.getClientPlayerState().getName().equals(sectorData.ownerName)) {
+                        getState().getController().queueUIAudio("0022_menu_ui - select 2");
+                        (new SimplePlayerTextInput("Enter Kick Reason", "") {
+                            @Override
+                            public boolean onInput(String s) {
+                                if(!s.equals(sectorData.ownerName)) {
+                                    PacketUtil.sendPacketToServer(new RequestBuildSectorKickPacket(sectorData.ownerName, playerName, s));
+                                    panel.recreateTabs();
+                                    return true;
+                                } else {
+                                    getState().getController().queueUIAudio("0022_menu_ui - error 2");
+                                    return false;
+                                }
+                            }
+                        }).activate();
+                    } else getState().getController().queueUIAudio("0022_menu_ui - error 1");
                 }
             }
 
@@ -99,7 +111,22 @@ public class BuildSectorUserScrollableList extends ScrollableTableList<String> {
             @Override
             public void callback(GUIElement guiElement, MouseEvent mouseEvent) {
                 if(mouseEvent.pressedLeftMouse()) {
-
+                    if(GameClient.getClientPlayerState().getName().equals(sectorData.ownerName)) {
+                        getState().getController().queueUIAudio("0022_menu_ui - select 3");
+                        (new SimplePlayerTextInput("Enter Ban Reason", "") {
+                            @Override
+                            public boolean onInput(String s) {
+                                if(!s.equals(sectorData.ownerName)) {
+                                    PacketUtil.sendPacketToServer(new RequestBuildSectorBanPacket(sectorData.ownerName, playerName, s));
+                                    panel.recreateTabs();
+                                    return true;
+                                } else {
+                                    getState().getController().queueUIAudio("0022_menu_ui - error 2");
+                                    return false;
+                                }
+                            }
+                        }).activate();
+                    } else getState().getController().queueUIAudio("0022_menu_ui - error 1");
                 }
             }
 

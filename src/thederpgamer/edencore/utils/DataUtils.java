@@ -63,6 +63,23 @@ public class DataUtils {
         return entity.getRealName();
     }
 
+    /**
+     * Saves an updated version of BuildSector data sent by it's owner to local storage and sends updated data to other players.
+     * @param sectorData The updated sector data sent by the client that owns it
+     */
+    public static void updateBuildSector(BuildSectorData sectorData) {
+        ArrayList<BuildSectorData> toRemove = new ArrayList<>();
+        for(Object obj : PersistentObjectUtil.getObjects(instance, BuildSectorData.class)) {
+            BuildSectorData temp = (BuildSectorData) obj;
+            if(temp.ownerName.equals(sectorData.ownerName)) toRemove.add(temp);
+        }
+
+        for(BuildSectorData remove : toRemove) PersistentObjectUtil.removeObject(instance, remove);
+        PersistentObjectUtil.addObject(instance, sectorData);
+        PersistentObjectUtil.save(instance);
+        EdenCore.getInstance().updateClientCacheData();
+    }
+
     public static void movePlayerToBuildSector(final PlayerState playerState, final BuildSectorData sectorData) throws IOException, SQLException, NullPointerException {
         if(GameServer.getServerState() == null || !playerState.isOnServer() || DataUtils.isPlayerInAnyBuildSector(playerState) || playerState.isInTestSector() || playerState.isInPersonalSector() || playerState.isInTutorial()) return; //Make sure only the server executes this code
         playerState.getControllerState().forcePlayerOutOfSegmentControllers();
