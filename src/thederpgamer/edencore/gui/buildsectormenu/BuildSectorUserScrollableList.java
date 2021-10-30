@@ -2,12 +2,14 @@ package thederpgamer.edencore.gui.buildsectormenu;
 
 import api.common.GameClient;
 import api.network.packets.PacketUtil;
-import org.schema.schine.graphicsengine.core.GLFrame;
+import api.utils.gui.SimplePlayerTextInput;
 import org.schema.schine.graphicsengine.core.MouseEvent;
 import org.schema.schine.graphicsengine.forms.gui.*;
 import org.schema.schine.graphicsengine.forms.gui.newgui.*;
 import org.schema.schine.input.InputState;
 import thederpgamer.edencore.data.other.BuildSectorData;
+import thederpgamer.edencore.manager.LogManager;
+import thederpgamer.edencore.network.client.RequestBuildSectorKickPacket;
 import thederpgamer.edencore.network.client.RequestClientCacheUpdatePacket;
 import thederpgamer.edencore.utils.DataUtils;
 
@@ -28,7 +30,7 @@ public class BuildSectorUserScrollableList extends ScrollableTableList<String> {
     private BuildSectorData sectorData;
 
     public BuildSectorUserScrollableList(InputState state, GUIElement p, BuildSectorMenuPanel panel) {
-        super(state, (float) GLFrame.getWidth() / 2, (float) GLFrame.getHeight() / 2, p);
+        super(state, 800, 500, p);
         this.panel = panel;
         this.sectorData = DataUtils.getBuildSector(GameClient.getClientPlayerState().getName());
         p.attach(this);
@@ -38,7 +40,7 @@ public class BuildSectorUserScrollableList extends ScrollableTableList<String> {
         GUIHorizontalButtonTablePane buttonPane = new GUIHorizontalButtonTablePane(getState(), 3, 1, anchor);
         buttonPane.onInit();
 
-        buttonPane.addButton(0, 0, "MANAGE PERMISSIONS", GUIHorizontalArea.HButtonColor.YELLOW, new GUICallback() {
+        buttonPane.addButton(0, 0, "PERMISSIONS", GUIHorizontalArea.HButtonColor.YELLOW, new GUICallback() {
             @Override
             public void callback(GUIElement guiElement, MouseEvent mouseEvent) {
                 if(mouseEvent.pressedLeftMouse()) {
@@ -66,7 +68,14 @@ public class BuildSectorUserScrollableList extends ScrollableTableList<String> {
             @Override
             public void callback(GUIElement guiElement, MouseEvent mouseEvent) {
                 if(mouseEvent.pressedLeftMouse()) {
-
+                    (new SimplePlayerTextInput("Enter Kick Reason", "") {
+                        @Override
+                        public boolean onInput(String s) {
+                            PacketUtil.sendPacketToServer(new RequestBuildSectorKickPacket(sectorData.ownerName, playerName, s));
+                            panel.recreateTabs();
+                            return true;
+                        }
+                    }).activate();
                 }
             }
 
@@ -110,6 +119,7 @@ public class BuildSectorUserScrollableList extends ScrollableTableList<String> {
             }
         });
 
+        LogManager.logDebug("" + buttonPane.getWidth());
         return buttonPane;
     }
 
@@ -154,7 +164,7 @@ public class BuildSectorUserScrollableList extends ScrollableTableList<String> {
                 (nameRowElement = new GUIClippedRow(this.getState())).attach(nameTextElement);
 
                 BuildSectorUserScrollableListRow listRow = new BuildSectorUserScrollableListRow(getState(), playerName, nameRowElement);
-                GUIAncor anchor = new GUIAncor(getState(), (float) GLFrame.getWidth() / 2.695f, 28.0f);
+                GUIAncor anchor = new GUIAncor(getState(), 560, 28.0f);
                 anchor.attach(redrawButtonPane(playerName, anchor));
                 listRow.expanded = new GUIElementList(getState());
                 listRow.expanded.add(new GUIListElement(anchor, getState()));

@@ -3,12 +3,19 @@ package thederpgamer.edencore.utils;
 import api.common.GameServer;
 import api.utils.game.PlayerUtils;
 import com.bulletphysics.linearmath.Transform;
+import org.schema.common.util.linAlg.Vector3i;
 import org.schema.game.common.controller.SegmentController;
+import org.schema.game.common.controller.Ship;
+import org.schema.game.common.controller.SpaceStation;
+import org.schema.game.common.controller.elements.ManagerContainer;
+import org.schema.game.common.data.SegmentPiece;
 import org.schema.game.common.data.player.PlayerState;
+import org.schema.game.common.data.world.SimpleTransformableSendableObject;
 import org.schema.game.server.controller.BluePrintController;
 import org.schema.game.server.controller.EntityAlreadyExistsException;
 import org.schema.game.server.controller.EntityNotFountException;
 import org.schema.game.server.data.GameServerState;
+import org.schema.game.server.data.ServerConfig;
 import org.schema.game.server.data.blueprint.ChildStats;
 import org.schema.game.server.data.blueprint.SegmentControllerOutline;
 import org.schema.game.server.data.blueprint.SegmentControllerSpawnCallbackDirect;
@@ -26,6 +33,19 @@ import java.io.IOException;
  * @version 1.0 - [09/20/2021]
  */
 public class EntityUtils {
+
+    public static SegmentPiece getAvailableBuildBlock(SegmentController segmentController) {
+        ManagerContainer<?> managerContainer = null;
+        if(segmentController.getType().equals(SimpleTransformableSendableObject.EntityType.SHIP)) managerContainer = ((Ship) segmentController).getManagerContainer();
+        else if(segmentController.getType().equals(SimpleTransformableSendableObject.EntityType.SPACE_STATION)) managerContainer = ((SpaceStation) segmentController).getManagerContainer();
+
+        if(managerContainer != null && managerContainer.getBuildBlocks().size() > 0) return segmentController.getSegmentBuffer().getPointUnsave(managerContainer.getBuildBlocks().toLongArray()[0]);
+        else return null;
+    }
+
+    public static float getDistanceFromPlayer(PlayerState player, SegmentController segmentController) {
+        return (Vector3i.getDisatance(player.getCurrentSector(), segmentController.getSector(new Vector3i()))) * (int) ServerConfig.SECTOR_SIZE.getCurrentState();
+    }
 
     public static void spawnEntry(PlayerState owner, BlueprintEntry entry) {
         Transform transform = new Transform();

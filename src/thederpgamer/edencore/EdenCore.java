@@ -132,6 +132,8 @@ public class EdenCore extends StarMod {
         PacketUtil.registerPacket(RequestClientCacheUpdatePacket.class);
         PacketUtil.registerPacket(RequestMoveToBuildSectorPacket.class);
         PacketUtil.registerPacket(RequestMoveFromBuildSectorPacket.class);
+        PacketUtil.registerPacket(RequestBuildSectorInvitePacket.class);
+        PacketUtil.registerPacket(RequestBuildSectorKickPacket.class);
         PacketUtil.registerPacket(RequestSpawnEntryPacket.class);
         PacketUtil.registerPacket(ExchangeItemCreatePacket.class);
         PacketUtil.registerPacket(ExchangeItemRemovePacket.class);

@@ -9,7 +9,7 @@ import javax.annotation.Nullable;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
-import java.util.LinkedList;
+import java.util.ArrayList;
 
 /**
  * Handles mod specific logging for EdenCore.
@@ -34,7 +34,7 @@ public class LogManager {
     }
 
     private static FileWriter logWriter;
-    private static final LinkedList<String> messageQueue = new LinkedList<>();
+    private static final ArrayList<String> messageQueue = new ArrayList<>();
 
     public static void initialize() {
         String logFolderPath = DataUtils.getWorldDataPath() + "/logs";
@@ -102,23 +102,20 @@ public class LogManager {
                 if(lines.length > 1) {
                     for(int i = 0; i < lines.length; i ++) {
                         builder.append(lines[i]);
-                        if(i < lines.length - 1) {
-                            if(i > 1) for(int j = 0; j < prefix.length(); j ++) builder.append(" ");
-                        }
+                        if(i < lines.length - 1) if(i > 1) for(int j = 0; j < prefix.length(); j ++) builder.append(" ");
                     }
-                } else {
-                    builder.append(message);
-                }
+                } else builder.append(message);
                 System.out.println(builder.toString());
                 logWriter.append(builder.toString()).append("\n");
+                logWriter.flush();
                 DebugFile.log(builder.toString(), EdenCore.getInstance());
             } catch(IOException var3) {
                 var3.printStackTrace();
             }
             if(messageType.equals(MessageType.CRITICAL)) System.exit(1);
         }
-        if(messageQueue.size() >= 5) messageQueue.removeLast(); //Prevent spam from repeated messages
-        messageQueue.addFirst(message);
+        if(messageQueue.size() >= 5) messageQueue.remove(messageQueue.size() - 1); //Prevent spam from repeated messages
+        messageQueue.add(message);
     }
 
     public static void clearLogs() {

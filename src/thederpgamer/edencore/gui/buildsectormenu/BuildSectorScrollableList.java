@@ -2,14 +2,12 @@ package thederpgamer.edencore.gui.buildsectormenu;
 
 import api.common.GameClient;
 import api.network.packets.PacketUtil;
-import org.schema.schine.graphicsengine.core.GLFrame;
 import org.schema.schine.graphicsengine.core.MouseEvent;
 import org.schema.schine.graphicsengine.forms.gui.*;
 import org.schema.schine.graphicsengine.forms.gui.newgui.*;
 import org.schema.schine.input.InputState;
 import thederpgamer.edencore.data.other.BuildSectorData;
 import thederpgamer.edencore.manager.ClientCacheManager;
-import thederpgamer.edencore.network.client.RequestClientCacheUpdatePacket;
 import thederpgamer.edencore.network.client.RequestMoveFromBuildSectorPacket;
 import thederpgamer.edencore.network.client.RequestMoveToBuildSectorPacket;
 import thederpgamer.edencore.utils.DataUtils;
@@ -29,9 +27,8 @@ public class BuildSectorScrollableList extends ScrollableTableList<BuildSectorDa
     private final BuildSectorMenuPanel panel;
 
     public BuildSectorScrollableList(InputState state, GUIElement p, BuildSectorMenuPanel panel) {
-        super(state, (float) GLFrame.getWidth() / 2.5f, (float) GLFrame.getHeight() / 2.0f, p);
+        super(state, 800, 500, p);
         this.panel = panel;
-        PacketUtil.sendPacketToServer(new RequestClientCacheUpdatePacket());
         p.attach(this);
     }
 
@@ -134,7 +131,7 @@ public class BuildSectorScrollableList extends ScrollableTableList<BuildSectorDa
                 (ownerRowElement = new GUIClippedRow(this.getState())).attach(ownerTextElement);
 
                 BuildSectorScrollableListRow listRow = new BuildSectorScrollableListRow(getState(), sectorData, ownerRowElement);
-                GUIAncor anchor = new GUIAncor(getState(), (float) GLFrame.getWidth() / 2.695f, 28.0f);
+                GUIAncor anchor = new GUIAncor(getState(), 560, 28.0f);
                 anchor.attach(redrawButtonPane(sectorData, anchor));
                 listRow.expanded = new GUIElementList(getState());
                 listRow.expanded.add(new GUIListElement(anchor, getState()));

@@ -6,7 +6,6 @@ import api.utils.game.inventory.InventoryUtils;
 import api.utils.gui.GUIMenuPanel;
 import org.schema.game.client.controller.PlayerOkCancelInput;
 import org.schema.game.common.data.player.inventory.Inventory;
-import org.schema.schine.graphicsengine.core.GLFrame;
 import org.schema.schine.graphicsengine.core.MouseEvent;
 import org.schema.schine.graphicsengine.forms.font.FontLibrary;
 import org.schema.schine.graphicsengine.forms.gui.*;
@@ -18,6 +17,7 @@ import thederpgamer.edencore.data.exchange.ResourceExchangeItem;
 import thederpgamer.edencore.element.ElementManager;
 import thederpgamer.edencore.manager.ClientCacheManager;
 import thederpgamer.edencore.network.client.ExchangeItemRemovePacket;
+import thederpgamer.edencore.network.client.RequestClientCacheUpdatePacket;
 import thederpgamer.edencore.network.client.RequestSpawnEntryPacket;
 import thederpgamer.edencore.utils.DataUtils;
 
@@ -40,7 +40,7 @@ public class ExchangeMenuPanel extends GUIMenuPanel {
     private ResourceExchangeItem lastClickedResource;
 
     public ExchangeMenuPanel(InputState inputState) {
-        super(inputState, "ServerExchange", GLFrame.getWidth() / 2, (int) (GLFrame.getHeight() / 2.5f));
+        super(inputState, "ServerExchange", 800, 500);
         BRONZE = ElementManager.getItem("Bronze Bar").getId();
         SILVER = ElementManager.getItem("Silver Bar").getId();
         GOLD = ElementManager.getItem("Gold Bar").getId();
@@ -48,15 +48,16 @@ public class ExchangeMenuPanel extends GUIMenuPanel {
 
     @Override
     public void recreateTabs() {
+        PacketUtil.sendPacketToServer(new RequestClientCacheUpdatePacket());
         int lastTab = guiWindow.getSelectedTab();
-        guiWindow.clearTabs();
+        if(guiWindow.getTabs().size() > 0) guiWindow.clearTabs();
 
         GUIContentPane blueprintsTab = guiWindow.addTab("ENTITIES");
-        blueprintsTab.setTextBoxHeightLast(GLFrame.getHeight() / 2);
+        blueprintsTab.setTextBoxHeightLast(500);
         createBlueprintsTab(blueprintsTab);
 
         GUIContentPane resourcesTab = guiWindow.addTab("RESOURCES");
-        resourcesTab.setTextBoxHeightLast(GLFrame.getHeight() / 2);
+        resourcesTab.setTextBoxHeightLast(500);
         createResourcesTab(resourcesTab);
 
         //Todo: Figure out some sort of service voucher system for this
@@ -65,7 +66,7 @@ public class ExchangeMenuPanel extends GUIMenuPanel {
         //createServicesTab(servicesTab);
 
         GUIContentPane exchangeTab = guiWindow.addTab("EXCHANGE");
-        exchangeTab.setTextBoxHeightLast(GLFrame.getHeight() / 2);
+        exchangeTab.setTextBoxHeightLast(500);
         createExchangeTab(exchangeTab);
 
         guiWindow.setSelectedTab(lastTab);
@@ -131,7 +132,8 @@ public class ExchangeMenuPanel extends GUIMenuPanel {
         contentPane.getContent(0).attach(blueprintsTilePane);
 
         if(isAdmin()) {
-            contentPane.addNewTextBox(14);
+            contentPane.setTextBoxHeight(0, (int) (contentPane.getHeight() - 139));
+            contentPane.addNewTextBox(28);
             GUIHorizontalButtonTablePane adminPane = new GUIHorizontalButtonTablePane(getState(), 2, 1, contentPane.getContent(1));
             adminPane.onInit();
 
@@ -254,7 +256,8 @@ public class ExchangeMenuPanel extends GUIMenuPanel {
         contentPane.getContent(0).attach(resourcesTilePane);
 
         if(isAdmin()) {
-            contentPane.addNewTextBox(14);
+            contentPane.setTextBoxHeight(0, (int) (contentPane.getHeight() - 139));
+            contentPane.addNewTextBox(28);
             GUIHorizontalButtonTablePane adminPane = new GUIHorizontalButtonTablePane(getState(), 2, 1, contentPane.getContent(1));
             adminPane.onInit();
 

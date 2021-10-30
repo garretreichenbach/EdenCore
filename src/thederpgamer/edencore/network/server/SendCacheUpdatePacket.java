@@ -5,6 +5,7 @@ import api.mod.config.PersistentObjectUtil;
 import api.network.Packet;
 import api.network.PacketReadBuffer;
 import api.network.PacketWriteBuffer;
+import org.schema.game.common.controller.SegmentController;
 import org.schema.game.common.data.player.PlayerState;
 import thederpgamer.edencore.EdenCore;
 import thederpgamer.edencore.data.event.EventData;
@@ -14,6 +15,7 @@ import thederpgamer.edencore.data.exchange.ResourceExchangeItem;
 import thederpgamer.edencore.data.other.BuildSectorData;
 import thederpgamer.edencore.manager.ClientCacheManager;
 import thederpgamer.edencore.manager.LogManager;
+import thederpgamer.edencore.utils.DataUtils;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -27,6 +29,9 @@ import java.util.ArrayList;
  */
 public class SendCacheUpdatePacket extends Packet {
 
+    //Data
+    private PlayerState playerState;
+
     //Exchange
     private final ArrayList<BlueprintExchangeItem> blueprintExchangeItems = new ArrayList<>();
     private final ArrayList<ResourceExchangeItem> resourceExchangeItems = new ArrayList<>();
@@ -37,6 +42,7 @@ public class SendCacheUpdatePacket extends Packet {
 
     //Build Sector
     private final ArrayList<BuildSectorData> sectorData = new ArrayList<>();
+    private final ArrayList<SegmentController> sectorEntities = new ArrayList<>();
 
     public SendCacheUpdatePacket() {
 
@@ -72,6 +78,18 @@ public class SendCacheUpdatePacket extends Packet {
             }
         }
         LogManager.logDebug("Received " + sectorSize + " updated build sector data.");
+
+        int entitySize = packetReadBuffer.readInt();
+        if(entitySize > 0) {
+            for(int i = 0; i < entitySize; i ++) {
+                try {
+                    sectorEntities.add((SegmentController) packetReadBuffer.readSendable());
+                } catch(Exception exception) {
+                    LogManager.logException("Encountered an exception while trying to deserialize SegmentController data", exception);
+                }
+            }
+        }
+        LogManager.logDebug("Received " + entitySize + " updated sector entity data.");
     }
 
     @Override
@@ -87,6 +105,10 @@ public class SendCacheUpdatePacket extends Packet {
         getBuildSectors();
         packetWriteBuffer.writeInt(sectorData.size());
         if(sectorData.size() > 0) for(BuildSectorData sector : sectorData) sector.serialize(packetWriteBuffer);
+
+        getSectorEntities();
+        packetWriteBuffer.writeInt(sectorEntities.size());
+        if(sectorEntities.size() > 0) for(SegmentController segmentController : sectorEntities) packetWriteBuffer.writeSendable(segmentController);
     }
 
     @Override
@@ -117,13 +139,16 @@ public class SendCacheUpdatePacket extends Packet {
                 if(data.hasPermission(GameClient.getClientPlayerState().getName(), "ENTER")) ClientCacheManager.accessibleSectors.add(data);
             }
 
+            ClientCacheManager.sectorEntities.clear();
+            if(DataUtils.isPlayerInAnyBuildSector(playerState)) ClientCacheManager.sectorEntities.addAll(sectorEntities);
+
             EdenCore.getInstance().buildSectorMenuControlManager.getMenuPanel().recreateTabs();
         } catch(Exception ignored) { }
     }
 
     @Override
     public void processPacketOnServer(PlayerState playerState) {
-
+        this.playerState = playerState;
     }
 
     private void getBlueprintItems() {
@@ -148,5 +173,9 @@ public class SendCacheUpdatePacket extends Packet {
             sectorDataList.add((BuildSectorData) obj);
         }
         sectorData.addAll(sectorDataList);
+    }
+
+    private void getSectorEntities() {
+        if(DataUtils.isPlayerInAnyBuildSector(playerState)) sectorEntities.addAll(DataUtils.getEntitiesInBuildSector(DataUtils.getPlayerCurrentBuildSector(playerState)));
     }
 }

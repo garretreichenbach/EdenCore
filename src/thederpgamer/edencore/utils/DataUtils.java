@@ -282,11 +282,16 @@ public class DataUtils {
 
     public static ArrayList<SegmentController> getEntitiesInBuildSector(BuildSectorData sectorData) {
         ArrayList<SegmentController> entityList = new ArrayList<>();
-        try {
-            Set set = GameServer.getUniverse().getSector(sectorData.sector).getEntities();
-            for(Object obj : set) if(obj instanceof SegmentController) entityList.add((SegmentController) obj);
-        } catch(IOException exception) {
-            exception.printStackTrace();
+        if(GameCommon.isClientConnectedToServer()) {
+            PacketUtil.sendPacketToServer(new RequestClientCacheUpdatePacket());
+            entityList.addAll(ClientCacheManager.sectorEntities);
+        } else if(GameCommon.isDedicatedServer() || GameCommon.isOnSinglePlayer()) {
+            try {
+                Set set = GameServer.getUniverse().getSector(sectorData.sector).getEntities();
+                for(Object obj : set) if(obj instanceof SegmentController) entityList.add((SegmentController) obj);
+            } catch(IOException exception) {
+                exception.printStackTrace();
+            }
         }
         return entityList;
     }

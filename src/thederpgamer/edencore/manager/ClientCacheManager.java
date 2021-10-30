@@ -1,5 +1,6 @@
 package thederpgamer.edencore.manager;
 
+import org.schema.game.common.controller.SegmentController;
 import thederpgamer.edencore.data.event.EventData;
 import thederpgamer.edencore.data.event.SortieData;
 import thederpgamer.edencore.data.exchange.BlueprintExchangeItem;
@@ -26,4 +27,5 @@ public class ClientCacheManager {
 
     //Build Sector
     public static final ArrayList<BuildSectorData> accessibleSectors = new ArrayList<>();
+    public static final ArrayList<SegmentController> sectorEntities = new ArrayList<>();
 }
