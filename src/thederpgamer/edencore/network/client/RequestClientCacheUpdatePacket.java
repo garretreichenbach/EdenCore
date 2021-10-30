@@ -39,6 +39,6 @@ public class RequestClientCacheUpdatePacket extends Packet {
 
     @Override
     public void processPacketOnServer(PlayerState playerState) {
-        PacketUtil.sendPacket(playerState, new SendCacheUpdatePacket());
+        PacketUtil.sendPacket(playerState, new SendCacheUpdatePacket(playerState));
     }
 }

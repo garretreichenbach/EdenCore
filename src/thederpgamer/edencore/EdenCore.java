@@ -9,6 +9,7 @@ import api.listener.events.block.*;
 import api.listener.events.controller.ClientInitializeEvent;
 import api.listener.events.controller.ServerInitializeEvent;
 import api.listener.events.draw.RegisterWorldDrawersEvent;
+import api.listener.events.entity.SegmentControllerInstantiateEvent;
 import api.listener.events.gui.GUITopBarCreateEvent;
 import api.listener.events.input.KeyPressEvent;
 import api.listener.events.player.PlayerDeathEvent;
@@ -24,6 +25,7 @@ import api.utils.game.PlayerUtils;
 import api.utils.game.inventory.InventoryUtils;
 import api.utils.gui.ModGUIHandler;
 import org.apache.commons.io.IOUtils;
+import org.schema.common.util.linAlg.Vector3i;
 import org.schema.game.client.view.gui.newgui.GUITopBar;
 import org.schema.game.common.data.player.PlayerState;
 import org.schema.game.server.data.PlayerNotFountException;
@@ -41,15 +43,18 @@ import thederpgamer.edencore.element.ElementManager;
 import thederpgamer.edencore.element.items.PrizeBars;
 import thederpgamer.edencore.gui.buildsectormenu.BuildSectorMenuControlManager;
 import thederpgamer.edencore.gui.exchangemenu.ExchangeMenuControlManager;
-import thederpgamer.edencore.manager.*;
+import thederpgamer.edencore.manager.ConfigManager;
+import thederpgamer.edencore.manager.LogManager;
+import thederpgamer.edencore.manager.ResourceManager;
+import thederpgamer.edencore.manager.TransferManager;
 import thederpgamer.edencore.navigation.EdenMapDrawer;
 import thederpgamer.edencore.navigation.MapIcon;
-import thederpgamer.edencore.network.client.NavigationMapPacket;
 import thederpgamer.edencore.navigation.NavigationUtilManager;
 import thederpgamer.edencore.network.client.*;
 import thederpgamer.edencore.network.server.SendCacheUpdatePacket;
 import thederpgamer.edencore.utils.DataUtils;
 import thederpgamer.edencore.utils.DateUtils;
+
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.sql.Date;
@@ -261,6 +266,22 @@ public class EdenCore extends StarMod {
             }
         }, this);
 
+        StarLoader.registerListener(SegmentControllerInstantiateEvent.class, new Listener<SegmentControllerInstantiateEvent>() {
+            @Override
+            public void onEvent(final SegmentControllerInstantiateEvent event) {
+                new StarRunnable() {
+                    @Override
+                    public void run() {
+                        try {
+                            if(event.getController().getSector(new Vector3i()).x > 100000000 || event.getController().getSector(new Vector3i()).y > 100000000 || event.getController().getSector(new Vector3i()).z > 100000000) {
+                                updateClientCacheData();
+                            }
+                        } catch(Exception ignored) { }
+                    }
+                }.runLater(getInstance(), 3);
+            }
+        }, this);
+
         StarLoader.registerListener(SegmentPieceAddEvent.class, new Listener<SegmentPieceAddEvent>() {
             @Override
             public void onEvent(SegmentPieceAddEvent event) {
@@ -367,7 +388,7 @@ public class EdenCore extends StarMod {
                         @Override
                         public void run() {
                             try {
-                                PacketUtil.sendPacket(GameServer.getServerState().getPlayerFromName(event.getPlayerName()), new SendCacheUpdatePacket());
+                                PacketUtil.sendPacket(GameServer.getServerState().getPlayerFromName(event.getPlayerName()), new SendCacheUpdatePacket(GameServer.getServerState().getPlayerFromName(event.getPlayerName())));
                             } catch(PlayerNotFountException exception) {
                                 exception.printStackTrace();
                             }
@@ -456,7 +477,7 @@ public class EdenCore extends StarMod {
         if(GameCommon.isOnSinglePlayer() || GameCommon.isDedicatedServer()) {
             try {
                 for(PlayerState playerState : GameServer.getServerState().getPlayerStatesByName().values()) {
-                    PacketUtil.sendPacket(playerState, new SendCacheUpdatePacket());
+                    PacketUtil.sendPacket(playerState, new SendCacheUpdatePacket(playerState));
                 }
             } catch(Exception ignored) { }
         }

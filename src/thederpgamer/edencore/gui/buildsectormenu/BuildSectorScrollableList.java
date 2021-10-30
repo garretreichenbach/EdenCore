@@ -2,6 +2,8 @@ package thederpgamer.edencore.gui.buildsectormenu;
 
 import api.common.GameClient;
 import api.network.packets.PacketUtil;
+import api.utils.game.PlayerUtils;
+import org.schema.game.common.controller.SegmentController;
 import org.schema.schine.graphicsengine.core.MouseEvent;
 import org.schema.schine.graphicsengine.forms.gui.*;
 import org.schema.schine.graphicsengine.forms.gui.newgui.*;
@@ -40,8 +42,11 @@ public class BuildSectorScrollableList extends ScrollableTableList<BuildSectorDa
             @Override
             public void callback(GUIElement guiElement, MouseEvent mouseEvent) {
                 if(mouseEvent.pressedLeftMouse() && sectorData.hasPermission(GameClient.getClientPlayerState().getName(), "ENTER") && !DataUtils.isPlayerInAnyBuildSector(GameClient.getClientPlayerState())) {
-                    PacketUtil.sendPacketToServer(new RequestMoveToBuildSectorPacket(sectorData));
-                    panel.recreateTabs();
+                    if(PlayerUtils.getCurrentControl(GameClient.getClientPlayerState()) instanceof SegmentController) PlayerUtils.sendMessage(GameClient.getClientPlayerState(), "You can't do this while in an entity.");
+                    else {
+                        PacketUtil.sendPacketToServer(new RequestMoveToBuildSectorPacket(sectorData));
+                        panel.recreateTabs();
+                    }
                 }
             }
 
@@ -65,8 +70,11 @@ public class BuildSectorScrollableList extends ScrollableTableList<BuildSectorDa
             @Override
             public void callback(GUIElement guiElement, MouseEvent mouseEvent) {
                 if(mouseEvent.pressedLeftMouse() && DataUtils.isPlayerInAnyBuildSector(GameClient.getClientPlayerState())) {
-                    PacketUtil.sendPacketToServer(new RequestMoveFromBuildSectorPacket());
-                    panel.recreateTabs();
+                    if(PlayerUtils.getCurrentControl(GameClient.getClientPlayerState()) instanceof SegmentController) PlayerUtils.sendMessage(GameClient.getClientPlayerState(), "You can't do this while in an entity.");
+                     else {
+                        PacketUtil.sendPacketToServer(new RequestMoveFromBuildSectorPacket());
+                        panel.recreateTabs();
+                    }
                 }
             }
 

@@ -48,6 +48,10 @@ public class SendCacheUpdatePacket extends Packet {
 
     }
 
+    public SendCacheUpdatePacket(PlayerState playerState) {
+        this.playerState = playerState;
+    }
+
     @Override
     public void readPacketData(PacketReadBuffer packetReadBuffer) throws IOException {
         //Exchange
@@ -121,7 +125,7 @@ public class SendCacheUpdatePacket extends Packet {
             ClientCacheManager.resourceExchangeItems.clear();
             ClientCacheManager.resourceExchangeItems.addAll(resourceExchangeItems);
 
-            EdenCore.getInstance().exchangeMenuControlManager.getMenuPanel().recreateTabs();
+            //EdenCore.getInstance().exchangeMenuControlManager.getMenuPanel().recreateTabs();
         } catch(Exception ignored) { }
 
         //try { //Events
@@ -140,9 +144,9 @@ public class SendCacheUpdatePacket extends Packet {
             }
 
             ClientCacheManager.sectorEntities.clear();
-            if(DataUtils.isPlayerInAnyBuildSector(playerState)) ClientCacheManager.sectorEntities.addAll(sectorEntities);
+            if(DataUtils.isPlayerInAnyBuildSector(GameClient.getClientPlayerState())) ClientCacheManager.sectorEntities.addAll(sectorEntities);
 
-            EdenCore.getInstance().buildSectorMenuControlManager.getMenuPanel().recreateTabs();
+            //EdenCore.getInstance().buildSectorMenuControlManager.getMenuPanel().recreateTabs();
         } catch(Exception ignored) { }
     }
 
