@@ -64,19 +64,7 @@ public class BuildSectorUtils {
         transform.origin.set(forward);
 
         try {
-            SegmentControllerOutline<?> outline = BluePrintController.active.loadBluePrint(
-                    GameServerState.instance,
-                    entry.getName(),
-                    entry.getName(),
-                    transform,
-                    -1,
-                    sender.getFactionId(),
-                    sender.getCurrentSector(),
-                    sender.getName(),
-                    PlayerState.buffer,
-                    spawnOnBlock,
-                    false,
-                    new ChildStats(false));
+            SegmentControllerOutline<?> outline = BluePrintController.active.loadBluePrint(GameServerState.instance, entry.getName(), entry.getName(), transform, -1, sender.getFactionId(), sender.getCurrentSector(), sender.getName(), PlayerState.buffer, spawnOnBlock, false, new ChildStats(false));
             SegmentController entity = outline.spawn(sender.getCurrentSector(), false, new ChildStats(false), new SegmentControllerSpawnCallbackDirect(GameServer.getServerState(), sender.getCurrentSector()) {
                 @Override
                 public void onNoDocker() {

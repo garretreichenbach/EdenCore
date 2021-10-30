@@ -97,6 +97,6 @@ public class BuildSectorMenuPanel extends GUIMenuPanel {
     }
 
     private void createCatalogTab(GUIContentPane contentPane) {
-        contentPane.addDivider(600);
+        (new BuildSectorCatalogScrollableList(getState(), DataUtils.getBuildSector(GameClient.getClientPlayerState().getName()), contentPane.getContent(0), this)).onInit();
     }
 }

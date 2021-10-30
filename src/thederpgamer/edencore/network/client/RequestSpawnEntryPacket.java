@@ -8,6 +8,7 @@ import org.schema.game.common.data.player.PlayerState;
 import org.schema.game.server.controller.BluePrintController;
 import org.schema.game.server.controller.EntityNotFountException;
 import org.schema.game.server.data.blueprintnw.BlueprintEntry;
+import thederpgamer.edencore.EdenCore;
 import thederpgamer.edencore.utils.EntityUtils;
 
 import java.io.IOException;
@@ -22,23 +23,31 @@ import java.io.IOException;
 public class RequestSpawnEntryPacket extends Packet {
 
     private String entryName;
+    private boolean docked;
+    private boolean enemy;
 
     public RequestSpawnEntryPacket() {
 
     }
 
-    public RequestSpawnEntryPacket(String entryName) {
+    public RequestSpawnEntryPacket(String entryName, boolean docked, boolean enemy) {
         this.entryName = entryName;
+        this.docked = docked;
+        this.enemy = enemy;
     }
 
     @Override
     public void readPacketData(PacketReadBuffer packetReadBuffer) throws IOException {
         entryName = packetReadBuffer.readString();
+        docked = packetReadBuffer.readBoolean();
+        enemy = packetReadBuffer.readBoolean();
     }
 
     @Override
     public void writePacketData(PacketWriteBuffer packetWriteBuffer) throws IOException {
         packetWriteBuffer.writeString(entryName);
+        packetWriteBuffer.writeBoolean(docked);
+        packetWriteBuffer.writeBoolean(enemy);
     }
 
     @Override
@@ -50,10 +59,15 @@ public class RequestSpawnEntryPacket extends Packet {
     public void processPacketOnServer(PlayerState playerState) {
         try {
             BlueprintEntry entry = BluePrintController.active.getBlueprint(entryName);
-            EntityUtils.spawnEntry(playerState, entry);
+            if(docked) EntityUtils.spawnEntryOnDock(playerState, entry);
+            else {
+                if(enemy) EntityUtils.spawnEnemy(playerState, entry);
+                else EntityUtils.spawnEntry(playerState, entry);
+            }
         } catch(EntityNotFountException exception) {
             exception.printStackTrace();
             PlayerUtils.sendMessage(playerState, "There was a severe error in spawning your entity! Please notify an admin ASAP!");
         }
+        EdenCore.getInstance().updateClientCacheData();
     }
 }

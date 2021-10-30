@@ -631,7 +631,7 @@ public class ExchangeMenuPanel extends GUIMenuPanel {
     public void givePlayerItem(ExchangeItem item) {
         Inventory inventory = GameClient.getClientPlayerState().getInventory();
         if(item instanceof BlueprintExchangeItem) {
-            PacketUtil.sendPacketToServer(new RequestSpawnEntryPacket(item.name));
+            PacketUtil.sendPacketToServer(new RequestSpawnEntryPacket(item.name, false, false));
             /* This doesn't work because the game won't see the item as valid and won't spawn it
             BlueprintMetaItem metaItem = (BlueprintMetaItem) MetaObjectManager.instantiate(MetaObjectManager.MetaObjectType.BLUEPRINT, (short) -1, false);
             metaItem.blueprintName = item.name;

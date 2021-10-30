@@ -258,39 +258,41 @@ public class BuildSectorEntitiesScrollableList extends ScrollableTableList<Segme
         guiElementList.addObserver(this);
         if(DataUtils.isPlayerInAnyBuildSector(GameClient.getClientPlayerState())) {
             for(SegmentController segmentController : set) {
-                GUITextOverlayTable nameTextElement;
-                (nameTextElement = new GUITextOverlayTable(10, 10, this.getState())).setTextSimple(segmentController.getRealName());
-                GUIClippedRow nameRowElement;
-                (nameRowElement = new GUIClippedRow(this.getState())).attach(nameTextElement);
+                if(segmentController.railController.isRoot()) {
+                    GUITextOverlayTable nameTextElement;
+                    (nameTextElement = new GUITextOverlayTable(10, 10, this.getState())).setTextSimple(segmentController.getRealName());
+                    GUIClippedRow nameRowElement;
+                    (nameRowElement = new GUIClippedRow(this.getState())).attach(nameTextElement);
 
-                GUITextOverlayTable factionTextElement;
-                (factionTextElement = new GUITextOverlayTable(10, 10, this.getState())).setTextSimple((segmentController.getFactionId() <= 0) ? "NO FACTION" : segmentController.getFaction().getName());
-                GUIClippedRow factionRowElement;
-                (factionRowElement = new GUIClippedRow(this.getState())).attach(factionTextElement);
+                    GUITextOverlayTable factionTextElement;
+                    (factionTextElement = new GUITextOverlayTable(10, 10, this.getState())).setTextSimple((segmentController.getFactionId() == 0) ? "NO FACTION" : segmentController.getFaction().getName());
+                    GUIClippedRow factionRowElement;
+                    (factionRowElement = new GUIClippedRow(this.getState())).attach(factionTextElement);
 
-                GUITextOverlayTable massTextElement;
-                (massTextElement = new GUITextOverlayTable(10, 10, this.getState())).setTextSimple(StringTools.massFormat(segmentController.getTotalPhysicalMass()));
-                GUIClippedRow massRowElement;
-                (massRowElement = new GUIClippedRow(this.getState())).attach(massTextElement);
+                    GUITextOverlayTable massTextElement;
+                    (massTextElement = new GUITextOverlayTable(10, 10, this.getState())).setTextSimple(StringTools.massFormat(segmentController.getTotalPhysicalMass()));
+                    GUIClippedRow massRowElement;
+                    (massRowElement = new GUIClippedRow(this.getState())).attach(massTextElement);
 
-                GUITextOverlayTable distanceTextElement;
-                (distanceTextElement = new GUITextOverlayTable(10, 10, this.getState())).setTextSimple(StringTools.formatDistance(EntityUtils.getDistanceFromPlayer(GameClient.getClientPlayerState(), segmentController)));
-                GUIClippedRow distanceRowElement;
-                (distanceRowElement = new GUIClippedRow(this.getState())).attach(distanceTextElement);
+                    GUITextOverlayTable distanceTextElement;
+                    (distanceTextElement = new GUITextOverlayTable(10, 10, this.getState())).setTextSimple(StringTools.formatDistance(EntityUtils.getDistanceFromPlayer(GameClient.getClientPlayerState(), segmentController)));
+                    GUIClippedRow distanceRowElement;
+                    (distanceRowElement = new GUIClippedRow(this.getState())).attach(distanceTextElement);
 
-                GUITextOverlayTable typeTextElement;
-                (typeTextElement = new GUITextOverlayTable(10, 10, this.getState())).setTextSimple(segmentController.getTypeString());
-                GUIClippedRow typeRowElement;
-                (typeRowElement = new GUIClippedRow(this.getState())).attach(typeTextElement);
+                    GUITextOverlayTable typeTextElement;
+                    (typeTextElement = new GUITextOverlayTable(10, 10, this.getState())).setTextSimple(segmentController.getTypeString().toUpperCase());
+                    GUIClippedRow typeRowElement;
+                    (typeRowElement = new GUIClippedRow(this.getState())).attach(typeTextElement);
 
-                BuildSectorEntityListRow listRow = new BuildSectorEntityListRow(getState(), segmentController, nameRowElement, factionRowElement, massRowElement, distanceRowElement, typeRowElement);
-                GUIAncor anchor = new GUIAncor(getState(), 1160, 28.0f);
-                anchor.attach(redrawButtonPane(segmentController, anchor));
-                listRow.expanded = new GUIElementList(getState());
-                listRow.expanded.add(new GUIListElement(anchor, getState()));
-                listRow.expanded.attach(anchor);
-                listRow.onInit();
-                guiElementList.addWithoutUpdate(listRow);
+                    BuildSectorEntityListRow listRow = new BuildSectorEntityListRow(getState(), segmentController, nameRowElement, factionRowElement, massRowElement, distanceRowElement, typeRowElement);
+                    GUIAncor anchor = new GUIAncor(getState(), 1160, 28.0f);
+                    anchor.attach(redrawButtonPane(segmentController, anchor));
+                    listRow.expanded = new GUIElementList(getState());
+                    listRow.expanded.add(new GUIListElement(anchor, getState()));
+                    listRow.expanded.attach(anchor);
+                    listRow.onInit();
+                    guiElementList.addWithoutUpdate(listRow);
+                }
             }
         }
         guiElementList.updateDim();
