@@ -16,17 +16,12 @@ import thederpgamer.edencore.network.client.UpdateBuildSectorPermissionsPacket;
  */
 public class BuildSectorPermissionsDialog extends GUIInputDialog {
 
-    private final BuildSectorData sectorData;
-    private final String targetName;
-
-    public BuildSectorPermissionsDialog(BuildSectorData sectorData, String targetName) {
-        this.sectorData = sectorData;
-        this.targetName = targetName;
-    }
+    public BuildSectorData sectorData;
+    public String targetName;
 
     @Override
     public BuildSectorPermissionsPanel createPanel() {
-        return new BuildSectorPermissionsPanel(getState(), sectorData, targetName, this);
+        return new BuildSectorPermissionsPanel(getState(), this);
     }
 
     @Override
@@ -39,7 +34,7 @@ public class BuildSectorPermissionsDialog extends GUIInputDialog {
                     deactivate();
                     break;
                 case "OK":
-                    PacketUtil.sendPacketToServer(new UpdateBuildSectorPermissionsPacket(sectorData, targetName));
+                    if(sectorData != null && targetName != null) PacketUtil.sendPacketToServer(new UpdateBuildSectorPermissionsPacket(sectorData, targetName));
                     deactivate();
                     break;
             }

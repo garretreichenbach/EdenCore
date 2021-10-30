@@ -20,21 +20,12 @@ import thederpgamer.edencore.data.other.BuildSectorData;
  */
 public class BuildSectorPermissionsPanel extends GUIInputDialogPanel {
 
-    private GUIContentPane contentPane;
-
-    private final BuildSectorData sectorData;
-    private final String targetName;
-
-    public BuildSectorPermissionsPanel(InputState inputState, BuildSectorData sectorData, String targetName, GUICallback guiCallback) {
-        super(inputState, "build_sector_permissions_panel", "Permissions for " + targetName, "", 700, 400, guiCallback);
-        this.sectorData = sectorData;
-        this.targetName = targetName;
+    public BuildSectorPermissionsPanel(InputState inputState, GUICallback guiCallback) {
+        super(inputState, "build_sector_permissions_panel", "Manage Permissions", "", 800, 300, guiCallback);
     }
 
-    @Override
-    public void onInit() {
-        super.onInit();
-        contentPane = ((GUIDialogWindow) background).getMainContentPane();
+    public void createPanel(final BuildSectorData sectorData, final String targetName) {
+        GUIContentPane contentPane = ((GUIDialogWindow) background).getMainContentPane();
         contentPane.setTextBoxHeightLast((int) getHeight());
 
         GUIHorizontalButtonTablePane buttonPane = new GUIHorizontalButtonTablePane(getState(), 2, 7, contentPane);

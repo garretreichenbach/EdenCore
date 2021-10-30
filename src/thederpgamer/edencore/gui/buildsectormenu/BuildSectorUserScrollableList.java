@@ -8,6 +8,7 @@ import org.schema.schine.graphicsengine.forms.gui.*;
 import org.schema.schine.graphicsengine.forms.gui.newgui.*;
 import org.schema.schine.input.InputState;
 import thederpgamer.edencore.data.other.BuildSectorData;
+import thederpgamer.edencore.manager.ConfigManager;
 import thederpgamer.edencore.manager.LogManager;
 import thederpgamer.edencore.network.client.RequestBuildSectorBanPacket;
 import thederpgamer.edencore.network.client.RequestBuildSectorKickPacket;
@@ -47,14 +48,18 @@ public class BuildSectorUserScrollableList extends ScrollableTableList<String> {
                 if(mouseEvent.pressedLeftMouse()) {
                     if(GameClient.getClientPlayerState().getName().equals(sectorData.ownerName)) {
                         getState().getController().queueUIAudio("0022_menu_ui - select 1");
-                        (new BuildSectorPermissionsDialog(sectorData, playerName)).activate();
+                        BuildSectorPermissionsDialog permissionsDialog = new BuildSectorPermissionsDialog();
+                        permissionsDialog.sectorData = sectorData;
+                        permissionsDialog.targetName = playerName;
+                        permissionsDialog.getInputPanel().createPanel(sectorData, playerName);
+                        permissionsDialog.activate();
                     } else getState().getController().queueUIAudio("0022_menu_ui - error 1");
                 }
             }
 
             @Override
             public boolean isOccluded() {
-                return playerName.equals(sectorData.ownerName);
+                return playerName.equals(sectorData.ownerName) && !ConfigManager.getMainConfig().getBoolean("debug-mode");
             }
         }, new GUIActivationCallback() {
             @Override
@@ -64,7 +69,7 @@ public class BuildSectorUserScrollableList extends ScrollableTableList<String> {
 
             @Override
             public boolean isActive(InputState inputState) {
-                return !playerName.equals(sectorData.ownerName);
+                return !playerName.equals(sectorData.ownerName) || ConfigManager.getMainConfig().getBoolean("debug-mode");
             }
         });
 
