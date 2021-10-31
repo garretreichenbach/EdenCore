@@ -27,7 +27,6 @@ import java.util.Set;
 public class BuildSectorScrollableList extends ScrollableTableList<BuildSectorData> {
 
     private final BuildSectorMenuPanel panel;
-    private float updateTimer = 100.0f;
 
     public BuildSectorScrollableList(InputState state, GUIElement p, BuildSectorMenuPanel panel) {
         super(state, 800, 500, p);
@@ -123,11 +122,6 @@ public class BuildSectorScrollableList extends ScrollableTableList<BuildSectorDa
         addTextFilter(new GUIListFilterText<BuildSectorData>() {
             @Override
             public boolean isOk(String s, BuildSectorData buildSectorData) {
-                if(updateTimer <= 0.0f) {
-                    flagDirty();
-                    handleDirty();
-                    updateTimer = 100.0f;
-                } else updateTimer --;
                 return buildSectorData.ownerName.toLowerCase().contains(s.toLowerCase());
             }
         }, "SEARCH BY OWNER", ControllerElement.FilterRowStyle.FULL);

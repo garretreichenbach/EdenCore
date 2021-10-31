@@ -3,7 +3,7 @@ package thederpgamer.edencore.utils;
 import api.common.GameServer;
 import api.utils.game.PlayerUtils;
 import com.bulletphysics.linearmath.Transform;
-import org.schema.common.util.linAlg.Vector3i;
+import org.schema.common.util.linAlg.Vector3fTools;
 import org.schema.game.common.controller.SegmentController;
 import org.schema.game.common.controller.Ship;
 import org.schema.game.common.controller.SpaceStation;
@@ -47,7 +47,10 @@ public class EntityUtils {
     }
 
     public static float getDistanceFromPlayer(PlayerState player, SegmentController segmentController) {
-        return (Vector3i.getDisatance(player.getCurrentSector(), segmentController.getSector(new Vector3i()))) * (int) ServerConfig.SECTOR_SIZE.getCurrentState();
+        Transform entityTransform = segmentController.getWorldTransform();
+        Transform playerTransform = new Transform();
+        player.getWordTransform(playerTransform);
+        return Math.abs(Vector3fTools.distance(entityTransform.origin.x, entityTransform.origin.y, entityTransform.origin.z, playerTransform.origin.x, playerTransform.origin.y, playerTransform.origin.z)) * (int) ServerConfig.SECTOR_SIZE.getCurrentState();
     }
 
     public static void spawnEntry(PlayerState owner, BlueprintEntry entry) {

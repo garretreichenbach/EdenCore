@@ -36,7 +36,6 @@ public class BuildSectorEntitiesScrollableList extends ScrollableTableList<Segme
 
     private final BuildSectorMenuPanel panel;
     private final BuildSectorData sectorData;
-    private float updateTimer = 100.0f;
 
     public enum EntityType {ALL, SHIP, SPACE_STATION}
 
@@ -187,7 +186,7 @@ public class BuildSectorEntitiesScrollableList extends ScrollableTableList<Segme
         addColumn("Mass", 7.0f, new Comparator<SegmentController>() {
             @Override
             public int compare(SegmentController o1, SegmentController o2) {
-                return Double.compare(o1.getTotalPhysicalMass(), o2.getTotalPhysicalMass());
+                return Double.compare(o1.getMassWithDocks(), o2.getMassWithDocks());
             }
         });
 
@@ -208,11 +207,6 @@ public class BuildSectorEntitiesScrollableList extends ScrollableTableList<Segme
         addTextFilter(new GUIListFilterText<SegmentController>() {
             @Override
             public boolean isOk(String s, SegmentController segmentController) {
-                if(updateTimer <= 0.0f) {
-                    flagDirty();
-                    handleDirty();
-                    updateTimer = 100.0f;
-                } else updateTimer --;
                 return segmentController.getRealName().toLowerCase().contains(s.toLowerCase());
             }
         }, "SEARCH BY NAME", ControllerElement.FilterRowStyle.FULL);
@@ -270,7 +264,7 @@ public class BuildSectorEntitiesScrollableList extends ScrollableTableList<Segme
                     (factionRowElement = new GUIClippedRow(this.getState())).attach(factionTextElement);
 
                     GUITextOverlayTable massTextElement;
-                    (massTextElement = new GUITextOverlayTable(10, 10, this.getState())).setTextSimple(StringTools.massFormat(segmentController.getTotalPhysicalMass()));
+                    (massTextElement = new GUITextOverlayTable(10, 10, this.getState())).setTextSimple(StringTools.massFormat(segmentController.getMassWithDocks()));
                     GUIClippedRow massRowElement;
                     (massRowElement = new GUIClippedRow(this.getState())).attach(massTextElement);
 
