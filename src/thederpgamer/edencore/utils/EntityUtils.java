@@ -18,7 +18,6 @@ import org.schema.game.server.controller.EntityAlreadyExistsException;
 import org.schema.game.server.controller.EntityNotFountException;
 import org.schema.game.server.data.GameServerState;
 import org.schema.game.server.data.PlayerNotFountException;
-import org.schema.game.server.data.ServerConfig;
 import org.schema.game.server.data.blueprint.ChildStats;
 import org.schema.game.server.data.blueprint.SegmentControllerOutline;
 import org.schema.game.server.data.blueprint.SegmentControllerSpawnCallbackDirect;
@@ -50,7 +49,7 @@ public class EntityUtils {
         Transform entityTransform = segmentController.getWorldTransform();
         Transform playerTransform = new Transform();
         player.getWordTransform(playerTransform);
-        return Math.abs(Vector3fTools.distance(entityTransform.origin.x, entityTransform.origin.y, entityTransform.origin.z, playerTransform.origin.x, playerTransform.origin.y, playerTransform.origin.z)) * (int) ServerConfig.SECTOR_SIZE.getCurrentState();
+        return Math.abs(Vector3fTools.distance(entityTransform.origin.x, entityTransform.origin.y, entityTransform.origin.z, playerTransform.origin.x, playerTransform.origin.y, playerTransform.origin.z));
     }
 
     public static void spawnEntry(PlayerState owner, BlueprintEntry entry) {
