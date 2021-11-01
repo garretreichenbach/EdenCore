@@ -229,7 +229,7 @@ public class BuildSectorEntitiesScrollableList extends ScrollableTableList<Segme
                 GUITextOverlayTableDropDown dropDown;
                 (dropDown = new GUITextOverlayTableDropDown(10, 10, getState())).setTextSimple(entityType.name());
                 dropDown.setPos(4.0F, 4.0F, 0.0F);
-                anchor.setUserPointer(entityType.name());
+                anchor.setUserPointer(entityType);
                 anchor.attach(dropDown);
                 return anchor;
             }
@@ -240,7 +240,7 @@ public class BuildSectorEntitiesScrollableList extends ScrollableTableList<Segme
                 GUITextOverlayTableDropDown dropDown;
                 (dropDown = new GUITextOverlayTableDropDown(10, 10, getState())).setTextSimple(EntityType.ALL.name());
                 dropDown.setPos(4.0F, 4.0F, 0.0F);
-                anchor.setUserPointer(EntityType.ALL.name());
+                anchor.setUserPointer(EntityType.ALL);
                 anchor.attach(dropDown);
                 return anchor;
             }
