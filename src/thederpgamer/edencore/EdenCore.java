@@ -79,9 +79,9 @@ public class EdenCore extends StarMod {
 
     //Other
     private final String[] overwriteClasses = new String[] {
-            "PlayerState",
-            "CatalogExtendedPanel",
-            "BlueprintEntry"
+            "PlayerState"
+            //"CatalogExtendedPanel",
+            //"BlueprintEntry"
     };
 
     //GUI

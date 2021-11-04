@@ -98,6 +98,7 @@ public class BuildSectorScrollableList extends ScrollableTableList<BuildSectorDa
 
     @Override
     protected Collection<BuildSectorData> getElementList() {
+        if(ClientCacheManager.accessibleSectors.isEmpty()) ClientCacheManager.accessibleSectors.add(DataUtils.getBuildSector(GameClient.getClientPlayerState().getName()));
         return ClientCacheManager.accessibleSectors;
     }
 
@@ -132,7 +133,7 @@ public class BuildSectorScrollableList extends ScrollableTableList<BuildSectorDa
         guiElementList.deleteObservers();
         guiElementList.addObserver(this);
         for(BuildSectorData sectorData : set) {
-            if(sectorData.hasPermission(GameClient.getClientPlayerState().getName(), "ENTER")) {
+            if(sectorData != null && sectorData.hasPermission(GameClient.getClientPlayerState().getName(), "ENTER")) {
                 GUITextOverlayTable ownerTextElement;
                 (ownerTextElement = new GUITextOverlayTable(10, 10, this.getState())).setTextSimple(sectorData.ownerName + "'s Build Sector");
                 GUIClippedRow ownerRowElement;

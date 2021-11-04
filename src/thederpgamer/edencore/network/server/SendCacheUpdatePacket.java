@@ -7,6 +7,7 @@ import api.network.PacketReadBuffer;
 import api.network.PacketWriteBuffer;
 import org.schema.game.common.controller.SegmentController;
 import org.schema.game.common.data.player.PlayerState;
+import org.schema.schine.network.objects.Sendable;
 import thederpgamer.edencore.EdenCore;
 import thederpgamer.edencore.data.event.EventData;
 import thederpgamer.edencore.data.event.SortieData;
@@ -87,7 +88,8 @@ public class SendCacheUpdatePacket extends Packet {
         if(entitySize > 0) {
             for(int i = 0; i < entitySize; i ++) {
                 try {
-                    sectorEntities.add((SegmentController) packetReadBuffer.readSendable());
+                    Sendable sendable = packetReadBuffer.readSendable();
+                    if(sendable instanceof SegmentController) sectorEntities.add((SegmentController) sendable);
                 } catch(Exception exception) {
                     LogManager.logException("Encountered an exception while trying to deserialize SegmentController data", exception);
                 }

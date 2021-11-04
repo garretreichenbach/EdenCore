@@ -38,7 +38,7 @@ public class BuildSectorEntitiesScrollableList extends ScrollableTableList<Segme
     private final BuildSectorMenuPanel panel;
     private final BuildSectorData sectorData;
 
-    public enum EntityType {ALL, SHIP, DOCKED, SPACE_STATION}
+    public enum EntityType {SHIP, DOCKED, SPACE_STATION}
 
     public BuildSectorEntitiesScrollableList(InputState state, BuildSectorData sectorData, GUIElement p, BuildSectorMenuPanel panel) {
         super(state, 800, 500, p);
@@ -219,7 +219,7 @@ public class BuildSectorEntitiesScrollableList extends ScrollableTableList<Segme
                     case SHIP: return segmentController.getType().equals(SimpleTransformableSendableObject.EntityType.SHIP) && segmentController.railController.isRoot();
                     case DOCKED: return segmentController.getType().equals(SimpleTransformableSendableObject.EntityType.SHIP);
                     case SPACE_STATION: return segmentController.getType().equals(SimpleTransformableSendableObject.EntityType.SPACE_STATION);
-                    default: return true;
+                    default: return false;
                 }
             }
         }, new CreateGUIElementInterface<EntityType>() {
@@ -238,9 +238,9 @@ public class BuildSectorEntitiesScrollableList extends ScrollableTableList<Segme
             public GUIElement createNeutral() {
                 GUIAncor anchor = new GUIAncor(getState(), 10.0F, 24.0F);
                 GUITextOverlayTableDropDown dropDown;
-                (dropDown = new GUITextOverlayTableDropDown(10, 10, getState())).setTextSimple(EntityType.ALL.name());
+                (dropDown = new GUITextOverlayTableDropDown(10, 10, getState())).setTextSimple(EntityType.SHIP.name());
                 dropDown.setPos(4.0F, 4.0F, 0.0F);
-                anchor.setUserPointer(EntityType.ALL);
+                anchor.setUserPointer(EntityType.SHIP);
                 anchor.attach(dropDown);
                 return anchor;
             }
