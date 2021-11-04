@@ -212,7 +212,7 @@ public class BuildSectorEntitiesScrollableList extends ScrollableTableList<Segme
             }
         }, "SEARCH BY NAME", ControllerElement.FilterRowStyle.LEFT);
 
-        addDropdownFilter(new GUIListFilterDropdown<SegmentController, EntityType>() {
+        addDropdownFilter(new GUIListFilterDropdown<SegmentController, EntityType>(EntityType.values()) {
             @Override
             public boolean isOk(EntityType entityType, SegmentController segmentController) {
                 switch(entityType) {

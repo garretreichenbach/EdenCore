@@ -5,6 +5,7 @@ import api.common.GameCommon;
 import api.network.packets.PacketUtil;
 import api.utils.gui.GUIMenuPanel;
 import api.utils.gui.SimplePlayerTextInput;
+import org.schema.schine.graphicsengine.core.GLFrame;
 import org.schema.schine.graphicsengine.core.MouseEvent;
 import org.schema.schine.graphicsengine.forms.gui.GUIActivationCallback;
 import org.schema.schine.graphicsengine.forms.gui.GUICallback;
@@ -26,7 +27,7 @@ import thederpgamer.edencore.utils.DataUtils;
 public class BuildSectorMenuPanel extends GUIMenuPanel {
 
     public BuildSectorMenuPanel(InputState inputState) {
-        super(inputState, "BuildSectorMenu", 800, 500);
+        super(inputState, "BuildSectorMenu", GLFrame.getWidth() - 300, GLFrame.getHeight() - 100);
     }
 
     @Override
@@ -36,15 +37,15 @@ public class BuildSectorMenuPanel extends GUIMenuPanel {
         if(guiWindow.getTabs().size() > 0) guiWindow.clearTabs();
 
         GUIContentPane managementTab = guiWindow.addTab("MANAGEMENT");
-        managementTab.setTextBoxHeightLast(500);
+        managementTab.setTextBoxHeightLast(GLFrame.getHeight() - 100);
         createManagementTab(managementTab);
 
         GUIContentPane entitiesTab = guiWindow.addTab("ENTITIES");
-        entitiesTab.setTextBoxHeightLast(500);
+        entitiesTab.setTextBoxHeightLast(GLFrame.getHeight() - 100);
         createEntitiesTab(entitiesTab);
 
         GUIContentPane catalogTab = guiWindow.addTab("CATALOG");
-        catalogTab.setTextBoxHeightLast(500);
+        catalogTab.setTextBoxHeightLast(GLFrame.getHeight() - 100);
         createCatalogTab(catalogTab);
         guiWindow.setSelectedTab(lastTab);
     }
