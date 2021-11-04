@@ -34,6 +34,7 @@ public abstract class ExchangeItem {
         this.price = price;
         this.name = name;
         this.description = description;
+        if(description.length() > 96) this.description = description.substring(0, 95) + " ...";
     }
 
     public String createDescription() {

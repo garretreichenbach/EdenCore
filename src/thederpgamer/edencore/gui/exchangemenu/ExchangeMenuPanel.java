@@ -74,16 +74,116 @@ public class ExchangeMenuPanel extends GUIMenuPanel {
     }
 
     private void createBlueprintsTab(GUIContentPane contentPane) {
-        GUITilePane<BlueprintExchangeItem> blueprintsTilePane;
-        (blueprintsTilePane = new GUITilePane<>(getState(), guiWindow, 200, 300)).onInit();
-        for(final BlueprintExchangeItem item : getBlueprints()) {
-            GUITile tile = blueprintsTilePane.addButtonTile("EXCHANGE", item.createDescription(), getTileColor(item), new GUICallback() {
-                @Override
-                public void callback(GUIElement guiElement, MouseEvent mouseEvent) {
-                    if(mouseEvent.pressedLeftMouse()) {
-                        lastClickedBP = item;
-                        if(canAffordItem(item)) {
-                            (new PlayerOkCancelInput("ConfirmExchangePanel", getState(), "CONFIRM EXCHANGE", "Are you sure you wish to exchange " + item.price + " " + getBarTypeName(item) + "s for this item?") {
+        GUIAncor tabAnchor = new GUIAncor(getState(), guiWindow.getInnerWidth() - 20, guiWindow.getInnerHeigth() - 13);
+        GUITabbedContent tabbedContent = new GUITabbedContent(getState(), tabAnchor);
+        tabbedContent.onInit();
+
+        { //Bronze Tab
+            GUIContentPane subTab = tabbedContent.addTab("BRONZE");
+            subTab.setTextBoxHeightLast(GLFrame.getHeight() - 100);
+            subTab.orientateInsideFrame();
+            GUIScrollablePanel scrollPanel = new GUIScrollablePanel(1, 1, subTab.getContent(0), getState());
+            scrollPanel.setScrollable(GUIScrollablePanel.SCROLLABLE_VERTICAL);
+            scrollPanel.setLeftRightClipOnly = true;
+
+            GUITilePane<BlueprintExchangeItem> blueprintsTilePane;
+            (blueprintsTilePane = new GUITilePane<>(getState(), scrollPanel, 200, 300)).onInit();
+            for(final BlueprintExchangeItem item : getBlueprints()) {
+                if(item.barType == BRONZE) {
+                    GUITile tile = blueprintsTilePane.addButtonTile("EXCHANGE", item.createDescription(), getTileColor(item), new GUICallback() {
+                        @Override
+                        public void callback(GUIElement guiElement, MouseEvent mouseEvent) {
+                            if(mouseEvent.pressedLeftMouse()) {
+                                lastClickedBP = item;
+                                if(canAffordItem(item)) {
+                                    (new PlayerOkCancelInput("ConfirmExchangePanel", getState(), "CONFIRM EXCHANGE", "Are you sure you wish to exchange " + item.price + " " + getBarTypeName(item) + "s for this item?") {
+                                        @Override
+                                        public void onDeactivate() {
+
+                                        }
+
+                                        @Override
+                                        public void pressedOK() {
+                                            GameClient.getClientState().getController().queueUIAudio("0022_menu_ui - highlight 1");
+                                            givePlayerItem(item);
+                                            InventoryUtils.consumeItems(GameClient.getClientPlayerState().getInventory(), item.barType, item.price);
+                                            lastClickedBP = null;
+                                            deactivate();
+                                        }
+                                    }).activate();
+                                } else GameClient.getClientState().getController().queueUIAudio("0022_menu_ui - error 1");
+                            }
+                        }
+
+                        @Override
+                        public boolean isOccluded() {
+                            return !getState().getController().getPlayerInputs().isEmpty();
+                        }
+                    }, new GUIActivationCallback() {
+                        @Override
+                        public boolean isVisible(InputState inputState) {
+                            return true;
+                        }
+
+                        @Override
+                        public boolean isActive(InputState inputState) {
+                            return true;
+                        }
+                    });
+                    GUIOverlay spriteOverlay = item.getIcon();
+                    spriteOverlay.onInit();
+                    tile.attach(spriteOverlay);
+                    if(spriteOverlay.getUserPointer() == null) spriteOverlay.setUserPointer("default-icon");
+                    if(spriteOverlay.getUserPointer().equals("default-icon")) {
+                        spriteOverlay.getPos().x += 80;
+                        spriteOverlay.getPos().y += 180;
+                    } else {
+                        spriteOverlay.getPos().x += 100;
+                        spriteOverlay.getPos().y += 200;
+                    }
+                }
+            }
+            scrollPanel.setContent(blueprintsTilePane);
+            scrollPanel.onInit();
+            subTab.getContent(0).attach(scrollPanel);
+
+            if(isAdmin()) {
+                subTab.setTextBoxHeightLast(0, GLFrame.getHeight() - 239);
+                subTab.addNewTextBox(0, 28);
+
+                GUIHorizontalButtonTablePane adminPane = new GUIHorizontalButtonTablePane(getState(), 2, 1, subTab.getContent(1));
+                adminPane.onInit();
+
+                adminPane.addButton(0, 0, "ADD", GUIHorizontalArea.HButtonColor.GREEN, new GUICallback() {
+                    @Override
+                    public void callback(GUIElement guiElement, MouseEvent mouseEvent) {
+                        if(mouseEvent.pressedLeftMouse()) {
+                            (new AddBlueprintExchangeDialog()).activate();
+                            recreateTabs();
+                        }
+                    }
+
+                    @Override
+                    public boolean isOccluded() {
+                        return !getState().getController().getPlayerInputs().isEmpty();
+                    }
+                }, new GUIActivationCallback() {
+                    @Override
+                    public boolean isVisible(InputState inputState) {
+                        return true;
+                    }
+
+                    @Override
+                    public boolean isActive(InputState inputState) {
+                        return getState().getController().getPlayerInputs().isEmpty();
+                    }
+                });
+
+                adminPane.addButton(1, 0, "REMOVE", GUIHorizontalArea.HButtonColor.ORANGE, new GUICallback() {
+                    @Override
+                    public void callback(GUIElement guiElement, MouseEvent mouseEvent) {
+                        if(mouseEvent.pressedLeftMouse() && lastClickedBP != null) {
+                            (new PlayerOkCancelInput("ConfirmExchangeRemovalPanel", getState(), "CONFIRM REMOVAL", "Are you sure you wish to remove this item?") {
                                 @Override
                                 public void onDeactivate() {
 
@@ -91,126 +191,430 @@ public class ExchangeMenuPanel extends GUIMenuPanel {
 
                                 @Override
                                 public void pressedOK() {
-                                    GameClient.getClientState().getController().queueUIAudio("0022_menu_ui - highlight 1");
-                                    givePlayerItem(item);
-                                    InventoryUtils.consumeItems(GameClient.getClientPlayerState().getInventory(), item.barType, item.price);
-                                    lastClickedBP = null;
+                                    sendExchangeItemRemoval(0, lastClickedBP);
+                                    recreateTabs();
                                     deactivate();
                                 }
                             }).activate();
-                        } else GameClient.getClientState().getController().queueUIAudio("0022_menu_ui - error 1");
+                        }
                     }
-                }
 
-                @Override
-                public boolean isOccluded() {
-                    return !getState().getController().getPlayerInputs().isEmpty();
-                }
-            }, new GUIActivationCallback() {
-                @Override
-                public boolean isVisible(InputState inputState) {
-                    return true;
-                }
+                    @Override
+                    public boolean isOccluded() {
+                        return !getState().getController().getPlayerInputs().isEmpty();
+                    }
+                }, new GUIActivationCallback() {
+                    @Override
+                    public boolean isVisible(InputState inputState) {
+                        return true;
+                    }
 
-                @Override
-                public boolean isActive(InputState inputState) {
-                    return true;
-                }
-            });
-            GUIOverlay spriteOverlay = item.getIcon();
-            spriteOverlay.onInit();
-            tile.attach(spriteOverlay);
-            if(spriteOverlay.getUserPointer().equals("default-icon")) {
-                spriteOverlay.getPos().x += 80;
-                spriteOverlay.getPos().y += 180;
-            } else {
-                spriteOverlay.getPos().x += 100;
-                spriteOverlay.getPos().y += 200;
+                    @Override
+                    public boolean isActive(InputState inputState) {
+                        return getState().getController().getPlayerInputs().isEmpty();
+                    }
+                });
+
+                subTab.getContent(1).attach(adminPane);
             }
         }
-        contentPane.getContent(0).attach(blueprintsTilePane);
 
-        if(isAdmin()) {
-            contentPane.setTextBoxHeight(0, (int) (contentPane.getHeight() - 139));
-            contentPane.addNewTextBox(28);
-            GUIHorizontalButtonTablePane adminPane = new GUIHorizontalButtonTablePane(getState(), 2, 1, contentPane.getContent(1));
-            adminPane.onInit();
+        { //Silver Tab
+            GUIContentPane subTab = tabbedContent.addTab("SILVER");
+            subTab.setTextBoxHeightLast(GLFrame.getHeight() - 100);
+            subTab.orientateInsideFrame();
+            GUIScrollablePanel scrollPanel = new GUIScrollablePanel(1, 1, subTab.getContent(0), getState());
+            scrollPanel.setScrollable(GUIScrollablePanel.SCROLLABLE_VERTICAL);
+            scrollPanel.setLeftRightClipOnly = true;
 
-            adminPane.addButton(0, 0, "ADD", GUIHorizontalArea.HButtonColor.GREEN, new GUICallback() {
-                @Override
-                public void callback(GUIElement guiElement, MouseEvent mouseEvent) {
-                    if(mouseEvent.pressedLeftMouse()) {
-                        (new AddBlueprintExchangeDialog()).activate();
-                        recreateTabs();
+            GUITilePane<BlueprintExchangeItem> blueprintsTilePane;
+            (blueprintsTilePane = new GUITilePane<>(getState(), scrollPanel, 200, 300)).onInit();
+            for(final BlueprintExchangeItem item : getBlueprints()) {
+                if(item.barType == SILVER) {
+                    GUITile tile = blueprintsTilePane.addButtonTile("EXCHANGE", item.createDescription(), getTileColor(item), new GUICallback() {
+                        @Override
+                        public void callback(GUIElement guiElement, MouseEvent mouseEvent) {
+                            if(mouseEvent.pressedLeftMouse()) {
+                                lastClickedBP = item;
+                                if(canAffordItem(item)) {
+                                    (new PlayerOkCancelInput("ConfirmExchangePanel", getState(), "CONFIRM EXCHANGE", "Are you sure you wish to exchange " + item.price + " " + getBarTypeName(item) + "s for this item?") {
+                                        @Override
+                                        public void onDeactivate() {
+
+                                        }
+
+                                        @Override
+                                        public void pressedOK() {
+                                            GameClient.getClientState().getController().queueUIAudio("0022_menu_ui - highlight 1");
+                                            givePlayerItem(item);
+                                            InventoryUtils.consumeItems(GameClient.getClientPlayerState().getInventory(), item.barType, item.price);
+                                            lastClickedBP = null;
+                                            deactivate();
+                                        }
+                                    }).activate();
+                                } else GameClient.getClientState().getController().queueUIAudio("0022_menu_ui - error 1");
+                            }
+                        }
+
+                        @Override
+                        public boolean isOccluded() {
+                            return !getState().getController().getPlayerInputs().isEmpty();
+                        }
+                    }, new GUIActivationCallback() {
+                        @Override
+                        public boolean isVisible(InputState inputState) {
+                            return true;
+                        }
+
+                        @Override
+                        public boolean isActive(InputState inputState) {
+                            return true;
+                        }
+                    });
+                    GUIOverlay spriteOverlay = item.getIcon();
+                    spriteOverlay.onInit();
+                    tile.attach(spriteOverlay);
+                    if(spriteOverlay.getUserPointer() == null) spriteOverlay.setUserPointer("default-icon");
+                    if(spriteOverlay.getUserPointer().equals("default-icon")) {
+                        spriteOverlay.getPos().x += 80;
+                        spriteOverlay.getPos().y += 180;
+                    } else {
+                        spriteOverlay.getPos().x += 100;
+                        spriteOverlay.getPos().y += 200;
                     }
                 }
+            }
+            scrollPanel.setContent(blueprintsTilePane);
+            scrollPanel.onInit();
+            subTab.getContent(0).attach(scrollPanel);
 
-                @Override
-                public boolean isOccluded() {
-                    return !getState().getController().getPlayerInputs().isEmpty();
-                }
-            }, new GUIActivationCallback() {
-                @Override
-                public boolean isVisible(InputState inputState) {
-                    return true;
-                }
+            if(isAdmin()) {
+                subTab.setTextBoxHeightLast(0, GLFrame.getHeight() - 239);
+                subTab.addNewTextBox(0, 28);
 
-                @Override
-                public boolean isActive(InputState inputState) {
-                    return getState().getController().getPlayerInputs().isEmpty();
-                }
-            });
+                GUIHorizontalButtonTablePane adminPane = new GUIHorizontalButtonTablePane(getState(), 2, 1, subTab.getContent(1));
+                adminPane.onInit();
 
-            adminPane.addButton(1, 0, "REMOVE", GUIHorizontalArea.HButtonColor.ORANGE, new GUICallback() {
-                @Override
-                public void callback(GUIElement guiElement, MouseEvent mouseEvent) {
-                    if(mouseEvent.pressedLeftMouse() && lastClickedBP != null) {
-                        (new PlayerOkCancelInput("ConfirmExchangeRemovalPanel", getState(), "CONFIRM REMOVAL", "Are you sure you wish to remove this item?") {
-                            @Override
-                            public void onDeactivate() {
-
-                            }
-
-                            @Override
-                            public void pressedOK() {
-                                sendExchangeItemRemoval(0, lastClickedBP);
-                                recreateTabs();
-                                deactivate();
-                            }
-                        }).activate();
+                adminPane.addButton(0, 0, "ADD", GUIHorizontalArea.HButtonColor.GREEN, new GUICallback() {
+                    @Override
+                    public void callback(GUIElement guiElement, MouseEvent mouseEvent) {
+                        if(mouseEvent.pressedLeftMouse()) {
+                            (new AddBlueprintExchangeDialog()).activate();
+                            recreateTabs();
+                        }
                     }
-                }
 
-                @Override
-                public boolean isOccluded() {
-                    return !getState().getController().getPlayerInputs().isEmpty();
-                }
-            }, new GUIActivationCallback() {
-                @Override
-                public boolean isVisible(InputState inputState) {
-                    return true;
-                }
+                    @Override
+                    public boolean isOccluded() {
+                        return !getState().getController().getPlayerInputs().isEmpty();
+                    }
+                }, new GUIActivationCallback() {
+                    @Override
+                    public boolean isVisible(InputState inputState) {
+                        return true;
+                    }
 
-                @Override
-                public boolean isActive(InputState inputState) {
-                    return getState().getController().getPlayerInputs().isEmpty();
-                }
-            });
-            contentPane.getContent(1).attach(adminPane);
+                    @Override
+                    public boolean isActive(InputState inputState) {
+                        return getState().getController().getPlayerInputs().isEmpty();
+                    }
+                });
+
+                adminPane.addButton(1, 0, "REMOVE", GUIHorizontalArea.HButtonColor.ORANGE, new GUICallback() {
+                    @Override
+                    public void callback(GUIElement guiElement, MouseEvent mouseEvent) {
+                        if(mouseEvent.pressedLeftMouse() && lastClickedBP != null) {
+                            (new PlayerOkCancelInput("ConfirmExchangeRemovalPanel", getState(), "CONFIRM REMOVAL", "Are you sure you wish to remove this item?") {
+                                @Override
+                                public void onDeactivate() {
+
+                                }
+
+                                @Override
+                                public void pressedOK() {
+                                    sendExchangeItemRemoval(0, lastClickedBP);
+                                    recreateTabs();
+                                    deactivate();
+                                }
+                            }).activate();
+                        }
+                    }
+
+                    @Override
+                    public boolean isOccluded() {
+                        return !getState().getController().getPlayerInputs().isEmpty();
+                    }
+                }, new GUIActivationCallback() {
+                    @Override
+                    public boolean isVisible(InputState inputState) {
+                        return true;
+                    }
+
+                    @Override
+                    public boolean isActive(InputState inputState) {
+                        return getState().getController().getPlayerInputs().isEmpty();
+                    }
+                });
+
+                subTab.getContent(1).attach(adminPane);
+            }
         }
+
+        { //Gold Tab
+            GUIContentPane subTab = tabbedContent.addTab("GOLD");
+            subTab.setTextBoxHeightLast(GLFrame.getHeight() - 100);
+            subTab.orientateInsideFrame();
+            GUIScrollablePanel scrollPanel = new GUIScrollablePanel(1, 1, subTab.getContent(0), getState());
+            scrollPanel.setScrollable(GUIScrollablePanel.SCROLLABLE_VERTICAL);
+            scrollPanel.setLeftRightClipOnly = true;
+
+            GUITilePane<BlueprintExchangeItem> blueprintsTilePane;
+            (blueprintsTilePane = new GUITilePane<>(getState(), scrollPanel, 200, 300)).onInit();
+            for(final BlueprintExchangeItem item : getBlueprints()) {
+                if(item.barType == GOLD) {
+                    GUITile tile = blueprintsTilePane.addButtonTile("EXCHANGE", item.createDescription(), getTileColor(item), new GUICallback() {
+                        @Override
+                        public void callback(GUIElement guiElement, MouseEvent mouseEvent) {
+                            if(mouseEvent.pressedLeftMouse()) {
+                                lastClickedBP = item;
+                                if(canAffordItem(item)) {
+                                    (new PlayerOkCancelInput("ConfirmExchangePanel", getState(), "CONFIRM EXCHANGE", "Are you sure you wish to exchange " + item.price + " " + getBarTypeName(item) + "s for this item?") {
+                                        @Override
+                                        public void onDeactivate() {
+
+                                        }
+
+                                        @Override
+                                        public void pressedOK() {
+                                            GameClient.getClientState().getController().queueUIAudio("0022_menu_ui - highlight 1");
+                                            givePlayerItem(item);
+                                            InventoryUtils.consumeItems(GameClient.getClientPlayerState().getInventory(), item.barType, item.price);
+                                            lastClickedBP = null;
+                                            deactivate();
+                                        }
+                                    }).activate();
+                                } else GameClient.getClientState().getController().queueUIAudio("0022_menu_ui - error 1");
+                            }
+                        }
+
+                        @Override
+                        public boolean isOccluded() {
+                            return !getState().getController().getPlayerInputs().isEmpty();
+                        }
+                    }, new GUIActivationCallback() {
+                        @Override
+                        public boolean isVisible(InputState inputState) {
+                            return true;
+                        }
+
+                        @Override
+                        public boolean isActive(InputState inputState) {
+                            return true;
+                        }
+                    });
+                    GUIOverlay spriteOverlay = item.getIcon();
+                    spriteOverlay.onInit();
+                    tile.attach(spriteOverlay);
+                    if(spriteOverlay.getUserPointer() == null) spriteOverlay.setUserPointer("default-icon");
+                    if(spriteOverlay.getUserPointer().equals("default-icon")) {
+                        spriteOverlay.getPos().x += 80;
+                        spriteOverlay.getPos().y += 180;
+                    } else {
+                        spriteOverlay.getPos().x += 100;
+                        spriteOverlay.getPos().y += 200;
+                    }
+                }
+            }
+            scrollPanel.setContent(blueprintsTilePane);
+            scrollPanel.onInit();
+            subTab.getContent(0).attach(scrollPanel);
+
+            if(isAdmin()) {
+                subTab.setTextBoxHeightLast(0, GLFrame.getHeight() - 239);
+                subTab.addNewTextBox(0, 28);
+
+                GUIHorizontalButtonTablePane adminPane = new GUIHorizontalButtonTablePane(getState(), 2, 1, subTab.getContent(1));
+                adminPane.onInit();
+
+                adminPane.addButton(0, 0, "ADD", GUIHorizontalArea.HButtonColor.GREEN, new GUICallback() {
+                    @Override
+                    public void callback(GUIElement guiElement, MouseEvent mouseEvent) {
+                        if(mouseEvent.pressedLeftMouse()) {
+                            (new AddBlueprintExchangeDialog()).activate();
+                            recreateTabs();
+                        }
+                    }
+
+                    @Override
+                    public boolean isOccluded() {
+                        return !getState().getController().getPlayerInputs().isEmpty();
+                    }
+                }, new GUIActivationCallback() {
+                    @Override
+                    public boolean isVisible(InputState inputState) {
+                        return true;
+                    }
+
+                    @Override
+                    public boolean isActive(InputState inputState) {
+                        return getState().getController().getPlayerInputs().isEmpty();
+                    }
+                });
+
+                adminPane.addButton(1, 0, "REMOVE", GUIHorizontalArea.HButtonColor.ORANGE, new GUICallback() {
+                    @Override
+                    public void callback(GUIElement guiElement, MouseEvent mouseEvent) {
+                        if(mouseEvent.pressedLeftMouse() && lastClickedBP != null) {
+                            (new PlayerOkCancelInput("ConfirmExchangeRemovalPanel", getState(), "CONFIRM REMOVAL", "Are you sure you wish to remove this item?") {
+                                @Override
+                                public void onDeactivate() {
+
+                                }
+
+                                @Override
+                                public void pressedOK() {
+                                    sendExchangeItemRemoval(0, lastClickedBP);
+                                    recreateTabs();
+                                    deactivate();
+                                }
+                            }).activate();
+                        }
+                    }
+
+                    @Override
+                    public boolean isOccluded() {
+                        return !getState().getController().getPlayerInputs().isEmpty();
+                    }
+                }, new GUIActivationCallback() {
+                    @Override
+                    public boolean isVisible(InputState inputState) {
+                        return true;
+                    }
+
+                    @Override
+                    public boolean isActive(InputState inputState) {
+                        return getState().getController().getPlayerInputs().isEmpty();
+                    }
+                });
+
+                subTab.getContent(1).attach(adminPane);
+            }
+        }
+
+        tabAnchor.attach(tabbedContent);
+        contentPane.getContent(0).attach(tabAnchor);
     }
 
     private void createResourcesTab(GUIContentPane contentPane) {
-        GUITilePane<ResourceExchangeItem> resourcesTilePane;
-        (resourcesTilePane = new GUITilePane<>(getState(), guiWindow, 200, 256)).onInit();
-        for(final ResourceExchangeItem item : getResources()) {
-            GUITile tile = resourcesTilePane.addButtonTile("EXCHANGE", item.createDescription(), getTileColor(item), new GUICallback() {
-                @Override
-                public void callback(GUIElement guiElement, MouseEvent mouseEvent) {
-                    if(mouseEvent.pressedLeftMouse()) {
-                        lastClickedResource = item;
-                        if(canAffordItem(item)) {
-                            (new PlayerOkCancelInput("ConfirmExchangePanel", getState(), "CONFIRM EXCHANGE", "Are you sure you wish to exchange " + item.price + " " + getBarTypeName(item) + "s for this item?") {
+        GUIAncor tabAnchor = new GUIAncor(getState(), guiWindow.getInnerWidth() - 20, guiWindow.getInnerHeigth() - 13);
+        GUITabbedContent tabbedContent = new GUITabbedContent(getState(), tabAnchor);
+        tabbedContent.onInit();
+
+        { //Bronze Tab
+            GUIContentPane subTab = tabbedContent.addTab("BRONZE");
+            subTab.setTextBoxHeightLast(GLFrame.getHeight() - 100);
+            subTab.orientateInsideFrame();
+            GUIScrollablePanel scrollPanel = new GUIScrollablePanel(1, 1, subTab.getContent(0), getState());
+            scrollPanel.setScrollable(GUIScrollablePanel.SCROLLABLE_VERTICAL);
+            scrollPanel.setLeftRightClipOnly = true;
+
+            GUITilePane<ResourceExchangeItem> resourcesTilePane;
+            (resourcesTilePane = new GUITilePane<>(getState(), scrollPanel, 200, 300)).onInit();
+            for(final ResourceExchangeItem item : getResources()) {
+                if(item.barType == BRONZE) {
+                    GUITile tile = resourcesTilePane.addButtonTile("EXCHANGE", item.createDescription(), getTileColor(item), new GUICallback() {
+                        @Override
+                        public void callback(GUIElement guiElement, MouseEvent mouseEvent) {
+                            if(mouseEvent.pressedLeftMouse()) {
+                                lastClickedResource = item;
+                                if(canAffordItem(item)) {
+                                    (new PlayerOkCancelInput("ConfirmExchangePanel", getState(), "CONFIRM EXCHANGE", "Are you sure you wish to exchange " + item.price + " " + getBarTypeName(item) + "s for this item?") {
+                                        @Override
+                                        public void onDeactivate() {
+
+                                        }
+
+                                        @Override
+                                        public void pressedOK() {
+                                            GameClient.getClientState().getController().queueUIAudio("0022_menu_ui - highlight 1");
+                                            givePlayerItem(item);
+                                            InventoryUtils.consumeItems(GameClient.getClientPlayerState().getInventory(), item.barType, item.price);
+                                            lastClickedResource = null;
+                                            deactivate();
+                                        }
+                                    }).activate();
+                                } else GameClient.getClientState().getController().queueUIAudio("0022_menu_ui - error 1");
+                            }
+                        }
+
+                        @Override
+                        public boolean isOccluded() {
+                            return !getState().getController().getPlayerInputs().isEmpty();
+                        }
+                    }, new GUIActivationCallback() {
+                        @Override
+                        public boolean isVisible(InputState inputState) {
+                            return true;
+                        }
+
+                        @Override
+                        public boolean isActive(InputState inputState) {
+                            return true;
+                        }
+                    });
+                    GUIOverlay spriteOverlay = item.getIcon();
+                    spriteOverlay.onInit();
+                    tile.attach(spriteOverlay);
+                    if(spriteOverlay.getUserPointer() == null) spriteOverlay.setUserPointer("default-icon");
+                    if(spriteOverlay.getUserPointer().equals("default-icon")) {
+                        spriteOverlay.getPos().x += 80;
+                        spriteOverlay.getPos().y += 180;
+                    } else {
+                        spriteOverlay.getPos().x += 100;
+                        spriteOverlay.getPos().y += 200;
+                    }
+                }
+            }
+            scrollPanel.setContent(resourcesTilePane);
+            scrollPanel.onInit();
+            subTab.getContent(0).attach(scrollPanel);
+
+            if(isAdmin()) {
+                subTab.setTextBoxHeightLast(0, GLFrame.getHeight() - 239);
+                subTab.addNewTextBox(28);
+                GUIHorizontalButtonTablePane adminPane = new GUIHorizontalButtonTablePane(getState(), 2, 1, subTab.getContent(1));
+                adminPane.onInit();
+
+                adminPane.addButton(0, 0, "ADD", GUIHorizontalArea.HButtonColor.GREEN, new GUICallback() {
+                    @Override
+                    public void callback(GUIElement guiElement, MouseEvent mouseEvent) {
+                        if(mouseEvent.pressedLeftMouse()) {
+                            (new AddResourceExchangeDialog()).activate();
+                            recreateTabs();
+                        }
+                    }
+
+                    @Override
+                    public boolean isOccluded() {
+                        return !getState().getController().getPlayerInputs().isEmpty();
+                    }
+                }, new GUIActivationCallback() {
+                    @Override
+                    public boolean isVisible(InputState inputState) {
+                        return true;
+                    }
+
+                    @Override
+                    public boolean isActive(InputState inputState) {
+                        return getState().getController().getPlayerInputs().isEmpty();
+                    }
+                });
+
+                adminPane.addButton(1, 0, "REMOVE", GUIHorizontalArea.HButtonColor.ORANGE, new GUICallback() {
+                    @Override
+                    public void callback(GUIElement guiElement, MouseEvent mouseEvent) {
+                        if(mouseEvent.pressedLeftMouse() && lastClickedResource != null) {
+                            (new PlayerOkCancelInput("ConfirmExchangeRemovalPanel", getState(), "CONFIRM REMOVAL", "Are you sure you wish to remove this item?") {
                                 @Override
                                 public void onDeactivate() {
 
@@ -218,114 +622,313 @@ public class ExchangeMenuPanel extends GUIMenuPanel {
 
                                 @Override
                                 public void pressedOK() {
-                                    GameClient.getClientState().getController().queueUIAudio("0022_menu_ui - highlight 1");
-                                    givePlayerItem(item);
-                                    InventoryUtils.consumeItems(GameClient.getClientPlayerState().getInventory(), item.barType, item.price);
-                                    lastClickedResource = null;
+                                    sendExchangeItemRemoval(0, lastClickedResource);
+                                    recreateTabs();
                                     deactivate();
                                 }
                             }).activate();
-                        } else GameClient.getClientState().getController().queueUIAudio("0022_menu_ui - error 1");
+                        }
                     }
-                }
 
-                @Override
-                public boolean isOccluded() {
-                    return !getState().getController().getPlayerInputs().isEmpty();
-                }
-            }, new GUIActivationCallback() {
-                @Override
-                public boolean isVisible(InputState inputState) {
-                    return true;
-                }
+                    @Override
+                    public boolean isOccluded() {
+                        return !getState().getController().getPlayerInputs().isEmpty();
+                    }
+                }, new GUIActivationCallback() {
+                    @Override
+                    public boolean isVisible(InputState inputState) {
+                        return true;
+                    }
 
-                @Override
-                public boolean isActive(InputState inputState) {
-                    return getState().getController().getPlayerInputs().isEmpty();
-                }
-            });
-            GUIOverlay spriteOverlay = item.getIcon();
-            spriteOverlay.onInit();
-            spriteOverlay.getSprite().setWidth(200);
-            spriteOverlay.getSprite().setHeight(200);
-            tile.attach(spriteOverlay);
-            spriteOverlay.getPos().x += 65;
-            spriteOverlay.getPos().y += 180;
+                    @Override
+                    public boolean isActive(InputState inputState) {
+                        return getState().getController().getPlayerInputs().isEmpty();
+                    }
+                });
+                subTab.getContent(1).attach(adminPane);
+            }
         }
-        contentPane.getContent(0).attach(resourcesTilePane);
 
-        if(isAdmin()) {
-            contentPane.setTextBoxHeight(0, (int) (contentPane.getHeight() - 139));
-            contentPane.addNewTextBox(28);
-            GUIHorizontalButtonTablePane adminPane = new GUIHorizontalButtonTablePane(getState(), 2, 1, contentPane.getContent(1));
-            adminPane.onInit();
+        { //Silver Tab
+            GUIContentPane subTab = tabbedContent.addTab("SILVER");
+            subTab.setTextBoxHeightLast(GLFrame.getHeight() - 100);
+            subTab.orientateInsideFrame();
+            GUIScrollablePanel scrollPanel = new GUIScrollablePanel(1, 1, subTab.getContent(0), getState());
+            scrollPanel.setScrollable(GUIScrollablePanel.SCROLLABLE_VERTICAL);
+            scrollPanel.setLeftRightClipOnly = true;
 
-            adminPane.addButton(0, 0, "ADD", GUIHorizontalArea.HButtonColor.GREEN, new GUICallback() {
-                @Override
-                public void callback(GUIElement guiElement, MouseEvent mouseEvent) {
-                    if(mouseEvent.pressedLeftMouse()) {
-                        (new AddResourceExchangeDialog()).activate();
-                        recreateTabs();
+            GUITilePane<ResourceExchangeItem> resourcesTilePane;
+            (resourcesTilePane = new GUITilePane<>(getState(), scrollPanel, 200, 300)).onInit();
+            for(final ResourceExchangeItem item : getResources()) {
+                if(item.barType == SILVER) {
+                    GUITile tile = resourcesTilePane.addButtonTile("EXCHANGE", item.createDescription(), getTileColor(item), new GUICallback() {
+                        @Override
+                        public void callback(GUIElement guiElement, MouseEvent mouseEvent) {
+                            if(mouseEvent.pressedLeftMouse()) {
+                                lastClickedResource = item;
+                                if(canAffordItem(item)) {
+                                    (new PlayerOkCancelInput("ConfirmExchangePanel", getState(), "CONFIRM EXCHANGE", "Are you sure you wish to exchange " + item.price + " " + getBarTypeName(item) + "s for this item?") {
+                                        @Override
+                                        public void onDeactivate() {
+
+                                        }
+
+                                        @Override
+                                        public void pressedOK() {
+                                            GameClient.getClientState().getController().queueUIAudio("0022_menu_ui - highlight 1");
+                                            givePlayerItem(item);
+                                            InventoryUtils.consumeItems(GameClient.getClientPlayerState().getInventory(), item.barType, item.price);
+                                            lastClickedResource = null;
+                                            deactivate();
+                                        }
+                                    }).activate();
+                                } else GameClient.getClientState().getController().queueUIAudio("0022_menu_ui - error 1");
+                            }
+                        }
+
+                        @Override
+                        public boolean isOccluded() {
+                            return !getState().getController().getPlayerInputs().isEmpty();
+                        }
+                    }, new GUIActivationCallback() {
+                        @Override
+                        public boolean isVisible(InputState inputState) {
+                            return true;
+                        }
+
+                        @Override
+                        public boolean isActive(InputState inputState) {
+                            return true;
+                        }
+                    });
+                    GUIOverlay spriteOverlay = item.getIcon();
+                    spriteOverlay.onInit();
+                    tile.attach(spriteOverlay);
+                    if(spriteOverlay.getUserPointer() == null) spriteOverlay.setUserPointer("default-icon");
+                    if(spriteOverlay.getUserPointer().equals("default-icon")) {
+                        spriteOverlay.getPos().x += 80;
+                        spriteOverlay.getPos().y += 180;
+                    } else {
+                        spriteOverlay.getPos().x += 100;
+                        spriteOverlay.getPos().y += 200;
                     }
                 }
+            }
+            scrollPanel.setContent(resourcesTilePane);
+            scrollPanel.onInit();
+            subTab.getContent(0).attach(scrollPanel);
 
-                @Override
-                public boolean isOccluded() {
-                    return !getState().getController().getPlayerInputs().isEmpty();
-                }
-            }, new GUIActivationCallback() {
-                @Override
-                public boolean isVisible(InputState inputState) {
-                    return true;
-                }
+            if(isAdmin()) {
+                subTab.setTextBoxHeightLast(0, GLFrame.getHeight() - 239);
+                subTab.addNewTextBox(28);
+                GUIHorizontalButtonTablePane adminPane = new GUIHorizontalButtonTablePane(getState(), 2, 1, subTab.getContent(1));
+                adminPane.onInit();
 
-                @Override
-                public boolean isActive(InputState inputState) {
-                    return getState().getController().getPlayerInputs().isEmpty();
-                }
-            });
-
-            adminPane.addButton(1, 0, "REMOVE", GUIHorizontalArea.HButtonColor.ORANGE, new GUICallback() {
-                @Override
-                public void callback(GUIElement guiElement, MouseEvent mouseEvent) {
-                    if(mouseEvent.pressedLeftMouse() && lastClickedResource != null) {
-                        (new PlayerOkCancelInput("ConfirmExchangeRemovalPanel", getState(), "CONFIRM REMOVAL", "Are you sure you wish to remove this item?") {
-                            @Override
-                            public void onDeactivate() {
-
-                            }
-
-                            @Override
-                            public void pressedOK() {
-                                sendExchangeItemRemoval(1, lastClickedResource);
-                                recreateTabs();
-                                deactivate();
-                            }
-                        }).activate();
+                adminPane.addButton(0, 0, "ADD", GUIHorizontalArea.HButtonColor.GREEN, new GUICallback() {
+                    @Override
+                    public void callback(GUIElement guiElement, MouseEvent mouseEvent) {
+                        if(mouseEvent.pressedLeftMouse()) {
+                            (new AddResourceExchangeDialog()).activate();
+                            recreateTabs();
+                        }
                     }
-                }
 
-                @Override
-                public boolean isOccluded() {
-                    return !getState().getController().getPlayerInputs().isEmpty();
-                }
-            }, new GUIActivationCallback() {
-                @Override
-                public boolean isVisible(InputState inputState) {
-                    return true;
-                }
+                    @Override
+                    public boolean isOccluded() {
+                        return !getState().getController().getPlayerInputs().isEmpty();
+                    }
+                }, new GUIActivationCallback() {
+                    @Override
+                    public boolean isVisible(InputState inputState) {
+                        return true;
+                    }
 
-                @Override
-                public boolean isActive(InputState inputState) {
-                    return getState().getController().getPlayerInputs().isEmpty();
-                }
-            });
-            contentPane.getContent(1).attach(adminPane);
+                    @Override
+                    public boolean isActive(InputState inputState) {
+                        return getState().getController().getPlayerInputs().isEmpty();
+                    }
+                });
+
+                adminPane.addButton(1, 0, "REMOVE", GUIHorizontalArea.HButtonColor.ORANGE, new GUICallback() {
+                    @Override
+                    public void callback(GUIElement guiElement, MouseEvent mouseEvent) {
+                        if(mouseEvent.pressedLeftMouse() && lastClickedResource != null) {
+                            (new PlayerOkCancelInput("ConfirmExchangeRemovalPanel", getState(), "CONFIRM REMOVAL", "Are you sure you wish to remove this item?") {
+                                @Override
+                                public void onDeactivate() {
+
+                                }
+
+                                @Override
+                                public void pressedOK() {
+                                    sendExchangeItemRemoval(0, lastClickedResource);
+                                    recreateTabs();
+                                    deactivate();
+                                }
+                            }).activate();
+                        }
+                    }
+
+                    @Override
+                    public boolean isOccluded() {
+                        return !getState().getController().getPlayerInputs().isEmpty();
+                    }
+                }, new GUIActivationCallback() {
+                    @Override
+                    public boolean isVisible(InputState inputState) {
+                        return true;
+                    }
+
+                    @Override
+                    public boolean isActive(InputState inputState) {
+                        return getState().getController().getPlayerInputs().isEmpty();
+                    }
+                });
+                subTab.getContent(1).attach(adminPane);
+            }
         }
-    }
 
-    private void createServicesTab(GUIContentPane contentPane) {
+        { //Gold Tab
+            GUIContentPane subTab = tabbedContent.addTab("GOLD");
+            subTab.setTextBoxHeightLast(GLFrame.getHeight() - 100);
+            subTab.orientateInsideFrame();
+            GUIScrollablePanel scrollPanel = new GUIScrollablePanel(1, 1, subTab.getContent(0), getState());
+            scrollPanel.setScrollable(GUIScrollablePanel.SCROLLABLE_VERTICAL);
+            scrollPanel.setLeftRightClipOnly = true;
 
+            GUITilePane<ResourceExchangeItem> resourcesTilePane;
+            (resourcesTilePane = new GUITilePane<>(getState(), scrollPanel, 200, 300)).onInit();
+            for(final ResourceExchangeItem item : getResources()) {
+                if(item.barType == GOLD) {
+                    GUITile tile = resourcesTilePane.addButtonTile("EXCHANGE", item.createDescription(), getTileColor(item), new GUICallback() {
+                        @Override
+                        public void callback(GUIElement guiElement, MouseEvent mouseEvent) {
+                            if(mouseEvent.pressedLeftMouse()) {
+                                lastClickedResource = item;
+                                if(canAffordItem(item)) {
+                                    (new PlayerOkCancelInput("ConfirmExchangePanel", getState(), "CONFIRM EXCHANGE", "Are you sure you wish to exchange " + item.price + " " + getBarTypeName(item) + "s for this item?") {
+                                        @Override
+                                        public void onDeactivate() {
+
+                                        }
+
+                                        @Override
+                                        public void pressedOK() {
+                                            GameClient.getClientState().getController().queueUIAudio("0022_menu_ui - highlight 1");
+                                            givePlayerItem(item);
+                                            InventoryUtils.consumeItems(GameClient.getClientPlayerState().getInventory(), item.barType, item.price);
+                                            lastClickedResource = null;
+                                            deactivate();
+                                        }
+                                    }).activate();
+                                } else GameClient.getClientState().getController().queueUIAudio("0022_menu_ui - error 1");
+                            }
+                        }
+
+                        @Override
+                        public boolean isOccluded() {
+                            return !getState().getController().getPlayerInputs().isEmpty();
+                        }
+                    }, new GUIActivationCallback() {
+                        @Override
+                        public boolean isVisible(InputState inputState) {
+                            return true;
+                        }
+
+                        @Override
+                        public boolean isActive(InputState inputState) {
+                            return true;
+                        }
+                    });
+                    GUIOverlay spriteOverlay = item.getIcon();
+                    spriteOverlay.onInit();
+                    tile.attach(spriteOverlay);
+                    if(spriteOverlay.getUserPointer() == null) spriteOverlay.setUserPointer("default-icon");
+                    if(spriteOverlay.getUserPointer().equals("default-icon")) {
+                        spriteOverlay.getPos().x += 80;
+                        spriteOverlay.getPos().y += 180;
+                    } else {
+                        spriteOverlay.getPos().x += 100;
+                        spriteOverlay.getPos().y += 200;
+                    }
+                }
+            }
+            scrollPanel.setContent(resourcesTilePane);
+            scrollPanel.onInit();
+            subTab.getContent(0).attach(scrollPanel);
+
+            if(isAdmin()) {
+                subTab.setTextBoxHeightLast(0, GLFrame.getHeight() - 239);
+                subTab.addNewTextBox(28);
+                GUIHorizontalButtonTablePane adminPane = new GUIHorizontalButtonTablePane(getState(), 2, 1, subTab.getContent(1));
+                adminPane.onInit();
+
+                adminPane.addButton(0, 0, "ADD", GUIHorizontalArea.HButtonColor.GREEN, new GUICallback() {
+                    @Override
+                    public void callback(GUIElement guiElement, MouseEvent mouseEvent) {
+                        if(mouseEvent.pressedLeftMouse()) {
+                            (new AddResourceExchangeDialog()).activate();
+                            recreateTabs();
+                        }
+                    }
+
+                    @Override
+                    public boolean isOccluded() {
+                        return !getState().getController().getPlayerInputs().isEmpty();
+                    }
+                }, new GUIActivationCallback() {
+                    @Override
+                    public boolean isVisible(InputState inputState) {
+                        return true;
+                    }
+
+                    @Override
+                    public boolean isActive(InputState inputState) {
+                        return getState().getController().getPlayerInputs().isEmpty();
+                    }
+                });
+
+                adminPane.addButton(1, 0, "REMOVE", GUIHorizontalArea.HButtonColor.ORANGE, new GUICallback() {
+                    @Override
+                    public void callback(GUIElement guiElement, MouseEvent mouseEvent) {
+                        if(mouseEvent.pressedLeftMouse() && lastClickedResource != null) {
+                            (new PlayerOkCancelInput("ConfirmExchangeRemovalPanel", getState(), "CONFIRM REMOVAL", "Are you sure you wish to remove this item?") {
+                                @Override
+                                public void onDeactivate() {
+
+                                }
+
+                                @Override
+                                public void pressedOK() {
+                                    sendExchangeItemRemoval(0, lastClickedResource);
+                                    recreateTabs();
+                                    deactivate();
+                                }
+                            }).activate();
+                        }
+                    }
+
+                    @Override
+                    public boolean isOccluded() {
+                        return !getState().getController().getPlayerInputs().isEmpty();
+                    }
+                }, new GUIActivationCallback() {
+                    @Override
+                    public boolean isVisible(InputState inputState) {
+                        return true;
+                    }
+
+                    @Override
+                    public boolean isActive(InputState inputState) {
+                        return getState().getController().getPlayerInputs().isEmpty();
+                    }
+                });
+                subTab.getContent(1).attach(adminPane);
+            }
+        }
+
+        tabAnchor.attach(tabbedContent);
+        contentPane.getContent(0).attach(tabAnchor);
     }
 
     private void createExchangeTab(GUIContentPane contentPane) {
