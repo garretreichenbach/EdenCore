@@ -27,7 +27,7 @@ import thederpgamer.edencore.utils.DataUtils;
 public class BuildSectorMenuPanel extends GUIMenuPanel {
 
     public BuildSectorMenuPanel(InputState inputState) {
-        super(inputState, "BuildSectorMenu", GLFrame.getWidth() - 300, GLFrame.getHeight() - 100);
+        super(inputState, "BuildSectorMenu", (int) (GLFrame.getWidth() / 1.5), (int) (GLFrame.getHeight() / 1.5));
     }
 
     @Override
@@ -37,15 +37,15 @@ public class BuildSectorMenuPanel extends GUIMenuPanel {
         if(guiWindow.getTabs().size() > 0) guiWindow.clearTabs();
 
         GUIContentPane managementTab = guiWindow.addTab("MANAGEMENT");
-        managementTab.setTextBoxHeightLast(GLFrame.getHeight() - 100);
+        managementTab.setTextBoxHeightLast((int) (GLFrame.getHeight() / 1.5));
         createManagementTab(managementTab);
 
         GUIContentPane entitiesTab = guiWindow.addTab("ENTITIES");
-        entitiesTab.setTextBoxHeightLast(GLFrame.getHeight() - 100);
+        entitiesTab.setTextBoxHeightLast((int) (GLFrame.getHeight() / 1.5));
         createEntitiesTab(entitiesTab);
 
         GUIContentPane catalogTab = guiWindow.addTab("CATALOG");
-        catalogTab.setTextBoxHeightLast(GLFrame.getHeight() - 100);
+        catalogTab.setTextBoxHeightLast((int) (GLFrame.getHeight() / 1.5));
         createCatalogTab(catalogTab);
         guiWindow.setSelectedTab(lastTab);
     }

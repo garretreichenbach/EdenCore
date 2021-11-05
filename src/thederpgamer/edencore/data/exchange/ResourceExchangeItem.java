@@ -40,6 +40,7 @@ public class ResourceExchangeItem extends ExchangeItem {
         writeBuffer.writeShort(barType);
         writeBuffer.writeInt(price);
         writeBuffer.writeString(name);
+        if(description.length() > 96) this.description = description.substring(0, 95) + " ...";
         writeBuffer.writeString(description);
         writeBuffer.writeShort(itemId);
         writeBuffer.writeInt(itemCount);
@@ -51,6 +52,7 @@ public class ResourceExchangeItem extends ExchangeItem {
         price = readBuffer.readInt();
         name = readBuffer.readString();
         description = readBuffer.readString();
+        if(description.length() > 96) this.description = description.substring(0, 95) + " ...";
         itemId = readBuffer.readShort();
         itemCount = readBuffer.readInt();
     }

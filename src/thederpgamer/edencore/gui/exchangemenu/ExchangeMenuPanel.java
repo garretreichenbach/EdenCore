@@ -41,8 +41,14 @@ public class ExchangeMenuPanel extends GUIMenuPanel {
     private BlueprintExchangeItem lastClickedBP;
     private ResourceExchangeItem lastClickedResource;
 
+    private GUITabbedContent bpTabbedContent;
+    private GUITabbedContent resourcesTabbedContent;
+
+    private int lastBPTab;
+    private int lastResourceTab;
+
     public ExchangeMenuPanel(InputState inputState) {
-        super(inputState, "ServerExchange", GLFrame.getWidth() - 300, GLFrame.getHeight() - 100);
+        super(inputState, "ServerExchange", (int) (GLFrame.getWidth() / 1.5), (int) (GLFrame.getHeight() / 1.5));
         BRONZE = ElementManager.getItem("Bronze Bar").getId();
         SILVER = ElementManager.getItem("Silver Bar").getId();
         GOLD = ElementManager.getItem("Gold Bar").getId();
@@ -55,17 +61,17 @@ public class ExchangeMenuPanel extends GUIMenuPanel {
         if(guiWindow.getTabs().size() > 0) guiWindow.clearTabs();
 
         GUIContentPane blueprintsTab = guiWindow.addTab("ENTITIES");
-        blueprintsTab.setTextBoxHeightLast(GLFrame.getHeight() - 100);
+        blueprintsTab.setTextBoxHeightLast((int) (GLFrame.getHeight() / 1.5));
         createBlueprintsTab(blueprintsTab);
 
         GUIContentPane resourcesTab;
         if(APIUtils.isRRSInstalled()) resourcesTab = guiWindow.addTab("COMPONENTS");
         else resourcesTab = guiWindow.addTab("RESOURCES");
-        resourcesTab.setTextBoxHeightLast(GLFrame.getHeight() - 100);
+        resourcesTab.setTextBoxHeightLast((int) (GLFrame.getHeight() / 1.5));
         createResourcesTab(resourcesTab);
 
         GUIContentPane exchangeTab = guiWindow.addTab("EXCHANGE");
-        exchangeTab.setTextBoxHeightLast(GLFrame.getHeight() - 100);
+        exchangeTab.setTextBoxHeightLast((int) (GLFrame.getHeight() / 1.5));
         createExchangeTab(exchangeTab);
 
         guiWindow.setSelectedTab(lastTab);
@@ -75,12 +81,15 @@ public class ExchangeMenuPanel extends GUIMenuPanel {
 
     private void createBlueprintsTab(GUIContentPane contentPane) {
         GUIAncor tabAnchor = new GUIAncor(getState(), guiWindow.getInnerWidth() - 20, guiWindow.getInnerHeigth() - 13);
-        GUITabbedContent tabbedContent = new GUITabbedContent(getState(), tabAnchor);
-        tabbedContent.onInit();
+        if(bpTabbedContent == null) (bpTabbedContent = new GUITabbedContent(getState(), tabAnchor)).onInit();
+        else {
+            lastBPTab = bpTabbedContent.getSelectedTab();
+            bpTabbedContent.clearTabs();
+        }
 
         { //Bronze Tab
-            GUIContentPane subTab = tabbedContent.addTab("BRONZE");
-            subTab.setTextBoxHeightLast(GLFrame.getHeight() - 100);
+            GUIContentPane subTab = bpTabbedContent.addTab("BRONZE");
+            subTab.setTextBoxHeightLast((int) (GLFrame.getHeight() / 1.5));
             subTab.orientateInsideFrame();
             GUIScrollablePanel scrollPanel = new GUIScrollablePanel(1, 1, subTab.getContent(0), getState());
             scrollPanel.setScrollable(GUIScrollablePanel.SCROLLABLE_VERTICAL);
@@ -148,7 +157,7 @@ public class ExchangeMenuPanel extends GUIMenuPanel {
             subTab.getContent(0).attach(scrollPanel);
 
             if(isAdmin()) {
-                subTab.setTextBoxHeightLast(0, GLFrame.getHeight() - 239);
+                subTab.setTextBoxHeightLast(0, guiWindow.getInnerHeigth() - 90);
                 subTab.addNewTextBox(0, 28);
 
                 GUIHorizontalButtonTablePane adminPane = new GUIHorizontalButtonTablePane(getState(), 2, 1, subTab.getContent(1));
@@ -220,8 +229,8 @@ public class ExchangeMenuPanel extends GUIMenuPanel {
         }
 
         { //Silver Tab
-            GUIContentPane subTab = tabbedContent.addTab("SILVER");
-            subTab.setTextBoxHeightLast(GLFrame.getHeight() - 100);
+            GUIContentPane subTab = bpTabbedContent.addTab("SILVER");
+            subTab.setTextBoxHeightLast((int) (GLFrame.getHeight() / 1.5));
             subTab.orientateInsideFrame();
             GUIScrollablePanel scrollPanel = new GUIScrollablePanel(1, 1, subTab.getContent(0), getState());
             scrollPanel.setScrollable(GUIScrollablePanel.SCROLLABLE_VERTICAL);
@@ -289,7 +298,7 @@ public class ExchangeMenuPanel extends GUIMenuPanel {
             subTab.getContent(0).attach(scrollPanel);
 
             if(isAdmin()) {
-                subTab.setTextBoxHeightLast(0, GLFrame.getHeight() - 239);
+                 subTab.setTextBoxHeightLast(0, guiWindow.getInnerHeigth() - 90);
                 subTab.addNewTextBox(0, 28);
 
                 GUIHorizontalButtonTablePane adminPane = new GUIHorizontalButtonTablePane(getState(), 2, 1, subTab.getContent(1));
@@ -361,8 +370,8 @@ public class ExchangeMenuPanel extends GUIMenuPanel {
         }
 
         { //Gold Tab
-            GUIContentPane subTab = tabbedContent.addTab("GOLD");
-            subTab.setTextBoxHeightLast(GLFrame.getHeight() - 100);
+            GUIContentPane subTab = bpTabbedContent.addTab("GOLD");
+            subTab.setTextBoxHeightLast((int) (GLFrame.getHeight() / 1.5));
             subTab.orientateInsideFrame();
             GUIScrollablePanel scrollPanel = new GUIScrollablePanel(1, 1, subTab.getContent(0), getState());
             scrollPanel.setScrollable(GUIScrollablePanel.SCROLLABLE_VERTICAL);
@@ -430,7 +439,7 @@ public class ExchangeMenuPanel extends GUIMenuPanel {
             subTab.getContent(0).attach(scrollPanel);
 
             if(isAdmin()) {
-                subTab.setTextBoxHeightLast(0, GLFrame.getHeight() - 239);
+                subTab.setTextBoxHeightLast(0, guiWindow.getInnerHeigth() - 90);
                 subTab.addNewTextBox(0, 28);
 
                 GUIHorizontalButtonTablePane adminPane = new GUIHorizontalButtonTablePane(getState(), 2, 1, subTab.getContent(1));
@@ -501,18 +510,22 @@ public class ExchangeMenuPanel extends GUIMenuPanel {
             }
         }
 
-        tabAnchor.attach(tabbedContent);
+        tabAnchor.attach(bpTabbedContent);
         contentPane.getContent(0).attach(tabAnchor);
+        bpTabbedContent.setSelectedTab(lastBPTab);
     }
 
     private void createResourcesTab(GUIContentPane contentPane) {
         GUIAncor tabAnchor = new GUIAncor(getState(), guiWindow.getInnerWidth() - 20, guiWindow.getInnerHeigth() - 13);
-        GUITabbedContent tabbedContent = new GUITabbedContent(getState(), tabAnchor);
-        tabbedContent.onInit();
+        if(resourcesTabbedContent == null) (resourcesTabbedContent = new GUITabbedContent(getState(), tabAnchor)).onInit();
+        else {
+            lastResourceTab = resourcesTabbedContent.getSelectedTab();
+            resourcesTabbedContent.clearTabs();
+        }
 
         { //Bronze Tab
-            GUIContentPane subTab = tabbedContent.addTab("BRONZE");
-            subTab.setTextBoxHeightLast(GLFrame.getHeight() - 100);
+            GUIContentPane subTab = resourcesTabbedContent.addTab("BRONZE");
+            subTab.setTextBoxHeightLast((int) (GLFrame.getHeight() / 1.5));
             subTab.orientateInsideFrame();
             GUIScrollablePanel scrollPanel = new GUIScrollablePanel(1, 1, subTab.getContent(0), getState());
             scrollPanel.setScrollable(GUIScrollablePanel.SCROLLABLE_VERTICAL);
@@ -580,7 +593,7 @@ public class ExchangeMenuPanel extends GUIMenuPanel {
             subTab.getContent(0).attach(scrollPanel);
 
             if(isAdmin()) {
-                subTab.setTextBoxHeightLast(0, GLFrame.getHeight() - 239);
+                subTab.setTextBoxHeightLast(0, guiWindow.getInnerHeigth() - 90);
                 subTab.addNewTextBox(28);
                 GUIHorizontalButtonTablePane adminPane = new GUIHorizontalButtonTablePane(getState(), 2, 1, subTab.getContent(1));
                 adminPane.onInit();
@@ -650,8 +663,8 @@ public class ExchangeMenuPanel extends GUIMenuPanel {
         }
 
         { //Silver Tab
-            GUIContentPane subTab = tabbedContent.addTab("SILVER");
-            subTab.setTextBoxHeightLast(GLFrame.getHeight() - 100);
+            GUIContentPane subTab = resourcesTabbedContent.addTab("SILVER");
+            subTab.setTextBoxHeightLast((int) (GLFrame.getHeight() / 1.5));
             subTab.orientateInsideFrame();
             GUIScrollablePanel scrollPanel = new GUIScrollablePanel(1, 1, subTab.getContent(0), getState());
             scrollPanel.setScrollable(GUIScrollablePanel.SCROLLABLE_VERTICAL);
@@ -719,7 +732,7 @@ public class ExchangeMenuPanel extends GUIMenuPanel {
             subTab.getContent(0).attach(scrollPanel);
 
             if(isAdmin()) {
-                subTab.setTextBoxHeightLast(0, GLFrame.getHeight() - 239);
+                subTab.setTextBoxHeightLast(0, guiWindow.getInnerHeigth() - 90);
                 subTab.addNewTextBox(28);
                 GUIHorizontalButtonTablePane adminPane = new GUIHorizontalButtonTablePane(getState(), 2, 1, subTab.getContent(1));
                 adminPane.onInit();
@@ -789,8 +802,8 @@ public class ExchangeMenuPanel extends GUIMenuPanel {
         }
 
         { //Gold Tab
-            GUIContentPane subTab = tabbedContent.addTab("GOLD");
-            subTab.setTextBoxHeightLast(GLFrame.getHeight() - 100);
+            GUIContentPane subTab = resourcesTabbedContent.addTab("GOLD");
+            subTab.setTextBoxHeightLast((int) (GLFrame.getHeight() / 1.5));
             subTab.orientateInsideFrame();
             GUIScrollablePanel scrollPanel = new GUIScrollablePanel(1, 1, subTab.getContent(0), getState());
             scrollPanel.setScrollable(GUIScrollablePanel.SCROLLABLE_VERTICAL);
@@ -858,7 +871,7 @@ public class ExchangeMenuPanel extends GUIMenuPanel {
             subTab.getContent(0).attach(scrollPanel);
 
             if(isAdmin()) {
-                subTab.setTextBoxHeightLast(0, GLFrame.getHeight() - 239);
+                subTab.setTextBoxHeightLast(0, guiWindow.getInnerHeigth() - 90);
                 subTab.addNewTextBox(28);
                 GUIHorizontalButtonTablePane adminPane = new GUIHorizontalButtonTablePane(getState(), 2, 1, subTab.getContent(1));
                 adminPane.onInit();
@@ -927,8 +940,9 @@ public class ExchangeMenuPanel extends GUIMenuPanel {
             }
         }
 
-        tabAnchor.attach(tabbedContent);
+        tabAnchor.attach(resourcesTabbedContent);
         contentPane.getContent(0).attach(tabAnchor);
+        resourcesTabbedContent.setSelectedTab(lastResourceTab);
     }
 
     private void createExchangeTab(GUIContentPane contentPane) {
