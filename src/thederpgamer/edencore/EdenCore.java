@@ -80,7 +80,8 @@ public class EdenCore extends StarMod {
 
     //Other
     private final String[] overwriteClasses = new String[] {
-            "PlayerState"
+            "PlayerState",
+            "BlueprintEntry"
     };
 
     //GUI
