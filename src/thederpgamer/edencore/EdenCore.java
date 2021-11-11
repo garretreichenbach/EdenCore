@@ -457,7 +457,7 @@ public class EdenCore extends StarMod {
                                 PlayerData playerData = DataUtils.getPlayerData(playerState);
                                 Date date = new Date(playerData.lastDailyPrizeClaim);
                                 if(DateUtils.getAgeDays(date) >= 1.0f) {
-                                    InventoryUtils.addItem(playerState.getInventory(), ElementManager.getItem("Bronze Bar").getId(), 2);
+                                    InventoryUtils.addItem(playerState.getPersonalInventory(), ElementManager.getItem("Bronze Bar").getId(), 2);
                                     playerData.lastDailyPrizeClaim = System.currentTimeMillis();
                                     PersistentObjectUtil.save(EdenCore.this.getSkeleton());
                                     PlayerUtils.sendMessage(playerState, "You have been given 2 Bronze Bars for logging in. Thanks for playing!");
