@@ -305,7 +305,7 @@ public class DataUtils {
         } else if(GameCommon.isDedicatedServer() || GameCommon.isOnSinglePlayer()) {
             try {
                 Set set = GameServer.getUniverse().getSector(sectorData.sector).getEntities();
-                for(Object obj : set) if(obj instanceof SegmentController) entityList.add((SegmentController) obj);
+                for(Object obj : set) if(obj instanceof SegmentController && (((SegmentController) obj)).isOnServer() && !((SegmentController) obj).isVirtualBlueprint()) entityList.add((SegmentController) obj);
             } catch(IOException exception) {
                 exception.printStackTrace();
             }
@@ -328,7 +328,7 @@ public class DataUtils {
     public static BuildSectorData getBuildSector(String playerName) {
         if(GameCommon.isClientConnectedToServer()) {
             PacketUtil.sendPacketToServer(new RequestClientCacheUpdatePacket());
-            for(BuildSectorData sectorData : ClientCacheManager.accessibleSectors) if(sectorData.ownerName.equals(playerName)) return sectorData;
+            for(BuildSectorData sectorData : ClientCacheManager.accessibleSectors) if(sectorData != null && sectorData.ownerName != null && sectorData.ownerName.equals(playerName)) return sectorData;
         } else if(GameCommon.isDedicatedServer() || GameCommon.isOnSinglePlayer()) {
             for(Object object : PersistentObjectUtil.getObjects(instance, BuildSectorData.class)) {
                 BuildSectorData data = (BuildSectorData) object;

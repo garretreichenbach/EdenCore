@@ -42,6 +42,7 @@ import thederpgamer.edencore.drawer.BuildSectorHudDrawer;
 import thederpgamer.edencore.element.ElementManager;
 import thederpgamer.edencore.element.items.PrizeBars;
 import thederpgamer.edencore.gui.buildsectormenu.BuildSectorMenuControlManager;
+import thederpgamer.edencore.gui.eventsmenu.EventsMenuControlManager;
 import thederpgamer.edencore.gui.exchangemenu.ExchangeMenuControlManager;
 import thederpgamer.edencore.manager.ConfigManager;
 import thederpgamer.edencore.manager.LogManager;
@@ -80,13 +81,12 @@ public class EdenCore extends StarMod {
     //Other
     private final String[] overwriteClasses = new String[] {
             "PlayerState"
-            //"CatalogExtendedPanel",
-            //"BlueprintEntry"
     };
 
     //GUI
     public ExchangeMenuControlManager exchangeMenuControlManager;
     public BuildSectorMenuControlManager buildSectorMenuControlManager;
+    public EventsMenuControlManager eventsMenuControlManager;
 
     @Override
     public void onEnable() {
@@ -180,6 +180,20 @@ public class EdenCore extends StarMod {
                         exchangeMenuControlManager.setActive(true);
                     }
                 }
+
+                char eventsKey = ConfigManager.getKeyBinding("events-menu-key");
+                if(eventsKey != '\0' && event.getChar() == eventsKey) {
+                    if(eventsMenuControlManager == null) {
+                        eventsMenuControlManager = new EventsMenuControlManager();
+                        ModGUIHandler.registerNewControlManager(getSkeleton(), eventsMenuControlManager);
+                    }
+
+                    if(!GameClient.getClientState().getController().isChatActive() && GameClient.getClientState().getController().getPlayerInputs().isEmpty()) {
+                        GameClient.getClientState().getController().queueUIAudio("0022_menu_ui - enter");
+                        GameClient.getClientState().getGlobalGameControlManager().getIngameControlManager().getPlayerGameControlManager().deactivateAll();
+                        eventsMenuControlManager.setActive(true);
+                    }
+                }
             }
         }, this);
 
@@ -194,6 +208,11 @@ public class EdenCore extends StarMod {
                 if(exchangeMenuControlManager == null) {
                     exchangeMenuControlManager = new ExchangeMenuControlManager();
                     ModGUIHandler.registerNewControlManager(getSkeleton(), exchangeMenuControlManager);
+                }
+
+                if(eventsMenuControlManager == null) {
+                    eventsMenuControlManager = new EventsMenuControlManager();
+                    ModGUIHandler.registerNewControlManager(getSkeleton(), eventsMenuControlManager);
                 }
 
                 GUITopBar.ExpandedButton dropDownButton = event.getDropdownButtons().get(event.getDropdownButtons().size() - 1);
@@ -236,6 +255,37 @@ public class EdenCore extends StarMod {
                             GameClient.getClientState().getController().queueUIAudio("0022_menu_ui - enter");
                             GameClient.getClientState().getGlobalGameControlManager().getIngameControlManager().getPlayerGameControlManager().deactivateAll();
                             exchangeMenuControlManager.setActive(true);
+                        }
+                    }
+
+                    @Override
+                    public boolean isOccluded() {
+                        return false;
+                    }
+                }, new GUIActivationHighlightCallback() {
+                    @Override
+                    public boolean isHighlighted(InputState inputState) {
+                        return false;
+                    }
+
+                    @Override
+                    public boolean isVisible(InputState inputState) {
+                        return true;
+                    }
+
+                    @Override
+                    public boolean isActive(InputState inputState) {
+                        return true;
+                    }
+                });
+
+                dropDownButton.addExpandedButton("EVENTS", new GUICallback() {
+                    @Override
+                    public void callback(GUIElement guiElement, MouseEvent mouseEvent) {
+                        if(mouseEvent.pressedLeftMouse()) {
+                            GameClient.getClientState().getController().queueUIAudio("0022_menu_ui - enter");
+                            GameClient.getClientState().getGlobalGameControlManager().getIngameControlManager().getPlayerGameControlManager().deactivateAll();
+                            eventsMenuControlManager.setActive(true);
                         }
                     }
 
@@ -402,13 +452,15 @@ public class EdenCore extends StarMod {
                         @Override
                         public void run() {
                             PlayerState playerState = GameCommon.getPlayerFromName(event.getPlayerName());
-                            PlayerData playerData = DataUtils.getPlayerData(playerState);
-                            Date date = new Date(playerData.lastDailyPrizeClaim);
-                            if(DateUtils.getAgeDays(date) >= 1.0f) {
-                                InventoryUtils.addItem(playerState.getInventory(), ElementManager.getItem("Bronze Bar").getId(), 2);
-                                playerData.lastDailyPrizeClaim = System.currentTimeMillis();
-                                PersistentObjectUtil.save(EdenCore.this.getSkeleton());
-                                PlayerUtils.sendMessage(playerState, "You have been given 2 Bronze Bars for logging in. Thanks for playing!");
+                            if(playerState != null && playerState.isOnServer()) {
+                                PlayerData playerData = DataUtils.getPlayerData(playerState);
+                                Date date = new Date(playerData.lastDailyPrizeClaim);
+                                if(DateUtils.getAgeDays(date) >= 1.0f) {
+                                    InventoryUtils.addItem(playerState.getInventory(), ElementManager.getItem("Bronze Bar").getId(), 2);
+                                    playerData.lastDailyPrizeClaim = System.currentTimeMillis();
+                                    PersistentObjectUtil.save(EdenCore.this.getSkeleton());
+                                    PlayerUtils.sendMessage(playerState, "You have been given 2 Bronze Bars for logging in. Thanks for playing!");
+                                }
                             }
                         }
                     }.runLater(EdenCore.this, 10000);
@@ -426,6 +478,7 @@ public class EdenCore extends StarMod {
         StarLoader.registerCommand(new BankingSendMoneyCommand());
         StarLoader.registerCommand(new BankingListCommand());
         StarLoader.registerCommand(new BankingAdminListCommand());
+        //StarLoader.registerCommand(new ResetPlayerCommand());
     }
 
     private void startRunners() {

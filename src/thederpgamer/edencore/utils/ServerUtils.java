@@ -45,6 +45,25 @@ public class ServerUtils {
         }
     }
 
+    public static void clearInventoryFull(PlayerState playerState) {
+        playerState.getPersonalFactoryInventoryMicro().clear();
+        playerState.getPersonalFactoryInventoryMicro().sendAll();
+
+        playerState.getPersonalFactoryInventoryCapsule().clear();
+        playerState.getPersonalFactoryInventoryCapsule().sendAll();
+
+        playerState.getPersonalFactoryInventoryMacroBlock().clear();
+        playerState.getPersonalFactoryInventoryMacroBlock().sendAll();
+
+        playerState.getPersonalInventory().clear();
+        playerState.getPersonalInventory().sendAll();
+
+        if(!playerState.getInventory().isInfinite()) {
+            playerState.getInventory().clear();
+            playerState.getInventory().sendAll();
+        }
+    }
+
     /**
      * Searches for a player by name on server. If the player isn't online, searches the server database for a matching entry.
      * @param playerName The player's name

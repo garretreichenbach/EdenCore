@@ -1,6 +1,7 @@
 package thederpgamer.edencore.network.server;
 
 import api.common.GameClient;
+import api.common.GameCommon;
 import api.mod.config.PersistentObjectUtil;
 import api.network.Packet;
 import api.network.PacketReadBuffer;
@@ -88,8 +89,13 @@ public class SendCacheUpdatePacket extends Packet {
         if(entitySize > 0) {
             for(int i = 0; i < entitySize; i ++) {
                 try {
-                    Sendable sendable = packetReadBuffer.readSendable();
-                    if(sendable instanceof SegmentController) sectorEntities.add((SegmentController) sendable);
+                    int entityId = packetReadBuffer.readInt();
+                    if(entityId > 0) {
+                        Sendable sendable = GameCommon.getGameObject(entityId);
+                        if(sendable instanceof SegmentController && sendable.isOnServer() && !((SegmentController) sendable).isVirtualBlueprint()) sectorEntities.add((SegmentController) sendable);
+                    }
+                    //Sendable sendable = packetReadBuffer.readSendable(); This throws an exception sometimes, and even with a catch it still crashes if thrown
+                    //if(sendable instanceof SegmentController) sectorEntities.add((SegmentController) sendable);
                 } catch(Exception exception) {
                     LogManager.logException("Encountered an exception while trying to deserialize SegmentController data", exception);
                 }
@@ -114,7 +120,7 @@ public class SendCacheUpdatePacket extends Packet {
 
         getSectorEntities();
         packetWriteBuffer.writeInt(sectorEntities.size());
-        if(sectorEntities.size() > 0) for(SegmentController segmentController : sectorEntities) packetWriteBuffer.writeSendable(segmentController);
+        if(sectorEntities.size() > 0) for(SegmentController segmentController : sectorEntities) packetWriteBuffer.writeInt(segmentController.getId());
     }
 
     @Override

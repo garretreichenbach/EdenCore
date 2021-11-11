@@ -80,8 +80,8 @@ public class ExchangeMenuPanel extends GUIMenuPanel {
     }
 
     private void createBlueprintsTab(GUIContentPane contentPane) {
-        GUIAncor tabAnchor = new GUIAncor(getState(), guiWindow.getInnerWidth() - 20, guiWindow.getInnerHeigth() - 13);
-        if(bpTabbedContent == null) (bpTabbedContent = new GUITabbedContent(getState(), tabAnchor)).onInit();
+        //GUIAncor tabAnchor = new GUIAncor(getState(), guiWindow.getInnerWidth() - 20, guiWindow.getInnerHeigth() - 13);
+        if(bpTabbedContent == null) (bpTabbedContent = new GUITabbedContent(getState(), contentPane.getContent(0))).onInit();
         else {
             lastBPTab = bpTabbedContent.getSelectedTab();
             bpTabbedContent.clearTabs();
@@ -373,7 +373,7 @@ public class ExchangeMenuPanel extends GUIMenuPanel {
             GUIContentPane subTab = bpTabbedContent.addTab("GOLD");
             subTab.setTextBoxHeightLast((int) (GLFrame.getHeight() / 1.5));
             subTab.orientateInsideFrame();
-            GUIScrollablePanel scrollPanel = new GUIScrollablePanel(1, 1, subTab.getContent(0), getState());
+            GUIScrollablePanel scrollPanel = new GUIScrollablePanel(1, 1, subTab.getTextboxes().get(0), getState());
             scrollPanel.setScrollable(GUIScrollablePanel.SCROLLABLE_VERTICAL);
             scrollPanel.setLeftRightClipOnly = true;
 
@@ -436,7 +436,7 @@ public class ExchangeMenuPanel extends GUIMenuPanel {
             }
             scrollPanel.setContent(blueprintsTilePane);
             scrollPanel.onInit();
-            subTab.getContent(0).attach(scrollPanel);
+            subTab.getTextboxes().get(0).attach(scrollPanel);
 
             if(isAdmin()) {
                 subTab.setTextBoxHeightLast(0, guiWindow.getInnerHeigth() - 90);
@@ -510,8 +510,8 @@ public class ExchangeMenuPanel extends GUIMenuPanel {
             }
         }
 
-        tabAnchor.attach(bpTabbedContent);
-        contentPane.getContent(0).attach(tabAnchor);
+        //tabAnchor.attach(bpTabbedContent);
+        //contentPane.getContent(0).attach(tabAnchor);
         bpTabbedContent.setSelectedTab(lastBPTab);
     }
 
