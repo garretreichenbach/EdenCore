@@ -1,6 +1,9 @@
 package thederpgamer.edencore.manager;
 
 import api.DebugFile;
+import api.mod.ModIdentifier;
+import api.mod.ModSkeleton;
+import api.mod.StarLoader;
 import thederpgamer.edencore.EdenCore;
 import thederpgamer.edencore.utils.DataUtils;
 import thederpgamer.edencore.utils.DateUtils;
@@ -109,6 +112,14 @@ public class LogManager {
                 logWriter.append(builder.toString()).append("\n");
                 logWriter.flush();
                 DebugFile.log(builder.toString(), EdenCore.getInstance());
+
+                ModIdentifier modIdentifier = new ModIdentifier(8253, "1.4.13");
+                ModSkeleton modSkeleton = StarLoader.getModFromId(modIdentifier);
+                if(modSkeleton != null) {
+                    try {
+                        thederpgamer.starbridge.StarBridge.getInstance().getBot().sendLogMessage(builder.toString());
+                    } catch(Exception ignored) { }
+                }
             } catch(IOException var3) {
                 var3.printStackTrace();
             }
