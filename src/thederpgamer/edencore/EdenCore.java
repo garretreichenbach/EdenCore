@@ -78,7 +78,7 @@ public class EdenCore extends StarMod {
     public EdenCore() { }
     public static void main(String[] args) { }
 
-    //Other
+    //Overwrites
     private final String[] overwriteClasses = new String[] {
             "PlayerState",
             "BlueprintEntry"
@@ -93,6 +93,7 @@ public class EdenCore extends StarMod {
     public void onEnable() {
         super.onEnable();
         getInstance = this;
+
         ConfigManager.initialize(this);
         LogManager.initialize();
         TransferManager.initialize();
@@ -100,6 +101,7 @@ public class EdenCore extends StarMod {
         registerPackets();
         registerListeners();
         registerCommands();
+
         startRunners();
     }
 
@@ -430,6 +432,7 @@ public class EdenCore extends StarMod {
         StarLoader.registerListener(PlayerSpawnEvent.class, new Listener<PlayerSpawnEvent>() {
             @Override
             public void onEvent(PlayerSpawnEvent event) {
+                PacketUtil.sendPacketToServer(new RequestClientCacheUpdatePacket());
                 //if(DataUtils.isPlayerInAnyBuildSector(event.getPlayer().getOwnerState())) queueSpawnSwitch(event.getPlayer().getOwnerState());
             }
         }, this);

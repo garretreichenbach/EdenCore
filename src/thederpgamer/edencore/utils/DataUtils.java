@@ -277,7 +277,11 @@ public class DataUtils {
     public static BuildSectorData getPlayerCurrentBuildSector(PlayerState playerState) {
         ArrayList<BuildSectorData> dataList = getAllBuildSectors();
         for(BuildSectorData sectorData : dataList) {
-            if(playerState.getCurrentSector().equals(sectorData.sector)) return sectorData;
+            try {
+                if(sectorData != null && playerState.getCurrentSector().equals(sectorData.sector)) return sectorData;
+            } catch(Exception exception) {
+                LogManager.logException("Encountered an exception while trying to get " + playerState.getName() + "'s current build sector", exception);
+            }
         }
         return null;
     }
