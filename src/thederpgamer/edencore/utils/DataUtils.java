@@ -63,6 +63,16 @@ public class DataUtils {
     }
 
     /**
+     * Clears potentially dangerous player data such as selected entities before moving them.
+     * @param playerState The player's state
+     */
+    public static void clearPlayerSelections(PlayerState playerState) {
+        playerState.getNetworkObject().selectedAITargetId.set(0);
+        playerState.getNetworkObject().selectedEntityId.set(0);
+        playerState.getControllerState().forcePlayerOutOfSegmentControllers();
+    }
+
+    /**
      * Saves an updated version of BuildSector data sent by it's owner to local storage and sends updated data to other players.
      * @param sectorData The updated sector data sent by the client that owns it
      */
@@ -81,7 +91,8 @@ public class DataUtils {
 
     public static void movePlayerToBuildSector(final PlayerState playerState, final BuildSectorData sectorData) throws IOException, SQLException, NullPointerException {
         if(GameServer.getServerState() == null || !playerState.isOnServer() || DataUtils.isPlayerInAnyBuildSector(playerState) || playerState.isInTestSector() || playerState.isInPersonalSector() || playerState.isInTutorial()) return; //Make sure only the server executes this code
-        playerState.getControllerState().forcePlayerOutOfSegmentControllers();
+        clearPlayerSelections(playerState);
+
         final PlayerData playerData = getPlayerData(playerState);
         Vector3f lastRealSectorPos = new Vector3f(playerState.getFirstControlledTransformableWOExc().getWorldTransform().origin);
         playerData.lastRealSectorPos.set(lastRealSectorPos);
@@ -121,6 +132,8 @@ public class DataUtils {
 
     public static void movePlayerFromBuildSector(final PlayerState playerState) throws IOException, SQLException, NullPointerException {
         if(GameServer.getServerState() == null || !playerState.isOnServer()) return; //Make sure only the server executes this code
+        clearPlayerSelections(playerState);
+
         Vector3f lastBuildSectorPos = new Vector3f(playerState.getFirstControlledTransformableWOExc().getWorldTransform().origin);
         playerState.getControllerState().forcePlayerOutOfSegmentControllers();
         final BuildSectorData sectorData = getPlayerCurrentBuildSector(playerState);

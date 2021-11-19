@@ -11,6 +11,7 @@ import api.listener.events.controller.ServerInitializeEvent;
 import api.listener.events.draw.RegisterWorldDrawersEvent;
 import api.listener.events.entity.SegmentControllerInstantiateEvent;
 import api.listener.events.gui.GUITopBarCreateEvent;
+import api.listener.events.gui.MainWindowTabAddEvent;
 import api.listener.events.input.KeyPressEvent;
 import api.listener.events.player.PlayerDeathEvent;
 import api.listener.events.player.PlayerJoinWorldEvent;
@@ -29,11 +30,13 @@ import org.schema.common.util.linAlg.Vector3i;
 import org.schema.game.client.view.gui.newgui.GUITopBar;
 import org.schema.game.common.data.player.PlayerState;
 import org.schema.game.server.data.PlayerNotFountException;
+import org.schema.schine.common.language.Lng;
 import org.schema.schine.graphicsengine.core.MouseEvent;
 import org.schema.schine.graphicsengine.forms.gui.GUIActivationHighlightCallback;
 import org.schema.schine.graphicsengine.forms.gui.GUICallback;
 import org.schema.schine.graphicsengine.forms.gui.GUIElement;
 import org.schema.schine.input.InputState;
+import org.schema.schine.network.server.ServerMessage;
 import org.schema.schine.resource.ResourceLoader;
 import thederpgamer.edencore.commands.*;
 import thederpgamer.edencore.data.other.BuildSectorData;
@@ -82,6 +85,26 @@ public class EdenCore extends StarMod {
     private final String[] overwriteClasses = new String[] {
             "PlayerState",
             "BlueprintEntry"
+    };
+
+    //Disabled Blocks
+    private final short[] disabledBlocks = new short[] {
+            347, //Shop Module
+            291, //Faction Module
+            667, //Shipyard Computer
+            683, //Race Gate Controller
+            542, //Warp Gate Computer
+            445, //Medical Supplies
+            446 //Medial Cabinet
+    };
+
+    //Disabled Tabs
+    private final String[] disabledTabs = new String[] {
+            "FLEETS",
+            "SHOP",
+            "REPAIRS",
+            "TRADE",
+            "SET PRICES"
     };
 
     //GUI
@@ -315,6 +338,20 @@ public class EdenCore extends StarMod {
             }
         }, this);
 
+        StarLoader.registerListener(MainWindowTabAddEvent.class, new Listener<MainWindowTabAddEvent>() {
+            @Override
+            public void onEvent(MainWindowTabAddEvent event) {
+                if(DataUtils.isPlayerInAnyBuildSector(GameClient.getClientPlayerState())) {
+                    for(String s : disabledTabs) {
+                        if(event.getTitleAsString().equals(Lng.str(s))) {
+                            event.setCanceled(true);
+                            event.getWindow().cleanUp();
+                        }
+                    }
+                }
+            }
+        }, this);
+
         StarLoader.registerListener(RegisterWorldDrawersEvent.class, new Listener<RegisterWorldDrawersEvent>() {
             @Override
             public void onEvent(RegisterWorldDrawersEvent event) {
@@ -344,7 +381,10 @@ public class EdenCore extends StarMod {
                 try {
                     if(DataUtils.isPlayerInAnyBuildSector(GameClient.getClientPlayerState())) {
                         BuildSectorData sectorData = DataUtils.getPlayerCurrentBuildSector(GameClient.getClientPlayerState());
-                        if(!sectorData.hasPermission(GameClient.getClientPlayerState().getName(), "EDIT")) event.setCanceled(true);
+                        if(!sectorData.hasPermission(GameClient.getClientPlayerState().getName(), "EDIT")) {
+                            GameClient.getClientState().message(new String[] {"You don't have permission to do this!"}, ServerMessage.MESSAGE_TYPE_WARNING);
+                            event.setCanceled(true);
+                        }
                     }
                 } catch(Exception ignored) { }
             }
@@ -356,7 +396,10 @@ public class EdenCore extends StarMod {
                 try {
                     if(DataUtils.isPlayerInAnyBuildSector(GameClient.getClientPlayerState())) {
                         BuildSectorData sectorData = DataUtils.getPlayerCurrentBuildSector(GameClient.getClientPlayerState());
-                        if(!sectorData.hasPermission(GameClient.getClientPlayerState().getName(), "EDIT")) event.setCanceled(true);
+                        if(!sectorData.hasPermission(GameClient.getClientPlayerState().getName(), "EDIT")) {
+                            GameClient.getClientState().message(new String[] {"You don't have permission to do this!"}, ServerMessage.MESSAGE_TYPE_WARNING);
+                            event.setCanceled(true);
+                        }
                     }
                 } catch(Exception ignored) { }
             }
@@ -368,7 +411,11 @@ public class EdenCore extends StarMod {
                 try {
                     if(DataUtils.isPlayerInAnyBuildSector(GameClient.getClientPlayerState())) {
                         BuildSectorData sectorData = DataUtils.getPlayerCurrentBuildSector(GameClient.getClientPlayerState());
-                        if(!sectorData.hasPermission(GameClient.getClientPlayerState().getName(), "EDIT")) event.setCanceled(true);
+                        if(!sectorData.hasPermission(GameClient.getClientPlayerState().getName(), "EDIT")) {
+                            GameClient.getClientState().message(new String[] {"You don't have permission to do this!"}, ServerMessage.MESSAGE_TYPE_WARNING);
+                            event.setCanceled(true);
+                        }
+                        for(short id : disabledBlocks) if(event.getSegmentPiece().getType() == id && !GameClient.getClientPlayerState().isAdmin()) event.setCanceled(true);
                     }
                 } catch(Exception ignored) { }
             }
@@ -380,7 +427,10 @@ public class EdenCore extends StarMod {
                 try {
                     if(DataUtils.isPlayerInAnyBuildSector(GameClient.getClientPlayerState())) {
                         BuildSectorData sectorData = DataUtils.getPlayerCurrentBuildSector(GameClient.getClientPlayerState());
-                        if(!sectorData.hasPermission(GameClient.getClientPlayerState().getName(), "EDIT")) event.setCanceled(true);
+                        if(!sectorData.hasPermission(GameClient.getClientPlayerState().getName(), "EDIT")) {
+                            GameClient.getClientState().message(new String[] {"You don't have permission to do this!"}, ServerMessage.MESSAGE_TYPE_WARNING);
+                            event.setCanceled(true);
+                        }
                     }
                 } catch(Exception ignored) { }
             }
@@ -392,7 +442,10 @@ public class EdenCore extends StarMod {
                 try {
                     if(DataUtils.isPlayerInAnyBuildSector(GameClient.getClientPlayerState())) {
                         BuildSectorData sectorData = DataUtils.getPlayerCurrentBuildSector(GameClient.getClientPlayerState());
-                        if(!sectorData.hasPermission(GameClient.getClientPlayerState().getName(), "EDIT")) event.setCanceled(true);
+                        if(!sectorData.hasPermission(GameClient.getClientPlayerState().getName(), "EDIT")) {
+                            GameClient.getClientState().message(new String[] {"You don't have permission to do this!"}, ServerMessage.MESSAGE_TYPE_WARNING);
+                            event.setCanceled(true);
+                        }
                     }
                 } catch(Exception ignored) { }
             }
@@ -404,7 +457,10 @@ public class EdenCore extends StarMod {
                 try {
                     if(DataUtils.isPlayerInAnyBuildSector(GameClient.getClientPlayerState())) {
                         BuildSectorData sectorData = DataUtils.getPlayerCurrentBuildSector(GameClient.getClientPlayerState());
-                        if(!sectorData.hasPermission(GameClient.getClientPlayerState().getName(), "EDIT")) event.setCanceled(true);
+                        if(!sectorData.hasPermission(GameClient.getClientPlayerState().getName(), "EDIT")) {
+                            GameClient.getClientState().message(new String[] {"You don't have permission to do this!"}, ServerMessage.MESSAGE_TYPE_WARNING);
+                            event.setCanceled(true);
+                        }
                     }
                 } catch(Exception ignored) { }
             }
@@ -416,7 +472,10 @@ public class EdenCore extends StarMod {
                 try {
                     if(DataUtils.isPlayerInAnyBuildSector(GameClient.getClientPlayerState())) {
                         BuildSectorData sectorData = DataUtils.getPlayerCurrentBuildSector(GameClient.getClientPlayerState());
-                        if(!sectorData.hasPermission(GameClient.getClientPlayerState().getName(), "PICKUP")) event.setCanceled(true);
+                        if(!sectorData.hasPermission(GameClient.getClientPlayerState().getName(), "PICKUP")) {
+                            GameClient.getClientState().message(new String[] {"You don't have permission to do this!"}, ServerMessage.MESSAGE_TYPE_WARNING);
+                            event.setCanceled(true);
+                        }
                     }
                 } catch(Exception ignored) { }
             }
