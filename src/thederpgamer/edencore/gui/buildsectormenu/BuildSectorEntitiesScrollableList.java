@@ -54,7 +54,7 @@ public class BuildSectorEntitiesScrollableList extends ScrollableTableList<Segme
         buttonPane.addButton(0, 0, "WARP", GUIHorizontalArea.HButtonColor.YELLOW, new GUICallback() {
             @Override
             public void callback(GUIElement guiElement, MouseEvent mouseEvent) {
-                if(mouseEvent.pressedLeftMouse() && segmentController.existsInState()) {
+                if(mouseEvent.pressedLeftMouse() && segmentController.existsInState() && segmentController.getSector(new Vector3i()).equals(sectorData.sector)) {
                     if(sectorData.hasPermission(GameClient.getClientPlayerState().getName(), "EDIT")) {
                         GameClient.getClientPlayerState().getControllerState().forcePlayerOutOfSegmentControllers();
                         getState().getController().queueUIAudio("0022_menu_ui - select 1");
@@ -96,7 +96,7 @@ public class BuildSectorEntitiesScrollableList extends ScrollableTableList<Segme
             @Override
             public void callback(GUIElement guiElement, MouseEvent mouseEvent) {
                 if(mouseEvent.pressedLeftMouse()) {
-                    if(segmentController.existsInState()) {
+                    if(segmentController.existsInState() && segmentController.getSector(new Vector3i()).equals(sectorData.sector)) {
                         if(sectorData.hasPermission(GameClient.getClientPlayerState().getName(), "DELETE")) {
                             PacketUtil.sendPacketToServer(new RequestClientCacheUpdatePacket());
                             getState().getController().queueUIAudio("0022_menu_ui - select 2");
@@ -219,7 +219,7 @@ public class BuildSectorEntitiesScrollableList extends ScrollableTableList<Segme
                     case SHIP: return segmentController.getType().equals(SimpleTransformableSendableObject.EntityType.SHIP) && segmentController.railController.isRoot();
                     case DOCKED: return segmentController.getType().equals(SimpleTransformableSendableObject.EntityType.SHIP);
                     case SPACE_STATION: return segmentController.getType().equals(SimpleTransformableSendableObject.EntityType.SPACE_STATION);
-                    default: return false;
+                    default: return true;
                 }
             }
         }, new CreateGUIElementInterface<EntityType>() {
@@ -236,13 +236,7 @@ public class BuildSectorEntitiesScrollableList extends ScrollableTableList<Segme
 
             @Override
             public GUIElement createNeutral() {
-                GUIAncor anchor = new GUIAncor(getState(), 10.0F, 24.0F);
-                GUITextOverlayTableDropDown dropDown;
-                (dropDown = new GUITextOverlayTableDropDown(10, 10, getState())).setTextSimple(EntityType.SHIP.name());
-                dropDown.setPos(4.0F, 4.0F, 0.0F);
-                anchor.setUserPointer(EntityType.SHIP);
-                anchor.attach(dropDown);
-                return anchor;
+                return null;
             }
         }, ControllerElement.FilterRowStyle.RIGHT);
 

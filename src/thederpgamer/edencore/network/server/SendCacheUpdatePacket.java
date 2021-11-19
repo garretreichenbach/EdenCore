@@ -91,8 +91,10 @@ public class SendCacheUpdatePacket extends Packet {
                 try {
                     int entityId = packetReadBuffer.readInt();
                     if(entityId > 0) {
-                        Sendable sendable = GameCommon.getGameObject(entityId);
-                        if(sendable instanceof SegmentController && sendable.isOnServer() && !((SegmentController) sendable).isVirtualBlueprint()) sectorEntities.add((SegmentController) sendable);
+                        if(GameCommon.getGameState().getState().getLocalAndRemoteObjectContainer().getLocalObjects().containsKey(entityId)) {
+                            Sendable sendable = GameCommon.getGameObject(entityId);
+                            if(sendable instanceof SegmentController && sendable.isOnServer() && !((SegmentController) sendable).isVirtualBlueprint()) sectorEntities.add((SegmentController) sendable);
+                        }
                     }
                     //Sendable sendable = packetReadBuffer.readSendable(); This throws an exception sometimes, and even with a catch it still crashes if thrown
                     //if(sendable instanceof SegmentController) sectorEntities.add((SegmentController) sendable);

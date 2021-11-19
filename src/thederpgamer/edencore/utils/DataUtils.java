@@ -67,8 +67,12 @@ public class DataUtils {
      * @param playerState The player's state
      */
     public static void clearPlayerSelections(PlayerState playerState) {
-        playerState.getNetworkObject().selectedAITargetId.set(0);
-        playerState.getNetworkObject().selectedEntityId.set(0);
+        playerState.getNetworkObject().selectedAITargetId.set(-1);
+        playerState.getNetworkObject().selectedEntityId.set(-1);
+
+        playerState.getNetworkObject().selectedAITargetId.forceClientUpdates();
+        playerState.getNetworkObject().selectedEntityId.forceClientUpdates();
+
         playerState.getControllerState().forcePlayerOutOfSegmentControllers();
     }
 
