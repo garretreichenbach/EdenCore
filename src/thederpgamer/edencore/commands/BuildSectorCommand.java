@@ -4,6 +4,7 @@ import api.common.GameCommon;
 import api.mod.StarMod;
 import api.utils.game.PlayerUtils;
 import api.utils.game.chat.CommandInterface;
+import org.schema.common.util.linAlg.Vector3i;
 import org.schema.game.common.controller.SegmentController;
 import org.schema.game.common.data.player.PlayerState;
 import org.schema.game.server.data.blueprintnw.BlueprintEntry;
@@ -207,12 +208,14 @@ public class BuildSectorCommand implements CommandInterface {
                                 if(args.length == 1) {
                                     if(GameCommon.getGameObject(sender.getSelectedEntityId()) != null && GameCommon.getGameObject(sender.getSelectedEntityId()) instanceof SegmentController) {
                                         SegmentController entity = (SegmentController) GameCommon.getGameObject(sender.getSelectedEntityId());
-                                        PlayerUtils.sendMessage(sender, "Successfully deleted entity \"" + entity.getRealName() + "\".");
-                                        DataUtils.destroyEntity(entity);
+                                        if(entity.getSector(new Vector3i()).equals(sectorData.sector)) {
+                                            PlayerUtils.sendMessage(sender, "Successfully deleted entity \"" + entity.getRealName() + "\".");
+                                            DataUtils.destroyEntity(entity);
+                                        } else PlayerUtils.sendMessage(sender, "You must either specify a valid entity by name or have one selected to perform this command.");
                                     } else PlayerUtils.sendMessage(sender, "You must either specify a valid entity by name or have one selected to perform this command.");
                                 } else {
                                     SegmentController entity = BuildSectorUtils.getEntityByName(sender, args[1]);
-                                    if(entity != null) {
+                                    if(entity != null && entity.getSector(new Vector3i()).equals(sectorData.sector)) {
                                         PlayerUtils.sendMessage(sender, "Successfully deleted entity \"" + entity.getRealName() + "\".");
                                         DataUtils.destroyEntity(entity);
                                     } else PlayerUtils.sendMessage(sender, "You must either specify a valid entity by name or have one selected to perform this command.");

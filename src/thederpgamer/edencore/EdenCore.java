@@ -490,11 +490,11 @@ public class EdenCore extends StarMod {
 
         StarLoader.registerListener(PlayerSpawnEvent.class, new Listener<PlayerSpawnEvent>() {
             @Override
-            public void onEvent(PlayerSpawnEvent event) {
+            public void onEvent(final PlayerSpawnEvent event) {
                 new StarRunnable() {
                     @Override
                     public void run() {
-                        PacketUtil.sendPacketToServer(new RequestClientCacheUpdatePacket());
+                        if(!DataUtils.isPlayerInAnyBuildSector(event.getPlayer().getOwnerState())) PacketUtil.sendPacketToServer(new RequestClientCacheUpdatePacket());
                     }
                 }.runLater(EdenCore.getInstance(), 5);
                 //if(DataUtils.isPlayerInAnyBuildSector(event.getPlayer().getOwnerState())) queueSpawnSwitch(event.getPlayer().getOwnerState());
