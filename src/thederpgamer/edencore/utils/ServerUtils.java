@@ -3,6 +3,7 @@ package thederpgamer.edencore.utils;
 import api.common.GameCommon;
 import api.common.GameServer;
 import com.bulletphysics.collision.dispatch.CollisionWorld;
+import org.schema.game.common.controller.SegmentController;
 import org.schema.game.common.controller.database.DatabaseIndex;
 import org.schema.game.common.data.SegmentPiece;
 import org.schema.game.common.data.physics.CubeRayCastResult;
@@ -43,6 +44,12 @@ public class ServerUtils {
         EntryType(String databasePrefix) {
             this.databasePrefix = databasePrefix;
         }
+    }
+
+    public static SegmentController getEntityFromUID(String entityUID) {
+        if(GameCommon.isOnSinglePlayer() || GameCommon.isDedicatedServer()) {
+            return GameServer.getServerState().getSegmentControllersByName().get(entityUID);
+        } else return null;
     }
 
     public static void clearInventoryFull(PlayerState playerState) {

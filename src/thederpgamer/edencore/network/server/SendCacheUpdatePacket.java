@@ -13,6 +13,7 @@ import thederpgamer.edencore.EdenCore;
 import thederpgamer.edencore.data.event.EventData;
 import thederpgamer.edencore.data.event.SortieData;
 import thederpgamer.edencore.data.exchange.BlueprintExchangeItem;
+import thederpgamer.edencore.data.exchange.ItemExchangeItem;
 import thederpgamer.edencore.data.exchange.ResourceExchangeItem;
 import thederpgamer.edencore.data.other.BuildSectorData;
 import thederpgamer.edencore.manager.ClientCacheManager;
@@ -37,6 +38,7 @@ public class SendCacheUpdatePacket extends Packet {
     //Exchange
     private final ArrayList<BlueprintExchangeItem> blueprintExchangeItems = new ArrayList<>();
     private final ArrayList<ResourceExchangeItem> resourceExchangeItems = new ArrayList<>();
+    private final ArrayList<ItemExchangeItem> itemExchangeItems = new ArrayList<>();
 
     //Events
     private final ArrayList<EventData> eventData = new ArrayList<>();
@@ -65,12 +67,18 @@ public class SendCacheUpdatePacket extends Packet {
         if(resSize > 0) for(int i = 0; i < resSize; i ++) resourceExchangeItems.add(new ResourceExchangeItem(packetReadBuffer));
         LogManager.logDebug("Received " + resSize + " updated resource exchange items.");
 
-        //Events
-        //int eventSize = packetReadBuffer.readInt();
-        //for(int i = 0; i < eventSize; i ++) eventData.add(new EventData(packetReadBuffer));
+        int itemSize = packetReadBuffer.readInt();
+        if(itemSize > 0) for(int i = 0; i < itemSize; i ++) itemExchangeItems.add(new ItemExchangeItem(packetReadBuffer));
+        LogManager.logDebug("Received " + resSize + " updated item exchange items.");
 
-        //int sortieSize = packetReadBuffer.readInt();
-        //for(int i = 0; i < sortieSize; i ++) sortieData.add(new SortieData(packetReadBuffer));
+        //Events
+        /* Todo: Finish events
+        int eventSize = packetReadBuffer.readInt();
+        for(int i = 0; i < eventSize; i ++) eventData.add(EventData.fromPacket(packetReadBuffer));
+
+        int sortieSize = packetReadBuffer.readInt();
+        for(int i = 0; i < sortieSize; i ++) sortieData.add(new SortieData(packetReadBuffer));
+         */
 
         //Build Sectors
         int sectorSize = packetReadBuffer.readInt();
@@ -116,6 +124,10 @@ public class SendCacheUpdatePacket extends Packet {
         packetWriteBuffer.writeInt(resourceExchangeItems.size());
         if(resourceExchangeItems.size() > 0) for(ResourceExchangeItem exchangeItem : resourceExchangeItems) exchangeItem.serialize(packetWriteBuffer);
 
+        getItems();
+        packetWriteBuffer.writeInt(itemExchangeItems.size());
+        if(itemExchangeItems.size() > 0) for(ItemExchangeItem exchangeItem : itemExchangeItems) exchangeItem.serialize(packetWriteBuffer);
+
         getBuildSectors();
         packetWriteBuffer.writeInt(sectorData.size());
         if(sectorData.size() > 0) for(BuildSectorData sector : sectorData) sector.serialize(packetWriteBuffer);
@@ -134,6 +146,9 @@ public class SendCacheUpdatePacket extends Packet {
 
             ClientCacheManager.resourceExchangeItems.clear();
             ClientCacheManager.resourceExchangeItems.addAll(resourceExchangeItems);
+
+            ClientCacheManager.itemExchangeItems.clear();
+            ClientCacheManager.itemExchangeItems.addAll(itemExchangeItems);
 
             //EdenCore.getInstance().exchangeMenuControlManager.getMenuPanel().recreateTabs();
         } catch(Exception ignored) { }
@@ -179,6 +194,14 @@ public class SendCacheUpdatePacket extends Packet {
             exchangeItems.add((ResourceExchangeItem) obj);
         }
         resourceExchangeItems.addAll(exchangeItems);
+    }
+
+    private void getItems() {
+        ArrayList<ItemExchangeItem> exchangeItems = new ArrayList<>();
+        for(Object obj : PersistentObjectUtil.getObjects(EdenCore.getInstance().getSkeleton(), ItemExchangeItem.class)) {
+            exchangeItems.add((ItemExchangeItem) obj);
+        }
+        itemExchangeItems.addAll(exchangeItems);
     }
 
     private void getBuildSectors() {

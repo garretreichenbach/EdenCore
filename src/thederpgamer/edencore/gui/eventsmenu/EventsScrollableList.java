@@ -5,6 +5,7 @@ import org.schema.schine.graphicsengine.forms.gui.GUIElementList;
 import org.schema.schine.graphicsengine.forms.gui.newgui.ScrollableTableList;
 import org.schema.schine.input.InputState;
 import thederpgamer.edencore.data.event.EventData;
+import thederpgamer.edencore.manager.ClientCacheManager;
 
 import java.util.Collection;
 import java.util.Set;
@@ -29,7 +30,7 @@ public class EventsScrollableList extends ScrollableTableList<EventData> {
 
     @Override
     protected Collection<EventData> getElementList() {
-        return null;
+        return ClientCacheManager.eventData;
     }
 
     @Override

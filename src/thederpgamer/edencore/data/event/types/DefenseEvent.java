@@ -6,7 +6,7 @@ import org.schema.common.util.linAlg.Vector3i;
 import thederpgamer.edencore.data.event.EventData;
 import thederpgamer.edencore.data.event.EventRuleset;
 import thederpgamer.edencore.data.event.EventTarget;
-import thederpgamer.edencore.data.event.target.CaptureTarget;
+import thederpgamer.edencore.data.event.target.DefenseTarget;
 
 import java.io.IOException;
 
@@ -14,15 +14,15 @@ import java.io.IOException;
  * <Description>
  *
  * @author TheDerpGamer
- * @version 1.0 - [11/05/2021]
+ * @version 1.0 - [11/19/2021]
  */
-public class CaptureEvent extends EventData {
+public class DefenseEvent extends EventData {
 
-    public CaptureEvent(String name, String description, EventRuleset ruleset, Vector3i sector) {
-        super(name, description, EventType.CAPTURE, ruleset, sector);
+    public DefenseEvent(String name, String description, EventRuleset ruleset, Vector3i sector, EventTarget... targets) {
+        super(name, description, EventType.DEFENSE, ruleset, sector, targets);
     }
 
-    public CaptureEvent(PacketReadBuffer readBuffer) throws IOException {
+    public DefenseEvent(PacketReadBuffer readBuffer) throws IOException {
         super(readBuffer);
     }
 
@@ -30,13 +30,13 @@ public class CaptureEvent extends EventData {
     public void deserialize(PacketReadBuffer readBuffer) throws IOException {
         name = readBuffer.readString();
         description = readBuffer.readString();
-        eventType = EventType.CAPTURE;
+        eventType = EventType.DEFENSE;
         ruleset = new EventRuleset(readBuffer);
         sector = readBuffer.readVector();
         int size = readBuffer.readInt();
         if(size > 0) {
             targets = new EventTarget[size];
-            for(int i = 0; i < size; i ++) targets[i] = new CaptureTarget(readBuffer);
+            for(int i = 0; i < size; i ++) targets[i] = new DefenseTarget(readBuffer);
         }
     }
 
@@ -48,6 +48,7 @@ public class CaptureEvent extends EventData {
         writeBuffer.writeVector(sector);
         writeBuffer.writeInt(targets.length);
         if(targets.length > 0) for(EventTarget target : targets) target.serialize(writeBuffer);
+
     }
 
     @Override

@@ -4,6 +4,8 @@ import api.network.PacketReadBuffer;
 import api.network.PacketWriteBuffer;
 import org.schema.common.util.linAlg.Vector3i;
 import thederpgamer.edencore.data.SerializableData;
+import thederpgamer.edencore.data.event.types.CaptureEvent;
+import thederpgamer.edencore.manager.LogManager;
 
 import java.io.IOException;
 
@@ -20,26 +22,7 @@ public abstract class EventData implements EventUpdater, SerializableData {
     public static final int ACTIVE = 2;
     public static final int FINISHED = 3;
 
-    public enum EventType {
-        ALL,
-        CAPTURE,
-        DEFENSE,
-        DESTROY,
-        ESCORT,
-        PURSUIT;
-
-        public static EventType deserialize(PacketReadBuffer readBuffer) throws IOException {
-            String s = readBuffer.readString().toUpperCase();
-            switch(s) {
-                case "CAPTURE": return CAPTURE;
-                case "DEFENSE": return DEFENSE;
-                case "DESTROY": return DESTROY;
-                case "ESCORT": return ESCORT;
-                case "PURSUIT": return PURSUIT;
-                default: return ALL;
-            }
-        }
-    }
+    public enum EventType {ALL, CAPTURE, DEFENSE, DESTROY, ESCORT, PURSUIT}
 
     protected String name;
     protected String description;
@@ -64,4 +47,21 @@ public abstract class EventData implements EventUpdater, SerializableData {
 
     public abstract void deserialize(PacketReadBuffer readBuffer) throws IOException;
     public abstract void serialize(PacketWriteBuffer writeBuffer) throws IOException;
+
+    public static EventData fromPacket(PacketReadBuffer readBuffer) {
+        try {
+            EventType type = EventType.values()[readBuffer.readInt()];
+            switch(type) {
+                case CAPTURE: return new CaptureEvent(readBuffer);
+                //case DEFENSE: return new DefenseEvent(readBuffer);
+                //case DESTROY: return new DestroyEvent(readBuffer);
+                //case ESCORT: return new EscortEvent(readBuffer);
+                //case PURSUIT: return new PursuitEvent(readBuffer);
+                default: throw new IllegalStateException("Invalid event type: " + type.name());
+            }
+        } catch(Exception exception) {
+            LogManager.logException("Failed to deserialize EventData", exception);
+        }
+        return null;
+    }
 }

@@ -8,6 +8,7 @@ import org.schema.game.common.data.player.PlayerState;
 import thederpgamer.edencore.EdenCore;
 import thederpgamer.edencore.data.exchange.BlueprintExchangeItem;
 import thederpgamer.edencore.data.exchange.ExchangeItem;
+import thederpgamer.edencore.data.exchange.ItemExchangeItem;
 import thederpgamer.edencore.data.exchange.ResourceExchangeItem;
 
 import java.io.IOException;
@@ -37,7 +38,8 @@ public class ExchangeItemRemovePacket extends Packet {
     public void readPacketData(PacketReadBuffer packetReadBuffer) throws IOException {
         type = packetReadBuffer.readInt();
         if(type == 0) item = new BlueprintExchangeItem(packetReadBuffer);
-        else item = new ResourceExchangeItem(packetReadBuffer);
+        else if(type == 1) item = new ResourceExchangeItem(packetReadBuffer);
+        else item = new ItemExchangeItem(packetReadBuffer);
     }
 
     @Override
@@ -63,9 +65,17 @@ public class ExchangeItemRemovePacket extends Packet {
                     break;
                 }
             }
-        } else {
+        } else if(type == 1) {
             for(Object object : PersistentObjectUtil.getObjects(EdenCore.getInstance().getSkeleton(), ResourceExchangeItem.class)) {
                 ResourceExchangeItem exchangeItem = (ResourceExchangeItem) object;
+                if(exchangeItem.name.equals(item.name)) {
+                    toRemove = exchangeItem;
+                    break;
+                }
+            }
+        } else {
+            for(Object object : PersistentObjectUtil.getObjects(EdenCore.getInstance().getSkeleton(), ItemExchangeItem.class)) {
+                ItemExchangeItem exchangeItem = (ItemExchangeItem) object;
                 if(exchangeItem.name.equals(item.name)) {
                     toRemove = exchangeItem;
                     break;

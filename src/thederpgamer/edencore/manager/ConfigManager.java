@@ -25,7 +25,7 @@ public class ConfigManager {
     public static final String[] defaultKeyConfig = {
             "exchange-menu-key: *",
             "build-sector-key: -",
-            "events-menu-key: ["
+            "events-menu-key: ."
     };
 
     public static void initialize(EdenCore instance) {

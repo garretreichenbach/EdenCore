@@ -162,6 +162,7 @@ public class EdenCore extends StarMod {
 
     private void registerPackets() {
         PacketUtil.registerPacket(RequestClientCacheUpdatePacket.class);
+        PacketUtil.registerPacket(RequestMetaObjectPacket.class);
         PacketUtil.registerPacket(RequestMoveToBuildSectorPacket.class);
         PacketUtil.registerPacket(RequestMoveFromBuildSectorPacket.class);
         PacketUtil.registerPacket(RequestBuildSectorInvitePacket.class);
@@ -207,6 +208,7 @@ public class EdenCore extends StarMod {
                     }
                 }
 
+                /* Todo: Finish events menu
                 char eventsKey = ConfigManager.getKeyBinding("events-menu-key");
                 if(eventsKey != '\0' && event.getChar() == eventsKey) {
                     if(eventsMenuControlManager == null) {
@@ -220,6 +222,7 @@ public class EdenCore extends StarMod {
                         eventsMenuControlManager.setActive(true);
                     }
                 }
+                 */
             }
         }, this);
 
@@ -236,10 +239,12 @@ public class EdenCore extends StarMod {
                     ModGUIHandler.registerNewControlManager(getSkeleton(), exchangeMenuControlManager);
                 }
 
+                /* Todo: Finish events menu
                 if(eventsMenuControlManager == null) {
                     eventsMenuControlManager = new EventsMenuControlManager();
                     ModGUIHandler.registerNewControlManager(getSkeleton(), eventsMenuControlManager);
                 }
+                 */
 
                 GUITopBar.ExpandedButton dropDownButton = event.getDropdownButtons().get(event.getDropdownButtons().size() - 1);
 
@@ -305,6 +310,7 @@ public class EdenCore extends StarMod {
                     }
                 });
 
+                /* Todo: Finish events menu
                 dropDownButton.addExpandedButton("EVENTS", new GUICallback() {
                     @Override
                     public void callback(GUIElement guiElement, MouseEvent mouseEvent) {
@@ -335,6 +341,7 @@ public class EdenCore extends StarMod {
                         return true;
                     }
                 });
+                 */
             }
         }, this);
 
@@ -546,6 +553,7 @@ public class EdenCore extends StarMod {
         StarLoader.registerCommand(new BankingSendMoneyCommand());
         StarLoader.registerCommand(new BankingListCommand());
         StarLoader.registerCommand(new BankingAdminListCommand());
+        StarLoader.registerCommand(new CountdownCommand());
         //StarLoader.registerCommand(new ResetPlayerCommand());
     }
 
