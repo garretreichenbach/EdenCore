@@ -5,12 +5,13 @@ import api.utils.gui.GUIInputDialog;
 import org.apache.commons.lang3.math.NumberUtils;
 import org.schema.game.common.data.element.ElementInformation;
 import org.schema.game.common.data.element.ElementKeyMap;
+import org.schema.game.common.data.element.meta.MetaObjectManager;
 import org.schema.schine.graphicsengine.core.MouseEvent;
 import org.schema.schine.graphicsengine.forms.gui.GUIElement;
 import thederpgamer.edencore.EdenCore;
 import thederpgamer.edencore.data.exchange.ItemExchangeItem;
-import thederpgamer.edencore.data.exchange.ResourceExchangeItem;
 import thederpgamer.edencore.network.client.ExchangeItemCreatePacket;
+import thederpgamer.edencore.utils.ItemUtils;
 
 /**
  * <Description>
@@ -52,7 +53,7 @@ public class AddItemExchangeDialog extends GUIInputDialog {
         if(NumberUtils.isNumber(getInputPanel().currentBarText) && getInputPanel().barId > 0 && getInputPanel().itemId > 0) {
             ElementInformation itemInfo = ElementKeyMap.getInfo(getInputPanel().itemId);
             if(itemInfo != null) {
-                ItemExchangeItem item = new ItemExchangeItem(getInputPanel().barId, Math.abs(Integer.parseInt(getInputPanel().currentBarText)), "x1 " + itemInfo.getName(), itemInfo.description, itemInfo.getId(), );
+                ItemExchangeItem item = new ItemExchangeItem(getInputPanel().barId, Math.abs(Integer.parseInt(getInputPanel().currentBarText)), "x1 " + itemInfo.getName(), itemInfo.description, itemInfo.getId(), MetaObjectManager.MetaObjectType.VIRTUAL_BLUEPRINT.type, ItemUtils.getWeaponSubtype(itemInfo));
                 PacketUtil.sendPacketToServer(new ExchangeItemCreatePacket(1, item));
                 return item;
             }

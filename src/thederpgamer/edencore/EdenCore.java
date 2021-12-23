@@ -84,7 +84,8 @@ public class EdenCore extends StarMod {
     //Overwrites
     private final String[] overwriteClasses = new String[] {
             "PlayerState",
-            "BlueprintEntry"
+            "BlueprintEntry",
+            "ShipyardOptionsChestButtonPanel" //Temp fix for test sectors not working
     };
 
     //Disabled Blocks

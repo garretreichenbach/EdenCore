@@ -38,7 +38,7 @@ public class BuildSectorEntitiesScrollableList extends ScrollableTableList<Segme
     private final BuildSectorMenuPanel panel;
     private final BuildSectorData sectorData;
 
-    public enum EntityType {SHIP, DOCKED, SPACE_STATION}
+    public enum EntityType {ALL, SHIP, SPACE_STATION, DOCKED, TURRET}
 
     public BuildSectorEntitiesScrollableList(InputState state, BuildSectorData sectorData, GUIElement p, BuildSectorMenuPanel panel) {
         super(state, 800, 500, p);
@@ -162,8 +162,10 @@ public class BuildSectorEntitiesScrollableList extends ScrollableTableList<Segme
 
     @Override
     protected Collection<SegmentController> getElementList() {
-        if(DataUtils.isPlayerInAnyBuildSector(GameClient.getClientPlayerState())) return ClientCacheManager.sectorEntities;
-        else return new ArrayList<>();
+        if(DataUtils.isPlayerInAnyBuildSector(GameClient.getClientPlayerState())) {
+            PacketUtil.sendPacketToServer(new RequestClientCacheUpdatePacket());
+            return ClientCacheManager.sectorEntities;
+        } else return new ArrayList<>();
     }
 
     @Override
@@ -217,8 +219,10 @@ public class BuildSectorEntitiesScrollableList extends ScrollableTableList<Segme
             public boolean isOk(EntityType entityType, SegmentController segmentController) {
                 switch(entityType) {
                     case SHIP: return segmentController.getType().equals(SimpleTransformableSendableObject.EntityType.SHIP) && segmentController.railController.isRoot();
-                    case DOCKED: return segmentController.getType().equals(SimpleTransformableSendableObject.EntityType.SHIP);
                     case SPACE_STATION: return segmentController.getType().equals(SimpleTransformableSendableObject.EntityType.SPACE_STATION);
+                    case DOCKED: return segmentController.getType().equals(SimpleTransformableSendableObject.EntityType.SHIP) && segmentController.railController.isDocked();
+                    case TURRET: return segmentController.getType().equals(SimpleTransformableSendableObject.EntityType.SHIP) && segmentController.railController.isTurretDocked();
+                    case ALL:
                     default: return true;
                 }
             }
