@@ -66,6 +66,7 @@ public class BuildSectorData {
     }
 
     public boolean hasPermission(String player, String permission) {
+        if(permissions == null) permissions = new HashMap<>();
         if(!permissions.containsKey(player)) {
             if(!player.equals(ownerName)) denyPermission(player, "ENTER");
             else addPlayer(player);
