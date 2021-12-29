@@ -13,7 +13,7 @@ import thederpgamer.edencore.utils.DataUtils;
  * @version 1.0 - [09/08/2021]
  */
 public class BuildSectorHudDrawer extends ModWorldDrawer {
-
+    private boolean wasInBuildSectorLastFrame;
     @Override
     public void onInit() {
 
@@ -24,17 +24,24 @@ public class BuildSectorHudDrawer extends ModWorldDrawer {
         Hud hud = GameClient.getClientState().getWorldDrawer().getGuiDrawer().getHud();
         if(DataUtils.isPlayerInAnyBuildSector(GameClient.getClientPlayerState())) {
             try {
-                hud.getRadar().getLocation().setTextSimple("<Build Sector>");
-                hud.getIndicator().drawSectorIndicators = false;
-                hud.getIndicator().drawWaypoints = false;
-                if(GameClient.getClientState().getController().getClientGameData().getWaypoint() != null) GameClient.getClientState().getController().getClientGameData().setWaypoint(null);
-            } catch(Exception ignored) { }
+                if (!wasInBuildSectorLastFrame) {
+                    hud.getRadar().getLocation().setTextSimple("<Build Sector>");
+                    hud.getIndicator().drawSectorIndicators = false;
+                    hud.getIndicator().drawWaypoints = false;
+                    if(GameClient.getClientState().getController().getClientGameData().getWaypoint() != null) GameClient.getClientState().getController().getClientGameData().setWaypoint(null);
+                }
+       } catch(Exception ignored) { }
+            wasInBuildSectorLastFrame = true;
         } else {
             try {
-                hud.getRadar().getLocation().setTextSimple(GameClient.getClientPlayerState().getCurrentSector().toStringPure());
-                hud.getIndicator().drawSectorIndicators = true;
-                hud.getIndicator().drawWaypoints = true;
+                if (wasInBuildSectorLastFrame) {
+                    hud.getRadar().getLocation().setTextSimple(GameClient.getClientPlayerState().getCurrentSector().toStringPure());
+                    hud.getIndicator().drawSectorIndicators = true;
+                    hud.getIndicator().drawWaypoints = true;
+                }
             } catch(Exception ignored) { }
+            wasInBuildSectorLastFrame = false;
+
         }
     }
 
