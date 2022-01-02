@@ -1,6 +1,8 @@
 package thederpgamer.edencore.utils;
 
+import api.common.GameCommon;
 import api.common.GameServer;
+import api.utils.game.PlayerUtils;
 import com.bulletphysics.linearmath.Transform;
 import org.schema.game.common.controller.SegmentController;
 import org.schema.game.common.controller.Ship;
@@ -10,6 +12,7 @@ import org.schema.game.common.data.player.PlayerControlledTransformableNotFound;
 import org.schema.game.common.data.player.PlayerState;
 import org.schema.game.common.data.player.catalog.CatalogPermission;
 import org.schema.game.common.data.player.faction.FactionManager;
+import org.schema.game.common.data.world.Sector;
 import org.schema.game.server.ai.SegmentControllerAIEntity;
 import org.schema.game.server.controller.BluePrintController;
 import org.schema.game.server.controller.EntityAlreadyExistsException;
@@ -23,6 +26,7 @@ import org.schema.game.server.data.blueprintnw.BlueprintEntry;
 import org.schema.schine.graphicsengine.core.GlUtil;
 import org.schema.schine.graphicsengine.core.settings.StateParameterNotFoundException;
 import thederpgamer.edencore.commands.BuildSectorCommand;
+import thederpgamer.edencore.data.other.BuildSectorData;
 import thederpgamer.edencore.manager.LogManager;
 
 import javax.vecmath.Vector3f;
@@ -168,5 +172,19 @@ public class BuildSectorUtils {
                 }
             }
         });
+    }
+
+    public static void setPeace(BuildSectorData sectorData, boolean protect) {
+        if(GameCommon.isDedicatedServer() || GameCommon.isOnSinglePlayer()) {
+            try {
+                DataUtils.deleteEnemies(sectorData, 0);
+                Sector sector = GameServer.getUniverse().getSector(sectorData.sector);
+                sector.peace(protect);
+                //sector.protect(protect); Todo: Make this a toggleable option
+            } catch(IOException exception) {
+                LogManager.logException("Failed to protect " + sectorData.ownerName + "'s build sector from enemy spawns due to an unexpected error", exception);
+                PlayerUtils.sendMessage(GameCommon.getPlayerFromName(sectorData.ownerName), "An unexpected error occurred while trying to protect your sector from pirate spawns. Let an admin know ASAP!");
+            }
+        }
     }
 }

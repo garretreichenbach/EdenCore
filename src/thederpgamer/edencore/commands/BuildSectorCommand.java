@@ -191,6 +191,7 @@ public class BuildSectorCommand implements CommandInterface {
                                 if(sectorData.hasPermission(sender.getName(), "SPAWN_ENEMIES")) {
                                     BlueprintEntry entry = BuildSectorUtils.getEntry(sender, args[1]);
                                     if(entry != null) {
+                                        BuildSectorUtils.setPeace(sectorData, false);
                                         BuildSectorUtils.spawnEnemy(sender, entry, !sectorData.allAIDisabled);
                                         PlayerUtils.sendMessage(sender, "Successfully spawned entity \"" + entry.getName() + "\" as an enemy.");
                                     } else PlayerUtils.sendMessage(sender, "Either you don't have catalog access to \"" + args[1] + "\" or the entry doesn't exist!");
