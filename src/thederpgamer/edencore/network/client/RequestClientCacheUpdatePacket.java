@@ -24,12 +24,12 @@ public class RequestClientCacheUpdatePacket extends Packet {
 
     @Override
     public void readPacketData(PacketReadBuffer packetReadBuffer) throws IOException {
-
+        packetReadBuffer.readInt();
     }
 
     @Override
     public void writePacketData(PacketWriteBuffer packetWriteBuffer) throws IOException {
-
+        packetWriteBuffer.writeInt(1);
     }
 
     @Override

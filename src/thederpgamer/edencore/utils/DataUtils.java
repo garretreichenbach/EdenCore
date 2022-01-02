@@ -126,9 +126,10 @@ public class DataUtils {
         playerState.setCurrentSector(sectorData.sector);
         playerState.setCurrentSectorId(sector.getSectorId());
 
+        BuildSectorUtils.setPeace(sectorData, true);
         sector.noEnter(true);
         sector.noExit(true);
-        deleteEnemies(sectorData, 0);
+        //deleteEnemies(sectorData, 0);
 
         playerState.getInventory().sendAll();
         playerState.updateInventory();
@@ -170,9 +171,10 @@ public class DataUtils {
         playerState.setCurrentSectorId(GameServer.getUniverse().getSector(playerData.lastRealSector).getSectorId());
 
         if(sectorData != null) {
+            BuildSectorUtils.setPeace(sectorData, true);
             GameServer.getServerState().getUniverse().getSector(sectorData.sector).noEnter(true);
             GameServer.getServerState().getUniverse().getSector(sectorData.sector).noExit(true);
-            deleteEnemies(sectorData, 60);
+            //deleteEnemies(sectorData, 60);
         }
         runInventoryCheck(playerState);
     }
