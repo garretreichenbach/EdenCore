@@ -502,7 +502,11 @@ public class EdenCore extends StarMod {
                 new StarRunnable() {
                     @Override
                     public void run() {
-                        if(!DataUtils.isPlayerInAnyBuildSector(event.getPlayer().getOwnerState())) PacketUtil.sendPacketToServer(new RequestClientCacheUpdatePacket());
+                        try {
+                            if(!DataUtils.isPlayerInAnyBuildSector(event.getPlayer().getOwnerState())) PacketUtil.sendPacketToServer(new RequestClientCacheUpdatePacket());
+                        } catch(Exception exception) {
+                            exception.printStackTrace();
+                        }
                     }
                 }.runLater(EdenCore.getInstance(), 5);
                 //if(DataUtils.isPlayerInAnyBuildSector(event.getPlayer().getOwnerState())) queueSpawnSwitch(event.getPlayer().getOwnerState());
