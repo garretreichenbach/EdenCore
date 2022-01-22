@@ -3,6 +3,7 @@ package thederpgamer.edencore.data.other;
 import api.network.PacketReadBuffer;
 import api.network.PacketWriteBuffer;
 import org.schema.common.util.linAlg.Vector3i;
+import thederpgamer.edencore.manager.LogManager;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -42,7 +43,15 @@ public class BuildSectorData {
     public void serialize(PacketWriteBuffer writeBuffer) throws IOException {
         writeBuffer.writeString(ownerName);
         writeBuffer.writeVector(sector);
-        writeBuffer.writeObject(permissions);
+        writeBuffer.writeInt(permissions.keySet().size());
+        for(Map.Entry<String, HashMap<String, Boolean>> userMapEntry : permissions.entrySet()) {
+            writeBuffer.writeString(userMapEntry.getKey()); //Write player name
+            writeBuffer.writeInt(userMapEntry.getValue().size());
+            for(Map.Entry<String, Boolean> permissionEntry : userMapEntry.getValue().entrySet()) {
+                writeBuffer.writeString(permissionEntry.getKey()); //Write permission
+                writeBuffer.writeBoolean(permissionEntry.getValue()); //Write value
+            }
+        }
         writeBuffer.writeBoolean(allAIDisabled);
     }
 
@@ -50,7 +59,31 @@ public class BuildSectorData {
         if(permissions == null) permissions = new HashMap<>();
         ownerName = readBuffer.readString();
         sector = readBuffer.readVector();
-        permissions = readBuffer.readObject(permissions.getClass());
+        permissions = new HashMap<>();
+        int userLength = readBuffer.readInt();
+        if(userLength > 0) {
+            for(int u = 0; u < userLength; u ++) {
+                try {
+                    String userName = readBuffer.readString();
+                    int permMapSize = readBuffer.readInt();
+                    if(permMapSize > 0) {
+                        HashMap<String, Boolean> permMap = new HashMap<>();
+                        for(int p = 0; p < permMapSize; p ++) {
+                            try {
+                                String permission = readBuffer.readString();
+                                boolean value = readBuffer.readBoolean();
+                                permMap.put(permission, value);
+                            } catch(Exception exception) {
+                                LogManager.logException("Failed to deserialize build sector permissions", exception);
+                            }
+                        }
+                        permissions.put(userName, permMap);
+                    }
+                } catch(Exception exception) {
+                    LogManager.logException("Failed to deserialize build sector permissions", exception);
+                }
+            }
+        }
         allAIDisabled = readBuffer.readBoolean();
     }
 

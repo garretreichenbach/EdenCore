@@ -171,7 +171,7 @@ public class SendCacheUpdatePacket extends Packet {
             ClientCacheManager.sectorEntities.clear();
             if(DataUtils.isPlayerInAnyBuildSector(GameClient.getClientPlayerState())) ClientCacheManager.sectorEntities.addAll(sectorEntities);
 
-            EdenCore.getInstance().buildSectorMenuControlManager.getMenuPanel().recreateTabs();
+            //EdenCore.getInstance().buildSectorMenuControlManager.getMenuPanel().recreateTabs();
         } catch(Exception exception) {
             LogManager.logException("Encountered an exception while trying to update client cache", exception);
         }
