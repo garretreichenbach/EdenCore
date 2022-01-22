@@ -149,7 +149,9 @@ public class SendCacheUpdatePacket extends Packet {
             ClientCacheManager.itemExchangeItems.addAll(itemExchangeItems);
 
             //EdenCore.getInstance().exchangeMenuControlManager.getMenuPanel().recreateTabs();
-        } catch(Exception ignored) { }
+        } catch(Exception exception) {
+            LogManager.logException("Encountered an exception while trying to update client cache", exception);
+        }
 
         //try { //Events
             //ClientCacheManager.eventData.clear();
@@ -169,8 +171,10 @@ public class SendCacheUpdatePacket extends Packet {
             ClientCacheManager.sectorEntities.clear();
             if(DataUtils.isPlayerInAnyBuildSector(GameClient.getClientPlayerState())) ClientCacheManager.sectorEntities.addAll(sectorEntities);
 
-            //EdenCore.getInstance().buildSectorMenuControlManager.getMenuPanel().recreateTabs();
-        } catch(Exception ignored) { }
+            EdenCore.getInstance().buildSectorMenuControlManager.getMenuPanel().recreateTabs();
+        } catch(Exception exception) {
+            LogManager.logException("Encountered an exception while trying to update client cache", exception);
+        }
     }
 
     @Override

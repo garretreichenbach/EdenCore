@@ -503,7 +503,7 @@ public class EdenCore extends StarMod {
                     @Override
                     public void run() {
                         try {
-                            if(!DataUtils.isPlayerInAnyBuildSector(event.getPlayer().getOwnerState())) PacketUtil.sendPacketToServer(new RequestClientCacheUpdatePacket());
+                            if(!event.isServer() && !DataUtils.isPlayerInAnyBuildSector(event.getPlayer().getOwnerState())) PacketUtil.sendPacketToServer(new RequestClientCacheUpdatePacket());
                         } catch(Exception exception) {
                             exception.printStackTrace();
                         }

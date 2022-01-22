@@ -7,6 +7,7 @@ import api.utils.game.chat.CommandInterface;
 import org.schema.common.util.linAlg.Vector3i;
 import org.schema.game.common.controller.SegmentController;
 import org.schema.game.common.data.player.PlayerState;
+import org.schema.game.common.data.player.faction.FactionManager;
 import org.schema.game.server.data.blueprintnw.BlueprintEntry;
 import thederpgamer.edencore.EdenCore;
 import thederpgamer.edencore.data.other.BuildSectorData;
@@ -246,7 +247,9 @@ public class BuildSectorCommand implements CommandInterface {
                                     } else if(state.equals("off") || state.equals("false") || state.equals("disabled") || state.equals("disable") || state.equals("deactivated") || state.equals("deactivate")) {
                                         if(args[1].toLowerCase().equals("*") || args[1].toLowerCase().equals("all")) {
                                             ArrayList<SegmentController> entityList = DataUtils.getEntitiesInBuildSector(sectorData);
-                                            for(SegmentController entity : entityList) BuildSectorUtils.toggleAI(entity, false);
+                                            for(SegmentController entity : entityList) {
+                                                if(!entity.getDockingController().isTurretDocking() || entity.getFactionId() == FactionManager.PIRATES_ID) BuildSectorUtils.toggleAI(entity, false);
+                                            }
                                             PlayerUtils.sendMessage(sender, "Successfully deactivated all AI in build sector.");
                                         } else {
                                             SegmentController entity = BuildSectorUtils.getEntityByName(sender, args[1]);
