@@ -1,15 +1,12 @@
 package thederpgamer.edencore.network.server;
 
 import api.common.GameClient;
-import api.common.GameCommon;
 import api.mod.config.PersistentObjectUtil;
 import api.network.Packet;
 import api.network.PacketReadBuffer;
 import api.network.PacketWriteBuffer;
 import org.schema.game.common.controller.SegmentController;
 import org.schema.game.common.data.player.PlayerState;
-import org.schema.game.common.data.world.SimpleTransformableSendableObject;
-import org.schema.schine.network.objects.Sendable;
 import thederpgamer.edencore.EdenCore;
 import thederpgamer.edencore.data.event.EventData;
 import thederpgamer.edencore.data.event.SortieData;
@@ -94,6 +91,7 @@ public class SendCacheUpdatePacket extends Packet {
         }
         LogManager.logDebug("Received " + sectorSize + " updated build sector data.");
 
+        /*
         int entitySize = packetReadBuffer.readInt();
         if(entitySize > 0) {
             for(int i = 0; i < entitySize; i ++) {
@@ -111,6 +109,8 @@ public class SendCacheUpdatePacket extends Packet {
             }
         }
         LogManager.logDebug("Received " + entitySize + " updated sector entity data.");
+
+         */
     }
 
     @Override
@@ -131,9 +131,11 @@ public class SendCacheUpdatePacket extends Packet {
         packetWriteBuffer.writeInt(sectorData.size());
         if(sectorData.size() > 0) for(BuildSectorData sector : sectorData) sector.serialize(packetWriteBuffer);
 
+        /*
         getSectorEntities();
         packetWriteBuffer.writeInt(sectorEntities.size());
         if(sectorEntities.size() > 0) for(SegmentController segmentController : sectorEntities) packetWriteBuffer.writeInt(segmentController.getId());
+         */
     }
 
     @Override
@@ -170,7 +172,7 @@ public class SendCacheUpdatePacket extends Packet {
             }
 
             ClientCacheManager.sectorEntities.clear();
-            if(DataUtils.isPlayerInAnyBuildSector(GameClient.getClientPlayerState())) ClientCacheManager.sectorEntities.addAll(sectorEntities);
+            //if(DataUtils.isPlayerInAnyBuildSector(GameClient.getClientPlayerState())) ClientCacheManager.sectorEntities.addAll(sectorEntities);
 
             //EdenCore.getInstance().buildSectorMenuControlManager.getMenuPanel().recreateTabs();
         } catch(Exception exception) {
@@ -216,11 +218,13 @@ public class SendCacheUpdatePacket extends Packet {
     }
 
     private void getSectorEntities() {
-        //if(DataUtils.isPlayerInAnyBuildSector(playerState)) sectorEntities.addAll(DataUtils.getEntitiesInBuildSector(DataUtils.getPlayerCurrentBuildSector(playerState)));
+        if(DataUtils.isPlayerInAnyBuildSector(playerState)) sectorEntities.addAll(DataUtils.getEntitiesInBuildSector(DataUtils.getPlayerCurrentBuildSector(playerState)));
+        /*
         if(DataUtils.isPlayerInAnyBuildSector(playerState)) {
             for(SimpleTransformableSendableObject<?> object : GameClient.getClientState().getCurrentSectorEntities().values()) {
                 if(object instanceof SegmentController) sectorEntities.add((SegmentController) object);
             }
         }
+         */
     }
 }

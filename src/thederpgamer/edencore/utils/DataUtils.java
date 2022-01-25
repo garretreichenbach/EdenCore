@@ -328,7 +328,7 @@ public class DataUtils {
         } else if(GameCommon.isDedicatedServer() || GameCommon.isOnSinglePlayer()) {
             try {
                 Set set = GameServer.getUniverse().getSector(sectorData.sector).getEntities();
-                for(Object obj : set) if(obj instanceof SegmentController && (((SegmentController) obj)).isOnServer() && !((SegmentController) obj).isVirtualBlueprint()) entityList.add((SegmentController) obj);
+                for(Object obj : set) if(obj instanceof SegmentController && !((SegmentController) obj).isVirtualBlueprint()) entityList.add((SegmentController) obj);
             } catch(IOException exception) {
                 exception.printStackTrace();
             }

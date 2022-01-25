@@ -164,6 +164,13 @@ public class BuildSectorEntitiesScrollableList extends ScrollableTableList<Segme
     protected Collection<SegmentController> getElementList() {
         if(DataUtils.isPlayerInAnyBuildSector(GameClient.getClientPlayerState())) {
             PacketUtil.sendPacketToServer(new RequestClientCacheUpdatePacket());
+            try {
+                for(SimpleTransformableSendableObject<?> object : GameClient.getClientState().getCurrentSectorEntities().values()) {
+                    if(object instanceof SegmentController && !ClientCacheManager.sectorEntities.contains(object)) ClientCacheManager.sectorEntities.add((SegmentController) object);
+                }
+            } catch(Exception exception) {
+                exception.printStackTrace();
+            }
             return ClientCacheManager.sectorEntities;
         } else return new ArrayList<>();
     }
