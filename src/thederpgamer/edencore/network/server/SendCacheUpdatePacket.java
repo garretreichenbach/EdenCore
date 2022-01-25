@@ -8,6 +8,7 @@ import api.network.PacketReadBuffer;
 import api.network.PacketWriteBuffer;
 import org.schema.game.common.controller.SegmentController;
 import org.schema.game.common.data.player.PlayerState;
+import org.schema.game.common.data.world.SimpleTransformableSendableObject;
 import org.schema.schine.network.objects.Sendable;
 import thederpgamer.edencore.EdenCore;
 import thederpgamer.edencore.data.event.EventData;
@@ -100,7 +101,7 @@ public class SendCacheUpdatePacket extends Packet {
                     int entityId = packetReadBuffer.readInt();
                     if(entityId > 0) {
                         Sendable sendable = GameCommon.getGameObject(entityId);
-                        if(sendable instanceof SegmentController && sendable.isOnServer() && !((SegmentController) sendable).isVirtualBlueprint()) sectorEntities.add((SegmentController) sendable);
+                        if(sendable instanceof SegmentController && !((SegmentController) sendable).isVirtualBlueprint()) sectorEntities.add((SegmentController) sendable);
                     }
                     //Sendable sendable = packetReadBuffer.readSendable(); This throws an exception sometimes, and even with a catch it still crashes if thrown
                     //if(sendable instanceof SegmentController) sectorEntities.add((SegmentController) sendable);
@@ -215,6 +216,11 @@ public class SendCacheUpdatePacket extends Packet {
     }
 
     private void getSectorEntities() {
-        if(DataUtils.isPlayerInAnyBuildSector(playerState)) sectorEntities.addAll(DataUtils.getEntitiesInBuildSector(DataUtils.getPlayerCurrentBuildSector(playerState)));
+        //if(DataUtils.isPlayerInAnyBuildSector(playerState)) sectorEntities.addAll(DataUtils.getEntitiesInBuildSector(DataUtils.getPlayerCurrentBuildSector(playerState)));
+        if(DataUtils.isPlayerInAnyBuildSector(playerState)) {
+            for(SimpleTransformableSendableObject<?> object : GameClient.getClientState().getCurrentSectorEntities().values()) {
+                if(object instanceof SegmentController) sectorEntities.add((SegmentController) object);
+            }
+        }
     }
 }
