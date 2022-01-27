@@ -60,7 +60,7 @@ public class RequestMetaObjectPacket extends Packet {
             if(weapon instanceof LaserWeapon) ((LaserWeapon) weapon).getColor().set(0, 1, 0, 1);
             int slot = playerState.getInventory().getFreeSlot();
             playerState.getInventory().put(slot, weapon);
-            //playerState.getInventory().sendInventoryModification(slot);
+            playerState.getInventory().sendInventoryModification(slot);
         } catch(NoSlotFreeException exception) {
             exception.printStackTrace();
         }

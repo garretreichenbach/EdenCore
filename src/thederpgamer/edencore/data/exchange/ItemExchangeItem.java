@@ -1,11 +1,10 @@
 package thederpgamer.edencore.data.exchange;
 
-import api.common.GameClient;
 import api.network.PacketReadBuffer;
 import api.network.PacketWriteBuffer;
-import org.schema.game.common.data.element.ElementKeyMap;
+import org.schema.game.client.view.gui.inventory.InventorySlotOverlayElement;
+import org.schema.schine.graphicsengine.forms.gui.GUIElement;
 import org.schema.schine.graphicsengine.forms.gui.GUIOverlay;
-import org.schema.schine.graphicsengine.forms.gui.IconDatabase;
 
 import java.io.IOException;
 
@@ -20,6 +19,7 @@ public class ItemExchangeItem extends ExchangeItem {
     public short itemId;
     public short metaId;
     public short subType;
+    private transient GUIElement parent;
 
     public ItemExchangeItem(PacketReadBuffer readBuffer) {
         super(readBuffer);
@@ -32,9 +32,18 @@ public class ItemExchangeItem extends ExchangeItem {
         this.subType = subType;
     }
 
+    public void setTempOverlay(GUIElement element) {
+        parent = element;
+    }
+
     @Override
     public GUIOverlay getIcon() {
-        return IconDatabase.getBuildIconsInstance(GameClient.getClientState(), ElementKeyMap.getInfo(itemId).getBuildIconNum() + GameClient.getClientState().getMetaObjectManager().getObject(metaId).getExtraBuildIconIndex());
+        InventorySlotOverlayElement blockSprite = new InventorySlotOverlayElement(false, parent.getState(), false, parent);
+        blockSprite.setMeta(metaId);
+        blockSprite.setSubSlotType(subType);
+        blockSprite.setSlot(0);
+        blockSprite.setLayer(-1);
+        return blockSprite;
     }
 
     @Override

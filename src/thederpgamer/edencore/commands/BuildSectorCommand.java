@@ -9,11 +9,13 @@ import org.schema.game.common.controller.SegmentController;
 import org.schema.game.common.data.player.PlayerState;
 import org.schema.game.common.data.player.faction.FactionManager;
 import org.schema.game.server.data.blueprintnw.BlueprintEntry;
+import org.schema.schine.network.objects.Sendable;
 import thederpgamer.edencore.EdenCore;
 import thederpgamer.edencore.data.other.BuildSectorData;
 import thederpgamer.edencore.manager.LogManager;
 import thederpgamer.edencore.utils.BuildSectorUtils;
 import thederpgamer.edencore.utils.DataUtils;
+import thederpgamer.edencore.utils.EntityUtils;
 import thederpgamer.edencore.utils.ServerUtils;
 
 import javax.annotation.Nullable;
@@ -58,7 +60,8 @@ public class BuildSectorCommand implements CommandInterface {
                "- /%COMMAND% spawn <catalog_name> : Spawns the specified catalog entry in the current build sector if you have the correct permissions.\n" +
                "- /%COMMAND% spawn_enemy <catalog_name> : Spawns the specified catalog entry in the current build sector and sets it as an enemy if you have the correct permissions.\n" +
                "- /%COMMAND% delete [entity_name] : Deletes the specified entity, or the one the currently selected if no entity is specified.\n" +
-               "- /%COMMAND% toggle_ai <entity_name|all/*> <on|off> : Toggles AI for the specified entity in the current build sector.";
+               "- /%COMMAND% toggle_ai <entity_name|all/*> <on|off> : Toggles AI for the specified entity in the current build sector.\n" +
+               "- /%COMMAND% warp [entity_name] : Warps into the currently selected entity or a specific one if a name is provided.";
     }
 
     @Override
@@ -262,6 +265,23 @@ public class BuildSectorCommand implements CommandInterface {
                                 } else PlayerUtils.sendMessage(sender, "You don't have permission to do this.");
                             }
                         } else return false;
+                        return true;
+                    case "warp":
+                        if(!DataUtils.isPlayerInAnyBuildSector(sender)) PlayerUtils.sendMessage(sender, "You must be in a build sector to perform this command.");
+                        else {
+                            BuildSectorData sectorData = DataUtils.getPlayerCurrentBuildSector(sender);
+                            if(sectorData != null && sectorData.hasPermission(sender.getName(), "EDIT")) {
+                                if(PlayerUtils.getCurrentControl(sender) instanceof SegmentController) sender.getControllerState().forcePlayerOutOfSegmentControllers();
+                                if(args.length == 1) {
+                                    Sendable object = GameCommon.getGameObject(sender.getSelectedEntityId());
+                                    if(object instanceof SegmentController) EntityUtils.warpPlayerIntoEntity(sender, (SegmentController) object);
+                                } else if(args.length == 2) {
+                                    SegmentController entity = BuildSectorUtils.getEntityByName(sender, args[1]);
+                                    if(entity != null && entity.getSector(new Vector3i()).equals(sectorData.sector)) EntityUtils.warpPlayerIntoEntity(sender, entity);
+                                } else return false;
+                                //if(PlayerUtils.getCurrentControl(sender) instanceof SegmentController && !PlayerUtils.getCurrentControl(sender).equals(object))
+                            } else PlayerUtils.sendMessage(sender, "You don't have permission to do this.");
+                        }
                         return true;
                 }
             } catch(Exception exception) {

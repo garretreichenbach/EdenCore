@@ -4,10 +4,7 @@ import api.common.GameClient;
 import api.network.packets.PacketUtil;
 import org.schema.common.util.StringTools;
 import org.schema.common.util.linAlg.Vector3i;
-import org.schema.game.client.data.PlayerControllable;
 import org.schema.game.common.controller.SegmentController;
-import org.schema.game.common.controller.Ship;
-import org.schema.game.common.data.SegmentPiece;
 import org.schema.game.common.data.element.ElementDocking;
 import org.schema.game.common.data.world.SimpleTransformableSendableObject;
 import org.schema.schine.graphicsengine.core.MouseEvent;
@@ -36,7 +33,7 @@ import java.util.Set;
 public class BuildSectorEntitiesScrollableList extends ScrollableTableList<SegmentController> {
 
     private final BuildSectorMenuPanel panel;
-    private final BuildSectorData sectorData;
+    private BuildSectorData sectorData;
 
     public enum EntityType {ALL, SHIP, SPACE_STATION, DOCKED, TURRET}
 
@@ -50,113 +47,104 @@ public class BuildSectorEntitiesScrollableList extends ScrollableTableList<Segme
     private GUIHorizontalButtonTablePane redrawButtonPane(final SegmentController segmentController, GUIAncor anchor) {
         GUIHorizontalButtonTablePane buttonPane = new GUIHorizontalButtonTablePane(getState(), 3, 1, anchor);
         buttonPane.onInit();
-
-        buttonPane.addButton(0, 0, "WARP", GUIHorizontalArea.HButtonColor.YELLOW, new GUICallback() {
-            @Override
-            public void callback(GUIElement guiElement, MouseEvent mouseEvent) {
-                if(mouseEvent.pressedLeftMouse() && segmentController.existsInState() && segmentController.getSector(new Vector3i()).equals(sectorData.sector)) {
-                    if(sectorData.hasPermission(GameClient.getClientPlayerState().getName(), "EDIT")) {
-                        GameClient.getClientPlayerState().getControllerState().forcePlayerOutOfSegmentControllers();
-                        getState().getController().queueUIAudio("0022_menu_ui - select 1");
-                        SegmentPiece toEnter;
-                        if(segmentController.getType().equals(SimpleTransformableSendableObject.EntityType.SHIP)) {
-                            toEnter = segmentController.getSegmentBuffer().getPointUnsave(Ship.core);
-                            if(toEnter != null) {
-                                GameClient.getClientState().getGlobalGameControlManager().getIngameControlManager().getPlayerGameControlManager().getPlayerIntercationManager().getInShipControlManager().setEntered(toEnter);
-                                GameClient.getClientState().getController().requestControlChange(GameClient.getClientPlayerState().getAssingedPlayerCharacter(), (PlayerControllable) segmentController, new Vector3i(), toEnter.getAbsolutePos(new Vector3i()), true);
-                            }
-                        } else if(segmentController.getType().equals(SimpleTransformableSendableObject.EntityType.SPACE_STATION)) {
-                            toEnter = EntityUtils.getAvailableBuildBlock(segmentController);
-                            if(toEnter != null) {
-                                GameClient.getClientState().getGlobalGameControlManager().getIngameControlManager().getPlayerGameControlManager().getPlayerIntercationManager().getInShipControlManager().setEntered(toEnter);
-                                GameClient.getClientState().getController().requestControlChange(GameClient.getClientPlayerState().getAssingedPlayerCharacter(), (PlayerControllable) segmentController, new Vector3i(), toEnter.getAbsolutePos(new Vector3i()), true);
-                            }
+        try {
+            if(sectorData == null) sectorData = DataUtils.getPlayerCurrentBuildSector(GameClient.getClientPlayerState());
+            if(sectorData != null) {
+                buttonPane.addButton(0, 0, "WARP", GUIHorizontalArea.HButtonColor.YELLOW, new GUICallback() {
+                    @Override
+                    public void callback(GUIElement guiElement, MouseEvent mouseEvent) {
+                        if(mouseEvent.pressedLeftMouse() && segmentController.existsInState() && segmentController.getSector(new Vector3i()).equals(sectorData.sector)) {
+                            if(sectorData.hasPermission(GameClient.getClientPlayerState().getName(), "EDIT")) {
+                                getState().getController().queueUIAudio("0022_menu_ui - select 1");
+                                EntityUtils.warpPlayerIntoEntity(GameClient.getClientPlayerState(), segmentController);
+                            } else getState().getController().queueUIAudio("0022_menu_ui - error 1");
                         }
-                    } else getState().getController().queueUIAudio("0022_menu_ui - error 1");
-                }
-            }
+                    }
 
-            @Override
-            public boolean isOccluded() {
-                return !getState().getController().getPlayerInputs().isEmpty() || !sectorData.hasPermission(GameClient.getClientPlayerState().getName(), "EDIT");
-            }
-        }, new GUIActivationCallback() {
-            @Override
-            public boolean isVisible(InputState inputState) {
-                return true;
-            }
+                    @Override
+                    public boolean isOccluded() {
+                        return !getState().getController().getPlayerInputs().isEmpty() || !sectorData.hasPermission(GameClient.getClientPlayerState().getName(), "EDIT");
+                    }
+                }, new GUIActivationCallback() {
+                    @Override
+                    public boolean isVisible(InputState inputState) {
+                        return true;
+                    }
 
-            @Override
-            public boolean isActive(InputState inputState) {
-                return getState().getController().getPlayerInputs().isEmpty() && sectorData.hasPermission(GameClient.getClientPlayerState().getName(), "EDIT");
-            }
-        });
+                    @Override
+                    public boolean isActive(InputState inputState) {
+                        return getState().getController().getPlayerInputs().isEmpty() && sectorData.hasPermission(GameClient.getClientPlayerState().getName(), "EDIT");
+                    }
+                });
 
-        buttonPane.addButton(1, 0, "DELETE", GUIHorizontalArea.HButtonColor.RED, new GUICallback() {
-            @Override
-            public void callback(GUIElement guiElement, MouseEvent mouseEvent) {
-                if(mouseEvent.pressedLeftMouse()) {
-                    if(segmentController.existsInState() && segmentController.getSector(new Vector3i()).equals(sectorData.sector)) {
-                        if(sectorData.hasPermission(GameClient.getClientPlayerState().getName(), "DELETE")) {
-                            PacketUtil.sendPacketToServer(new RequestClientCacheUpdatePacket());
-                            getState().getController().queueUIAudio("0022_menu_ui - select 2");
-                            segmentController.railController.destroyDockedRecursive();
-                            for(ElementDocking dock : segmentController.getDockingController().getDockedOnThis()) {
-                                dock.from.getSegment().getSegmentController().markForPermanentDelete(true);
-                                dock.from.getSegment().getSegmentController().setMarkedForDeleteVolatile(true);
-                            }
-                            segmentController.markForPermanentDelete(true);
-                            segmentController.setMarkedForDeleteVolatile(true);
-                            flagDirty();
-                            handleDirty();
-                        } else getState().getController().queueUIAudio("0022_menu_ui - error 1");
-                    } else panel.recreateTabs();
-                }
-            }
+                buttonPane.addButton(1, 0, "DELETE", GUIHorizontalArea.HButtonColor.RED, new GUICallback() {
+                    @Override
+                    public void callback(GUIElement guiElement, MouseEvent mouseEvent) {
+                        if(mouseEvent.pressedLeftMouse()) {
+                            if(segmentController.existsInState() && segmentController.getSector(new Vector3i()).equals(sectorData.sector)) {
+                                if(sectorData.hasPermission(GameClient.getClientPlayerState().getName(), "DELETE")) {
+                                    PacketUtil.sendPacketToServer(new RequestClientCacheUpdatePacket());
+                                    getState().getController().queueUIAudio("0022_menu_ui - select 2");
+                                    segmentController.railController.destroyDockedRecursive();
+                                    for(ElementDocking dock : segmentController.getDockingController().getDockedOnThis()) {
+                                        dock.from.getSegment().getSegmentController().markForPermanentDelete(true);
+                                        dock.from.getSegment().getSegmentController().setMarkedForDeleteVolatile(true);
+                                    }
+                                    segmentController.markForPermanentDelete(true);
+                                    segmentController.setMarkedForDeleteVolatile(true);
+                                    flagDirty();
+                                    handleDirty();
+                                } else getState().getController().queueUIAudio("0022_menu_ui - error 1");
+                            } else panel.recreateTabs();
+                        }
+                    }
 
-            @Override
-            public boolean isOccluded() {
-                return !getState().getController().getPlayerInputs().isEmpty() || !sectorData.hasPermission(GameClient.getClientPlayerState().getName(), "DELETE");
-            }
-        }, new GUIActivationCallback() {
-            @Override
-            public boolean isVisible(InputState inputState) {
-                return true;
-            }
+                    @Override
+                    public boolean isOccluded() {
+                        return !getState().getController().getPlayerInputs().isEmpty() || !sectorData.hasPermission(GameClient.getClientPlayerState().getName(), "DELETE");
+                    }
+                }, new GUIActivationCallback() {
+                    @Override
+                    public boolean isVisible(InputState inputState) {
+                        return true;
+                    }
 
-            @Override
-            public boolean isActive(InputState inputState) {
-                return getState().getController().getPlayerInputs().isEmpty() && sectorData.hasPermission(GameClient.getClientPlayerState().getName(), "DELETE");
-            }
-        });
+                    @Override
+                    public boolean isActive(InputState inputState) {
+                        return getState().getController().getPlayerInputs().isEmpty() && sectorData.hasPermission(GameClient.getClientPlayerState().getName(), "DELETE");
+                    }
+                });
 
-        buttonPane.addButton(2, 0, "TOGGLE AI", GUIHorizontalArea.HButtonColor.BLUE, new GUICallback() {
-            @Override
-            public void callback(GUIElement guiElement, MouseEvent mouseEvent) {
-                if(mouseEvent.pressedLeftMouse() && segmentController.existsInState()) {
-                    if(sectorData.hasPermission(GameClient.getClientPlayerState().getName(), "TOGGLE_AI")) {
-                        getState().getController().queueUIAudio("0022_menu_ui - select 3");
-                        BuildSectorUtils.toggleAI(segmentController, !segmentController.isAIControlled());
-                    } else getState().getController().queueUIAudio("0022_menu_ui - error 1");
-                }
-            }
+                buttonPane.addButton(2, 0, "TOGGLE AI", GUIHorizontalArea.HButtonColor.BLUE, new GUICallback() {
+                    @Override
+                    public void callback(GUIElement guiElement, MouseEvent mouseEvent) {
+                        if(mouseEvent.pressedLeftMouse() && segmentController.existsInState()) {
+                            if(sectorData.hasPermission(GameClient.getClientPlayerState().getName(), "TOGGLE_AI")) {
+                                getState().getController().queueUIAudio("0022_menu_ui - select 3");
+                                BuildSectorUtils.toggleAI(segmentController, !segmentController.isAIControlled());
+                            } else getState().getController().queueUIAudio("0022_menu_ui - error 1");
+                        }
+                    }
 
-            @Override
-            public boolean isOccluded() {
-                return !getState().getController().getPlayerInputs().isEmpty() || !sectorData.hasPermission(GameClient.getClientPlayerState().getName(), "TOGGLE_AI");
-            }
-        }, new GUIActivationCallback() {
-            @Override
-            public boolean isVisible(InputState inputState) {
-                return true;
-            }
+                    @Override
+                    public boolean isOccluded() {
+                        return !getState().getController().getPlayerInputs().isEmpty() || !sectorData.hasPermission(GameClient.getClientPlayerState().getName(), "TOGGLE_AI");
+                    }
+                }, new GUIActivationCallback() {
+                    @Override
+                    public boolean isVisible(InputState inputState) {
+                        return true;
+                    }
 
-            @Override
-            public boolean isActive(InputState inputState) {
-                return getState().getController().getPlayerInputs().isEmpty() && sectorData.hasPermission(GameClient.getClientPlayerState().getName(), "TOGGLE_AI");
+                    @Override
+                    public boolean isActive(InputState inputState) {
+                        return getState().getController().getPlayerInputs().isEmpty() && sectorData.hasPermission(GameClient.getClientPlayerState().getName(), "TOGGLE_AI");
+                    }
+                });
             }
-        });
-
+        } catch(Exception exception) {
+            LogManager.logException("Failed to create build sector button pane due to an exception", exception);
+        }
         return buttonPane;
     }
 

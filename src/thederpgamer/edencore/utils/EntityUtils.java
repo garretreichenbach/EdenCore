@@ -1,9 +1,14 @@
 package thederpgamer.edencore.utils;
 
+import api.common.GameClient;
+import api.common.GameCommon;
 import api.common.GameServer;
+import api.network.packets.PacketUtil;
 import api.utils.game.PlayerUtils;
 import com.bulletphysics.linearmath.Transform;
 import org.schema.common.util.linAlg.Vector3fTools;
+import org.schema.common.util.linAlg.Vector3i;
+import org.schema.game.client.data.PlayerControllable;
 import org.schema.game.common.controller.SegmentController;
 import org.schema.game.common.controller.Ship;
 import org.schema.game.common.controller.SpaceStation;
@@ -24,6 +29,7 @@ import org.schema.game.server.data.blueprint.SegmentControllerSpawnCallbackDirec
 import org.schema.game.server.data.blueprintnw.BlueprintEntry;
 import org.schema.schine.graphicsengine.core.GlUtil;
 import org.schema.schine.graphicsengine.core.settings.StateParameterNotFoundException;
+import thederpgamer.edencore.network.server.PlayerWarpIntoEntityPacket;
 
 import javax.vecmath.Vector3f;
 import java.io.IOException;
@@ -35,6 +41,19 @@ import java.io.IOException;
  * @version 1.0 - [09/20/2021]
  */
 public class EntityUtils {
+
+    public static void warpPlayerIntoEntity(PlayerState player, SegmentController entity) {
+        SegmentPiece toEnter = null;
+        if(entity.getType().equals(SimpleTransformableSendableObject.EntityType.SHIP)) toEnter = entity.getSegmentBuffer().getPointUnsave(Ship.core);
+        else if(entity.getType().equals(SimpleTransformableSendableObject.EntityType.SPACE_STATION)) toEnter = getAvailableBuildBlock(entity);
+        if(toEnter != null) {
+            if(GameCommon.isOnSinglePlayer() || GameCommon.isClientConnectedToServer()) {
+                GameClient.getClientPlayerState().getControllerState().forcePlayerOutOfSegmentControllers();
+                GameClient.getClientState().getGlobalGameControlManager().getIngameControlManager().getPlayerGameControlManager().getPlayerIntercationManager().getInShipControlManager().setEntered(toEnter);
+                GameClient.getClientState().getController().requestControlChange(GameClient.getClientPlayerState().getAssingedPlayerCharacter(), (PlayerControllable) entity, new Vector3i(), toEnter.getAbsolutePos(new Vector3i()), true);
+            } else PacketUtil.sendPacket(player, new PlayerWarpIntoEntityPacket(entity));
+        }
+    }
 
     public static SegmentPiece getAvailableBuildBlock(SegmentController segmentController) {
         ManagerContainer<?> managerContainer = null;

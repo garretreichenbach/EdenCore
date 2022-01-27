@@ -55,6 +55,7 @@ import thederpgamer.edencore.navigation.EdenMapDrawer;
 import thederpgamer.edencore.navigation.MapIcon;
 import thederpgamer.edencore.navigation.NavigationUtilManager;
 import thederpgamer.edencore.network.client.*;
+import thederpgamer.edencore.network.server.PlayerWarpIntoEntityPacket;
 import thederpgamer.edencore.network.server.SendCacheUpdatePacket;
 import thederpgamer.edencore.utils.DataUtils;
 import thederpgamer.edencore.utils.DateUtils;
@@ -174,6 +175,7 @@ public class EdenCore extends StarMod {
         PacketUtil.registerPacket(ExchangeItemCreatePacket.class);
         PacketUtil.registerPacket(ExchangeItemRemovePacket.class);
         PacketUtil.registerPacket(SendCacheUpdatePacket.class);
+        PacketUtil.registerPacket(PlayerWarpIntoEntityPacket.class);
         PacketUtil.registerPacket(NavigationMapPacket.class);
     }
 

@@ -1010,16 +1010,19 @@ public class ExchangeMenuPanel extends GUIMenuPanel {
                         return true;
                     }
                 });
+                item.setTempOverlay(tile.getContent());
                 GUIOverlay spriteOverlay = item.getIcon();
-                spriteOverlay.onInit();
-                tile.attach(spriteOverlay);
-                if(spriteOverlay.getUserPointer() == null) spriteOverlay.setUserPointer("default-icon");
-                if(spriteOverlay.getUserPointer().equals("default-icon")) {
-                    spriteOverlay.getPos().x += 80;
-                    spriteOverlay.getPos().y += 180;
-                } else {
-                    spriteOverlay.getPos().x += 100;
-                    spriteOverlay.getPos().y += 200;
+                if(spriteOverlay != null) {
+                    spriteOverlay.onInit();
+                    tile.attach(spriteOverlay);
+                    if(spriteOverlay.getUserPointer() == null) spriteOverlay.setUserPointer("default-icon");
+                    if(spriteOverlay.getUserPointer().equals("default-icon")) {
+                        spriteOverlay.getPos().x += 80;
+                        spriteOverlay.getPos().y += 180;
+                    } else {
+                        spriteOverlay.getPos().x += 100;
+                        spriteOverlay.getPos().y += 200;
+                    }
                 }
             }
         }
@@ -1030,7 +1033,7 @@ public class ExchangeMenuPanel extends GUIMenuPanel {
         if(isAdmin()) {
             contentPane.setTextBoxHeightLast(0, guiWindow.getInnerHeigth() - 90);
             contentPane.addNewTextBox(28);
-            GUIHorizontalButtonTablePane adminPane = new GUIHorizontalButtonTablePane(getState(), 2, 1, contentPane.getContent(1));
+            GUIHorizontalButtonTablePane adminPane = new GUIHorizontalButtonTablePane(getState(), 2, 1, contentPane.getContent(0, 1));
             adminPane.onInit();
 
             adminPane.addButton(0, 0, "ADD", GUIHorizontalArea.HButtonColor.GREEN, new GUICallback() {
@@ -1093,7 +1096,7 @@ public class ExchangeMenuPanel extends GUIMenuPanel {
                     return getState().getController().getPlayerInputs().isEmpty();
                 }
             });
-            contentPane.getContent(1).attach(adminPane);
+            contentPane.getContent(0, 1).attach(adminPane);
         }
     }
 
