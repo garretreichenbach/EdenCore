@@ -4170,14 +4170,12 @@ public class PlayerState extends AbstractOwnerState
 
     d[24] =
         new Tag(
-            Type.BYTE,
-            null,
+            Type.BYTE, null,
             (byte) 0); // preTutorialTransform == null ? new Tag(Type.BYTE, null, (byte) 0) : new
     // Tag(Type.VECTOR3f, "pretutpoint", preTutorialTransform.origin);
     d[25] =
         new Tag(
-            Type.BYTE,
-            null,
+            Type.BYTE, null,
             (byte) 0); // preTutorialSector == null ? new Tag(Type.BYTE, null, (byte) 0) : new
     // Tag(Type.VECTOR3i, "pretutsector", preTutorialSector);
 
