@@ -25,9 +25,9 @@ public class BankingSendMoneyCommand implements CommandInterface {
   @Override
   public String getDescription() {
     return "Sends money from your account to another player. Both players need to be online, and"
-               + " you need to have enough money in your account.\n"
-               + "- /%COMMAND% <player> 500 <\"description\"> : Transfers funds from your account"
-               + " to another player.";
+        + " you need to have enough money in your account.\n"
+        + "- /%COMMAND% <player> 500 <\"description\"> : Transfers funds from your account"
+        + " to another player.";
   }
 
   @Override

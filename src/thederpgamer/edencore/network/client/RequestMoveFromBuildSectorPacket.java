@@ -36,9 +36,8 @@ public class RequestMoveFromBuildSectorPacket extends Packet {
     try {
       DataUtils.movePlayerFromBuildSector(playerState);
     } catch (IOException
-        | SQLException
-            exception) { // Ideally, this should never fail, because doing so would be a
-                         // catastrophic problem
+        | SQLException exception) { // Ideally, this should never fail, because doing so would be a
+      // catastrophic problem
       LogManager.logException(
           "Failed to move player \"" + playerState.getName() + "\" from a build sector!",
           exception);

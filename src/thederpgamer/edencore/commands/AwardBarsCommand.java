@@ -38,8 +38,8 @@ public class AwardBarsCommand implements CommandInterface {
   @Override
   public String getDescription() {
     return "Awards the specified player prize bars which can be used at the exchange.\n"
-               + "- /%COMMAND% <player|all/*> <bronze|silver|gold> <count> [online_only] : Awards a"
-               + " player bars of the specified type.";
+        + "- /%COMMAND% <player|all/*> <bronze|silver|gold> <count> [online_only] : Awards a"
+        + " player bars of the specified type.";
   }
 
   @Override

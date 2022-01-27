@@ -34,11 +34,11 @@ public class SaveEntityCommand implements CommandInterface {
   @Override
   public String getDescription() {
     return "Saves your current entity including cargo and prepares it so it can be transferred to"
-               + " the new save after the server reset. Will only work if the server has an"
-               + " upcoming reset.\n"
-               + "- /%COMMAND% : Saves your current entity and it's cargo so it can be transferred"
-               + " to the new save. This will de-spawn the entity after saving and it will not be"
-               + " accessible until after the reset.";
+        + " the new save after the server reset. Will only work if the server has an"
+        + " upcoming reset.\n"
+        + "- /%COMMAND% : Saves your current entity and it's cargo so it can be transferred"
+        + " to the new save. This will de-spawn the entity after saving and it will not be"
+        + " accessible until after the reset.";
   }
 
   @Override

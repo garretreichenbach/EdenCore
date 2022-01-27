@@ -28,8 +28,8 @@ public class CountdownCommand implements CommandInterface {
   @Override
   public String getDescription() {
     return "Creates a countdown that displays for all players in the current squad. Requires the"
-               + " user to be the leader of an active squad.\n"
-               + "- /%COMMAND% <seconds> [label]";
+        + " user to be the leader of an active squad.\n"
+        + "- /%COMMAND% <seconds> [label]";
   }
 
   @Override

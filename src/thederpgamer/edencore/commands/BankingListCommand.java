@@ -25,8 +25,8 @@ public class BankingListCommand implements CommandInterface {
   @Override
   public String getDescription() {
     return "Lists your previous transactions. Up to 10 transactions are saved, and older ones get"
-               + " automatically deleted.\n"
-               + "- /%COMMAND% : Lists up to 10 previous transactions.";
+        + " automatically deleted.\n"
+        + "- /%COMMAND% : Lists up to 10 previous transactions.";
   }
 
   @Override

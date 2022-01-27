@@ -29,8 +29,8 @@ public class ResetPlayerCommand implements CommandInterface {
   @Override
   public String getDescription() {
     return "Resets the specified data for a player. Useful for fixing player related bugs.\n"
-               + "- /%COMMAND% <player> <inventory|faction|fleets|spawn|location|navigation|all/*>"
-               + " : Resets the specified data for a player.";
+        + "- /%COMMAND% <player> <inventory|faction|fleets|spawn|location|navigation|all/*>"
+        + " : Resets the specified data for a player.";
   }
 
   @Override

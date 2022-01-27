@@ -30,10 +30,10 @@ public class LoadEntityCommand implements CommandInterface {
   @Override
   public String getDescription() {
     return "Loads the specified entity from the world transfer folder and spawns it in front of"
-               + " you. Will only work if the server was recently reset.\n"
-               + "- /%COMMAND% : Loads the specified entity if it exists in the world transfer"
-               + " folder. This will remove the entity from the save folder once it's been"
-               + " spawned.";
+        + " you. Will only work if the server was recently reset.\n"
+        + "- /%COMMAND% : Loads the specified entity if it exists in the world transfer"
+        + " folder. This will remove the entity from the save folder once it's been"
+        + " spawned.";
   }
 
   @Override
