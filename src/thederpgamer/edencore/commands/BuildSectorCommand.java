@@ -33,7 +33,7 @@ public class BuildSectorCommand implements CommandInterface {
 
   public static final long MAX_WAIT_TIME =
       10000; // How long to wait for the the AI toggling method to finish before killing it due to
-             // stall
+  // stall
 
   @Override
   public String getCommand() {
@@ -48,31 +48,31 @@ public class BuildSectorCommand implements CommandInterface {
   @Override
   public String getDescription() {
     return "Main command for managing player build sectors.\n"
-               + "- /%COMMAND% enter [player_name] : Enters your build sector or the build sector"
-               + " belonging to the specified player if you have permission.\n"
-               + "- /%COMMAND% leave : Leaves the current build sector.\n"
-               + "- /%COMMAND% invite <player_name> : Invites the specified player to your build"
-               + " sector.\n"
-               + "- /%COMMAND% remove <player_name> : Removes the specified player from your build"
-               + " sector.\n"
-               + "- /%COMMAND% list : Lists the players that have access to your build sector.\n"
-               + "- /%COMMAND% allow <player_name> <permission> : Allows a player access to the"
-               + " specified permission in your build sector.\n"
-               + "- /%COMMAND% deny <player_name> <permission> : Denys a player access to the"
-               + " specified permission in your build sector.\n"
-               + "- /%COMMAND% permissions <player_name> : Lists the permissions assigned to the"
-               + " specified player in your build sector.\n"
-               + "- /%COMMAND% spawn <catalog_name> : Spawns the specified catalog entry in the"
-               + " current build sector if you have the correct permissions.\n"
-               + "- /%COMMAND% spawn_enemy <catalog_name> : Spawns the specified catalog entry in"
-               + " the current build sector and sets it as an enemy if you have the correct"
-               + " permissions.\n"
-               + "- /%COMMAND% delete [entity_name] : Deletes the specified entity, or the one the"
-               + " currently selected if no entity is specified.\n"
-               + "- /%COMMAND% toggle_ai <entity_name|all/*> <on|off> : Toggles AI for the"
-               + " specified entity in the current build sector.\n"
-               + "- /%COMMAND% warp [entity_name] : Warps into the currently selected entity or a"
-               + " specific one if a name is provided.";
+        + "- /%COMMAND% enter [player_name] : Enters your build sector or the build sector"
+        + " belonging to the specified player if you have permission.\n"
+        + "- /%COMMAND% leave : Leaves the current build sector.\n"
+        + "- /%COMMAND% invite <player_name> : Invites the specified player to your build"
+        + " sector.\n"
+        + "- /%COMMAND% remove <player_name> : Removes the specified player from your build"
+        + " sector.\n"
+        + "- /%COMMAND% list : Lists the players that have access to your build sector.\n"
+        + "- /%COMMAND% allow <player_name> <permission> : Allows a player access to the"
+        + " specified permission in your build sector.\n"
+        + "- /%COMMAND% deny <player_name> <permission> : Denys a player access to the"
+        + " specified permission in your build sector.\n"
+        + "- /%COMMAND% permissions <player_name> : Lists the permissions assigned to the"
+        + " specified player in your build sector.\n"
+        + "- /%COMMAND% spawn <catalog_name> : Spawns the specified catalog entry in the"
+        + " current build sector if you have the correct permissions.\n"
+        + "- /%COMMAND% spawn_enemy <catalog_name> : Spawns the specified catalog entry in"
+        + " the current build sector and sets it as an enemy if you have the correct"
+        + " permissions.\n"
+        + "- /%COMMAND% delete [entity_name] : Deletes the specified entity, or the one the"
+        + " currently selected if no entity is specified.\n"
+        + "- /%COMMAND% toggle_ai <entity_name|all/*> <on|off> : Toggles AI for the"
+        + " specified entity in the current build sector.\n"
+        + "- /%COMMAND% warp [entity_name] : Warps into the currently selected entity or a"
+        + " specific one if a name is provided.";
   }
 
   @Override
