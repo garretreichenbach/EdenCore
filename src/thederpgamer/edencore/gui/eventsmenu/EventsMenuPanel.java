@@ -16,55 +16,59 @@ import thederpgamer.edencore.network.client.RequestClientCacheUpdatePacket;
  */
 public class EventsMenuPanel extends GUIMenuPanel {
 
-    public static final int PVE = 0;
-    public static final int PVP = 1;
-    public static final int DAILY = 2;
-    public static final int WEEKLY = 4;
-    public static final int MONTHLY = 8;
+  public static final int PVE = 0;
+  public static final int PVP = 1;
+  public static final int DAILY = 2;
+  public static final int WEEKLY = 4;
+  public static final int MONTHLY = 8;
 
-    private GUITabbedContent pveTabbedContent;
-    private GUITabbedContent pvpTabbedContent;
+  private GUITabbedContent pveTabbedContent;
+  private GUITabbedContent pvpTabbedContent;
 
-    public EventsMenuPanel(InputState inputState) {
-        super(inputState, "EventsMenu", (int) (GLFrame.getWidth() / 1.5), (int) (GLFrame.getHeight() / 1.5));
+  public EventsMenuPanel(InputState inputState) {
+    super(
+        inputState,
+        "EventsMenu",
+        (int) (GLFrame.getWidth() / 1.5),
+        (int) (GLFrame.getHeight() / 1.5));
+  }
+
+  @Override
+  public void recreateTabs() {
+    PacketUtil.sendPacketToServer(new RequestClientCacheUpdatePacket());
+    int lastTab = guiWindow.getSelectedTab();
+    if (guiWindow.getTabs().size() > 0) guiWindow.clearTabs();
+
+    GUIContentPane pveTab = guiWindow.addTab("PVE");
+    pveTab.setTextBoxHeightLast((int) (GLFrame.getHeight() / 1.5));
+    createPVETab(pveTab);
+
+    GUIContentPane pvpTab = guiWindow.addTab("PVP");
+    pvpTab.setTextBoxHeightLast((int) (GLFrame.getHeight() / 1.5));
+    createPVPTab(pvpTab);
+
+    guiWindow.setSelectedTab(lastTab);
+  }
+
+  private void createPVETab(GUIContentPane contentPane) {
+    int lastTab = 0;
+    if (pveTabbedContent == null)
+      (pveTabbedContent = new GUITabbedContent(getState(), contentPane.getContent(0))).onInit();
+    else {
+      lastTab = pveTabbedContent.getSelectedTab();
+      pveTabbedContent.clearTabs();
     }
 
-    @Override
-    public void recreateTabs() {
-        PacketUtil.sendPacketToServer(new RequestClientCacheUpdatePacket());
-        int lastTab = guiWindow.getSelectedTab();
-        if(guiWindow.getTabs().size() > 0) guiWindow.clearTabs();
-
-        GUIContentPane pveTab = guiWindow.addTab("PVE");
-        pveTab.setTextBoxHeightLast((int) (GLFrame.getHeight() / 1.5));
-        createPVETab(pveTab);
-
-        GUIContentPane pvpTab = guiWindow.addTab("PVP");
-        pvpTab.setTextBoxHeightLast((int) (GLFrame.getHeight() / 1.5));
-        createPVPTab(pvpTab);
-
-        guiWindow.setSelectedTab(lastTab);
+    { // Daily Tab
+      GUIContentPane subTab = pveTabbedContent.addTab("DAILY");
+      subTab.setTextBoxHeightLast((int) (GLFrame.getHeight() / 1.5));
+      subTab.orientateInsideFrame();
+      EventsScrollableList eventsList =
+          new EventsScrollableList(getState(), subTab.getTextboxes().get(0), this, PVE | DAILY);
+      eventsList.onInit();
+      subTab.getTextboxes().get(0).attach(eventsList);
     }
+  }
 
-    private void createPVETab(GUIContentPane contentPane) {
-        int lastTab = 0;
-        if(pveTabbedContent == null) (pveTabbedContent = new GUITabbedContent(getState(), contentPane.getContent(0))).onInit();
-        else {
-            lastTab = pveTabbedContent.getSelectedTab();
-            pveTabbedContent.clearTabs();
-        }
-
-        { //Daily Tab
-            GUIContentPane subTab = pveTabbedContent.addTab("DAILY");
-            subTab.setTextBoxHeightLast((int) (GLFrame.getHeight() / 1.5));
-            subTab.orientateInsideFrame();
-            EventsScrollableList eventsList = new EventsScrollableList(getState(), subTab.getTextboxes().get(0), this, PVE | DAILY);
-            eventsList.onInit();
-            subTab.getTextboxes().get(0).attach(eventsList);
-        }
-    }
-
-    private void createPVPTab(GUIContentPane contentPane) {
-
-    }
+  private void createPVPTab(GUIContentPane contentPane) {}
 }

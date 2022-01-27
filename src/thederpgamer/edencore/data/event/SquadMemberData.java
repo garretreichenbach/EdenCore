@@ -2,9 +2,8 @@ package thederpgamer.edencore.data.event;
 
 import api.network.PacketReadBuffer;
 import api.network.PacketWriteBuffer;
-import thederpgamer.edencore.data.SerializableData;
-
 import java.io.IOException;
+import thederpgamer.edencore.data.SerializableData;
 
 /**
  * <Description>
@@ -14,20 +13,16 @@ import java.io.IOException;
  */
 public class SquadMemberData implements SerializableData {
 
-    public String playerName;
-    public String shipName;
-    public int factionId;
-    public double shipMass;
-    public String selectedShipName;
-    public boolean ready;
+  public String playerName;
+  public String shipName;
+  public int factionId;
+  public double shipMass;
+  public String selectedShipName;
+  public boolean ready;
 
-    @Override
-    public void deserialize(PacketReadBuffer readBuffer) throws IOException {
+  @Override
+  public void deserialize(PacketReadBuffer readBuffer) throws IOException {}
 
-    }
-
-    @Override
-    public void serialize(PacketWriteBuffer writeBuffer) throws IOException {
-
-    }
+  @Override
+  public void serialize(PacketWriteBuffer writeBuffer) throws IOException {}
 }

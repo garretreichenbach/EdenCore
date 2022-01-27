@@ -11,12 +11,12 @@ import api.utils.gui.GUIControlManager;
  */
 public class ExchangeMenuControlManager extends GUIControlManager {
 
-    public ExchangeMenuControlManager() {
-        super(GameClient.getClientState());
-    }
+  public ExchangeMenuControlManager() {
+    super(GameClient.getClientState());
+  }
 
-    @Override
-    public ExchangeMenuPanel createMenuPanel() {
-        return new ExchangeMenuPanel(getState());
-    }
+  @Override
+  public ExchangeMenuPanel createMenuPanel() {
+    return new ExchangeMenuPanel(getState());
+  }
 }

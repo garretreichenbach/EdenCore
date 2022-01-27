@@ -2,9 +2,8 @@ package thederpgamer.edencore.data.event;
 
 import api.network.PacketReadBuffer;
 import api.network.PacketWriteBuffer;
-import thederpgamer.edencore.data.SerializableData;
-
 import java.io.IOException;
+import thederpgamer.edencore.data.SerializableData;
 
 /**
  * <Description>
@@ -14,17 +13,13 @@ import java.io.IOException;
  */
 public class EventRuleset implements SerializableData {
 
-    public EventRuleset(PacketReadBuffer readBuffer) throws IOException {
-        deserialize(readBuffer);
-    }
+  public EventRuleset(PacketReadBuffer readBuffer) throws IOException {
+    deserialize(readBuffer);
+  }
 
-    @Override
-    public void deserialize(PacketReadBuffer readBuffer) throws IOException {
+  @Override
+  public void deserialize(PacketReadBuffer readBuffer) throws IOException {}
 
-    }
-
-    @Override
-    public void serialize(PacketWriteBuffer writeBuffer) throws IOException {
-
-    }
+  @Override
+  public void serialize(PacketWriteBuffer writeBuffer) throws IOException {}
 }

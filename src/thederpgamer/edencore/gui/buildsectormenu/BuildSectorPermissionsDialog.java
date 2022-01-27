@@ -16,33 +16,35 @@ import thederpgamer.edencore.network.client.UpdateBuildSectorPermissionsPacket;
  */
 public class BuildSectorPermissionsDialog extends GUIInputDialog {
 
-    public BuildSectorData sectorData;
-    public String targetName;
+  public BuildSectorData sectorData;
+  public String targetName;
 
-    @Override
-    public BuildSectorPermissionsPanel createPanel() {
-        return new BuildSectorPermissionsPanel(getState(), this);
-    }
+  @Override
+  public BuildSectorPermissionsPanel createPanel() {
+    return new BuildSectorPermissionsPanel(getState(), this);
+  }
 
-    @Override
-    public void callback(GUIElement callingElement, MouseEvent mouseEvent) {
-        if(!isOccluded() && mouseEvent.pressedLeftMouse()) {
-            switch((String) callingElement.getUserPointer()) {
-                case "X":
-                case "CANCEL":
-                    PacketUtil.sendPacketToServer(new RequestClientCacheUpdatePacket());
-                    deactivate();
-                    break;
-                case "OK":
-                    if(sectorData != null && targetName != null) PacketUtil.sendPacketToServer(new UpdateBuildSectorPermissionsPacket(sectorData, targetName));
-                    deactivate();
-                    break;
-            }
-        }
+  @Override
+  public void callback(GUIElement callingElement, MouseEvent mouseEvent) {
+    if (!isOccluded() && mouseEvent.pressedLeftMouse()) {
+      switch ((String) callingElement.getUserPointer()) {
+        case "X":
+        case "CANCEL":
+          PacketUtil.sendPacketToServer(new RequestClientCacheUpdatePacket());
+          deactivate();
+          break;
+        case "OK":
+          if (sectorData != null && targetName != null)
+            PacketUtil.sendPacketToServer(
+                new UpdateBuildSectorPermissionsPacket(sectorData, targetName));
+          deactivate();
+          break;
+      }
     }
+  }
 
-    @Override
-    public BuildSectorPermissionsPanel getInputPanel() {
-        return (BuildSectorPermissionsPanel) super.getInputPanel();
-    }
+  @Override
+  public BuildSectorPermissionsPanel getInputPanel() {
+    return (BuildSectorPermissionsPanel) super.getInputPanel();
+  }
 }

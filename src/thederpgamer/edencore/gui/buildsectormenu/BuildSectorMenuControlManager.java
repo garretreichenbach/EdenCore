@@ -13,13 +13,13 @@ import thederpgamer.edencore.network.client.RequestClientCacheUpdatePacket;
  */
 public class BuildSectorMenuControlManager extends GUIControlManager {
 
-    public BuildSectorMenuControlManager() {
-        super(GameClient.getClientState());
-        PacketUtil.sendPacketToServer(new RequestClientCacheUpdatePacket());
-    }
+  public BuildSectorMenuControlManager() {
+    super(GameClient.getClientState());
+    PacketUtil.sendPacketToServer(new RequestClientCacheUpdatePacket());
+  }
 
-    @Override
-    public BuildSectorMenuPanel createMenuPanel() {
-        return new BuildSectorMenuPanel(getState());
-    }
+  @Override
+  public BuildSectorMenuPanel createMenuPanel() {
+    return new BuildSectorMenuPanel(getState());
+  }
 }

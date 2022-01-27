@@ -8,5 +8,5 @@ package thederpgamer.edencore.data.event;
  */
 public class SortieData {
 
-    public EventData[] sections;
+  public EventData[] sections;
 }

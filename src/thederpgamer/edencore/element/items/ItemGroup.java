@@ -9,7 +9,9 @@ import org.schema.game.common.data.element.ElementCategory;
  * @version 1.0 - [09/17/2021]
  */
 public interface ItemGroup {
-    Item[] getItems();
-    ElementCategory getCategory();
-    String getMultiSlot();
+  Item[] getItems();
+
+  ElementCategory getCategory();
+
+  String getMultiSlot();
 }

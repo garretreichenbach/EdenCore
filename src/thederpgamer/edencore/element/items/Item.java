@@ -13,22 +13,22 @@ import thederpgamer.edencore.EdenCore;
  */
 public abstract class Item {
 
-    protected ElementInformation itemInfo;
+  protected ElementInformation itemInfo;
 
-    public Item(String name, ElementCategory category) {
-        itemInfo = BlockConfig.newElement(EdenCore.getInstance(), name, new short[6]);
-        itemInfo.setPlacable(false);
-        itemInfo.setPhysical(false);
-        BlockConfig.setElementCategory(itemInfo, category);
-    }
+  public Item(String name, ElementCategory category) {
+    itemInfo = BlockConfig.newElement(EdenCore.getInstance(), name, new short[6]);
+    itemInfo.setPlacable(false);
+    itemInfo.setPhysical(false);
+    BlockConfig.setElementCategory(itemInfo, category);
+  }
 
-    public final ElementInformation getItemInfo() {
-        return itemInfo;
-    }
+  public final ElementInformation getItemInfo() {
+    return itemInfo;
+  }
 
-    public final short getId() {
-        return itemInfo.getId();
-    }
+  public final short getId() {
+    return itemInfo.getId();
+  }
 
-    public abstract void initialize();
+  public abstract void initialize();
 }

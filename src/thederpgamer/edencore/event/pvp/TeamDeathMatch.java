@@ -11,19 +11,15 @@ import thederpgamer.edencore.event.ServerEvent;
  */
 public class TeamDeathMatch extends ServerEvent implements PvPEvent {
 
-    @Override
-    public boolean canStart() {
-        for(SquadData squad : squadData) if(!squad.ready()) return false;
-        return true;
-    }
+  @Override
+  public boolean canStart() {
+    for (SquadData squad : squadData) if (!squad.ready()) return false;
+    return true;
+  }
 
-    @Override
-    public void start() {
+  @Override
+  public void start() {}
 
-    }
-
-    @Override
-    public void update() {
-
-    }
+  @Override
+  public void update() {}
 }

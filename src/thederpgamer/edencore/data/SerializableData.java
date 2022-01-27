@@ -2,7 +2,6 @@ package thederpgamer.edencore.data;
 
 import api.network.PacketReadBuffer;
 import api.network.PacketWriteBuffer;
-
 import java.io.IOException;
 
 /**
@@ -13,6 +12,7 @@ import java.io.IOException;
  */
 public interface SerializableData {
 
-    void deserialize(PacketReadBuffer readBuffer) throws IOException;
-    void serialize(PacketWriteBuffer writeBuffer) throws IOException;
+  void deserialize(PacketReadBuffer readBuffer) throws IOException;
+
+  void serialize(PacketWriteBuffer writeBuffer) throws IOException;
 }

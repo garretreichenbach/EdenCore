@@ -1,9 +1,8 @@
 package thederpgamer.edencore.data.event;
 
 import api.network.PacketReadBuffer;
-import thederpgamer.edencore.data.SerializableData;
-
 import java.io.IOException;
+import thederpgamer.edencore.data.SerializableData;
 
 /**
  * <Description>
@@ -13,15 +12,15 @@ import java.io.IOException;
  */
 public abstract class EventTarget implements SerializableData {
 
-    protected Object target;
+  protected Object target;
 
-    public EventTarget(Object target) {
-        this.target = target;
-    }
+  public EventTarget(Object target) {
+    this.target = target;
+  }
 
-    public EventTarget(PacketReadBuffer readBuffer) throws IOException {
-        deserialize(readBuffer);
-    }
+  public EventTarget(PacketReadBuffer readBuffer) throws IOException {
+    deserialize(readBuffer);
+  }
 
-    public abstract int getProgress();
+  public abstract int getProgress();
 }

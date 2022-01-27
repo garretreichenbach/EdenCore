@@ -11,11 +11,7 @@ import thederpgamer.edencore.data.event.SquadData;
  */
 public class EventManager {
 
-    public static void generateEvent() {
+  public static void generateEvent() {}
 
-    }
-
-    public static void scaleEvent(EventData eventData, SquadData squadData) {
-
-    }
+  public static void scaleEvent(EventData eventData, SquadData squadData) {}
 }

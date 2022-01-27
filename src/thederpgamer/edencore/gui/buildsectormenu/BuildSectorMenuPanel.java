@@ -26,78 +26,103 @@ import thederpgamer.edencore.utils.DataUtils;
  */
 public class BuildSectorMenuPanel extends GUIMenuPanel {
 
-    public BuildSectorMenuPanel(InputState inputState) {
-        super(inputState, "BuildSectorMenu", (int) (GLFrame.getWidth() / 1.5), (int) (GLFrame.getHeight() / 1.5));
-    }
+  public BuildSectorMenuPanel(InputState inputState) {
+    super(
+        inputState,
+        "BuildSectorMenu",
+        (int) (GLFrame.getWidth() / 1.5),
+        (int) (GLFrame.getHeight() / 1.5));
+  }
 
-    @Override
-    public void recreateTabs() {
-        PacketUtil.sendPacketToServer(new RequestClientCacheUpdatePacket());
-        int lastTab = guiWindow.getSelectedTab();
-        if(guiWindow.getTabs().size() > 0) guiWindow.clearTabs();
+  @Override
+  public void recreateTabs() {
+    PacketUtil.sendPacketToServer(new RequestClientCacheUpdatePacket());
+    int lastTab = guiWindow.getSelectedTab();
+    if (guiWindow.getTabs().size() > 0) guiWindow.clearTabs();
 
-        GUIContentPane managementTab = guiWindow.addTab("MANAGEMENT");
-        managementTab.setTextBoxHeightLast((int) (GLFrame.getHeight() / 1.5));
-        createManagementTab(managementTab);
+    GUIContentPane managementTab = guiWindow.addTab("MANAGEMENT");
+    managementTab.setTextBoxHeightLast((int) (GLFrame.getHeight() / 1.5));
+    createManagementTab(managementTab);
 
-        GUIContentPane entitiesTab = guiWindow.addTab("ENTITIES");
-        entitiesTab.setTextBoxHeightLast((int) (GLFrame.getHeight() / 1.5));
-        createEntitiesTab(entitiesTab);
+    GUIContentPane entitiesTab = guiWindow.addTab("ENTITIES");
+    entitiesTab.setTextBoxHeightLast((int) (GLFrame.getHeight() / 1.5));
+    createEntitiesTab(entitiesTab);
 
-        GUIContentPane catalogTab = guiWindow.addTab("CATALOG");
-        catalogTab.setTextBoxHeightLast((int) (GLFrame.getHeight() / 1.5));
-        createCatalogTab(catalogTab);
-        guiWindow.setSelectedTab(lastTab);
-    }
+    GUIContentPane catalogTab = guiWindow.addTab("CATALOG");
+    catalogTab.setTextBoxHeightLast((int) (GLFrame.getHeight() / 1.5));
+    createCatalogTab(catalogTab);
+    guiWindow.setSelectedTab(lastTab);
+  }
 
-    private void createManagementTab(GUIContentPane contentPane) {
-        contentPane.addDivider(600);
-        (new BuildSectorScrollableList(getState(), contentPane.getContent(0, 0), this)).onInit();
-        (new BuildSectorUserScrollableList(getState(), contentPane.getContent(1, 0), this)).onInit();
-        contentPane.setTextBoxHeight(1, 0, (int) (contentPane.getHeight() - 139));
+  private void createManagementTab(GUIContentPane contentPane) {
+    contentPane.addDivider(600);
+    (new BuildSectorScrollableList(getState(), contentPane.getContent(0, 0), this)).onInit();
+    (new BuildSectorUserScrollableList(getState(), contentPane.getContent(1, 0), this)).onInit();
+    contentPane.setTextBoxHeight(1, 0, (int) (contentPane.getHeight() - 139));
 
-        contentPane.addNewTextBox(1, 28);
-        GUIHorizontalButtonTablePane buttonPane = new GUIHorizontalButtonTablePane(getState(), 1, 1, contentPane.getContent(1, 1));
-        buttonPane.onInit();
-        buttonPane.addButton(0, 0, "INVITE", GUIHorizontalArea.HButtonColor.BLUE, new GUICallback() {
-            @Override
-            public void callback(GUIElement guiElement, MouseEvent mouseEvent) {
-                if(mouseEvent.pressedLeftMouse()) {
-                    (new SimplePlayerTextInput("Enter Username", "") {
-                        @Override
-                        public boolean onInput(String s) {
-                            if(GameCommon.getPlayerFromName(s) != null && !DataUtils.getBuildSector(GameClient.getClientPlayerState().getName()).getAllowedPlayersByName().contains(s)) {
-                                PacketUtil.sendPacketToServer(new RequestBuildSectorInvitePacket(s));
-                                return true;
-                            } else return false;
-                        }
-                    }).activate();
-                }
+    contentPane.addNewTextBox(1, 28);
+    GUIHorizontalButtonTablePane buttonPane =
+        new GUIHorizontalButtonTablePane(getState(), 1, 1, contentPane.getContent(1, 1));
+    buttonPane.onInit();
+    buttonPane.addButton(
+        0,
+        0,
+        "INVITE",
+        GUIHorizontalArea.HButtonColor.BLUE,
+        new GUICallback() {
+          @Override
+          public void callback(GUIElement guiElement, MouseEvent mouseEvent) {
+            if (mouseEvent.pressedLeftMouse()) {
+              (new SimplePlayerTextInput("Enter Username", "") {
+                    @Override
+                    public boolean onInput(String s) {
+                      if (GameCommon.getPlayerFromName(s) != null
+                          && !DataUtils.getBuildSector(GameClient.getClientPlayerState().getName())
+                              .getAllowedPlayersByName()
+                              .contains(s)) {
+                        PacketUtil.sendPacketToServer(new RequestBuildSectorInvitePacket(s));
+                        return true;
+                      } else return false;
+                    }
+                  })
+                  .activate();
             }
+          }
 
-            @Override
-            public boolean isOccluded() {
-                return !getState().getController().getPlayerInputs().isEmpty();
-            }
-        }, new GUIActivationCallback() {
-            @Override
-            public boolean isVisible(InputState inputState) {
-                return true;
-            }
+          @Override
+          public boolean isOccluded() {
+            return !getState().getController().getPlayerInputs().isEmpty();
+          }
+        },
+        new GUIActivationCallback() {
+          @Override
+          public boolean isVisible(InputState inputState) {
+            return true;
+          }
 
-            @Override
-            public boolean isActive(InputState inputState) {
-                return getState().getController().getPlayerInputs().isEmpty();
-            }
+          @Override
+          public boolean isActive(InputState inputState) {
+            return getState().getController().getPlayerInputs().isEmpty();
+          }
         });
-        contentPane.getContent(1, 1).attach(buttonPane);
-    }
+    contentPane.getContent(1, 1).attach(buttonPane);
+  }
 
-    private void createEntitiesTab(GUIContentPane contentPane) {
-        (new BuildSectorEntitiesScrollableList(getState(), DataUtils.getBuildSector(GameClient.getClientPlayerState().getName()), contentPane.getContent(0), this)).onInit();
-    }
+  private void createEntitiesTab(GUIContentPane contentPane) {
+    (new BuildSectorEntitiesScrollableList(
+            getState(),
+            DataUtils.getBuildSector(GameClient.getClientPlayerState().getName()),
+            contentPane.getContent(0),
+            this))
+        .onInit();
+  }
 
-    private void createCatalogTab(GUIContentPane contentPane) {
-        (new BuildSectorCatalogScrollableList(getState(), DataUtils.getBuildSector(GameClient.getClientPlayerState().getName()), contentPane.getContent(0), this)).onInit();
-    }
+  private void createCatalogTab(GUIContentPane contentPane) {
+    (new BuildSectorCatalogScrollableList(
+            getState(),
+            DataUtils.getBuildSector(GameClient.getClientPlayerState().getName()),
+            contentPane.getContent(0),
+            this))
+        .onInit();
+  }
 }

@@ -2,9 +2,8 @@ package thederpgamer.edencore.data.event.target;
 
 import api.network.PacketReadBuffer;
 import api.network.PacketWriteBuffer;
-import thederpgamer.edencore.data.event.EventTarget;
-
 import java.io.IOException;
+import thederpgamer.edencore.data.event.EventTarget;
 
 /**
  * <Description>
@@ -14,26 +13,26 @@ import java.io.IOException;
  */
 public class DefenseTarget extends EventTarget {
 
-    public DefenseTarget(String targetEntityUID) {
-        super(targetEntityUID);
-    }
+  public DefenseTarget(String targetEntityUID) {
+    super(targetEntityUID);
+  }
 
-    public DefenseTarget(PacketReadBuffer readBuffer) throws IOException {
-        super(readBuffer);
-    }
+  public DefenseTarget(PacketReadBuffer readBuffer) throws IOException {
+    super(readBuffer);
+  }
 
-    @Override
-    public int getProgress() {
-        return 0; //Todo
-    }
+  @Override
+  public int getProgress() {
+    return 0; // Todo
+  }
 
-    @Override
-    public void deserialize(PacketReadBuffer readBuffer) throws IOException {
-        target = readBuffer.readString();
-    }
+  @Override
+  public void deserialize(PacketReadBuffer readBuffer) throws IOException {
+    target = readBuffer.readString();
+  }
 
-    @Override
-    public void serialize(PacketWriteBuffer writeBuffer) throws IOException {
-        writeBuffer.writeString((String) target);
-    }
+  @Override
+  public void serialize(PacketWriteBuffer writeBuffer) throws IOException {
+    writeBuffer.writeString((String) target);
+  }
 }

@@ -11,10 +11,12 @@ import thederpgamer.edencore.data.event.SquadData;
  */
 public abstract class ServerEvent {
 
-    protected EventData eventData;
-    protected SquadData[] squadData;
+  protected EventData eventData;
+  protected SquadData[] squadData;
 
-    public abstract boolean canStart();
-    public abstract void start();
-    public abstract void update();
+  public abstract boolean canStart();
+
+  public abstract void start();
+
+  public abstract void update();
 }
