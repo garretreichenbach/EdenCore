@@ -9,6 +9,7 @@ import org.schema.game.common.data.player.PlayerState;
 import org.schema.game.common.data.world.FTLConnection;
 import org.schema.game.server.data.GameServerState;
 import org.schema.schine.network.objects.Sendable;
+import thederpgamer.edencore.EdenCore;
 
 import javax.annotation.Nullable;
 import javax.vecmath.Vector4f;
@@ -29,17 +30,17 @@ public class NavigationAdminCommand implements CommandInterface {
 
     @Override
     public String[] getAliases() {
-        return new String[]{"nav"};
+        return new String[] {"navigation", "nav"};
     }
 
     @Override
     public String getDescription() {
         return "Adds, removes or lists coordinates to be displayed in each players saved coordinates.\n" +
-                "%COMMAND% add [<x> <y> <z>] <\"name\"> <icon index>: Adds a public navigation point to the list of saved coordinates of all players.\n"+
-                "%COMMAND% remove <x> <y> <z> : Removes a public navigation point to list of saved coordinates of all players.\n" +
-                "%COMMMAND% gate \"name of gate\": creates a gate with name, gatesymbol and orange lines for existing FTL connections. autosynch" +
-                "%COMMAND% synch: synchs server change to clients."+
-                "%COMMAND% list : Lists all public navigation points.\n";
+                "- /%COMMAND% add [<x> <y> <z>] <name> <icon_index> : Adds a public navigation point to the list of saved coordinates of all players.\n"+
+                "- /%COMMAND% remove <x> <y> <z> : Removes a public navigation point to list of saved coordinates of all players.\n" +
+                "- /%COMMAND% gate <name> : creates a gate with name, gate-symbol and orange lines for existing FTL connections.\n" +
+                "- /%COMMAND% sync : Syncs server changes to clients.\n"+
+                "- /%COMMAND% list : Lists all public navigation points.\n";
     }
 
     @Override
@@ -232,6 +233,6 @@ public class NavigationAdminCommand implements CommandInterface {
 
     @Override
     public StarMod getMod() {
-        return null;
+        return EdenCore.getInstance();
     }
 }
