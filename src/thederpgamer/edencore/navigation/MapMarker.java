@@ -40,7 +40,7 @@ public class MapMarker implements PositionableSubColorSprite, SelectableSprite, 
 
     transient private boolean selected;
     transient private boolean drawIndication;
-    private float scale = 0.4f;
+    private float scale = 0.3f;
     public float scaleFactor = 1;
 
     /**

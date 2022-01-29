@@ -46,11 +46,11 @@ public class BankingTransactionLog implements Serializable {
     /**
      * will attempt to send money from one player to another. will return false if something fails.
      * both need to be online (existing playerstates) and the sender has to have the money.
-     * @param from
-     * @param to
-     * @param credits
+     * @param from player A
+     * @param to player B
+     * @param credits amount of credits
      * @param mssg mssg for this transaction
-     * @return
+     * @return log object
      */
     public static BankingTransactionLog sendMoney(String from, String to, int credits, String mssg) {
         from = from.toLowerCase(Locale.ENGLISH);
@@ -78,7 +78,7 @@ public class BankingTransactionLog implements Serializable {
         DataUtils.getPlayerData(toP).addTransaction(transaction);
 
         //notify receiver
-        toP.sendServerMessage(Lng.astr("You have received money: \n"+transaction.toStringPretty()), ServerMessage.MESSAGE_TYPE_DIALOG);
+        popUpMssg("You have received money: \n"+transaction.toStringPretty(),toP);
 
         return transaction;
     }
@@ -88,15 +88,19 @@ public class BankingTransactionLog implements Serializable {
     }
 
     public String toStringPretty() {
-        //SimpleDateFormat sdf = new SimpleDateFormat("dd MMM,yyyy HH:mm z"); Cringe European format
-        SimpleDateFormat sdf = new SimpleDateFormat("MM/dd/yyyy '-' hh:mm:ss z"); //Chad American format
+
+        SimpleDateFormat sdf = new SimpleDateFormat("dd MMM,yyyy HH:mm z");
         Date resultdate = new Date(time);
 
         return "Banking transaction:" + "\n"+
                 "from: '" + from + '\'' + "\n"+
                 "to: '" + to + '\'' + "\n"+
                 "credits: " + credits + "\n"+
-                "time: " + sdf.format(resultdate) + "\n"+
+                "time: " +  sdf.format(resultdate) + "\n"+
                 "mssg: '" + mssg + '\'';
+    }
+
+    public static void popUpMssg(String mssg, PlayerState p) {
+        p.sendServerMessage(new ServerMessage(Lng.astr(mssg), ServerMessage.MESSAGE_TYPE_DIALOG, p.getId()));
     }
 }
