@@ -5,15 +5,12 @@ import api.common.GameServer;
 import api.utils.game.PlayerUtils;
 import com.bulletphysics.linearmath.Transform;
 import org.schema.game.common.controller.SegmentController;
-import org.schema.game.common.controller.Ship;
-import org.schema.game.common.controller.SpaceStation;
 import org.schema.game.common.data.SegmentPiece;
 import org.schema.game.common.data.player.PlayerControlledTransformableNotFound;
 import org.schema.game.common.data.player.PlayerState;
 import org.schema.game.common.data.player.catalog.CatalogPermission;
 import org.schema.game.common.data.player.faction.FactionManager;
 import org.schema.game.common.data.world.Sector;
-import org.schema.game.server.ai.SegmentControllerAIEntity;
 import org.schema.game.server.controller.BluePrintController;
 import org.schema.game.server.controller.EntityAlreadyExistsException;
 import org.schema.game.server.controller.EntityNotFountException;
@@ -25,13 +22,11 @@ import org.schema.game.server.data.blueprint.SegmentControllerSpawnCallbackDirec
 import org.schema.game.server.data.blueprintnw.BlueprintEntry;
 import org.schema.schine.graphicsengine.core.GlUtil;
 import org.schema.schine.graphicsengine.core.settings.StateParameterNotFoundException;
-import thederpgamer.edencore.commands.BuildSectorCommand;
 import thederpgamer.edencore.data.other.BuildSectorData;
 import thederpgamer.edencore.manager.LogManager;
 
 import javax.vecmath.Vector3f;
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.Map;
 
 /**
@@ -126,52 +121,9 @@ public class BuildSectorUtils {
         return null;
     }
 
-    public static SegmentControllerAIEntity<?> getAIEntity(SegmentController entity) {
-        try {
-            switch(entity.getType()) {
-                case SHIP: return ((Ship) entity).getAiConfiguration().getAiEntityState();
-                case SPACE_STATION: return ((SpaceStation) entity).getAiConfiguration().getAiEntityState();
-                default: throw new IllegalArgumentException("Entity must either be a Ship or Station!");
-            }
-        } catch(IllegalArgumentException exception) {
-            LogManager.logCritical("A critical exception occurred while trying to get an AIEntityState from an invalid or corrupted entity!", exception);
-        }
-        return null;
-    }
-
-    public static void toggleAI(SegmentController entity, final boolean toggle) {
-        final SegmentControllerAIEntity<?>[] aiEntity = {getAIEntity(entity)};
-        if(aiEntity[0] != null) {
-            if(!toggle && aiEntity[0].getCurrentProgram() != null) aiEntity[0].getCurrentProgram().suspend(true);
-            else if(aiEntity[0].getCurrentProgram() != null) aiEntity[0].getCurrentProgram().suspend(false);
-        }
-        final ArrayList<SegmentController> dockedList = new ArrayList<SegmentController>();
-        entity.railController.getDockedRecusive(dockedList);
-
-        final long time = System.currentTimeMillis();
-        new Thread(new Runnable() {
-            @Override
-            public void run() {
-                for(SegmentController docked : dockedList) {
-                    long current = System.currentTimeMillis();
-                    long diff = current - time;
-                    if(diff >= BuildSectorCommand.MAX_WAIT_TIME) { //Shitty method to make sure game thread doesn't stall
-                        LogManager.logWarning("Toggling ai on entity \"" + docked.getRealName() + "\" took more than " + BuildSectorCommand.MAX_WAIT_TIME + " (" + diff + "ms)", null);
-                        return;
-                    }
-
-                    try {
-                        aiEntity[0] = getAIEntity(docked);
-                        if(aiEntity[0] != null) {
-                            if(!toggle && aiEntity[0].getCurrentProgram() != null) aiEntity[0].getCurrentProgram().suspend(true);
-                            else if(aiEntity[0].getCurrentProgram() != null) aiEntity[0].getCurrentProgram().suspend(false);
-                        }
-                    } catch(Exception exception) {
-                        LogManager.logException("Encountered an exception while toggling ai for entity \"" + docked.getRealName() + "\".", exception);
-                    }
-                }
-            }
-        });
+    public static void toggleAI(SegmentController entity, boolean toggle) {
+        if(GameCommon.isDedicatedServer() || GameCommon.isOnSinglePlayer()) entity.railController.getRoot().railController.activateAllAIServer(toggle, true, true, true);
+        else entity.railController.getRoot().railController.activateAllAIClient(toggle, true, true);
     }
 
     public static void setPeace(BuildSectorData sectorData, boolean protect) {
