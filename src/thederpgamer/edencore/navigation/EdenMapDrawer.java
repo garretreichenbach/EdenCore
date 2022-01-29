@@ -72,7 +72,6 @@ public class EdenMapDrawer implements GameMapDrawListener {
     /**
      * will add the marker, requires updateLists() to become effective
      * @param marker
-     * @return true if added, false if already exists, no update required.
      */
     public void addMarker(MapMarker marker, boolean publicMarker) {
         HashMap<Long,MapMarker> map;
@@ -240,12 +239,15 @@ public class EdenMapDrawer implements GameMapDrawListener {
         StarLoader.registerListener(MousePressEvent.class, new Listener<MousePressEvent>() {
             @Override
             public void onEvent(MousePressEvent event) {
-                if (event.getRawEvent().pressedLeftMouse() && selected != null) {
+                if (GameClientState.instance != null && GameClientState.instance.getWorldDrawer().getGameMapDrawer().isMapActive() && event.getRawEvent().pressedLeftMouse() && selected != null) {
                     centerOn(selected.getSector());
                 }
-                if (event.getRawEvent().pressedRightMouse() && selected != null) {
-                    navigateTo(selected.getSector());
-                }
+                //TODO make sure mouse is actually over the marker.
+
+                //turned of auto-nav until event is more reliable. to much accidental navigation to somewhere i dont wanna go.
+              //  if (event.getRawEvent().pressedRightMouse() && selected != null) {
+              //      navigateTo(selected.getSector());
+              //  }
             }
         }, EdenCore.getInstance());
     }
