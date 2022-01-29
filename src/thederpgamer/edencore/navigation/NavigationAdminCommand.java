@@ -29,13 +29,13 @@ public class NavigationAdminCommand implements CommandInterface {
   @Override
   public String getDescription() {
     return "Adds, removes or lists coordinates to be displayed in each players saved coordinates.\n"
-               + "%COMMAND% add [<x> <y> <z>] <\"name\"> <icon index>: Adds a public navigation"
-               + " point to the list of saved coordinates of all players.\n"
-               + "%COMMAND% remove <x> <y> <z> : Removes a public navigation point to list of saved"
-               + " coordinates of all players.\n"
-               + "%COMMMAND% gate \"name of gate\": creates a gate with name, gatesymbol and orange"
-               + " lines for existing FTL connections. autosynch%COMMAND% synch: synchs server"
-               + " change to clients.%COMMAND% list : Lists all public navigation points.\n";
+        + "%COMMAND% add [<x> <y> <z>] <\"name\"> <icon index>: Adds a public navigation"
+        + " point to the list of saved coordinates of all players.\n"
+        + "%COMMAND% remove <x> <y> <z> : Removes a public navigation point to list of saved"
+        + " coordinates of all players.\n"
+        + "%COMMMAND% gate \"name of gate\": creates a gate with name, gatesymbol and orange"
+        + " lines for existing FTL connections. autosynch%COMMAND% synch: synchs server"
+        + " change to clients.%COMMAND% list : Lists all public navigation points.\n";
   }
 
   @Override
