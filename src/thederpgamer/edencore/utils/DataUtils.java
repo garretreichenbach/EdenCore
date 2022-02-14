@@ -306,7 +306,7 @@ public class DataUtils {
     }
 
     public static boolean isBuildSector(Vector3i sector) {
-        if(sector.x >= 100000000 || sector.y >= 100000000 || sector.z >= 100000000) return true;
+        //if(sector.x >= 100000000 || sector.y >= 100000000 || sector.z >= 100000000) return true; This screws up test sectors
         for(Object object : PersistentObjectUtil.getObjects(instance, BuildSectorData.class)) {
             BuildSectorData data = (BuildSectorData) object;
             if(data.sector.equals(sector)) return true;
@@ -317,7 +317,8 @@ public class DataUtils {
     public static boolean isPlayerInAnyBuildSector(PlayerState playerState) {
         if(playerState == null) return false;
         Vector3i sector = playerState.getCurrentSector();
-        return (sector.x >= 100000000 || sector.y >= 100000000 || sector.z >= 100000000 || getPlayerCurrentBuildSector(playerState) != null);
+        //return (sector.x >= 100000000 || sector.y >= 100000000 || sector.z >= 100000000 || getPlayerCurrentBuildSector(playerState) != null);
+        return getPlayerCurrentBuildSector(playerState) != null;
     }
 
     public static ArrayList<SegmentController> getEntitiesInBuildSector(BuildSectorData sectorData) {
