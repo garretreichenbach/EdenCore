@@ -11,6 +11,7 @@ import api.utils.game.SegmentControllerUtils;
 import it.unimi.dsi.fastutil.ints.IntOpenHashSet;
 import org.schema.common.util.linAlg.Vector3i;
 import org.schema.game.common.controller.SegmentController;
+import org.schema.game.common.data.element.ElementDocking;
 import org.schema.game.common.data.element.ElementInformation;
 import org.schema.game.common.data.element.ElementKeyMap;
 import org.schema.game.common.data.player.PlayerState;
@@ -232,7 +233,7 @@ public class DataUtils {
     public static void deleteEnemies(final BuildSectorData sectorData, long delay) {
         if(delay <= 0) {
             for(SegmentController entity : getEntitiesInBuildSector(sectorData)) {
-                if(entity.getFactionId() == FactionManager.PIRATES_ID) entity.destroy();
+                if(entity.getFactionId() == FactionManager.PIRATES_ID) destroyEntity(entity);
             }
         } else {
             new StarRunnable() {
@@ -240,7 +241,7 @@ public class DataUtils {
                 public void run() {
                     if(getPlayersInBuildSector(sectorData).isEmpty()) {
                         for(SegmentController entity : getEntitiesInBuildSector(sectorData)) {
-                            if(entity.getFactionId() == FactionManager.PIRATES_ID) entity.destroy();
+                            if(entity.getFactionId() == FactionManager.PIRATES_ID) destroyEntity(entity);
                         }
                     }
                 }
@@ -265,7 +266,13 @@ public class DataUtils {
 
     public static void destroyEntity(SegmentController entity) {
         for(PlayerState attached : SegmentControllerUtils.getAttachedPlayers(entity)) attached.getControllerState().forcePlayerOutOfSegmentControllers();
-        entity.setMarkedForDeletePermanentIncludingDocks(true);
+        entity.railController.destroyDockedRecursive();
+        for(ElementDocking dock : entity.getDockingController().getDockedOnThis()) {
+            dock.from.getSegment().getSegmentController().markForPermanentDelete(true);
+            dock.from.getSegment().getSegmentController().setMarkedForDeleteVolatile(true);
+        }
+        entity.markForPermanentDelete(true);
+        entity.setMarkedForDeleteVolatile(true);
     }
 
     public static PlayerData getPlayerData(PlayerState playerState) {
