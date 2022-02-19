@@ -4,6 +4,9 @@ import api.common.GameCommon;
 import api.mod.StarMod;
 import api.utils.game.PlayerUtils;
 import api.utils.game.chat.CommandInterface;
+import java.util.ArrayList;
+import java.util.Map;
+import javax.annotation.Nullable;
 import org.schema.common.util.linAlg.Vector3i;
 import org.schema.game.common.controller.SegmentController;
 import org.schema.game.common.data.player.PlayerState;
@@ -17,10 +20,6 @@ import thederpgamer.edencore.utils.BuildSectorUtils;
 import thederpgamer.edencore.utils.DataUtils;
 import thederpgamer.edencore.utils.EntityUtils;
 import thederpgamer.edencore.utils.ServerUtils;
-
-import javax.annotation.Nullable;
-import java.util.ArrayList;
-import java.util.Map;
 
 /**
  * <Description>
@@ -93,7 +92,8 @@ public class BuildSectorCommand implements CommandInterface {
                 if (PlayerUtils.getCurrentControl(sender) instanceof SegmentController)
                   PlayerUtils.sendMessage(sender, "You can't do this while in an entity.");
                 else
-                  DataUtils.movePlayerToBuildSector(sender, DataUtils.getBuildSector(sender.getName()));
+                  DataUtils.movePlayerToBuildSector(
+                      sender, DataUtils.getBuildSector(sender.getName()));
                 return true;
               } else if (args.length == 2) {
                 if (DataUtils.playerExists(args[1])) {
