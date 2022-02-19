@@ -24,12 +24,10 @@ import java.util.*;
  */
 public class BuildSectorCatalogScrollableList extends ScrollableTableList<CatalogPermission> {
 
-    private final BuildSectorMenuPanel panel;
-    private final BuildSectorData sectorData;
+    private BuildSectorData sectorData;
 
-    public BuildSectorCatalogScrollableList(InputState state, BuildSectorData sectorData, GUIElement p, BuildSectorMenuPanel panel) {
+    public BuildSectorCatalogScrollableList(InputState state, BuildSectorData sectorData, GUIElement p) {
         super(state, 800, 500, p);
-        this.panel = panel;
         this.sectorData = sectorData;
         p.attach(this);
     }
@@ -42,7 +40,7 @@ public class BuildSectorCatalogScrollableList extends ScrollableTableList<Catalo
             @Override
             public void callback(GUIElement guiElement, MouseEvent mouseEvent) {
                 if(mouseEvent.pressedLeftMouse()) {
-                    if(sectorData.hasPermission(GameClient.getClientPlayerState().getName(), "SPAWN")) {
+                    if(hasPermission("SPAWN")) {
                         getState().getController().queueUIAudio("0022_menu_ui - select 1");
                         PacketUtil.sendPacketToServer(new RequestSpawnEntryPacket(catalogPermission.getUid(), false, false));
                     } else getState().getController().queueUIAudio("0022_menu_ui - error 1");
@@ -51,7 +49,7 @@ public class BuildSectorCatalogScrollableList extends ScrollableTableList<Catalo
 
             @Override
             public boolean isOccluded() {
-                return !getState().getController().getPlayerInputs().isEmpty() || !sectorData.hasPermission(GameClient.getClientPlayerState().getName(), "SPAWN");
+                return !getState().getController().getPlayerInputs().isEmpty() || !hasPermission("SPAWN");
             }
         }, new GUIActivationCallback() {
             @Override
@@ -61,7 +59,7 @@ public class BuildSectorCatalogScrollableList extends ScrollableTableList<Catalo
 
             @Override
             public boolean isActive(InputState inputState) {
-                return getState().getController().getPlayerInputs().isEmpty() && sectorData.hasPermission(GameClient.getClientPlayerState().getName(), "SPAWN");
+                return getState().getController().getPlayerInputs().isEmpty() && hasPermission("SPAWN");
             }
         });
 
@@ -69,7 +67,7 @@ public class BuildSectorCatalogScrollableList extends ScrollableTableList<Catalo
             @Override
             public void callback(GUIElement guiElement, MouseEvent mouseEvent) {
                 if(mouseEvent.pressedLeftMouse()) {
-                    if(sectorData.hasPermission(GameClient.getClientPlayerState().getName(), "SPAWN")) {
+                    if(hasPermission("SPAWN")) {
                         getState().getController().queueUIAudio("0022_menu_ui - select 2");
                         PacketUtil.sendPacketToServer(new RequestSpawnEntryPacket(catalogPermission.getUid(), true, false));
                     } else getState().getController().queueUIAudio("0022_menu_ui - error 1");
@@ -78,7 +76,7 @@ public class BuildSectorCatalogScrollableList extends ScrollableTableList<Catalo
 
             @Override
             public boolean isOccluded() {
-                return !getState().getController().getPlayerInputs().isEmpty() || !sectorData.hasPermission(GameClient.getClientPlayerState().getName(), "SPAWN");
+                return !getState().getController().getPlayerInputs().isEmpty() || !hasPermission("SPAWN");
             }
         }, new GUIActivationCallback() {
             @Override
@@ -88,7 +86,8 @@ public class BuildSectorCatalogScrollableList extends ScrollableTableList<Catalo
 
             @Override
             public boolean isActive(InputState inputState) {
-                return getState().getController().getPlayerInputs().isEmpty() && sectorData.hasPermission(GameClient.getClientPlayerState().getName(), "SPAWN");
+                return getState().getController().getPlayerInputs().isEmpty() && hasPermission("SPAWN");
+
             }
         });
 
@@ -96,7 +95,7 @@ public class BuildSectorCatalogScrollableList extends ScrollableTableList<Catalo
             @Override
             public void callback(GUIElement guiElement, MouseEvent mouseEvent) {
                 if(mouseEvent.pressedLeftMouse()) {
-                    if(sectorData.hasPermission(GameClient.getClientPlayerState().getName(), "SPAWN_ENEMIES")) {
+                    if(hasPermission("SPAWN_ENEMIES")) {
                         getState().getController().queueUIAudio("0022_menu_ui - select 3");
                         PacketUtil.sendPacketToServer(new RequestSpawnEntryPacket(catalogPermission.getUid(), false, true));
                     } else getState().getController().queueUIAudio("0022_menu_ui - error 1");
@@ -105,7 +104,7 @@ public class BuildSectorCatalogScrollableList extends ScrollableTableList<Catalo
 
             @Override
             public boolean isOccluded() {
-                return !getState().getController().getPlayerInputs().isEmpty() || !sectorData.hasPermission(GameClient.getClientPlayerState().getName(), "SPAWN_ENEMIES");
+                return !getState().getController().getPlayerInputs().isEmpty() || !hasPermission("SPAWN_ENEMIES");
             }
         }, new GUIActivationCallback() {
             @Override
@@ -115,7 +114,7 @@ public class BuildSectorCatalogScrollableList extends ScrollableTableList<Catalo
 
             @Override
             public boolean isActive(InputState inputState) {
-                return getState().getController().getPlayerInputs().isEmpty() && sectorData.hasPermission(GameClient.getClientPlayerState().getName(), "SPAWN_ENEMIES");
+                return getState().getController().getPlayerInputs().isEmpty() && hasPermission("SPAWN_ENEMIES");
             }
         });
 
@@ -231,6 +230,12 @@ public class BuildSectorCatalogScrollableList extends ScrollableTableList<Catalo
             }
         }
         guiElementList.updateDim();
+    }
+
+    private boolean hasPermission(String permission) {
+        sectorData = DataUtils.getPlayerCurrentBuildSector(GameClient.getClientPlayerState());
+        if(sectorData == null) sectorData = DataUtils.getBuildSector(GameClient.getClientPlayerState().getName());
+        return sectorData.hasPermission(GameClient.getClientPlayerState().getName(), permission);
     }
 
     public class BuildSectorCatalogListRow extends ScrollableTableList<CatalogPermission>.Row {

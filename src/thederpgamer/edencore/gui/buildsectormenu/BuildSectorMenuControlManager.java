@@ -4,6 +4,7 @@ import api.common.GameClient;
 import api.network.packets.PacketUtil;
 import api.utils.gui.GUIControlManager;
 import thederpgamer.edencore.network.client.RequestClientCacheUpdatePacket;
+import thederpgamer.edencore.utils.DataUtils;
 
 /**
  * <Description>
@@ -15,6 +16,7 @@ public class BuildSectorMenuControlManager extends GUIControlManager {
 
     public BuildSectorMenuControlManager() {
         super(GameClient.getClientState());
+        DataUtils.getBuildSector(GameClient.getClientPlayerState().getName());
         PacketUtil.sendPacketToServer(new RequestClientCacheUpdatePacket());
     }
 

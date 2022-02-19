@@ -32,6 +32,7 @@ public class BuildSectorMenuPanel extends GUIMenuPanel {
 
     @Override
     public void recreateTabs() {
+        DataUtils.getBuildSector(GameClient.getClientPlayerState().getName());
         PacketUtil.sendPacketToServer(new RequestClientCacheUpdatePacket());
         int lastTab = guiWindow.getSelectedTab();
         if(guiWindow.getTabs().size() > 0) guiWindow.clearTabs();
@@ -98,6 +99,6 @@ public class BuildSectorMenuPanel extends GUIMenuPanel {
     }
 
     private void createCatalogTab(GUIContentPane contentPane) {
-        (new BuildSectorCatalogScrollableList(getState(), DataUtils.getBuildSector(GameClient.getClientPlayerState().getName()), contentPane.getContent(0), this)).onInit();
+        (new BuildSectorCatalogScrollableList(getState(), DataUtils.getBuildSector(GameClient.getClientPlayerState().getName()), contentPane.getContent(0))).onInit();
     }
 }
