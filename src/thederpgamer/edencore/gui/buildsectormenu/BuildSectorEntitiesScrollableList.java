@@ -2,14 +2,9 @@ package thederpgamer.edencore.gui.buildsectormenu;
 
 import api.common.GameClient;
 import api.network.packets.PacketUtil;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Comparator;
-import java.util.Set;
 import org.schema.common.util.StringTools;
 import org.schema.common.util.linAlg.Vector3i;
 import org.schema.game.common.controller.SegmentController;
-import org.schema.game.common.data.element.ElementDocking;
 import org.schema.game.common.data.world.SimpleTransformableSendableObject;
 import org.schema.schine.graphicsengine.core.MouseEvent;
 import org.schema.schine.graphicsengine.forms.gui.*;
@@ -19,9 +14,15 @@ import thederpgamer.edencore.data.other.BuildSectorData;
 import thederpgamer.edencore.manager.ClientCacheManager;
 import thederpgamer.edencore.manager.LogManager;
 import thederpgamer.edencore.network.client.RequestClientCacheUpdatePacket;
+import thederpgamer.edencore.network.client.RequestEntityDeletePacket;
 import thederpgamer.edencore.utils.BuildSectorUtils;
 import thederpgamer.edencore.utils.DataUtils;
 import thederpgamer.edencore.utils.EntityUtils;
+
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Comparator;
+import java.util.Set;
 
 /**
  * <Description>
@@ -113,8 +114,10 @@ public class BuildSectorEntitiesScrollableList extends ScrollableTableList<Segme
                       && segmentController.getSector(new Vector3i()).equals(sectorData.sector)) {
                     if (sectorData.hasPermission(
                         GameClient.getClientPlayerState().getName(), "DELETE")) {
-                      PacketUtil.sendPacketToServer(new RequestClientCacheUpdatePacket());
+                      //PacketUtil.sendPacketToServer(new RequestClientCacheUpdatePacket());
+                      PacketUtil.sendPacketToServer(new RequestEntityDeletePacket(segmentController));
                       getState().getController().queueUIAudio("0022_menu_ui - select 2");
+                      /*
                       segmentController.railController.destroyDockedRecursive();
                       for (ElementDocking dock :
                           segmentController.getDockingController().getDockedOnThis()) {
@@ -126,6 +129,7 @@ public class BuildSectorEntitiesScrollableList extends ScrollableTableList<Segme
                       }
                       segmentController.markForPermanentDelete(true);
                       segmentController.setMarkedForDeleteVolatile(true);
+                       */
                       flagDirty();
                       handleDirty();
                     } else getState().getController().queueUIAudio("0022_menu_ui - error 1");
