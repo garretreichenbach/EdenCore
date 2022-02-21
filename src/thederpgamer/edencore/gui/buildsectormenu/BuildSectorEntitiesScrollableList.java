@@ -2,6 +2,10 @@ package thederpgamer.edencore.gui.buildsectormenu;
 
 import api.common.GameClient;
 import api.network.packets.PacketUtil;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Comparator;
+import java.util.Set;
 import org.schema.common.util.StringTools;
 import org.schema.common.util.linAlg.Vector3i;
 import org.schema.game.common.controller.SegmentController;
@@ -18,11 +22,6 @@ import thederpgamer.edencore.network.client.RequestEntityDeletePacket;
 import thederpgamer.edencore.utils.BuildSectorUtils;
 import thederpgamer.edencore.utils.DataUtils;
 import thederpgamer.edencore.utils.EntityUtils;
-
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Comparator;
-import java.util.Set;
 
 /**
  * <Description>
@@ -114,8 +113,9 @@ public class BuildSectorEntitiesScrollableList extends ScrollableTableList<Segme
                       && segmentController.getSector(new Vector3i()).equals(sectorData.sector)) {
                     if (sectorData.hasPermission(
                         GameClient.getClientPlayerState().getName(), "DELETE")) {
-                      //PacketUtil.sendPacketToServer(new RequestClientCacheUpdatePacket());
-                      PacketUtil.sendPacketToServer(new RequestEntityDeletePacket(segmentController));
+                      // PacketUtil.sendPacketToServer(new RequestClientCacheUpdatePacket());
+                      PacketUtil.sendPacketToServer(
+                          new RequestEntityDeletePacket(segmentController));
                       getState().getController().queueUIAudio("0022_menu_ui - select 2");
                       /*
                       segmentController.railController.destroyDockedRecursive();

@@ -25,6 +25,11 @@ import api.utils.StarRunnable;
 import api.utils.game.PlayerUtils;
 import api.utils.game.inventory.InventoryUtils;
 import api.utils.gui.ModGUIHandler;
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.sql.Date;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipInputStream;
 import org.apache.commons.io.IOUtils;
 import org.schema.common.util.linAlg.Vector3i;
 import org.schema.game.client.view.gui.newgui.GUITopBar;
@@ -60,12 +65,6 @@ import thederpgamer.edencore.network.server.SendCacheUpdatePacket;
 import thederpgamer.edencore.utils.DataUtils;
 import thederpgamer.edencore.utils.DateUtils;
 
-import java.io.FileInputStream;
-import java.io.IOException;
-import java.sql.Date;
-import java.util.zip.ZipEntry;
-import java.util.zip.ZipInputStream;
-
 /**
  * Main class for EdenCore mod.
  *
@@ -74,143 +73,149 @@ import java.util.zip.ZipInputStream;
  */
 public class EdenCore extends StarMod {
 
-    // Instance
-    private static EdenCore getInstance;
-    // Overwrites
-    private final String[] overwriteClasses = new String[] {
-            "PlayerState",
-            "BlueprintEntry"
-    };
-    // Disabled Blocks
-    private final short[] disabledBlocks = new short[] {
-            347, // Shop Module
-            291, // Faction Module
-            667, // Shipyard Computer
-            683, // Race Gate Controller
-            542, // Warp Gate Computer
-            445, // Medical Supplies
-            446 // Medial Cabinet
-    };
-    // Disabled Tabs
-    private final String[] disabledTabs = new String[] {
-            "FLEETS",
-            "SHOP",
-            "REPAIRS",
-            "TRADE",
-            "SET PRICES"
-    };
-    // GUI
-    public ExchangeMenuControlManager exchangeMenuControlManager;
-    public BuildSectorMenuControlManager buildSectorMenuControlManager;
-    public EventsMenuControlManager eventsMenuControlManager;
+  // Instance
+  private static EdenCore getInstance;
+  // Overwrites
+  private final String[] overwriteClasses = new String[] {"PlayerState", "BlueprintEntry"};
+  // Disabled Blocks
+  private final short[] disabledBlocks =
+      new short[] {
+        347, // Shop Module
+        291, // Faction Module
+        667, // Shipyard Computer
+        683, // Race Gate Controller
+        542, // Warp Gate Computer
+        445, // Medical Supplies
+        446 // Medial Cabinet
+      };
+  // Disabled Tabs
+  private final String[] disabledTabs =
+      new String[] {"FLEETS", "SHOP", "REPAIRS", "TRADE", "SET PRICES"};
+  // GUI
+  public ExchangeMenuControlManager exchangeMenuControlManager;
+  public BuildSectorMenuControlManager buildSectorMenuControlManager;
+  public EventsMenuControlManager eventsMenuControlManager;
 
-    public EdenCore() {}
+  public EdenCore() {}
 
-    public static EdenCore getInstance() {
-        return getInstance;
+  public static EdenCore getInstance() {
+    return getInstance;
+  }
+
+  public static void main(String[] args) {}
+
+  @Override
+  public byte[] onClassTransform(String className, byte[] byteCode) {
+    for (String name : overwriteClasses) {
+      if (className.endsWith(name)) return overwriteClass(className, byteCode);
     }
+    return super.onClassTransform(className, byteCode);
+  }
 
-    public static void main(String[] args) {}
+  @Override
+  public void onEnable() {
+    super.onEnable();
+    getInstance = this;
 
-    @Override
-    public byte[] onClassTransform(String className, byte[] byteCode) {
-        for(String name : overwriteClasses) {
-            if(className.endsWith(name)) return overwriteClass(className, byteCode);
-        }
-        return super.onClassTransform(className, byteCode);
-    }
+    ConfigManager.initialize(this);
+    LogManager.initialize();
+    TransferManager.initialize();
 
-    @Override
-    public void onEnable() {
-        super.onEnable();
-        getInstance = this;
+    registerPackets();
+    registerListeners();
+    registerCommands();
 
-        ConfigManager.initialize(this);
-        LogManager.initialize();
-        TransferManager.initialize();
+    startRunners();
+  }
 
-        registerPackets();
-        registerListeners();
-        registerCommands();
+  @Override
+  public void onServerCreated(ServerInitializeEvent serverInitializeEvent) {
+    new NavigationUtilManager(); // util to have public saved coordinates
+    super.onServerCreated(serverInitializeEvent);
+  }
 
-        startRunners();
-    }
+  @Override
+  public void onClientCreated(ClientInitializeEvent clientInitializeEvent) {
+    super.onClientCreated(clientInitializeEvent);
+    new EdenMapDrawer();
+  }
 
-    @Override
-    public void onServerCreated(ServerInitializeEvent serverInitializeEvent) {
-        new NavigationUtilManager(); // util to have public saved coordinates
-        super.onServerCreated(serverInitializeEvent);
-    }
+  @Override
+  public void onBlockConfigLoad(BlockConfig blockConfig) {
+    // Items
+    ElementManager.addItemGroup(new PrizeBars());
 
-    @Override
-    public void onClientCreated(ClientInitializeEvent clientInitializeEvent) {
-        super.onClientCreated(clientInitializeEvent);
-        new EdenMapDrawer();
-    }
+    ElementManager.initialize();
+  }
 
-    @Override
-    public void onBlockConfigLoad(BlockConfig blockConfig) {
-        // Items
-        ElementManager.addItemGroup(new PrizeBars());
+  @Override
+  public void onResourceLoad(ResourceLoader resourceLoader) {
+    ResourceManager.loadResources(resourceLoader);
+    MapIcon.loadSprites();
+  }
 
-        ElementManager.initialize();
-    }
+  private void registerPackets() {
+    PacketUtil.registerPacket(RequestClientCacheUpdatePacket.class);
+    PacketUtil.registerPacket(RequestMetaObjectPacket.class);
+    PacketUtil.registerPacket(RequestMoveToBuildSectorPacket.class);
+    PacketUtil.registerPacket(RequestMoveFromBuildSectorPacket.class);
+    PacketUtil.registerPacket(RequestBuildSectorInvitePacket.class);
+    PacketUtil.registerPacket(RequestBuildSectorKickPacket.class);
+    PacketUtil.registerPacket(RequestBuildSectorBanPacket.class);
+    PacketUtil.registerPacket(RequestSpawnEntryPacket.class);
+    PacketUtil.registerPacket(RequestEntityDeletePacket.class);
+    PacketUtil.registerPacket(UpdateBuildSectorPermissionsPacket.class);
+    PacketUtil.registerPacket(ExchangeItemCreatePacket.class);
+    PacketUtil.registerPacket(ExchangeItemRemovePacket.class);
+    PacketUtil.registerPacket(SendCacheUpdatePacket.class);
+    PacketUtil.registerPacket(PlayerWarpIntoEntityPacket.class);
+    PacketUtil.registerPacket(NavigationMapPacket.class);
+  }
 
-    @Override
-    public void onResourceLoad(ResourceLoader resourceLoader) {
-        ResourceManager.loadResources(resourceLoader);
-        MapIcon.loadSprites();
-    }
+  private void registerListeners() {
+    StarLoader.registerListener(
+        KeyPressEvent.class,
+        new Listener<KeyPressEvent>() {
+          @Override
+          public void onEvent(KeyPressEvent event) {
+            char buildSectorKey = ConfigManager.getKeyBinding("build-sector-key");
+            if (buildSectorKey != '\0' && event.getChar() == buildSectorKey) {
+              if (buildSectorMenuControlManager == null) {
+                buildSectorMenuControlManager = new BuildSectorMenuControlManager();
+                ModGUIHandler.registerNewControlManager(
+                    getSkeleton(), buildSectorMenuControlManager);
+              }
 
-    private void registerPackets() {
-        PacketUtil.registerPacket(RequestClientCacheUpdatePacket.class);
-        PacketUtil.registerPacket(RequestMetaObjectPacket.class);
-        PacketUtil.registerPacket(RequestMoveToBuildSectorPacket.class);
-        PacketUtil.registerPacket(RequestMoveFromBuildSectorPacket.class);
-        PacketUtil.registerPacket(RequestBuildSectorInvitePacket.class);
-        PacketUtil.registerPacket(RequestBuildSectorKickPacket.class);
-        PacketUtil.registerPacket(RequestBuildSectorBanPacket.class);
-        PacketUtil.registerPacket(RequestSpawnEntryPacket.class);
-        PacketUtil.registerPacket(RequestEntityDeletePacket.class);
-        PacketUtil.registerPacket(UpdateBuildSectorPermissionsPacket.class);
-        PacketUtil.registerPacket(ExchangeItemCreatePacket.class);
-        PacketUtil.registerPacket(ExchangeItemRemovePacket.class);
-        PacketUtil.registerPacket(SendCacheUpdatePacket.class);
-        PacketUtil.registerPacket(PlayerWarpIntoEntityPacket.class);
-        PacketUtil.registerPacket(NavigationMapPacket.class);
-    }
+              if (!GameClient.getClientState().getController().isChatActive()
+                  && GameClient.getClientState().getController().getPlayerInputs().isEmpty()) {
+                GameClient.getClientState().getController().queueUIAudio("0022_menu_ui - enter");
+                GameClient.getClientState()
+                    .getGlobalGameControlManager()
+                    .getIngameControlManager()
+                    .getPlayerGameControlManager()
+                    .deactivateAll();
+                buildSectorMenuControlManager.setActive(true);
+              }
+            }
 
-    private void registerListeners() {
-        StarLoader.registerListener(KeyPressEvent.class, new Listener<KeyPressEvent>() {
-            @Override
-            public void onEvent(KeyPressEvent event) {
-                char buildSectorKey = ConfigManager.getKeyBinding("build-sector-key");
-                if(buildSectorKey != '\0' && event.getChar() == buildSectorKey) {
-                    if(buildSectorMenuControlManager == null) {
-                        buildSectorMenuControlManager = new BuildSectorMenuControlManager();
-                        ModGUIHandler.registerNewControlManager(getSkeleton(), buildSectorMenuControlManager);
-                    }
+            char exchangeKey = ConfigManager.getKeyBinding("exchange-menu-key");
+            if (exchangeKey != '\0' && event.getChar() == exchangeKey) {
+              if (exchangeMenuControlManager == null) {
+                exchangeMenuControlManager = new ExchangeMenuControlManager();
+                ModGUIHandler.registerNewControlManager(getSkeleton(), exchangeMenuControlManager);
+              }
 
-                    if(!GameClient.getClientState().getController().isChatActive() && GameClient.getClientState().getController().getPlayerInputs().isEmpty()) {
-                        GameClient.getClientState().getController().queueUIAudio("0022_menu_ui - enter");
-                        GameClient.getClientState().getGlobalGameControlManager().getIngameControlManager().getPlayerGameControlManager().deactivateAll();
-                        buildSectorMenuControlManager.setActive(true);
-                    }
-                }
-
-                char exchangeKey = ConfigManager.getKeyBinding("exchange-menu-key");
-                if(exchangeKey != '\0' && event.getChar() == exchangeKey) {
-                    if(exchangeMenuControlManager == null) {
-                        exchangeMenuControlManager = new ExchangeMenuControlManager();
-                        ModGUIHandler.registerNewControlManager(getSkeleton(), exchangeMenuControlManager);
-                    }
-
-                    if(!GameClient.getClientState().getController().isChatActive() && GameClient.getClientState().getController().getPlayerInputs().isEmpty()) {
-                        GameClient.getClientState().getController().queueUIAudio("0022_menu_ui - enter");
-                        GameClient.getClientState().getGlobalGameControlManager().getIngameControlManager().getPlayerGameControlManager().deactivateAll();
-                        exchangeMenuControlManager.setActive(true);
-                    }
-                }
+              if (!GameClient.getClientState().getController().isChatActive()
+                  && GameClient.getClientState().getController().getPlayerInputs().isEmpty()) {
+                GameClient.getClientState().getController().queueUIAudio("0022_menu_ui - enter");
+                GameClient.getClientState()
+                    .getGlobalGameControlManager()
+                    .getIngameControlManager()
+                    .getPlayerGameControlManager()
+                    .deactivateAll();
+                exchangeMenuControlManager.setActive(true);
+              }
+            }
 
             /* Todo: Finish events menu
             char eventsKey = ConfigManager.getKeyBinding("events-menu-key");
@@ -227,21 +232,24 @@ public class EdenCore extends StarMod {
                 }
             }
              */
+          }
+        },
+        this);
+
+    StarLoader.registerListener(
+        GUITopBarCreateEvent.class,
+        new Listener<GUITopBarCreateEvent>() {
+          @Override
+          public void onEvent(final GUITopBarCreateEvent event) {
+            if (buildSectorMenuControlManager == null) {
+              buildSectorMenuControlManager = new BuildSectorMenuControlManager();
+              ModGUIHandler.registerNewControlManager(getSkeleton(), buildSectorMenuControlManager);
             }
-        }, this);
 
-        StarLoader.registerListener(GUITopBarCreateEvent.class, new Listener<GUITopBarCreateEvent>() {
-            @Override
-            public void onEvent(final GUITopBarCreateEvent event) {
-                if(buildSectorMenuControlManager == null) {
-                    buildSectorMenuControlManager = new BuildSectorMenuControlManager();
-                    ModGUIHandler.registerNewControlManager(getSkeleton(), buildSectorMenuControlManager);
-                }
-
-                if(exchangeMenuControlManager == null) {
-                    exchangeMenuControlManager = new ExchangeMenuControlManager();
-                    ModGUIHandler.registerNewControlManager(getSkeleton(), exchangeMenuControlManager);
-                }
+            if (exchangeMenuControlManager == null) {
+              exchangeMenuControlManager = new ExchangeMenuControlManager();
+              ModGUIHandler.registerNewControlManager(getSkeleton(), exchangeMenuControlManager);
+            }
 
             /* Todo: Finish events menu
             if(eventsMenuControlManager == null) {
@@ -250,68 +258,87 @@ public class EdenCore extends StarMod {
             }
              */
 
-                GUITopBar.ExpandedButton dropDownButton = event.getDropdownButtons().get(event.getDropdownButtons().size() - 1);
+            GUITopBar.ExpandedButton dropDownButton =
+                event.getDropdownButtons().get(event.getDropdownButtons().size() - 1);
 
-                dropDownButton.addExpandedButton("BUILD SECTOR", new GUICallback() {
-                    @Override
-                    public void callback(GUIElement guiElement, MouseEvent mouseEvent) {
-                        if(mouseEvent.pressedLeftMouse()) {
-                            GameClient.getClientState().getController().queueUIAudio("0022_menu_ui - enter");
-                            GameClient.getClientState().getGlobalGameControlManager().getIngameControlManager().getPlayerGameControlManager().deactivateAll();
-                            buildSectorMenuControlManager.setActive(true);
-                        }
+            dropDownButton.addExpandedButton(
+                "BUILD SECTOR",
+                new GUICallback() {
+                  @Override
+                  public void callback(GUIElement guiElement, MouseEvent mouseEvent) {
+                    if (mouseEvent.pressedLeftMouse()) {
+                      GameClient.getClientState()
+                          .getController()
+                          .queueUIAudio("0022_menu_ui - enter");
+                      GameClient.getClientState()
+                          .getGlobalGameControlManager()
+                          .getIngameControlManager()
+                          .getPlayerGameControlManager()
+                          .deactivateAll();
+                      buildSectorMenuControlManager.setActive(true);
                     }
+                  }
 
-                    @Override
-                    public boolean isOccluded() {
-                        return false;
-                    }
-                }, new GUIActivationHighlightCallback() {
-                    @Override
-                    public boolean isHighlighted(InputState inputState) {
-                        return false;
-                    }
+                  @Override
+                  public boolean isOccluded() {
+                    return false;
+                  }
+                },
+                new GUIActivationHighlightCallback() {
+                  @Override
+                  public boolean isHighlighted(InputState inputState) {
+                    return false;
+                  }
 
-                    @Override
-                    public boolean isVisible(InputState inputState) {
-                        return true;
-                    }
+                  @Override
+                  public boolean isVisible(InputState inputState) {
+                    return true;
+                  }
 
-                    @Override
-                    public boolean isActive(InputState inputState) {
-                        return true;
-                    }
+                  @Override
+                  public boolean isActive(InputState inputState) {
+                    return true;
+                  }
                 });
 
-                dropDownButton.addExpandedButton("EXCHANGE", new GUICallback() {
-                    @Override
-                    public void callback(GUIElement guiElement, MouseEvent mouseEvent) {
-                        if(mouseEvent.pressedLeftMouse()) {
-                            GameClient.getClientState().getController().queueUIAudio("0022_menu_ui - enter");
-                            GameClient.getClientState().getGlobalGameControlManager().getIngameControlManager().getPlayerGameControlManager().deactivateAll();
-                            exchangeMenuControlManager.setActive(true);
-                        }
+            dropDownButton.addExpandedButton(
+                "EXCHANGE",
+                new GUICallback() {
+                  @Override
+                  public void callback(GUIElement guiElement, MouseEvent mouseEvent) {
+                    if (mouseEvent.pressedLeftMouse()) {
+                      GameClient.getClientState()
+                          .getController()
+                          .queueUIAudio("0022_menu_ui - enter");
+                      GameClient.getClientState()
+                          .getGlobalGameControlManager()
+                          .getIngameControlManager()
+                          .getPlayerGameControlManager()
+                          .deactivateAll();
+                      exchangeMenuControlManager.setActive(true);
                     }
+                  }
 
-                    @Override
-                    public boolean isOccluded() {
-                        return false;
-                    }
-                }, new GUIActivationHighlightCallback() {
-                    @Override
-                    public boolean isHighlighted(InputState inputState) {
-                        return false;
-                    }
+                  @Override
+                  public boolean isOccluded() {
+                    return false;
+                  }
+                },
+                new GUIActivationHighlightCallback() {
+                  @Override
+                  public boolean isHighlighted(InputState inputState) {
+                    return false;
+                  }
 
-                    @Override
-                    public boolean isVisible(InputState inputState) {
-                        return true;
-                    }
+                  @Override
+                  public boolean isVisible(InputState inputState) {
+                    return true;
+                  }
 
-                    @Override
-                    public boolean isActive(InputState inputState) {
-                        return true;
-                    }
+                  @Override
+                  public boolean isActive(InputState inputState) {
+                    return true;
+                  }
                 });
 
             /* Todo: Finish events menu
@@ -346,299 +373,399 @@ public class EdenCore extends StarMod {
                 }
             });
              */
-            }
-        }, this);
+          }
+        },
+        this);
 
-        StarLoader.registerListener(MainWindowTabAddEvent.class, new Listener<MainWindowTabAddEvent>() {
-            @Override
-            public void onEvent(MainWindowTabAddEvent event) {
-                if(DataUtils.isPlayerInAnyBuildSector(GameClient.getClientPlayerState())) {
-                    for(String s : disabledTabs) {
-                        if(event.getTitleAsString().equals(Lng.str(s))) {
-                            event.setCanceled(true);
-                            event.getWindow().cleanUp();
-                        }
-                    }
+    StarLoader.registerListener(
+        MainWindowTabAddEvent.class,
+        new Listener<MainWindowTabAddEvent>() {
+          @Override
+          public void onEvent(MainWindowTabAddEvent event) {
+            if (DataUtils.isPlayerInAnyBuildSector(GameClient.getClientPlayerState())) {
+              for (String s : disabledTabs) {
+                if (event.getTitleAsString().equals(Lng.str(s))) {
+                  event.setCanceled(true);
+                  event.getWindow().cleanUp();
                 }
+              }
             }
-        }, this);
+          }
+        },
+        this);
 
-        StarLoader.registerListener(RegisterWorldDrawersEvent.class, new Listener<RegisterWorldDrawersEvent>() {
-            @Override
-            public void onEvent(RegisterWorldDrawersEvent event) {
-                event.getModDrawables().add(new BuildSectorHudDrawer());
-            }
-        }, this);
+    StarLoader.registerListener(
+        RegisterWorldDrawersEvent.class,
+        new Listener<RegisterWorldDrawersEvent>() {
+          @Override
+          public void onEvent(RegisterWorldDrawersEvent event) {
+            event.getModDrawables().add(new BuildSectorHudDrawer());
+          }
+        },
+        this);
 
-        StarLoader.registerListener(SegmentControllerInstantiateEvent.class, new Listener<SegmentControllerInstantiateEvent>() {
-            @Override
-            public void onEvent(final SegmentControllerInstantiateEvent event) {
-                new StarRunnable() {
-                    @Override
-                    public void run() {
-                        try {
-                            /*
-                            if(event.getController().getSector(new Vector3i()).x > 100000000 || event.getController().getSector(new Vector3i()).y > 100000000 || event.getController().getSector(new Vector3i()).z > 100000000) {
-                                updateClientCacheData();
-                            }
-                             */
-                            if(DataUtils.isBuildSector(event.getController().getSector(new Vector3i()))) updateClientCacheData();
-                        } catch(Exception exception) {
-                            LogManager.logException("Encountered an exception while trying to check if a new SegmentController \"" + event.getController().getName() +  "\" was in a build sector", exception);
-                        }
-                    }
-                }.runLater(getInstance(), 3);
-            }
-        }, this);
-
-        StarLoader.registerListener(SegmentPieceAddEvent.class, new Listener<SegmentPieceAddEvent>() {
-            @Override
-            public void onEvent(SegmentPieceAddEvent event) {
-                try {
-                    if(DataUtils.isPlayerInAnyBuildSector(GameClient.getClientPlayerState())) {
-                        BuildSectorData sectorData = DataUtils.getPlayerCurrentBuildSector(GameClient.getClientPlayerState());
-                        if(!sectorData.hasPermission(GameClient.getClientPlayerState().getName(), "EDIT")) {
-                            GameClient.getClientState().message(new String[] {"You don't have permission to do this!"}, ServerMessage.MESSAGE_TYPE_WARNING);
-                            event.setCanceled(true);
-                        }
-                    }
-                } catch(Exception ignored) {
-                }
-            }
-        }, this);
-
-        StarLoader.registerListener(SegmentPieceRemoveEvent.class, new Listener<SegmentPieceRemoveEvent>() {
-            @Override
-            public void onEvent(SegmentPieceRemoveEvent event) {
-                try {
-                    if(DataUtils.isPlayerInAnyBuildSector(GameClient.getClientPlayerState())) {
-                        BuildSectorData sectorData = DataUtils.getPlayerCurrentBuildSector(GameClient.getClientPlayerState());
-                        if(!sectorData.hasPermission(GameClient.getClientPlayerState().getName(), "EDIT")) {
-                            GameClient.getClientState().message(new String[] {"You don't have permission to do this!"}, ServerMessage.MESSAGE_TYPE_WARNING);
-                            event.setCanceled(true);
-                        }
-                    }
-                } catch(Exception ignored) {
-                }
-            }
-        }, this);
-
-        StarLoader.registerListener(SegmentPieceActivateByPlayer.class, new Listener<SegmentPieceActivateByPlayer>() {
-            @Override
-            public void onEvent(SegmentPieceActivateByPlayer event) {
-                try {
-                    if(DataUtils.isPlayerInAnyBuildSector(GameClient.getClientPlayerState())) {
-                        BuildSectorData sectorData = DataUtils.getPlayerCurrentBuildSector(GameClient.getClientPlayerState());
-                        if(!sectorData.hasPermission(GameClient.getClientPlayerState().getName(), "EDIT")) {
-                            GameClient.getClientState().message(new String[] {"You don't have permission to do this!"}, ServerMessage.MESSAGE_TYPE_WARNING);
-                            event.setCanceled(true);
-                        }
-                        for(short id : disabledBlocks) {
-                            if(event.getSegmentPiece().getType() == id && !GameClient.getClientPlayerState().isAdmin())
-                                event.setCanceled(true);
-                        }
-                    }
-                } catch(Exception ignored) {
-                }
-            }
-        }, this);
-
-        StarLoader.registerListener(SegmentPieceModifyOnClientEvent.class, new Listener<SegmentPieceModifyOnClientEvent>() {
-            @Override
-            public void onEvent(SegmentPieceModifyOnClientEvent event) {
-                try {
-                    if(DataUtils.isPlayerInAnyBuildSector(GameClient.getClientPlayerState())) {
-                        BuildSectorData sectorData = DataUtils.getPlayerCurrentBuildSector(GameClient.getClientPlayerState());
-                        if(!sectorData.hasPermission(GameClient.getClientPlayerState().getName(), "EDIT")) {
-                            GameClient.getClientState().message(new String[] {"You don't have permission to do this!"}, ServerMessage.MESSAGE_TYPE_WARNING);
-                            event.setCanceled(true);
-                        }
-                    }
-                } catch(Exception ignored) {
-                }
-            }
-        }, this);
-
-        StarLoader.registerListener(ClientSelectSegmentPieceEvent.class, new Listener<ClientSelectSegmentPieceEvent>() {
-            @Override
-            public void onEvent(ClientSelectSegmentPieceEvent event) {
-                try {
-                    if(DataUtils.isPlayerInAnyBuildSector(GameClient.getClientPlayerState())) {
-                        BuildSectorData sectorData = DataUtils.getPlayerCurrentBuildSector(GameClient.getClientPlayerState());
-                        if(!sectorData.hasPermission(GameClient.getClientPlayerState().getName(), "EDIT")) {
-                            GameClient.getClientState().message(new String[] {"You don't have permission to do this!"}, ServerMessage.MESSAGE_TYPE_WARNING);
-                            event.setCanceled(true);
-                        }
-                    }
-                } catch(Exception ignored) {
-                }
-            }
-        }, this);
-
-        StarLoader.registerListener(ClientSegmentPieceConnectionChangeEvent.class, new Listener<ClientSegmentPieceConnectionChangeEvent>() {
-            @Override
-            public void onEvent(ClientSegmentPieceConnectionChangeEvent event) {
-                try {
-                    if(DataUtils.isPlayerInAnyBuildSector(GameClient.getClientPlayerState())) {
-                        BuildSectorData sectorData = DataUtils.getPlayerCurrentBuildSector(GameClient.getClientPlayerState());
-                        if(!sectorData.hasPermission(GameClient.getClientPlayerState().getName(), "EDIT")) {
-                            GameClient.getClientState().message(new String[] {"You don't have permission to do this!"}, ServerMessage.MESSAGE_TYPE_WARNING);
-                            event.setCanceled(true);
-                        }
-                    }
-                } catch(Exception ignored) {
-                }
-            }
-        }, this);
-
-        StarLoader.registerListener(PlayerPickupFreeItemEvent.class, new Listener<PlayerPickupFreeItemEvent>() {
-            @Override
-            public void onEvent(PlayerPickupFreeItemEvent event) {
-                try {
-                    if(DataUtils.isPlayerInAnyBuildSector(GameClient.getClientPlayerState())) {
-                        BuildSectorData sectorData = DataUtils.getPlayerCurrentBuildSector(GameClient.getClientPlayerState());
-                        if(!sectorData.hasPermission(GameClient.getClientPlayerState().getName(), "PICKUP")) {
-                            GameClient.getClientState().message(new String[] {"You don't have permission to do this!"}, ServerMessage.MESSAGE_TYPE_WARNING);
-                            event.setCanceled(true);
-                        }
-                    }
-                } catch(Exception ignored) {
-                }
-            }
-        }, this);
-
-        StarLoader.registerListener(PlayerDeathEvent.class, new Listener<PlayerDeathEvent>() {
-            @Override
-            public void onEvent(PlayerDeathEvent event) {
-                if(DataUtils.isPlayerInAnyBuildSector(event.getPlayer())) queueSpawnSwitch(event.getPlayer());
-            }
-        }, this);
-
-        StarLoader.registerListener(PlayerSpawnEvent.class, new Listener<PlayerSpawnEvent>() {
-            @Override
-            public void onEvent(final PlayerSpawnEvent event) {
-                new StarRunnable() {
-                    @Override
-                    public void run() {
-                        try {
-                            if(!event.isServer() && !DataUtils.isPlayerInAnyBuildSector(event.getPlayer().getOwnerState()))
-                                PacketUtil.sendPacketToServer(new RequestClientCacheUpdatePacket());
-                        } catch(Exception exception) {
-                            exception.printStackTrace();
-                        }
-                    }
-                }.runLater(EdenCore.getInstance(), 5);
-                // if(DataUtils.isPlayerInAnyBuildSector(event.getPlayer().getOwnerState()))
-                // queueSpawnSwitch(event.getPlayer().getOwnerState());
-            }
-        }, this);
-
-        StarLoader.registerListener(PlayerJoinWorldEvent.class, new Listener<PlayerJoinWorldEvent>() {
-            @Override
-            public void onEvent(final PlayerJoinWorldEvent event) {
-                if(GameCommon.isDedicatedServer() || GameCommon.isOnSinglePlayer()) {
-                    new StarRunnable() {
-                        @Override
-                        public void run() {
-                            try {
-                                PacketUtil.sendPacket(GameServer.getServerState().getPlayerFromName(event.getPlayerName()), new SendCacheUpdatePacket(GameServer.getServerState().getPlayerFromName(event.getPlayerName())));
-                            } catch(PlayerNotFountException exception) {
-                                exception.printStackTrace();
-                            }
-                        }
-                    }.runLater(EdenCore.this, 15);
-
-                    new StarRunnable() {
-                        @Override
-                        public void run() {
-                            PlayerState playerState = GameCommon.getPlayerFromName(event.getPlayerName());
-                            if(playerState != null && playerState.isOnServer()) {
-                                PlayerData playerData = DataUtils.getPlayerData(playerState);
-                                Date date = new Date(playerData.lastDailyPrizeClaim);
-                                if(DateUtils.getAgeDays(date) >= 1.0f) {
-                                    InventoryUtils.addItem(playerState.getPersonalInventory(), ElementManager.getItem("Bronze Bar").getId(), 2);
-                                    playerData.lastDailyPrizeClaim = System.currentTimeMillis();
-                                    PersistentObjectUtil.save(EdenCore.this.getSkeleton());
-                                    PlayerUtils.sendMessage(playerState, "You have been given 2 Bronze Bars for logging in. Thanks for playing!");
-                                }
-                            }
-                        }
-                    }.runLater(EdenCore.this, 10000);
-                }
-            }
-        }, this);
-    }
-
-    private void registerCommands() {
-        StarLoader.registerCommand(new SaveEntityCommand());
-        StarLoader.registerCommand(new LoadEntityCommand());
-        StarLoader.registerCommand(new ListEntityCommand());
-        StarLoader.registerCommand(new BuildSectorCommand());
-        StarLoader.registerCommand(new AwardBarsCommand());
-        StarLoader.registerCommand(new BankingSendMoneyCommand());
-        StarLoader.registerCommand(new BankingListCommand());
-        StarLoader.registerCommand(new BankingAdminListCommand());
-        StarLoader.registerCommand(new CountdownCommand());
-        // StarLoader.registerCommand(new ResetPlayerCommand());
-    }
-
-    private void startRunners() {
-        if(GameCommon.isOnSinglePlayer() || GameCommon.isDedicatedServer()) {
+    StarLoader.registerListener(
+        SegmentControllerInstantiateEvent.class,
+        new Listener<SegmentControllerInstantiateEvent>() {
+          @Override
+          public void onEvent(final SegmentControllerInstantiateEvent event) {
             new StarRunnable() {
+              @Override
+              public void run() {
+                try {
+                  /*
+                  if(event.getController().getSector(new Vector3i()).x > 100000000 || event.getController().getSector(new Vector3i()).y > 100000000 || event.getController().getSector(new Vector3i()).z > 100000000) {
+                      updateClientCacheData();
+                  }
+                   */
+                  if (DataUtils.isBuildSector(event.getController().getSector(new Vector3i())))
+                    updateClientCacheData();
+                } catch (Exception exception) {
+                  LogManager.logException(
+                      "Encountered an exception while trying to check if a new SegmentController \""
+                          + event.getController().getName()
+                          + "\" was in a build sector",
+                      exception);
+                }
+              }
+            }.runLater(getInstance(), 3);
+          }
+        },
+        this);
+
+    StarLoader.registerListener(
+        SegmentPieceAddEvent.class,
+        new Listener<SegmentPieceAddEvent>() {
+          @Override
+          public void onEvent(SegmentPieceAddEvent event) {
+            try {
+              if (DataUtils.isPlayerInAnyBuildSector(GameClient.getClientPlayerState())) {
+                BuildSectorData sectorData =
+                    DataUtils.getPlayerCurrentBuildSector(GameClient.getClientPlayerState());
+                if (!sectorData.hasPermission(
+                    GameClient.getClientPlayerState().getName(), "EDIT")) {
+                  GameClient.getClientState()
+                      .message(
+                          new String[] {"You don't have permission to do this!"},
+                          ServerMessage.MESSAGE_TYPE_WARNING);
+                  event.setCanceled(true);
+                }
+              }
+            } catch (Exception ignored) {
+            }
+          }
+        },
+        this);
+
+    StarLoader.registerListener(
+        SegmentPieceRemoveEvent.class,
+        new Listener<SegmentPieceRemoveEvent>() {
+          @Override
+          public void onEvent(SegmentPieceRemoveEvent event) {
+            try {
+              if (DataUtils.isPlayerInAnyBuildSector(GameClient.getClientPlayerState())) {
+                BuildSectorData sectorData =
+                    DataUtils.getPlayerCurrentBuildSector(GameClient.getClientPlayerState());
+                if (!sectorData.hasPermission(
+                    GameClient.getClientPlayerState().getName(), "EDIT")) {
+                  GameClient.getClientState()
+                      .message(
+                          new String[] {"You don't have permission to do this!"},
+                          ServerMessage.MESSAGE_TYPE_WARNING);
+                  event.setCanceled(true);
+                }
+              }
+            } catch (Exception ignored) {
+            }
+          }
+        },
+        this);
+
+    StarLoader.registerListener(
+        SegmentPieceActivateByPlayer.class,
+        new Listener<SegmentPieceActivateByPlayer>() {
+          @Override
+          public void onEvent(SegmentPieceActivateByPlayer event) {
+            try {
+              if (DataUtils.isPlayerInAnyBuildSector(GameClient.getClientPlayerState())) {
+                BuildSectorData sectorData =
+                    DataUtils.getPlayerCurrentBuildSector(GameClient.getClientPlayerState());
+                if (!sectorData.hasPermission(
+                    GameClient.getClientPlayerState().getName(), "EDIT")) {
+                  GameClient.getClientState()
+                      .message(
+                          new String[] {"You don't have permission to do this!"},
+                          ServerMessage.MESSAGE_TYPE_WARNING);
+                  event.setCanceled(true);
+                }
+                for (short id : disabledBlocks) {
+                  if (event.getSegmentPiece().getType() == id
+                      && !GameClient.getClientPlayerState().isAdmin()) event.setCanceled(true);
+                }
+              }
+            } catch (Exception ignored) {
+            }
+          }
+        },
+        this);
+
+    StarLoader.registerListener(
+        SegmentPieceModifyOnClientEvent.class,
+        new Listener<SegmentPieceModifyOnClientEvent>() {
+          @Override
+          public void onEvent(SegmentPieceModifyOnClientEvent event) {
+            try {
+              if (DataUtils.isPlayerInAnyBuildSector(GameClient.getClientPlayerState())) {
+                BuildSectorData sectorData =
+                    DataUtils.getPlayerCurrentBuildSector(GameClient.getClientPlayerState());
+                if (!sectorData.hasPermission(
+                    GameClient.getClientPlayerState().getName(), "EDIT")) {
+                  GameClient.getClientState()
+                      .message(
+                          new String[] {"You don't have permission to do this!"},
+                          ServerMessage.MESSAGE_TYPE_WARNING);
+                  event.setCanceled(true);
+                }
+              }
+            } catch (Exception ignored) {
+            }
+          }
+        },
+        this);
+
+    StarLoader.registerListener(
+        ClientSelectSegmentPieceEvent.class,
+        new Listener<ClientSelectSegmentPieceEvent>() {
+          @Override
+          public void onEvent(ClientSelectSegmentPieceEvent event) {
+            try {
+              if (DataUtils.isPlayerInAnyBuildSector(GameClient.getClientPlayerState())) {
+                BuildSectorData sectorData =
+                    DataUtils.getPlayerCurrentBuildSector(GameClient.getClientPlayerState());
+                if (!sectorData.hasPermission(
+                    GameClient.getClientPlayerState().getName(), "EDIT")) {
+                  GameClient.getClientState()
+                      .message(
+                          new String[] {"You don't have permission to do this!"},
+                          ServerMessage.MESSAGE_TYPE_WARNING);
+                  event.setCanceled(true);
+                }
+              }
+            } catch (Exception ignored) {
+            }
+          }
+        },
+        this);
+
+    StarLoader.registerListener(
+        ClientSegmentPieceConnectionChangeEvent.class,
+        new Listener<ClientSegmentPieceConnectionChangeEvent>() {
+          @Override
+          public void onEvent(ClientSegmentPieceConnectionChangeEvent event) {
+            try {
+              if (DataUtils.isPlayerInAnyBuildSector(GameClient.getClientPlayerState())) {
+                BuildSectorData sectorData =
+                    DataUtils.getPlayerCurrentBuildSector(GameClient.getClientPlayerState());
+                if (!sectorData.hasPermission(
+                    GameClient.getClientPlayerState().getName(), "EDIT")) {
+                  GameClient.getClientState()
+                      .message(
+                          new String[] {"You don't have permission to do this!"},
+                          ServerMessage.MESSAGE_TYPE_WARNING);
+                  event.setCanceled(true);
+                }
+              }
+            } catch (Exception ignored) {
+            }
+          }
+        },
+        this);
+
+    StarLoader.registerListener(
+        PlayerPickupFreeItemEvent.class,
+        new Listener<PlayerPickupFreeItemEvent>() {
+          @Override
+          public void onEvent(PlayerPickupFreeItemEvent event) {
+            try {
+              if (DataUtils.isPlayerInAnyBuildSector(GameClient.getClientPlayerState())) {
+                BuildSectorData sectorData =
+                    DataUtils.getPlayerCurrentBuildSector(GameClient.getClientPlayerState());
+                if (!sectorData.hasPermission(
+                    GameClient.getClientPlayerState().getName(), "PICKUP")) {
+                  GameClient.getClientState()
+                      .message(
+                          new String[] {"You don't have permission to do this!"},
+                          ServerMessage.MESSAGE_TYPE_WARNING);
+                  event.setCanceled(true);
+                }
+              }
+            } catch (Exception ignored) {
+            }
+          }
+        },
+        this);
+
+    StarLoader.registerListener(
+        PlayerDeathEvent.class,
+        new Listener<PlayerDeathEvent>() {
+          @Override
+          public void onEvent(PlayerDeathEvent event) {
+            if (DataUtils.isPlayerInAnyBuildSector(event.getPlayer()))
+              queueSpawnSwitch(event.getPlayer());
+          }
+        },
+        this);
+
+    StarLoader.registerListener(
+        PlayerSpawnEvent.class,
+        new Listener<PlayerSpawnEvent>() {
+          @Override
+          public void onEvent(final PlayerSpawnEvent event) {
+            new StarRunnable() {
+              @Override
+              public void run() {
+                try {
+                  if (!event.isServer()
+                      && !DataUtils.isPlayerInAnyBuildSector(event.getPlayer().getOwnerState()))
+                    PacketUtil.sendPacketToServer(new RequestClientCacheUpdatePacket());
+                } catch (Exception exception) {
+                  exception.printStackTrace();
+                }
+              }
+            }.runLater(EdenCore.getInstance(), 5);
+            // if(DataUtils.isPlayerInAnyBuildSector(event.getPlayer().getOwnerState()))
+            // queueSpawnSwitch(event.getPlayer().getOwnerState());
+          }
+        },
+        this);
+
+    StarLoader.registerListener(
+        PlayerJoinWorldEvent.class,
+        new Listener<PlayerJoinWorldEvent>() {
+          @Override
+          public void onEvent(final PlayerJoinWorldEvent event) {
+            if (GameCommon.isDedicatedServer() || GameCommon.isOnSinglePlayer()) {
+              new StarRunnable() {
                 @Override
                 public void run() {
-                    updateClientCacheData();
+                  try {
+                    PacketUtil.sendPacket(
+                        GameServer.getServerState().getPlayerFromName(event.getPlayerName()),
+                        new SendCacheUpdatePacket(
+                            GameServer.getServerState().getPlayerFromName(event.getPlayerName())));
+                  } catch (PlayerNotFountException exception) {
+                    exception.printStackTrace();
+                  }
                 }
-            }.runTimer(this, 1000);
-        }
-    }
+              }.runLater(EdenCore.this, 15);
 
-    private void queueSpawnSwitch(final PlayerState playerState) {
-        new StarRunnable() {
-            @Override
-            public void run() {
-                if(!DataUtils.isPlayerInAnyBuildSector(playerState)) cancel();
-                if(!playerState.hasSpawnWait) { // Wait until player has spawned, then warp them
-                    try {
-                        DataUtils.movePlayerFromBuildSector(playerState);
-                    } catch(Exception exception) {
-                        LogManager.logException("Encountered a severe exception while trying to move player \"" + playerState.getName() + "\" out of a build sector! Report this ASAP!", exception);
-                        playerState.setUseCreativeMode(false);
-                        if(!playerState.isAdmin()) playerState.setHasCreativeMode(false);
-                        PlayerUtils.sendMessage(playerState, "The server encountered a severe exception while trying to load you in and your" + " player state may be corrupted as a result. Report this to an admin ASAP!");
+              new StarRunnable() {
+                @Override
+                public void run() {
+                  PlayerState playerState = GameCommon.getPlayerFromName(event.getPlayerName());
+                  if (playerState != null && playerState.isOnServer()) {
+                    PlayerData playerData = DataUtils.getPlayerData(playerState);
+                    Date date = new Date(playerData.lastDailyPrizeClaim);
+                    if (DateUtils.getAgeDays(date) >= 1.0f) {
+                      InventoryUtils.addItem(
+                          playerState.getPersonalInventory(),
+                          ElementManager.getItem("Bronze Bar").getId(),
+                          2);
+                      playerData.lastDailyPrizeClaim = System.currentTimeMillis();
+                      PersistentObjectUtil.save(EdenCore.this.getSkeleton());
+                      PlayerUtils.sendMessage(
+                          playerState,
+                          "You have been given 2 Bronze Bars for logging in. Thanks for playing!");
                     }
-                    cancel();
+                  }
                 }
+              }.runLater(EdenCore.this, 10000);
             }
-        }.runTimer(this, 50);
-    }
+          }
+        },
+        this);
+  }
 
-    private byte[] overwriteClass(String className, byte[] byteCode) {
-        byte[] bytes = null;
-        try {
-            ZipInputStream file = new ZipInputStream(new FileInputStream(this.getSkeleton().getJarFile()));
-            while(true) {
-                ZipEntry nextEntry = file.getNextEntry();
-                if(nextEntry == null) break;
-                if(nextEntry.getName().endsWith(className + ".class")) bytes = IOUtils.toByteArray(file);
-            }
-            file.close();
-        } catch(IOException e) {
-            e.printStackTrace();
-        }
-        if(bytes != null) return bytes;
-        else return byteCode;
-    }
+  private void registerCommands() {
+    StarLoader.registerCommand(new SaveEntityCommand());
+    StarLoader.registerCommand(new LoadEntityCommand());
+    StarLoader.registerCommand(new ListEntityCommand());
+    StarLoader.registerCommand(new BuildSectorCommand());
+    StarLoader.registerCommand(new AwardBarsCommand());
+    StarLoader.registerCommand(new BankingSendMoneyCommand());
+    StarLoader.registerCommand(new BankingListCommand());
+    StarLoader.registerCommand(new BankingAdminListCommand());
+    StarLoader.registerCommand(new CountdownCommand());
+    // StarLoader.registerCommand(new ResetPlayerCommand());
+  }
 
-    public void updateClientCacheData() {
-        if(GameCommon.isOnSinglePlayer() || GameCommon.isDedicatedServer()) {
-            try {
-                for(PlayerState playerState : GameServer.getServerState().getPlayerStatesByName().values()) {
-                    PacketUtil.sendPacket(playerState, new SendCacheUpdatePacket(playerState));
-                }
-            } catch(Exception exception) {
-                LogManager.logException("Encountered an exception while trying to update client cache data", exception);
-            }
+  private void startRunners() {
+    if (GameCommon.isOnSinglePlayer() || GameCommon.isDedicatedServer()) {
+      new StarRunnable() {
+        @Override
+        public void run() {
+          updateClientCacheData();
         }
+      }.runTimer(this, 1000);
     }
+  }
+
+  private void queueSpawnSwitch(final PlayerState playerState) {
+    new StarRunnable() {
+      @Override
+      public void run() {
+        if (!DataUtils.isPlayerInAnyBuildSector(playerState)) cancel();
+        if (!playerState.hasSpawnWait) { // Wait until player has spawned, then warp them
+          try {
+            DataUtils.movePlayerFromBuildSector(playerState);
+          } catch (Exception exception) {
+            LogManager.logException(
+                "Encountered a severe exception while trying to move player \""
+                    + playerState.getName()
+                    + "\" out of a build sector! Report this ASAP!",
+                exception);
+            playerState.setUseCreativeMode(false);
+            if (!playerState.isAdmin()) playerState.setHasCreativeMode(false);
+            PlayerUtils.sendMessage(
+                playerState,
+                "The server encountered a severe exception while trying to load you in and your"
+                    + " player state may be corrupted as a result. Report this to an admin ASAP!");
+          }
+          cancel();
+        }
+      }
+    }.runTimer(this, 50);
+  }
+
+  private byte[] overwriteClass(String className, byte[] byteCode) {
+    byte[] bytes = null;
+    try {
+      ZipInputStream file =
+          new ZipInputStream(new FileInputStream(this.getSkeleton().getJarFile()));
+      while (true) {
+        ZipEntry nextEntry = file.getNextEntry();
+        if (nextEntry == null) break;
+        if (nextEntry.getName().endsWith(className + ".class")) bytes = IOUtils.toByteArray(file);
+      }
+      file.close();
+    } catch (IOException e) {
+      e.printStackTrace();
+    }
+    if (bytes != null) return bytes;
+    else return byteCode;
+  }
+
+  public void updateClientCacheData() {
+    if (GameCommon.isOnSinglePlayer() || GameCommon.isDedicatedServer()) {
+      try {
+        for (PlayerState playerState :
+            GameServer.getServerState().getPlayerStatesByName().values()) {
+          PacketUtil.sendPacket(playerState, new SendCacheUpdatePacket(playerState));
+        }
+      } catch (Exception exception) {
+        LogManager.logException(
+            "Encountered an exception while trying to update client cache data", exception);
+      }
+    }
+  }
 }
