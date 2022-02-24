@@ -28,6 +28,7 @@ import thederpgamer.edencore.manager.ClientCacheManager;
 import thederpgamer.edencore.manager.DataManager;
 import thederpgamer.edencore.manager.LogManager;
 import thederpgamer.edencore.network.client.RequestClientCacheUpdatePacket;
+import thederpgamer.edencore.network.client.RequestEntityDeletePacket;
 
 import javax.vecmath.Vector3f;
 import java.io.IOException;
@@ -233,7 +234,7 @@ public class DataUtils {
     public static void deleteEnemies(final BuildSectorData sectorData, long delay) {
         if(delay <= 0) {
             for(SegmentController entity : getEntitiesInBuildSector(sectorData)) {
-                if(entity.getFactionId() == FactionManager.PIRATES_ID) destroyEntity(entity);
+                if(entity.getFactionId() == FactionManager.PIRATES_ID && !entity.getSpawner().equals(sectorData.ownerName)) destroyEntity(entity);
             }
         } else {
             new StarRunnable() {
@@ -241,7 +242,7 @@ public class DataUtils {
                 public void run() {
                     if(getPlayersInBuildSector(sectorData).isEmpty()) {
                         for(SegmentController entity : getEntitiesInBuildSector(sectorData)) {
-                            if(entity.getFactionId() == FactionManager.PIRATES_ID) destroyEntity(entity);
+                            if(entity.getFactionId() == FactionManager.PIRATES_ID && !entity.getSpawner().equals(sectorData.ownerName)) destroyEntity(entity);
                         }
                     }
                 }
@@ -266,13 +267,16 @@ public class DataUtils {
 
     public static void destroyEntity(SegmentController entity) {
         for(PlayerState attached : SegmentControllerUtils.getAttachedPlayers(entity)) attached.getControllerState().forcePlayerOutOfSegmentControllers();
-        entity.railController.destroyDockedRecursive();
-        for(ElementDocking dock : entity.getDockingController().getDockedOnThis()) {
-            dock.from.getSegment().getSegmentController().markForPermanentDelete(true);
-            dock.from.getSegment().getSegmentController().setMarkedForDeleteVolatile(true);
+        if(GameCommon.isClientConnectedToServer()) PacketUtil.sendPacketToServer(new RequestEntityDeletePacket(entity));
+        else {
+            entity.railController.destroyDockedRecursive();
+            for(ElementDocking dock : entity.getDockingController().getDockedOnThis()) {
+                dock.from.getSegment().getSegmentController().markForPermanentDelete(true);
+                dock.from.getSegment().getSegmentController().setMarkedForDeleteVolatile(true);
+            }
+            entity.markForPermanentDelete(true);
+            entity.setMarkedForDeleteVolatile(true);
         }
-        entity.markForPermanentDelete(true);
-        entity.setMarkedForDeleteVolatile(true);
     }
 
     public static PlayerData getPlayerData(PlayerState playerState) {
