@@ -29,6 +29,7 @@ import org.apache.commons.io.IOUtils;
 import org.schema.common.util.linAlg.Vector3i;
 import org.schema.game.client.view.gui.newgui.GUITopBar;
 import org.schema.game.common.data.player.PlayerState;
+import org.schema.game.common.data.player.faction.FactionManager;
 import org.schema.game.server.data.PlayerNotFountException;
 import org.schema.schine.common.language.Lng;
 import org.schema.schine.graphicsengine.core.MouseEvent;
@@ -57,6 +58,7 @@ import thederpgamer.edencore.navigation.NavigationUtilManager;
 import thederpgamer.edencore.network.client.*;
 import thederpgamer.edencore.network.server.PlayerWarpIntoEntityPacket;
 import thederpgamer.edencore.network.server.SendCacheUpdatePacket;
+import thederpgamer.edencore.utils.BuildSectorUtils;
 import thederpgamer.edencore.utils.DataUtils;
 import thederpgamer.edencore.utils.DateUtils;
 
@@ -382,7 +384,13 @@ public class EdenCore extends StarMod {
                                 updateClientCacheData();
                             }
                              */
-                            if(DataUtils.isBuildSector(event.getController().getSector(new Vector3i()))) updateClientCacheData();
+                            if(DataUtils.isBuildSector(event.getController().getSector(new Vector3i()))) {
+                                BuildSectorData sectorData = DataUtils.getSectorData(event.getController().getSector(new Vector3i()));
+                                if(sectorData != null) {
+                                    if(event.getController().getFactionId() == FactionManager.PIRATES_ID && !BuildSectorUtils.getPlayersWithEnemySpawnPerms(sectorData).contains(event.getController().getSpawner())) DataUtils.deleteEnemies(sectorData, 0);
+                                    updateClientCacheData();
+                                }
+                            }
                         } catch(Exception exception) {
                             LogManager.logException("Encountered an exception while trying to check if a new SegmentController \"" + event.getController().getName() +  "\" was in a build sector", exception);
                         }

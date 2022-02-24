@@ -234,7 +234,7 @@ public class DataUtils {
     public static void deleteEnemies(final BuildSectorData sectorData, long delay) {
         if(delay <= 0) {
             for(SegmentController entity : getEntitiesInBuildSector(sectorData)) {
-                if(entity.getFactionId() == FactionManager.PIRATES_ID && !entity.getSpawner().equals(sectorData.ownerName)) destroyEntity(entity);
+                if(entity.getFactionId() == FactionManager.PIRATES_ID && !BuildSectorUtils.getPlayersWithEnemySpawnPerms(sectorData).contains(entity.getSpawner())) destroyEntity(entity);
             }
         } else {
             new StarRunnable() {
@@ -242,7 +242,7 @@ public class DataUtils {
                 public void run() {
                     if(getPlayersInBuildSector(sectorData).isEmpty()) {
                         for(SegmentController entity : getEntitiesInBuildSector(sectorData)) {
-                            if(entity.getFactionId() == FactionManager.PIRATES_ID && !entity.getSpawner().equals(sectorData.ownerName)) destroyEntity(entity);
+                            if(entity.getFactionId() == FactionManager.PIRATES_ID && !BuildSectorUtils.getPlayersWithEnemySpawnPerms(sectorData).contains(entity.getSpawner())) destroyEntity(entity);
                         }
                     }
                 }
@@ -312,6 +312,14 @@ public class DataUtils {
             } catch(Exception exception) {
                 LogManager.logException("Encountered an exception while trying to get " + playerState.getName() + "'s current build sector", exception);
             }
+        }
+        return null;
+    }
+
+    public static BuildSectorData getSectorData(Vector3i sector) {
+        for(Object object : PersistentObjectUtil.getObjects(instance, BuildSectorData.class)) {
+            BuildSectorData data = (BuildSectorData) object;
+            if(data.sector.equals(sector)) return data;
         }
         return null;
     }
