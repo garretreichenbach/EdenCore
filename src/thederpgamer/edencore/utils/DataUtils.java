@@ -128,7 +128,7 @@ public class DataUtils {
         playerState.setCurrentSector(sectorData.sector);
         playerState.setCurrentSectorId(sector.getSectorId());
 
-        BuildSectorUtils.setPeace(sectorData, true);
+        BuildSectorUtils.setPeace(sectorData, false);
         sector.noEnter(true);
         sector.noExit(true);
         //deleteEnemies(sectorData, 0);

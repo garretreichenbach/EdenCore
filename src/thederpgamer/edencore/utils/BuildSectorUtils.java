@@ -4,6 +4,7 @@ import api.common.GameCommon;
 import api.common.GameServer;
 import api.utils.game.PlayerUtils;
 import com.bulletphysics.linearmath.Transform;
+import org.schema.common.util.linAlg.Vector3i;
 import org.schema.game.common.controller.SegmentController;
 import org.schema.game.common.data.SegmentPiece;
 import org.schema.game.common.data.player.PlayerControlledTransformableNotFound;
@@ -120,15 +121,22 @@ public class BuildSectorUtils {
         if(GameCommon.isDedicatedServer() || GameCommon.isOnSinglePlayer())
             entity.railController.getRoot().railController.activateAllAIServer(toggle, true, true, true);
         else entity.railController.getRoot().railController.activateAllAIClient(toggle, true, true);
+        if(toggle) {
+            try {
+                setPeace(DataUtils.getSectorData(entity.getSector(new Vector3i())), toggle);
+            } catch(Exception exception) {
+                exception.printStackTrace();
+            }
+        }
     }
 
     public static void setPeace(BuildSectorData sectorData, boolean protect) {
         if(GameCommon.isDedicatedServer() || GameCommon.isOnSinglePlayer()) {
             try {
-                DataUtils.deleteEnemies(sectorData, 0);
+                //DataUtils.deleteEnemies(sectorData, 0);
                 Sector sector = GameServer.getUniverse().getSector(sectorData.sector);
-                //sector.peace(protect);
-                // sector.protect(protect); Todo: Make this a toggleable option
+                sector.peace(protect);
+                sector.protect(protect);
             } catch(IOException exception) {
                 LogManager.logException("Failed to protect " + sectorData.ownerName + "'s build sector from enemy spawns due to an unexpected error", exception);
                 PlayerUtils.sendMessage(GameCommon.getPlayerFromName(sectorData.ownerName), "An unexpected error occurred while trying to protect your sector from pirate spawns." + " Let an admin know ASAP!");
