@@ -118,15 +118,12 @@ public class BuildSectorUtils {
     }
 
     public static void toggleAI(SegmentController entity, boolean toggle) {
-        if(GameCommon.isDedicatedServer() || GameCommon.isOnSinglePlayer())
-            entity.railController.getRoot().railController.activateAllAIServer(toggle, true, true, true);
+        if(GameCommon.isDedicatedServer() || GameCommon.isOnSinglePlayer()) entity.railController.getRoot().railController.activateAllAIServer(toggle, true, true, true);
         else entity.railController.getRoot().railController.activateAllAIClient(toggle, true, true);
-        if(toggle) {
-            try {
-                setPeace(DataUtils.getSectorData(entity.getSector(new Vector3i())), toggle);
-            } catch(Exception exception) {
-                exception.printStackTrace();
-            }
+        try {
+            setPeace(DataUtils.getSectorData(entity.getSector(new Vector3i())), !toggle);
+        } catch(Exception exception) {
+            exception.printStackTrace();
         }
     }
 
