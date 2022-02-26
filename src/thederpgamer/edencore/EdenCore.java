@@ -80,7 +80,6 @@ public class EdenCore extends StarMod {
     private static EdenCore getInstance;
     // Overwrites
     private final String[] overwriteClasses = new String[] {
-            "PlayerState",
             "BlueprintEntry"
     };
     // Disabled Blocks
