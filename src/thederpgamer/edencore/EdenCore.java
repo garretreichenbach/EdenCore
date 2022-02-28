@@ -42,7 +42,6 @@ import org.schema.schine.resource.ResourceLoader;
 import thederpgamer.edencore.commands.*;
 import thederpgamer.edencore.data.other.BuildSectorData;
 import thederpgamer.edencore.data.other.PlayerData;
-import thederpgamer.edencore.drawer.BuildSectorHudDrawer;
 import thederpgamer.edencore.element.ElementManager;
 import thederpgamer.edencore.element.items.PrizeBars;
 import thederpgamer.edencore.gui.buildsectormenu.BuildSectorMenuControlManager;
@@ -368,7 +367,7 @@ public class EdenCore extends StarMod {
         StarLoader.registerListener(RegisterWorldDrawersEvent.class, new Listener<RegisterWorldDrawersEvent>() {
             @Override
             public void onEvent(RegisterWorldDrawersEvent event) {
-                event.getModDrawables().add(new BuildSectorHudDrawer());
+                //event.getModDrawables().add(new BuildSectorHudDrawer());
             }
         }, this);
 

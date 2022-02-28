@@ -1756,6 +1756,10 @@ public class PlayerState extends AbstractOwnerState implements Sendable, DiskWri
 
         if (oldSectorId != getCurrentSectorId()) {
             Starter.modManager.onPlayerSectorChanged(this);
+            //INSERTED CODE
+            PlayerChangeSectorEvent event = new PlayerChangeSectorEvent(this, oldSectorId, getCurrentSectorId());
+            StarLoader.fireEvent(event, isOnServer());
+            ///
             oldSectorId = getCurrentSectorId();
         }
 

@@ -168,7 +168,7 @@ public class SendCacheUpdatePacket extends Packet {
         try {
             ClientCacheManager.accessibleSectors.clear();
             for(BuildSectorData data : sectorData) {
-                if(data.hasPermission(GameClient.getClientPlayerState().getName(), "ENTER")) ClientCacheManager.accessibleSectors.add(data);
+                if(data != null && GameClient.getClientState() != null && GameClient.getClientPlayerState() != null && data.hasPermission(GameClient.getClientPlayerState().getName(), "ENTER")) ClientCacheManager.accessibleSectors.add(data);
             }
 
             ClientCacheManager.sectorEntities.clear();

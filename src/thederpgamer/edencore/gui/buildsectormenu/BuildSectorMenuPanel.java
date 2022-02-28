@@ -69,6 +69,7 @@ public class BuildSectorMenuPanel extends GUIMenuPanel {
                         public boolean onInput(String s) {
                             if(GameCommon.getPlayerFromName(s) != null && !DataUtils.getBuildSector(GameClient.getClientPlayerState().getName()).getAllowedPlayersByName().contains(s)) {
                                 PacketUtil.sendPacketToServer(new RequestBuildSectorInvitePacket(s));
+                                recreateTabs();
                                 return true;
                             } else return false;
                         }
