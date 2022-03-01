@@ -5,6 +5,7 @@ import api.network.PacketReadBuffer;
 import api.network.PacketWriteBuffer;
 import api.utils.game.PlayerUtils;
 import org.schema.game.common.data.player.PlayerState;
+import org.schema.game.common.data.player.faction.FactionManager;
 import org.schema.game.server.controller.BluePrintController;
 import org.schema.game.server.controller.EntityNotFountException;
 import org.schema.game.server.data.blueprintnw.BlueprintEntry;
@@ -22,32 +23,41 @@ import java.io.IOException;
  */
 public class RequestSpawnEntryPacket extends Packet {
 
+    private String spawnName;
     private String entryName;
     private boolean docked;
-    private boolean enemy;
+    private int factionId;
 
     public RequestSpawnEntryPacket() {
 
     }
 
-    public RequestSpawnEntryPacket(String entryName, boolean docked, boolean enemy) {
+    public RequestSpawnEntryPacket(String entryName, boolean docked, int factionId) {
+        this(entryName, entryName, docked, factionId);
+    }
+
+    public RequestSpawnEntryPacket(String spawnName, String entryName, boolean docked, int factionId) {
+        this.spawnName = spawnName;
         this.entryName = entryName;
         this.docked = docked;
-        this.enemy = enemy;
+        this.factionId = factionId;
     }
+
 
     @Override
     public void readPacketData(PacketReadBuffer packetReadBuffer) throws IOException {
+        spawnName = packetReadBuffer.readString();
         entryName = packetReadBuffer.readString();
         docked = packetReadBuffer.readBoolean();
-        enemy = packetReadBuffer.readBoolean();
+        factionId = packetReadBuffer.readInt();
     }
 
     @Override
     public void writePacketData(PacketWriteBuffer packetWriteBuffer) throws IOException {
+        packetWriteBuffer.writeString(spawnName);
         packetWriteBuffer.writeString(entryName);
         packetWriteBuffer.writeBoolean(docked);
-        packetWriteBuffer.writeBoolean(enemy);
+        packetWriteBuffer.writeInt(factionId);
     }
 
     @Override
@@ -59,10 +69,10 @@ public class RequestSpawnEntryPacket extends Packet {
     public void processPacketOnServer(PlayerState playerState) {
         try {
             BlueprintEntry entry = BluePrintController.active.getBlueprint(entryName);
-            if(docked) EntityUtils.spawnEntryOnDock(playerState, entry);
+            if(docked) EntityUtils.spawnEntryOnDock(playerState, entry, spawnName, factionId);
             else {
-                if(enemy) EntityUtils.spawnEnemy(playerState, entry);
-                else EntityUtils.spawnEntry(playerState, entry);
+                if(factionId == FactionManager.PIRATES_ID) EntityUtils.spawnEnemy(playerState, entry, spawnName);
+                else EntityUtils.spawnEntry(playerState, entry, spawnName, factionId);
             }
         } catch(EntityNotFountException exception) {
             exception.printStackTrace();

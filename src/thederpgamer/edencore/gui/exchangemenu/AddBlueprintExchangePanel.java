@@ -28,7 +28,7 @@ import java.util.List;
  * @author TheDerpGamer
  * @version 1.0 - [09/17/2021]
  */
-public class AddBlueprintExchangePanel extends GUIInputDialogPanel { ;
+public class AddBlueprintExchangePanel extends GUIInputDialogPanel {
 
     private GUIContentPane contentPane;
 

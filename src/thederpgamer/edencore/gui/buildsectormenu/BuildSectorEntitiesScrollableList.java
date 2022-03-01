@@ -32,12 +32,14 @@ import java.util.Set;
  */
 public class BuildSectorEntitiesScrollableList extends ScrollableTableList<SegmentController> {
 
+	private final GUIElement p;
 	private final BuildSectorMenuPanel panel;
 	private BuildSectorData sectorData;
 
 	public BuildSectorEntitiesScrollableList(InputState state, BuildSectorData sectorData, GUIElement p, BuildSectorMenuPanel panel) {
 		super(state, 800, 500, p);
 		this.panel = panel;
+		this.p = p;
 		this.sectorData = sectorData;
 		p.attach(this);
 	}
@@ -55,8 +57,7 @@ public class BuildSectorEntitiesScrollableList extends ScrollableTableList<Segme
 							if(sectorData.hasPermission(GameClient.getClientPlayerState().getName(), "EDIT")) {
 								getState().getController().queueUIAudio("0022_menu_ui - select 1");
 								EntityUtils.warpPlayerIntoEntity(GameClient.getClientPlayerState(), segmentController);
-							}
-							else getState().getController().queueUIAudio("0022_menu_ui - error 1");
+							} else getState().getController().queueUIAudio("0022_menu_ui - error 1");
 						}
 					}
 
@@ -82,28 +83,10 @@ public class BuildSectorEntitiesScrollableList extends ScrollableTableList<Segme
 						if(mouseEvent.pressedLeftMouse()) {
 							if(segmentController.existsInState() && segmentController.getSector(new Vector3i()).equals(sectorData.sector)) {
 								if(sectorData.hasPermission(GameClient.getClientPlayerState().getName(), "DELETE")) {
-									//PacketUtil.sendPacketToServer(new RequestClientCacheUpdatePacket());
 									PacketUtil.sendPacketToServer(new RequestEntityDeletePacket(segmentController));
 									getState().getController().queueUIAudio("0022_menu_ui - select 2");
-                      /*
-                      segmentController.railController.destroyDockedRecursive();
-                      for (ElementDocking dock :
-                          segmentController.getDockingController().getDockedOnThis()) {
-                        dock.from.getSegment().getSegmentController().markForPermanentDelete(true);
-                        dock.from
-                            .getSegment()
-                            .getSegmentController()
-                            .setMarkedForDeleteVolatile(true);
-                      }
-                      segmentController.markForPermanentDelete(true);
-                      segmentController.setMarkedForDeleteVolatile(true);
-                       */
-									flagDirty();
-									handleDirty();
-								}
-								else getState().getController().queueUIAudio("0022_menu_ui - error 1");
-							}
-							else panel.recreateTabs();
+								} else getState().getController().queueUIAudio("0022_menu_ui - error 1");
+							} else panel.recreateTabs();
 						}
 					}
 
@@ -130,8 +113,7 @@ public class BuildSectorEntitiesScrollableList extends ScrollableTableList<Segme
 							if(sectorData.hasPermission(GameClient.getClientPlayerState().getName(), "TOGGLE_AI")) {
 								getState().getController().queueUIAudio("0022_menu_ui - select 3");
 								BuildSectorUtils.toggleAI(segmentController, !segmentController.isAIControlled());
-							}
-							else getState().getController().queueUIAudio("0022_menu_ui - error 1");
+							} else getState().getController().queueUIAudio("0022_menu_ui - error 1");
 						}
 					}
 
@@ -203,7 +185,7 @@ public class BuildSectorEntitiesScrollableList extends ScrollableTableList<Segme
 			}
 		}, "SEARCH BY NAME", ControllerElement.FilterRowStyle.LEFT);
 
-		addDropdownFilter(new GUIListFilterDropdown<SegmentController, EntityType>(EntityType.values()) {
+		addDropdownFilter(new GUIListFilterDropdown<SegmentController, EntityType>(EntityType.SHIP, EntityType.SPACE_STATION, EntityType.TURRET, EntityType.DOCKED, EntityType.ALL) {
 			@Override
 			public boolean isOk(EntityType entityType, SegmentController segmentController) {
 				switch(entityType) {
@@ -253,8 +235,7 @@ public class BuildSectorEntitiesScrollableList extends ScrollableTableList<Segme
 				exception.printStackTrace();
 			}
 			return ClientCacheManager.sectorEntities;
-		}
-		else return new ArrayList<>();
+		} else return new ArrayList<>();
 	}
 
 	@Override
@@ -291,7 +272,7 @@ public class BuildSectorEntitiesScrollableList extends ScrollableTableList<Segme
 						(typeRowElement = new GUIClippedRow(this.getState())).attach(typeTextElement);
 
 						BuildSectorEntityListRow listRow = new BuildSectorEntityListRow(getState(), segmentController, nameRowElement, factionRowElement, massRowElement, distanceRowElement, typeRowElement);
-						GUIAncor anchor = new GUIAncor(getState(), 1160, 28.0f);
+						GUIAncor anchor = new GUIAncor(getState(), p.getWidth() - 28.0f, 28.0f);
 						anchor.attach(redrawButtonPane(segmentController, anchor));
 						listRow.expanded = new GUIElementList(getState());
 						listRow.expanded.add(new GUIListElement(anchor, getState()));

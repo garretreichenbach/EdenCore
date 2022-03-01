@@ -2,8 +2,10 @@ package thederpgamer.edencore.gui.buildsectormenu;
 
 import api.common.GameClient;
 import api.network.packets.PacketUtil;
+import api.utils.gui.SimplePlayerTextInput;
 import org.schema.common.util.StringTools;
 import org.schema.game.common.data.player.catalog.CatalogPermission;
+import org.schema.game.common.data.player.faction.FactionManager;
 import org.schema.game.server.data.blueprintnw.BlueprintType;
 import org.schema.schine.common.language.Lng;
 import org.schema.schine.graphicsengine.core.MouseEvent;
@@ -14,7 +16,9 @@ import thederpgamer.edencore.data.other.BuildSectorData;
 import thederpgamer.edencore.network.client.RequestSpawnEntryPacket;
 import thederpgamer.edencore.utils.DataUtils;
 
-import java.util.*;
+import java.util.Collection;
+import java.util.Comparator;
+import java.util.Set;
 
 /**
  * <Description>
@@ -25,15 +29,17 @@ import java.util.*;
 public class BuildSectorCatalogScrollableList extends ScrollableTableList<CatalogPermission> {
 
     private BuildSectorData sectorData;
+    private GUIElement p;
 
     public BuildSectorCatalogScrollableList(InputState state, BuildSectorData sectorData, GUIElement p) {
         super(state, 800, 500, p);
         this.sectorData = sectorData;
+        this.p = p;
         p.attach(this);
     }
 
     private GUIHorizontalButtonTablePane redrawButtonPane(final CatalogPermission catalogPermission, GUIAncor anchor) {
-        GUIHorizontalButtonTablePane buttonPane = new GUIHorizontalButtonTablePane(getState(), 3, 1, anchor);
+        GUIHorizontalButtonTablePane buttonPane = new GUIHorizontalButtonTablePane(getState(), 2, 1, anchor);
         buttonPane.onInit();
 
         buttonPane.addButton(0, 0, "SPAWN", GUIHorizontalArea.HButtonColor.GREEN, new GUICallback() {
@@ -42,7 +48,10 @@ public class BuildSectorCatalogScrollableList extends ScrollableTableList<Catalo
                 if(mouseEvent.pressedLeftMouse()) {
                     if(hasPermission("SPAWN")) {
                         getState().getController().queueUIAudio("0022_menu_ui - select 1");
-                        PacketUtil.sendPacketToServer(new RequestSpawnEntryPacket(catalogPermission.getUid(), false, false));
+                        BuildSectorSpawnEntityDialog spawnEntityDialog = new BuildSectorSpawnEntityDialog();
+                        spawnEntityDialog.sectorData = sectorData;
+                        spawnEntityDialog.catalogPermission = catalogPermission;
+                        spawnEntityDialog.activate();
                     } else getState().getController().queueUIAudio("0022_menu_ui - error 1");
                 }
             }
@@ -63,41 +72,21 @@ public class BuildSectorCatalogScrollableList extends ScrollableTableList<Catalo
             }
         });
 
-        buttonPane.addButton(1, 0, "SPAWN ON DOCK", GUIHorizontalArea.HButtonColor.BLUE, new GUICallback() {
-            @Override
-            public void callback(GUIElement guiElement, MouseEvent mouseEvent) {
-                if(mouseEvent.pressedLeftMouse()) {
-                    if(hasPermission("SPAWN")) {
-                        getState().getController().queueUIAudio("0022_menu_ui - select 2");
-                        PacketUtil.sendPacketToServer(new RequestSpawnEntryPacket(catalogPermission.getUid(), true, false));
-                    } else getState().getController().queueUIAudio("0022_menu_ui - error 1");
-                }
-            }
-
-            @Override
-            public boolean isOccluded() {
-                return !getState().getController().getPlayerInputs().isEmpty() || !hasPermission("SPAWN");
-            }
-        }, new GUIActivationCallback() {
-            @Override
-            public boolean isVisible(InputState inputState) {
-                return true;
-            }
-
-            @Override
-            public boolean isActive(InputState inputState) {
-                return getState().getController().getPlayerInputs().isEmpty() && hasPermission("SPAWN");
-
-            }
-        });
-
-        buttonPane.addButton(2, 0, "SPAWN ENEMY", GUIHorizontalArea.HButtonColor.RED, new GUICallback() {
+        buttonPane.addButton(1, 0, "SPAWN ENEMY", GUIHorizontalArea.HButtonColor.RED, new GUICallback() {
             @Override
             public void callback(GUIElement guiElement, MouseEvent mouseEvent) {
                 if(mouseEvent.pressedLeftMouse()) {
                     if(hasPermission("SPAWN_ENEMIES")) {
                         getState().getController().queueUIAudio("0022_menu_ui - select 3");
-                        PacketUtil.sendPacketToServer(new RequestSpawnEntryPacket(catalogPermission.getUid(), false, true));
+                        (new SimplePlayerTextInput("Enter Name", "") {
+                            @Override
+                            public boolean onInput(String s) {
+                                if(s != null && !s.isEmpty()) {
+                                    PacketUtil.sendPacketToServer(new RequestSpawnEntryPacket(s, catalogPermission.getUid(), false, FactionManager.PIRATES_ID));
+                                    return true;
+                                } else return false;
+                            }
+                        }).activate();
                     } else getState().getController().queueUIAudio("0022_menu_ui - error 1");
                 }
             }
@@ -220,7 +209,7 @@ public class BuildSectorCatalogScrollableList extends ScrollableTableList<Catalo
                 (massRowElement = new GUIClippedRow(this.getState())).attach(massTextElement);
 
                 BuildSectorCatalogListRow listRow = new BuildSectorCatalogListRow(getState(), catalogPermission, nameRowElement, typeRowElement, classRowElement, massRowElement);
-                GUIAncor anchor = new GUIAncor(getState(), 1160, 28.0f);
+                GUIAncor anchor = new GUIAncor(getState(), p.getWidth() - 28.0f, 28.0f);
                 anchor.attach(redrawButtonPane(catalogPermission, anchor));
                 listRow.expanded = new GUIElementList(getState());
                 listRow.expanded.add(new GUIListElement(anchor, getState()));

@@ -28,12 +28,14 @@ import java.util.Set;
  */
 public class BuildSectorUserScrollableList extends ScrollableTableList<String> {
 
+    private final GUIElement p;
     private final BuildSectorMenuPanel panel;
     private BuildSectorData sectorData;
 
     public BuildSectorUserScrollableList(InputState state, GUIElement p, BuildSectorMenuPanel panel) {
         super(state, 800, 500, p);
         this.panel = panel;
+        this.p = p;
         this.sectorData = DataUtils.getBuildSector(GameClient.getClientPlayerState().getName());
         p.attach(this);
     }
@@ -196,7 +198,7 @@ public class BuildSectorUserScrollableList extends ScrollableTableList<String> {
                 (nameRowElement = new GUIClippedRow(this.getState())).attach(nameTextElement);
 
                 BuildSectorUserScrollableListRow listRow = new BuildSectorUserScrollableListRow(getState(), playerName, nameRowElement);
-                GUIAncor anchor = new GUIAncor(getState(), 560, 28.0f);
+                GUIAncor anchor = new GUIAncor(getState(), p.getWidth() - 28.0f, 28.0f);
                 anchor.attach(redrawButtonPane(playerName, anchor));
                 listRow.expanded = new GUIElementList(getState());
                 listRow.expanded.add(new GUIListElement(anchor, getState()));

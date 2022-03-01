@@ -71,7 +71,7 @@ public class EntityUtils {
 		return Math.abs(Vector3fTools.distance(entityTransform.origin.x, entityTransform.origin.y, entityTransform.origin.z, playerTransform.origin.x, playerTransform.origin.y, playerTransform.origin.z));
 	}
 
-	public static void spawnEntry(PlayerState owner, BlueprintEntry entry) {
+	public static void spawnEntry(PlayerState owner, BlueprintEntry entry, String spawnName, int factionId) {
 		Transform transform = new Transform();
 		transform.setIdentity();
 		transform.origin.set(owner.getFirstControlledTransformableWOExc().getWorldTransform().origin);
@@ -81,7 +81,7 @@ public class EntityUtils {
 		forward.scaleAdd(1.15f, size);
 		transform.origin.set(forward);
 		try {
-			SegmentControllerOutline<?> outline = BluePrintController.active.loadBluePrint(GameServerState.instance, entry.getName(), entry.getName(), transform, -1, owner.getFactionId(), owner.getCurrentSector(), owner.getName(), PlayerState.buffer, null, false, new ChildStats(false));
+			SegmentControllerOutline<?> outline = BluePrintController.active.loadBluePrint(GameServerState.instance, entry.getName(), spawnName, transform, -1, factionId, owner.getCurrentSector(), owner.getName(), PlayerState.buffer, null, false, new ChildStats(false));
 			SegmentController entity = outline.spawn(owner.getCurrentSector(), false, new ChildStats(false), new SegmentControllerSpawnCallbackDirect(GameServer.getServerState(), owner.getCurrentSector()) {
 				@Override
 				public void onNoDocker() { }
@@ -92,7 +92,7 @@ public class EntityUtils {
 		}
 	}
 
-	public static void spawnEntryOnDock(PlayerState owner, BlueprintEntry entry) {
+	public static void spawnEntryOnDock(PlayerState owner, BlueprintEntry entry, String spawnName, int factionId) {
 		SegmentPiece spawnOnBlock = null;
 		try {
 			spawnOnBlock = ServerUtils.getBlockLookingAt(GameServer.getServerState(), owner);
@@ -108,7 +108,7 @@ public class EntityUtils {
 		forward.scaleAdd(1.15f, size);
 		transform.origin.set(forward);
 		try {
-			SegmentControllerOutline<?> outline = BluePrintController.active.loadBluePrint(GameServerState.instance, entry.getName(), entry.getName(), transform, -1, owner.getFactionId(), owner.getCurrentSector(), owner.getName(), PlayerState.buffer, spawnOnBlock, false, new ChildStats(false));
+			SegmentControllerOutline<?> outline = BluePrintController.active.loadBluePrint(GameServerState.instance, entry.getName(), spawnName, transform, -1, factionId, owner.getCurrentSector(), owner.getName(), PlayerState.buffer, spawnOnBlock, false, new ChildStats(false));
 			SegmentController entity = outline.spawn(owner.getCurrentSector(), false, new ChildStats(false), new SegmentControllerSpawnCallbackDirect(GameServer.getServerState(), owner.getCurrentSector()) {
 				@Override
 				public void onNoDocker() { }
@@ -119,7 +119,7 @@ public class EntityUtils {
 		}
 	}
 
-	public static void spawnEnemy(PlayerState owner, BlueprintEntry entry) {
+	public static void spawnEnemy(PlayerState owner, BlueprintEntry entry, String spawnName) {
 		Transform transform = new Transform();
 		transform.setIdentity();
 		transform.origin.set(owner.getFirstControlledTransformableWOExc().getWorldTransform().origin);
@@ -129,7 +129,7 @@ public class EntityUtils {
 		forward.scaleAdd(1.15f, size);
 		transform.origin.set(forward);
 		try {
-			SegmentControllerOutline<?> outline = BluePrintController.active.loadBluePrint(GameServerState.instance, entry.getName(), entry.getName(), transform, -1, FactionManager.PIRATES_ID, owner.getCurrentSector(), owner.getName(), PlayerState.buffer, null, false, new ChildStats(false));
+			SegmentControllerOutline<?> outline = BluePrintController.active.loadBluePrint(GameServerState.instance, entry.getName(), spawnName, transform, -1, FactionManager.PIRATES_ID, owner.getCurrentSector(), owner.getName(), PlayerState.buffer, null, false, new ChildStats(false));
 			SegmentController entity = outline.spawn(owner.getCurrentSector(), false, new ChildStats(false), new SegmentControllerSpawnCallbackDirect(GameServer.getServerState(), owner.getCurrentSector()) {
 				@Override
 				public void onNoDocker() { }
