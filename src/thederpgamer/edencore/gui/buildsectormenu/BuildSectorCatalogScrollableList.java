@@ -29,7 +29,8 @@ import java.util.Set;
 public class BuildSectorCatalogScrollableList extends ScrollableTableList<CatalogPermission> {
 
     private BuildSectorData sectorData;
-    private GUIElement p;
+    private BuildSectorSpawnEntityDialog spawnEntityDialog;
+    private final GUIElement p;
 
     public BuildSectorCatalogScrollableList(InputState state, BuildSectorData sectorData, GUIElement p) {
         super(state, 800, 500, p);
@@ -48,17 +49,18 @@ public class BuildSectorCatalogScrollableList extends ScrollableTableList<Catalo
                 if(mouseEvent.pressedLeftMouse()) {
                     if(hasPermission("SPAWN")) {
                         getState().getController().queueUIAudio("0022_menu_ui - select 1");
-                        BuildSectorSpawnEntityDialog spawnEntityDialog = new BuildSectorSpawnEntityDialog();
+                        spawnEntityDialog = new BuildSectorSpawnEntityDialog();
                         spawnEntityDialog.sectorData = sectorData;
                         spawnEntityDialog.catalogPermission = catalogPermission;
                         spawnEntityDialog.activate();
+                        spawnEntityDialog.getInputPanel().setSpawnName(catalogPermission.getUid());
                     } else getState().getController().queueUIAudio("0022_menu_ui - error 1");
                 }
             }
 
             @Override
             public boolean isOccluded() {
-                return !getState().getController().getPlayerInputs().isEmpty() || !hasPermission("SPAWN");
+                return !getState().getController().getPlayerInputs().isEmpty() || isBlocked() || !hasPermission("SPAWN");
             }
         }, new GUIActivationCallback() {
             @Override
@@ -68,7 +70,7 @@ public class BuildSectorCatalogScrollableList extends ScrollableTableList<Catalo
 
             @Override
             public boolean isActive(InputState inputState) {
-                return getState().getController().getPlayerInputs().isEmpty() && hasPermission("SPAWN");
+                return getState().getController().getPlayerInputs().isEmpty() && !isBlocked() && hasPermission("SPAWN");
             }
         });
 
@@ -81,10 +83,9 @@ public class BuildSectorCatalogScrollableList extends ScrollableTableList<Catalo
                         (new SimplePlayerTextInput("Enter Name", "") {
                             @Override
                             public boolean onInput(String s) {
-                                if(s != null && !s.isEmpty()) {
-                                    PacketUtil.sendPacketToServer(new RequestSpawnEntryPacket(s, catalogPermission.getUid(), false, FactionManager.PIRATES_ID));
-                                    return true;
-                                } else return false;
+                                if(s == null || s.isEmpty()) s = catalogPermission.getUid();
+                                PacketUtil.sendPacketToServer(new RequestSpawnEntryPacket(s, catalogPermission.getUid(), false, FactionManager.PIRATES_ID));
+                                return true;
                             }
                         }).activate();
                     } else getState().getController().queueUIAudio("0022_menu_ui - error 1");
@@ -93,7 +94,7 @@ public class BuildSectorCatalogScrollableList extends ScrollableTableList<Catalo
 
             @Override
             public boolean isOccluded() {
-                return !getState().getController().getPlayerInputs().isEmpty() || !hasPermission("SPAWN_ENEMIES");
+                return !getState().getController().getPlayerInputs().isEmpty() || isBlocked() || !hasPermission("SPAWN_ENEMIES");
             }
         }, new GUIActivationCallback() {
             @Override
@@ -103,11 +104,15 @@ public class BuildSectorCatalogScrollableList extends ScrollableTableList<Catalo
 
             @Override
             public boolean isActive(InputState inputState) {
-                return getState().getController().getPlayerInputs().isEmpty() && hasPermission("SPAWN_ENEMIES");
+                return getState().getController().getPlayerInputs().isEmpty() && !isBlocked() && hasPermission("SPAWN_ENEMIES");
             }
         });
 
         return buttonPane;
+    }
+
+    public boolean isBlocked() {
+        return spawnEntityDialog != null && spawnEntityDialog.isActive();
     }
 
     @Override
@@ -234,6 +239,23 @@ public class BuildSectorCatalogScrollableList extends ScrollableTableList<Catalo
             this.highlightSelect = true;
             this.highlightSelectSimple = true;
             this.setAllwaysOneSelected(true);
+        }
+
+        @Override
+        public void extended() {
+            if(!isOccluded()) super.extended();
+            else super.unexpend();
+        }
+
+        @Override
+        public void collapsed() {
+            if(!isOccluded()) super.collapsed();
+            else super.extended();
+        }
+
+        @Override
+        public boolean isOccluded() {
+            return spawnEntityDialog != null && spawnEntityDialog.getInputPanel() != null && spawnEntityDialog.getInputPanel().isActive();
         }
     }
 }

@@ -218,5 +218,22 @@ public class BuildSectorUserScrollableList extends ScrollableTableList<String> {
             this.highlightSelectSimple = true;
             this.setAllwaysOneSelected(true);
         }
+
+        @Override
+        public void extended() {
+            if(!isOccluded()) super.extended();
+            else super.unexpend();
+        }
+
+        @Override
+        public void collapsed() {
+            if(!isOccluded()) super.collapsed();
+            else super.extended();
+        }
+
+        @Override
+        public boolean isOccluded() {
+            return panel.textInput != null && panel.textInput.isActive();
+        }
     }
 }

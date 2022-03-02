@@ -35,8 +35,9 @@ public class BuildSectorSpawnEntityDialog extends GUIInputDialog {
 					deactivate();
 					break;
 				case "OK":
-					if(sectorData != null && catalogPermission != null && !getInputPanel().getSpawnName().isEmpty()) {
-						PacketUtil.sendPacketToServer(new RequestSpawnEntryPacket(getInputPanel().getSpawnName(), catalogPermission.getUid(), getInputPanel().spawnDocked(), getInputPanel().spawnAsFaction()));
+					if(sectorData != null && catalogPermission != null) {
+						String spawnName = (getInputPanel().getSpawnName().isEmpty()) ? catalogPermission.getUid() : getInputPanel().getSpawnName();
+						PacketUtil.sendPacketToServer(new RequestSpawnEntryPacket(spawnName, catalogPermission.getUid(), getInputPanel().spawnDocked(), getInputPanel().spawnAsFaction()));
 						deactivate();
 					}
 					break;

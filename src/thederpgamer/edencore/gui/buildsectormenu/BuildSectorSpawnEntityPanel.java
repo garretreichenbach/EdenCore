@@ -18,13 +18,18 @@ import org.schema.schine.input.InputState;
 public class BuildSectorSpawnEntityPanel extends GUIInputDialogPanel {
 
 	private GUIContentPane contentPane;
-
 	private String currentNameText = "";
 	private boolean spawnAsOwnFaction = true;
 	private boolean spawnDocked = false;
+	private boolean active = false;
 
 	public BuildSectorSpawnEntityPanel(InputState inputState, GUICallback guiCallback) {
 		super(inputState, "build_sector_entity_spawn_panel", "Spawn Entity", "", 600, 150, guiCallback);
+	}
+
+	@Override
+	public boolean isActive() {
+		return super.isActive() && active;
 	}
 
 	@Override
@@ -121,6 +126,19 @@ public class BuildSectorSpawnEntityPanel extends GUIInputDialogPanel {
 				return "Spawn on rail dock";
 			}
 		}, 300);
+		active = true;
+	}
+
+	@Override
+	public void draw() {
+		super.draw();
+		active = true;
+	}
+
+	@Override
+	public void cleanUp() {
+		super.cleanUp();
+		active = false;
 	}
 
 	private void addTextBar(TextBarResult textBarResult) {
@@ -137,6 +155,10 @@ public class BuildSectorSpawnEntityPanel extends GUIInputDialogPanel {
 
 	public String getSpawnName() {
 		return currentNameText;
+	}
+
+	public void setSpawnName(String spawnName) {
+		currentNameText = spawnName;
 	}
 
 	public int spawnAsFaction() {

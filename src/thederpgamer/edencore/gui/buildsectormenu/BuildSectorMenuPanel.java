@@ -26,6 +26,8 @@ import thederpgamer.edencore.utils.DataUtils;
  */
 public class BuildSectorMenuPanel extends GUIMenuPanel {
 
+    public SimplePlayerTextInput textInput;
+
     public BuildSectorMenuPanel(InputState inputState) {
         super(inputState, "BuildSectorMenu", (int) (GLFrame.getWidth() / 1.5), (int) (GLFrame.getHeight() / 1.5));
     }
@@ -64,7 +66,7 @@ public class BuildSectorMenuPanel extends GUIMenuPanel {
             @Override
             public void callback(GUIElement guiElement, MouseEvent mouseEvent) {
                 if(mouseEvent.pressedLeftMouse()) {
-                    (new SimplePlayerTextInput("Enter Username", "") {
+                    (textInput = new SimplePlayerTextInput("Enter Username", "") {
                         @Override
                         public boolean onInput(String s) {
                             if(GameCommon.getPlayerFromName(s) != null && !DataUtils.getBuildSector(GameClient.getClientPlayerState().getName()).getAllowedPlayersByName().contains(s)) {

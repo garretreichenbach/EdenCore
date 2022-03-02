@@ -327,7 +327,7 @@ public class EdenCore extends StarMod {
                 }
 
                 @Override
-                public boolean isOccluded() {
+                public boolean isBlocked() {
                     return false;
                 }
             }, new GUIActivationHighlightCallback() {
