@@ -17,36 +17,44 @@ import thederpgamer.edencore.network.client.RequestSpawnEntryPacket;
  */
 public class BuildSectorSpawnEntityDialog extends GUIInputDialog {
 
-	public BuildSectorData sectorData;
-	public CatalogPermission catalogPermission;
+  public BuildSectorData sectorData;
+  public CatalogPermission catalogPermission;
 
-	@Override
-	public BuildSectorSpawnEntityPanel createPanel() {
-		return new BuildSectorSpawnEntityPanel(getState(), this);
-	}
+  @Override
+  public BuildSectorSpawnEntityPanel createPanel() {
+    return new BuildSectorSpawnEntityPanel(getState(), this);
+  }
 
-	@Override
-	public void callback(GUIElement callingElement, MouseEvent mouseEvent) {
-		if(!isOccluded() && mouseEvent.pressedLeftMouse()) {
-			switch((String) callingElement.getUserPointer()) {
-				case "X":
-				case "CANCEL":
-					PacketUtil.sendPacketToServer(new RequestClientCacheUpdatePacket());
-					deactivate();
-					break;
-				case "OK":
-					if(sectorData != null && catalogPermission != null) {
-						String spawnName = (getInputPanel().getSpawnName().isEmpty()) ? catalogPermission.getUid() : getInputPanel().getSpawnName();
-						PacketUtil.sendPacketToServer(new RequestSpawnEntryPacket(spawnName, catalogPermission.getUid(), getInputPanel().spawnDocked(), getInputPanel().spawnAsFaction()));
-						deactivate();
-					}
-					break;
-			}
-		}
-	}
+  @Override
+  public void callback(GUIElement callingElement, MouseEvent mouseEvent) {
+    if (!isOccluded() && mouseEvent.pressedLeftMouse()) {
+      switch ((String) callingElement.getUserPointer()) {
+        case "X":
+        case "CANCEL":
+          PacketUtil.sendPacketToServer(new RequestClientCacheUpdatePacket());
+          deactivate();
+          break;
+        case "OK":
+          if (sectorData != null && catalogPermission != null) {
+            String spawnName =
+                (getInputPanel().getSpawnName().isEmpty())
+                    ? catalogPermission.getUid()
+                    : getInputPanel().getSpawnName();
+            PacketUtil.sendPacketToServer(
+                new RequestSpawnEntryPacket(
+                    spawnName,
+                    catalogPermission.getUid(),
+                    getInputPanel().spawnDocked(),
+                    getInputPanel().spawnAsFaction()));
+            deactivate();
+          }
+          break;
+      }
+    }
+  }
 
-	@Override
-	public BuildSectorSpawnEntityPanel getInputPanel() {
-		return (BuildSectorSpawnEntityPanel) super.getInputPanel();
-	}
+  @Override
+  public BuildSectorSpawnEntityPanel getInputPanel() {
+    return (BuildSectorSpawnEntityPanel) super.getInputPanel();
+  }
 }
