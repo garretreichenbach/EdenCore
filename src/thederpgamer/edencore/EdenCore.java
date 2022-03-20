@@ -79,15 +79,19 @@ public class EdenCore extends StarMod {
 	// Instance
 	private static EdenCore getInstance;
 	// Overwrites
-	private final String[] overwriteClasses = new String[] {"PlayerState", "BlueprintEntry"};
+	private final String[] overwriteClasses = new String[] {
+			"PlayerState",
+			"BlueprintEntry"
+	};
 	// Disabled Blocks
-	private final short[] disabledBlocks = new short[] {347, // Shop Module
-	                                                    291, // Faction Module
-	                                                    667, // Shipyard Computer
-	                                                    683, // Race Gate Controller
-	                                                    542, // Warp Gate Computer
-	                                                    445, // Medical Supplies
-	                                                    446 // Medial Cabinet
+	private final short[] disabledBlocks = new short[] {
+			347, // Shop Module
+			291, // Faction Module
+			667, // Shipyard Computer
+			683, // Race Gate Controller
+			542, // Warp Gate Computer
+			445, // Medical Supplies
+			446 // Medial Cabinet
 	};
 	// Disabled Tabs
 	private final String[] disabledTabs = new String[] {"FLEETS", "SHOP", "REPAIRS", "TRADE", "SET PRICES"};

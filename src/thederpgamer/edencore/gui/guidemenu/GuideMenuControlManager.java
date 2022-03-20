@@ -2,6 +2,9 @@ package thederpgamer.edencore.gui.guidemenu;
 
 import api.common.GameClient;
 import api.utils.gui.GUIControlManager;
+import org.schema.common.util.StringTools;
+import org.schema.game.common.controller.elements.VoidElementManager;
+import org.schema.game.common.controller.elements.weapon.WeaponElementManager;
 import org.schema.schine.graphicsengine.forms.font.FontLibrary;
 import org.schema.schine.graphicsengine.forms.gui.GUITextOverlay;
 import org.schema.schine.graphicsengine.forms.gui.newgui.GUIContentPane;
@@ -32,14 +35,144 @@ public class GuideMenuControlManager extends GUIControlManager {
 
 	private void loadGuides() {
 		{ //Config Changes
-			guideEntries.add(new GuideEntryData("Armor", GuideEntryCategory.CONFIG_CHANGES) {
+			guideEntries.add(new GuideEntryData("Armor Changes", GuideEntryCategory.CONFIG_CHANGES) {
 				@Override
 				public void createEntryPane(GUIContentPane contentPane) {
 					GUITextOverlay titleOverlay = new GUITextOverlay(50, 50, getState());
+					titleOverlay.onInit();
 					titleOverlay.setFont(FontLibrary.FontSize.BIG.getFont());
-					titleOverlay.setTextSimple("Armor:");
-					//Todo
+					titleOverlay.setTextSimple("Armor Changes:");
 					contentPane.getContent(0).attach(titleOverlay);
+
+					GUITextOverlay statOverlay = new GUITextOverlay(50, 50, getState());
+					statOverlay.onInit();
+					statOverlay.setFont(FontLibrary.FontSize.MEDIUM.getFont());
+					statOverlay.setTextSimple(
+							"Armor Thickness Bonus: 0.0 -> " + StringTools.formatPointZero(VoidElementManager.ARMOR_THICKNESS_BONUS) + "\n" +
+							"A flat armor thickness bonus multiplier added on top of the base calculations.\n" +
+							"Armor Beam Damage Resistance: 0.0 -> " + StringTools.formatPointZero(VoidElementManager.ARMOR_BEAM_DAMAGE_SCALING) + "\n" +
+							"An additional bonus multiplier for armor resistance against beams specifically.");
+					contentPane.getContent(0).attach(statOverlay);
+					statOverlay.getPos().y += titleOverlay.getTextHeight() + 2;
+
+					GUITextOverlay descriptionOverlay = new GUITextOverlay(50, 50, getState());
+					descriptionOverlay.onInit();
+					descriptionOverlay.setFont(FontLibrary.FontSize.SMALL.getFont());
+					descriptionOverlay.setTextSimple(
+							"These changes buff armor and make it more worthwhile to create armored bulkheads in your ships. Without these changes, armor is practically useless. " +
+							"Additionally, buffing armor defense against beam damage specifically encourages players to use cannons for penetrating armor instead of relying mostly " +
+							"on beams for block damage.");
+					contentPane.getContent(0).attach(descriptionOverlay);
+					descriptionOverlay.getPos().y += titleOverlay.getTextHeight() + statOverlay.getTextHeight() + 4;
+				}
+			});
+
+			guideEntries.add(new GuideEntryData("Reactor Changes", GuideEntryCategory.CONFIG_CHANGES) {
+				@Override
+				public void createEntryPane(GUIContentPane contentPane) {
+					GUITextOverlay titleOverlay = new GUITextOverlay(50, 50, getState());
+					titleOverlay.onInit();
+					titleOverlay.setFont(FontLibrary.FontSize.BIG.getFont());
+					titleOverlay.setTextSimple("Reactor Changes:");
+					contentPane.getContent(0).attach(titleOverlay);
+
+					GUITextOverlay statOverlay = new GUITextOverlay(50, 50, getState());
+					statOverlay.onInit();
+					statOverlay.setFont(FontLibrary.FontSize.MEDIUM.getFont());
+					statOverlay.setTextSimple(
+							"Reactor Recharge Percent Per Second: 1.0 -> + " + StringTools.formatPointZero(VoidElementManager.REACTOR_RECHARGE_PERCENT_PER_SECOND) + "\n" +
+							"Increased reactor regen to make reactor design less of a pain and allow for more flexibility in system design.\n" +
+							"Reactor Recharge Multiplier When Empty: 1.0 -> " + StringTools.formatPointZero(VoidElementManager.REACTOR_RECHARGE_EMPTY_MULTIPLIER) + "\n" +
+							"Increased how much initial bonus recharge a reactor gets after a power outage.\n" +
+							"Reactor Chamber Block Ratio: 0.5 -> " + StringTools.formatPointZero(VoidElementManager.REACTOR_CHAMBER_BLOCKS_PER_MAIN_REACTOR_AND_LEVEL) + "\n" +
+							"Decreased the ratio of chamber blocks needed per reactor block as chambers took up far too much space and forced players to dedicate too much internal" +
+							"system space just for chambers.\n" +
+							"Reactor Blocks Needed Per Level: 100 -> " + VoidElementManager.REACTOR_LEVEL_CALC_LINEAR_BLOCKS_NEEDED_PER_LEVEL + "\n" +
+							"Increased this in order to balance above changes.\n" +
+							"Reactor HP Deduction Factor: 0.7 -> " + StringTools.formatPointZero(VoidElementManager.HP_DEDUCTION_LOG_FACTOR) + "\n" +
+							"Most battles get stretched out in the end as even if a ship is mostly destroyed, if the reactor is still alive the ship doesn't overheat, which creates a " +
+							"sort of \"limbo\" period where the ship is unable to function but also is not destroyed. By increasing how much damage Reactor HP takes we can mitigate this problem.");
+					contentPane.getContent(0).attach(statOverlay);
+					statOverlay.getPos().y += titleOverlay.getTextHeight() + 2;
+
+					GUITextOverlay descriptionOverlay = new GUITextOverlay(50, 50, getState());
+					descriptionOverlay.onInit();
+					descriptionOverlay.setFont(FontLibrary.FontSize.SMALL.getFont());
+					descriptionOverlay.setTextSimple("These changes seek to balance reactors and to make the design process smoother and less of a headache.");
+					contentPane.getContent(0).attach(descriptionOverlay);
+					descriptionOverlay.getPos().y += titleOverlay.getTextHeight() + statOverlay.getTextHeight() + 4;
+				}
+			});
+
+			guideEntries.add(new GuideEntryData("Cannon Changes", GuideEntryCategory.CONFIG_CHANGES) {
+				@Override
+				public void createEntryPane(GUIContentPane contentPane) {
+					GUITextOverlay titleOverlay = new GUITextOverlay(50, 50, getState());
+					titleOverlay.onInit();
+					titleOverlay.setFont(FontLibrary.FontSize.BIG.getFont());
+					titleOverlay.setTextSimple("Cannon Changes:");
+					contentPane.getContent(0).attach(titleOverlay);
+
+					GUITextOverlay statOverlay = new GUITextOverlay(50, 50, getState());
+					statOverlay.onInit();
+					statOverlay.setFont(FontLibrary.FontSize.MEDIUM.getFont());
+					statOverlay.setTextSimple(
+							"Cannon Base Damage: 13.53 -> " + WeaponElementManager.BASE_DAMAGE + "\n" +
+							"Increased base damage of cannons to encourage their usage.\n" +
+							"Cannon Cannon Damage Nerf: 6.53 -> 4.45\n" +
+							"Made cannon cannon viable in combat.\n" +
+							"Cannon Cannon Projectile Width Nerf: 0.0 -> 1.15\n" +
+							"Balances previous buffs for Cannon Cannon\n" +
+							"Cannon Beam Damage Multiplier: 6.39 -> 8.0\n" +
+							"Cannon Beam was one of the worst weapons in the game, so increasing it's damage output will make it more viable.\n" +
+							"Cannon Beam Reload Multiplier: 9.0 -> 6.7\n" +
+							"Nerf reload to make Cannon Beam more effective.\n" +
+							"Cannon Missile Damage Multiplier: 8.51 -> 8.65\n" +
+							"Slightly buff Cannon Missile damage.\n" +
+							"Cannon Penetration Depth Exponent: 0.35 -> " + WeaponElementManager.PROJECTILE_PENETRATION_DEPTH_EXP + "\n" +
+							"Cannon Penetration Depth Exponent Multiplier: 0.4 -> " + WeaponElementManager.PROJECTILE_PENETRATION_DEPTH_EXP_MULT + "\n" +
+							"Decreased cannon penetration slightly in order to boost armor protection.");
+					//Todo: Figure out how to fetch these directly from blockBehaviorConfig.xml so I don't have to update them every time the config is changed
+					contentPane.getContent(0).attach(statOverlay);
+					statOverlay.getPos().y += titleOverlay.getTextHeight() + 2;
+
+					GUITextOverlay descriptionOverlay = new GUITextOverlay(50, 50, getState());
+					descriptionOverlay.onInit();
+					descriptionOverlay.setFont(FontLibrary.FontSize.SMALL.getFont());
+					descriptionOverlay.setTextSimple("Some buffs in order to make cannons viable again.");
+					contentPane.getContent(0).attach(descriptionOverlay);
+					descriptionOverlay.getPos().y += titleOverlay.getTextHeight() + statOverlay.getTextHeight() + 4;
+				}
+			});
+
+			guideEntries.add(new GuideEntryData("Misc Changes", GuideEntryCategory.CONFIG_CHANGES) {
+				@Override
+				public void createEntryPane(GUIContentPane contentPane) {
+					GUITextOverlay titleOverlay = new GUITextOverlay(50, 50, getState());
+					titleOverlay.onInit();
+					titleOverlay.setFont(FontLibrary.FontSize.BIG.getFont());
+					titleOverlay.setTextSimple("Misc Changes:");
+					contentPane.getContent(0).attach(titleOverlay);
+
+					GUITextOverlay statOverlay = new GUITextOverlay(50, 50, getState());
+					statOverlay.onInit();
+					statOverlay.setFont(FontLibrary.FontSize.MEDIUM.getFont());
+					statOverlay.setTextSimple(
+							"Basic Hull Armor Value: 0.0 -> 1.0\n" +
+							"Minor fix to prevent an exploit involving cannons being able to infinitely penetrate basic armor.\n" +
+							"Weapon Module Mass: 1.0 -> 0.7\n" +
+							"Made weapons less heavy in order to allow more flexibility in systems design.\n" +
+							"Acid Damage Max Propagation: 200 -> " + WeaponElementManager.ACID_DAMAGE_MAX_PROPAGATION + "\n" +
+							"Reduced acid damage a bit to balance weapon buffs.");
+					contentPane.getContent(0).attach(statOverlay);
+					statOverlay.getPos().y += titleOverlay.getTextHeight() + 2;
+
+					GUITextOverlay descriptionOverlay = new GUITextOverlay(50, 50, getState());
+					descriptionOverlay.onInit();
+					descriptionOverlay.setFont(FontLibrary.FontSize.SMALL.getFont());
+					descriptionOverlay.setTextSimple("Misc stat changes to fix exploits and improve gameplay.");
+					contentPane.getContent(0).attach(descriptionOverlay);
+					descriptionOverlay.getPos().y += titleOverlay.getTextHeight() + statOverlay.getTextHeight() + 4;
 				}
 			});
 		}
