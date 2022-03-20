@@ -4,6 +4,7 @@ import api.common.GameClient;
 import api.network.packets.PacketUtil;
 import api.utils.game.PlayerUtils;
 import org.schema.game.common.controller.SegmentController;
+import org.schema.schine.graphicsengine.core.GLFrame;
 import org.schema.schine.graphicsengine.core.MouseEvent;
 import org.schema.schine.graphicsengine.forms.gui.*;
 import org.schema.schine.graphicsengine.forms.gui.newgui.*;
@@ -27,9 +28,11 @@ import java.util.Set;
 public class BuildSectorScrollableList extends ScrollableTableList<BuildSectorData> {
 
     private final BuildSectorMenuPanel panel;
+    private final GUIElement p;
 
     public BuildSectorScrollableList(InputState state, GUIElement p, BuildSectorMenuPanel panel) {
-        super(state, 800, 500, p);
+        super(state, (float) (GLFrame.getWidth() / 1.5), (float) (GLFrame.getHeight() / 1.5), p);
+        this.p = p;
         this.panel = panel;
         p.attach(this);
     }
@@ -140,7 +143,7 @@ public class BuildSectorScrollableList extends ScrollableTableList<BuildSectorDa
                 (ownerRowElement = new GUIClippedRow(this.getState())).attach(ownerTextElement);
 
                 BuildSectorScrollableListRow listRow = new BuildSectorScrollableListRow(getState(), sectorData, ownerRowElement);
-                GUIAncor anchor = new GUIAncor(getState(), 560, 28.0f);
+                GUIAncor anchor = new GUIAncor(getState(), p.getWidth() - 28.0f, 28.0f);
                 anchor.attach(redrawButtonPane(sectorData, anchor));
                 listRow.expanded = new GUIElementList(getState());
                 listRow.expanded.add(new GUIListElement(anchor, getState()));
