@@ -229,11 +229,14 @@ public class EdenCore extends StarMod {
 					}
 				}
 
+				/*
 				if(!GameClient.getClientState().getController().isChatActive() && GameClient.getClientState().getController().getPlayerInputs().isEmpty()) {
 					GameClient.getClientState().getController().queueUIAudio("0022_menu_ui - enter");
 					GameClient.getClientState().getGlobalGameControlManager().getIngameControlManager().getPlayerGameControlManager().deactivateAll();
 					eventsMenuControlManager.setActive(true);
 				}
+
+				 */
 			}
 		}, this);
 

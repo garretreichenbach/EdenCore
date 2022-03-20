@@ -59,7 +59,7 @@ public class GuideEntryScrollableList extends ScrollableTableList<GuideEntryData
 		guiElementList.addObserver(this);
 		int sortIndex = 0;
 		for(GuideEntryCategory category : GuideEntryCategory.values()) {
-			final ScrollableTableList<GuideEntryData>.Seperator separator = getSeperator(category.name(), sortIndex);
+			final ScrollableTableList<GuideEntryData>.Seperator separator = getSeperator(category.display, sortIndex);
 			sortIndex ++;
 			for(GuideEntryData guideEntry : set) {
 				if(guideEntry.category.equals(category)) {
@@ -76,6 +76,7 @@ public class GuideEntryScrollableList extends ScrollableTableList<GuideEntryData
 					listRow.expanded.attach(anchor);
 					listRow.seperator = separator;
 					listRow.onInit();
+					guiElementList.addWithoutUpdate(listRow);
 				}
 			}
 		}

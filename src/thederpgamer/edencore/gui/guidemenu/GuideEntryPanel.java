@@ -20,6 +20,7 @@ public class GuideEntryPanel extends GUIInputDialogPanel {
 		super(inputState, "GuideEntryPanel", "Guide", "", (int) (GLFrame.getWidth() / 1.5), (int) (GLFrame.getHeight() / 1.5), guiCallback);
 		setCancelButtonText("EXIT");
 		setOkButton(false);
+		getButtonCancel().setUserPointer("EXIT");
 	}
 
 	public void createPanel(GuideEntryData guideEntry) {
