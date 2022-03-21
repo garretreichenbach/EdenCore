@@ -10,7 +10,6 @@ import org.schema.schine.graphicsengine.forms.gui.GUITextOverlay;
 import org.schema.schine.graphicsengine.forms.gui.newgui.GUIContentPane;
 import thederpgamer.edencore.data.guide.GuideEntryCategory;
 import thederpgamer.edencore.data.guide.GuideEntryData;
-import thederpgamer.edencore.gui.elements.GUITextArea;
 
 import java.util.ArrayList;
 
@@ -36,20 +35,16 @@ public class GuideMenuControlManager extends GUIControlManager {
 
 	private void loadGuides() {
 		{ //Config Changes
-			guideEntries.clear();
 			guideEntries.add(new GuideEntryData("Armor Changes", GuideEntryCategory.CONFIG_CHANGES) {
 				@Override
 				public void createEntryPane(GUIContentPane contentPane) {
-					GUITextArea textArea = new GUITextArea(getState(), contentPane.getContent(0));
-					textArea.onInit();
-
-					GUITextOverlay titleOverlay = new GUITextOverlay(10, 10, getState());
+					GUITextOverlay titleOverlay = new GUITextOverlay(50, 50, getState());
 					titleOverlay.onInit();
 					titleOverlay.setFont(FontLibrary.FontSize.BIG.getFont());
 					titleOverlay.setTextSimple("Armor Changes:");
-					textArea.addText(titleOverlay);
+					contentPane.getContent(0).attach(titleOverlay);
 
-					GUITextOverlay statOverlay = new GUITextOverlay(10, 10, getState());
+					GUITextOverlay statOverlay = new GUITextOverlay(50, 50, getState());
 					statOverlay.onInit();
 					statOverlay.setFont(FontLibrary.FontSize.MEDIUM.getFont());
 					statOverlay.setTextSimple(
@@ -57,32 +52,31 @@ public class GuideMenuControlManager extends GUIControlManager {
 							"A flat armor thickness bonus multiplier added on top of the base calculations.\n" +
 							"Armor Beam Damage Resistance: 0.0 -> " + StringTools.formatPointZero(VoidElementManager.ARMOR_BEAM_DAMAGE_SCALING) + "\n" +
 							"An additional bonus multiplier for armor resistance against beams specifically.");
-					textArea.addText(statOverlay);
+					contentPane.getContent(0).attach(statOverlay);
+					statOverlay.getPos().y += titleOverlay.getTextHeight() + 2;
 
-					GUITextOverlay descriptionOverlay = new GUITextOverlay(10, 10, getState());
+					GUITextOverlay descriptionOverlay = new GUITextOverlay(50, 50, getState());
 					descriptionOverlay.onInit();
 					descriptionOverlay.setFont(FontLibrary.FontSize.SMALL.getFont());
 					descriptionOverlay.setTextSimple(
 							"These changes buff armor and make it more worthwhile to create armored bulkheads in your ships. Without these changes, armor is practically useless. " +
 							"Additionally, buffing armor defense against beam damage specifically encourages players to use cannons for penetrating armor instead of relying mostly " +
 							"on beams for block damage.");
-					textArea.addText(descriptionOverlay);
+					contentPane.getContent(0).attach(descriptionOverlay);
+					descriptionOverlay.getPos().y += titleOverlay.getTextHeight() + statOverlay.getTextHeight() + 4;
 				}
 			});
 
 			guideEntries.add(new GuideEntryData("Reactor Changes", GuideEntryCategory.CONFIG_CHANGES) {
 				@Override
 				public void createEntryPane(GUIContentPane contentPane) {
-					GUITextArea textArea = new GUITextArea(getState(), contentPane.getContent(0));
-					textArea.onInit();
-
-					GUITextOverlay titleOverlay = new GUITextOverlay(10, 10, getState());
+					GUITextOverlay titleOverlay = new GUITextOverlay(50, 50, getState());
 					titleOverlay.onInit();
 					titleOverlay.setFont(FontLibrary.FontSize.BIG.getFont());
 					titleOverlay.setTextSimple("Reactor Changes:");
-					textArea.addText(titleOverlay);
+					contentPane.getContent(0).attach(titleOverlay);
 
-					GUITextOverlay statOverlay = new GUITextOverlay(10, 10, getState());
+					GUITextOverlay statOverlay = new GUITextOverlay(50, 50, getState());
 					statOverlay.onInit();
 					statOverlay.setFont(FontLibrary.FontSize.MEDIUM.getFont());
 					statOverlay.setTextSimple(
@@ -98,29 +92,28 @@ public class GuideMenuControlManager extends GUIControlManager {
 							"Reactor HP Deduction Factor: 0.7 -> " + StringTools.formatPointZero(VoidElementManager.HP_DEDUCTION_LOG_FACTOR) + "\n" +
 							"Most battles get stretched out in the end as even if a ship is mostly destroyed, if the reactor is still alive the ship doesn't overheat, which creates a " +
 							"sort of \"limbo\" period where the ship is unable to function but also is not destroyed. By increasing how much damage Reactor HP takes we can mitigate this problem.");
-					textArea.addText(statOverlay);
+					contentPane.getContent(0).attach(statOverlay);
+					statOverlay.getPos().y += titleOverlay.getTextHeight() + 2;
 
-					GUITextOverlay descriptionOverlay = new GUITextOverlay(10, 10, getState());
+					GUITextOverlay descriptionOverlay = new GUITextOverlay(50, 50, getState());
 					descriptionOverlay.onInit();
 					descriptionOverlay.setFont(FontLibrary.FontSize.SMALL.getFont());
 					descriptionOverlay.setTextSimple("These changes seek to balance reactors and to make the design process smoother and less of a headache.");
-					textArea.addText(descriptionOverlay);
+					contentPane.getContent(0).attach(descriptionOverlay);
+					descriptionOverlay.getPos().y += titleOverlay.getTextHeight() + statOverlay.getTextHeight() + 4;
 				}
 			});
 
 			guideEntries.add(new GuideEntryData("Cannon Changes", GuideEntryCategory.CONFIG_CHANGES) {
 				@Override
 				public void createEntryPane(GUIContentPane contentPane) {
-					GUITextArea textArea = new GUITextArea(getState(), contentPane.getContent(0));
-					textArea.onInit();
-
-					GUITextOverlay titleOverlay = new GUITextOverlay(10, 10, getState());
+					GUITextOverlay titleOverlay = new GUITextOverlay(50, 50, getState());
 					titleOverlay.onInit();
 					titleOverlay.setFont(FontLibrary.FontSize.BIG.getFont());
 					titleOverlay.setTextSimple("Cannon Changes:");
-					textArea.addText(titleOverlay);
+					contentPane.getContent(0).attach(titleOverlay);
 
-					GUITextOverlay statOverlay = new GUITextOverlay(10, 10, getState());
+					GUITextOverlay statOverlay = new GUITextOverlay(50, 50, getState());
 					statOverlay.onInit();
 					statOverlay.setFont(FontLibrary.FontSize.MEDIUM.getFont());
 					statOverlay.setTextSimple(
@@ -140,29 +133,28 @@ public class GuideMenuControlManager extends GUIControlManager {
 							"Cannon Penetration Depth Exponent Multiplier: 0.4 -> " + WeaponElementManager.PROJECTILE_PENETRATION_DEPTH_EXP_MULT + "\n" +
 							"Decreased cannon penetration slightly in order to boost armor protection.");
 					//Todo: Figure out how to fetch these directly from blockBehaviorConfig.xml so I don't have to update them every time the config is changed
-					textArea.addText(statOverlay);
+					contentPane.getContent(0).attach(statOverlay);
+					statOverlay.getPos().y += titleOverlay.getTextHeight() + 2;
 
-					GUITextOverlay descriptionOverlay = new GUITextOverlay(10, 10, getState());
+					GUITextOverlay descriptionOverlay = new GUITextOverlay(50, 50, getState());
 					descriptionOverlay.onInit();
 					descriptionOverlay.setFont(FontLibrary.FontSize.SMALL.getFont());
 					descriptionOverlay.setTextSimple("Some buffs in order to make cannons viable again.");
-					textArea.addText(descriptionOverlay);
+					contentPane.getContent(0).attach(descriptionOverlay);
+					descriptionOverlay.getPos().y += titleOverlay.getTextHeight() + statOverlay.getTextHeight() + 4;
 				}
 			});
 
 			guideEntries.add(new GuideEntryData("Misc Changes", GuideEntryCategory.CONFIG_CHANGES) {
 				@Override
 				public void createEntryPane(GUIContentPane contentPane) {
-					GUITextArea textArea = new GUITextArea(getState(), contentPane.getContent(0));
-					textArea.onInit();
-
-					GUITextOverlay titleOverlay = new GUITextOverlay(10, 10, getState());
+					GUITextOverlay titleOverlay = new GUITextOverlay(50, 50, getState());
 					titleOverlay.onInit();
 					titleOverlay.setFont(FontLibrary.FontSize.BIG.getFont());
 					titleOverlay.setTextSimple("Misc Changes:");
-					textArea.addText(titleOverlay);
+					contentPane.getContent(0).attach(titleOverlay);
 
-					GUITextOverlay statOverlay = new GUITextOverlay(10, 10, getState());
+					GUITextOverlay statOverlay = new GUITextOverlay(50, 50, getState());
 					statOverlay.onInit();
 					statOverlay.setFont(FontLibrary.FontSize.MEDIUM.getFont());
 					statOverlay.setTextSimple(
@@ -172,13 +164,15 @@ public class GuideMenuControlManager extends GUIControlManager {
 							"Made weapons less heavy in order to allow more flexibility in systems design.\n" +
 							"Acid Damage Max Propagation: 200 -> " + WeaponElementManager.ACID_DAMAGE_MAX_PROPAGATION + "\n" +
 							"Reduced acid damage a bit to balance weapon buffs.");
-					textArea.addText(statOverlay);
+					contentPane.getContent(0).attach(statOverlay);
+					statOverlay.getPos().y += titleOverlay.getTextHeight() + 2;
 
-					GUITextOverlay descriptionOverlay = new GUITextOverlay(10, 10, getState());
+					GUITextOverlay descriptionOverlay = new GUITextOverlay(50, 50, getState());
 					descriptionOverlay.onInit();
 					descriptionOverlay.setFont(FontLibrary.FontSize.SMALL.getFont());
 					descriptionOverlay.setTextSimple("Misc stat changes to fix exploits and improve gameplay.");
-					textArea.addText(descriptionOverlay);
+					contentPane.getContent(0).attach(descriptionOverlay);
+					descriptionOverlay.getPos().y += titleOverlay.getTextHeight() + statOverlay.getTextHeight() + 4;
 				}
 			});
 		}
@@ -187,28 +181,22 @@ public class GuideMenuControlManager extends GUIControlManager {
 			guideEntries.add(new GuideEntryData("Basic Usage", GuideEntryCategory.BUILD_SECTORS) {
 				@Override
 				public void createEntryPane(GUIContentPane contentPane) {
-					GUITextArea textArea = new GUITextArea(getState(), contentPane.getContent(0));
-					textArea.onInit();
-
-					GUITextOverlay titleOverlay = new GUITextOverlay(10, 10, getState());
+					GUITextOverlay titleOverlay = new GUITextOverlay(50, 50, getState());
 					titleOverlay.setFont(FontLibrary.FontSize.BIG.getFont());
 					titleOverlay.setTextSimple("Basic Usage:");
 					//Todo
-					textArea.addText(titleOverlay);
+					contentPane.getContent(0).attach(titleOverlay);
 				}
 			});
 
 			guideEntries.add(new GuideEntryData("Management", GuideEntryCategory.BUILD_SECTORS) {
 				@Override
 				public void createEntryPane(GUIContentPane contentPane) {
-					GUITextArea textArea = new GUITextArea(getState(), contentPane.getContent(0));
-					textArea.onInit();
-
-					GUITextOverlay titleOverlay = new GUITextOverlay(10, 10, getState());
+					GUITextOverlay titleOverlay = new GUITextOverlay(50, 50, getState());
 					titleOverlay.setFont(FontLibrary.FontSize.BIG.getFont());
 					titleOverlay.setTextSimple("Management:");
 					//Todo
-					textArea.addText(titleOverlay);
+					contentPane.getContent(0).attach(titleOverlay);
 				}
 			});
 		}
@@ -217,14 +205,11 @@ public class GuideMenuControlManager extends GUIControlManager {
 			guideEntries.add(new GuideEntryData("Prize Bars", GuideEntryCategory.EXCHANGE) {
 				@Override
 				public void createEntryPane(GUIContentPane contentPane) {
-					GUITextArea textArea = new GUITextArea(getState(), contentPane.getContent(0));
-					textArea.onInit();
-
-					GUITextOverlay titleOverlay = new GUITextOverlay(10, 10, getState());
+					GUITextOverlay titleOverlay = new GUITextOverlay(50, 50, getState());
 					titleOverlay.setFont(FontLibrary.FontSize.BIG.getFont());
 					titleOverlay.setTextSimple("Prize Bars:");
 					//Todo
-					textArea.addText(titleOverlay);
+					contentPane.getContent(0).attach(titleOverlay);
 				}
 			});
 		}
@@ -233,14 +218,11 @@ public class GuideMenuControlManager extends GUIControlManager {
 			guideEntries.add(new GuideEntryData("Resource Types", GuideEntryCategory.RESOURCES) {
 				@Override
 				public void createEntryPane(GUIContentPane contentPane) {
-					GUITextArea textArea = new GUITextArea(getState(), contentPane.getContent(0));
-					textArea.onInit();
-
-					GUITextOverlay titleOverlay = new GUITextOverlay(10, 10, getState());
+					GUITextOverlay titleOverlay = new GUITextOverlay(50, 50, getState());
 					titleOverlay.setFont(FontLibrary.FontSize.BIG.getFont());
 					titleOverlay.setTextSimple("Resource Types:");
 					//Todo
-					textArea.addText(titleOverlay);
+					contentPane.getContent(0).attach(titleOverlay);
 				}
 			});
 		}
@@ -249,14 +231,11 @@ public class GuideMenuControlManager extends GUIControlManager {
 			guideEntries.add(new GuideEntryData("Warpspace Mechanics", GuideEntryCategory.FTL) {
 				@Override
 				public void createEntryPane(GUIContentPane contentPane) {
-					GUITextArea textArea = new GUITextArea(getState(), contentPane.getContent(0));
-					textArea.onInit();
-
-					GUITextOverlay titleOverlay = new GUITextOverlay(10, 10, getState());
+					GUITextOverlay titleOverlay = new GUITextOverlay(50, 50, getState());
 					titleOverlay.setFont(FontLibrary.FontSize.BIG.getFont());
 					titleOverlay.setTextSimple("Warpspace Mechanics:");
 					//Todo
-					textArea.addText(titleOverlay);
+					contentPane.getContent(0).attach(titleOverlay);
 				}
 			});
 		}
@@ -265,28 +244,22 @@ public class GuideMenuControlManager extends GUIControlManager {
 			guideEntries.add(new GuideEntryData("Banking System", GuideEntryCategory.MISC) {
 				@Override
 				public void createEntryPane(GUIContentPane contentPane) {
-					GUITextArea textArea = new GUITextArea(getState(), contentPane.getContent(0));
-					textArea.onInit();
-
-					GUITextOverlay titleOverlay = new GUITextOverlay(10, 10, getState());
+					GUITextOverlay titleOverlay = new GUITextOverlay(50, 50, getState());
 					titleOverlay.setFont(FontLibrary.FontSize.BIG.getFont());
 					titleOverlay.setTextSimple("Banking System:");
 					//Todo
-					textArea.addText(titleOverlay);
+					contentPane.getContent(0).attach(titleOverlay);
 				}
 			});
 
 			guideEntries.add(new GuideEntryData("Decor", GuideEntryCategory.MISC) {
 				@Override
 				public void createEntryPane(GUIContentPane contentPane) {
-					GUITextArea textArea = new GUITextArea(getState(), contentPane.getContent(0));
-					textArea.onInit();
-
-					GUITextOverlay titleOverlay = new GUITextOverlay(10, 10, getState());
+					GUITextOverlay titleOverlay = new GUITextOverlay(50, 50, getState());
 					titleOverlay.setFont(FontLibrary.FontSize.BIG.getFont());
 					titleOverlay.setTextSimple("Decor:");
 					//Todo
-					textArea.addText(titleOverlay);
+					contentPane.getContent(0).attach(titleOverlay);
 				}
 			});
 		}
