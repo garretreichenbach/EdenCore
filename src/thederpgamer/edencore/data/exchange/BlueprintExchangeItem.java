@@ -36,7 +36,7 @@ public class BlueprintExchangeItem extends ExchangeItem {
         this.name = blueprint.getName();
         this.blocks = blueprint.getElementCountMapWithChilds().getTotalAmount();
         this.iconPath = iconPath;
-        this.description = blocks + " blocks\n";
+        this.description = blocks + " blocks\n" + description;
     }
 
     @Override

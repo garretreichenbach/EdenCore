@@ -282,13 +282,9 @@ public class ExchangeMenuPanel extends GUIMenuPanel {
 					spriteOverlay.onInit();
 					tile.attach(spriteOverlay);
 					if(spriteOverlay.getUserPointer() == null) spriteOverlay.setUserPointer("default-icon");
-					if(spriteOverlay.getUserPointer().equals("default-icon")) {
-						spriteOverlay.getPos().x += 80;
-						spriteOverlay.getPos().y += 180;
-					} else {
-						spriteOverlay.getPos().x += 100;
-						spriteOverlay.getPos().y += 200;
-					}
+					if(!spriteOverlay.getUserPointer().equals("default-icon")) spriteOverlay.getScale().scale(0.5f);
+					spriteOverlay.getPos().x += 100;
+					spriteOverlay.getPos().y += 230;
 				}
 			}
 			scrollPanel.setContent(blueprintsTilePane);
@@ -419,13 +415,9 @@ public class ExchangeMenuPanel extends GUIMenuPanel {
 					spriteOverlay.onInit();
 					tile.attach(spriteOverlay);
 					if(spriteOverlay.getUserPointer() == null) spriteOverlay.setUserPointer("default-icon");
-					if(spriteOverlay.getUserPointer().equals("default-icon")) {
-						spriteOverlay.getPos().x += 80;
-						spriteOverlay.getPos().y += 180;
-					} else {
-						spriteOverlay.getPos().x += 100;
-						spriteOverlay.getPos().y += 200;
-					}
+					if(!spriteOverlay.getUserPointer().equals("default-icon")) spriteOverlay.getScale().scale(0.5f);
+					spriteOverlay.getPos().x += 100;
+					spriteOverlay.getPos().y += 230;
 				}
 			}
 			scrollPanel.setContent(blueprintsTilePane);
