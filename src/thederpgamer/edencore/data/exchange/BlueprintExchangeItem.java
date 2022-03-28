@@ -3,6 +3,8 @@ package thederpgamer.edencore.data.exchange;
 import api.common.GameClient;
 import api.network.PacketReadBuffer;
 import api.network.PacketWriteBuffer;
+import org.schema.game.server.controller.BluePrintController;
+import org.schema.game.server.controller.EntityNotFountException;
 import org.schema.game.server.data.blueprintnw.BlueprintEntry;
 import org.schema.schine.graphicsengine.forms.Sprite;
 import org.schema.schine.graphicsengine.forms.gui.GUIOverlay;
@@ -41,22 +43,32 @@ public class BlueprintExchangeItem extends ExchangeItem {
     public GUIOverlay getIcon() {
         GUIOverlay overlay = null;
         if(iconPath != null && !iconPath.isEmpty() && iconPath.startsWith("https://") && iconPath.endsWith(".png")) {
-            ImageUtils.getImage(iconPath);
-            Sprite sprite = ImageUtils.getImage(iconPath);
-            if(sprite != null) {
-                sprite.setPositionCenter(true);
-                sprite.setWidth(200);
-                sprite.setHeight(200);
-                overlay = new GUIOverlay(sprite, GameClient.getClientState());
-                overlay.setUserPointer(iconPath);
+            int attempts = 0;
+            while(attempts < 5 && overlay == null) {
+                overlay = fetchImageIcon(iconPath);
+                attempts ++;
             }
         }
+
         if(overlay == null) {
             Sprite sprite = ResourceManager.getSprite("default-sprite");
             sprite.setWidth(32);
             sprite.setHeight(32);
             overlay = new GUIOverlay(sprite, GameClient.getClientState());
             overlay.setUserPointer("default-sprite");
+        }
+        return overlay;
+    }
+
+    private GUIOverlay fetchImageIcon(String url) {
+        GUIOverlay overlay = null;
+        Sprite sprite = ImageUtils.getImage(url);
+        if(sprite != null) {
+            sprite.setPositionCenter(true);
+            sprite.setWidth(200);
+            sprite.setHeight(200);
+            overlay = new GUIOverlay(sprite, GameClient.getClientState());
+            overlay.setUserPointer(url);
         }
         return overlay;
     }
@@ -91,6 +103,15 @@ public class BlueprintExchangeItem extends ExchangeItem {
     @Override
     public boolean equals(ExchangeItem exchangeItem) {
         return exchangeItem instanceof BlueprintExchangeItem && exchangeItem.name.equals(name) && exchangeItem.barType == barType && exchangeItem.price == price;
+    }
+
+    public BlueprintEntry getBlueprintEntry() {
+        try {
+            return BluePrintController.active.getBlueprint(name);
+        } catch(EntityNotFountException e) {
+            e.printStackTrace();
+            return null;
+        }
     }
 
     /*

@@ -1,8 +1,11 @@
 package thederpgamer.edencore.gui.exchangemenu;
 
+import api.common.GameClient;
 import api.network.packets.PacketUtil;
 import api.utils.gui.GUIInputDialog;
 import org.apache.commons.lang3.math.NumberUtils;
+import org.schema.game.common.data.player.catalog.CatalogPermission;
+import org.schema.game.server.data.blueprintnw.BlueprintEntry;
 import org.schema.schine.graphicsengine.core.MouseEvent;
 import org.schema.schine.graphicsengine.forms.gui.GUIElement;
 import thederpgamer.edencore.EdenCore;
@@ -48,10 +51,20 @@ public class AddBlueprintExchangeDialog extends GUIInputDialog {
     private BlueprintExchangeItem createItem() {
         if(NumberUtils.isNumber(getInputPanel().currentBarText) && getInputPanel().blueprintEntry != null && getInputPanel().barId > 0) {
             String iconPath = "";
+            String description = "";
+            CatalogPermission permission = getCatalogEntry(getInputPanel().blueprintEntry);
+            if(permission != null) description = permission.description;
             if(getInputPanel().currentIconText != null && getInputPanel().currentIconText.startsWith("https://") && getInputPanel().currentIconText.endsWith(".png")) iconPath = getInputPanel().currentIconText;
-            BlueprintExchangeItem item = new BlueprintExchangeItem(getInputPanel().blueprintEntry, getInputPanel().barId, Math.abs(Integer.parseInt(getInputPanel().currentBarText)), "", iconPath);
+            BlueprintExchangeItem item = new BlueprintExchangeItem(getInputPanel().blueprintEntry, getInputPanel().barId, Math.abs(Integer.parseInt(getInputPanel().currentBarText)), description, iconPath);
             PacketUtil.sendPacketToServer(new ExchangeItemCreatePacket(0, item));
             return item;
         } else return null;
+    }
+
+    private CatalogPermission getCatalogEntry(BlueprintEntry blueprintEntry) {
+        for(CatalogPermission permission : GameClient.getClientPlayerState().getCatalog().getAllCatalog()) {
+            if(permission.getUid().equals(blueprintEntry.getName())) return permission;
+        }
+        return null;
     }
 }

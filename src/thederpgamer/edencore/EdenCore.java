@@ -160,6 +160,7 @@ public class EdenCore extends StarMod {
 	}
 
 	private void registerPackets() {
+		PacketUtil.registerPacket(RequestExchangeBPItemGivePacket.class);
 		PacketUtil.registerPacket(RequestClientCacheUpdatePacket.class);
 		PacketUtil.registerPacket(RequestMetaObjectPacket.class);
 		PacketUtil.registerPacket(RequestMoveToBuildSectorPacket.class);
