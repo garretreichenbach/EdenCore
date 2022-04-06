@@ -1362,7 +1362,7 @@ public class ExchangeMenuPanel extends GUIMenuPanel {
 		if(item instanceof BlueprintExchangeItem) {
 			BlueprintPlayerHandleRequest req = new BlueprintPlayerHandleRequest();
 			req.catalogName = item.name;
-			req.entitySpawnName = "";
+			req.entitySpawnName = "EDENCORE_TEMP";
 			req.save = false;
 			req.toSaveShip = -1;
 			req.directBuy = false;

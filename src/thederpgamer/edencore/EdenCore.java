@@ -13,10 +13,7 @@ import api.listener.events.entity.SegmentControllerInstantiateEvent;
 import api.listener.events.gui.GUITopBarCreateEvent;
 import api.listener.events.gui.MainWindowTabAddEvent;
 import api.listener.events.input.KeyPressEvent;
-import api.listener.events.player.PlayerDeathEvent;
-import api.listener.events.player.PlayerJoinWorldEvent;
-import api.listener.events.player.PlayerPickupFreeItemEvent;
-import api.listener.events.player.PlayerSpawnEvent;
+import api.listener.events.player.*;
 import api.mod.StarLoader;
 import api.mod.StarMod;
 import api.mod.config.PersistentObjectUtil;
@@ -206,6 +203,7 @@ public class EdenCore extends StarMod {
 						GameClient.getClientState().getController().queueUIAudio("0022_menu_ui - enter");
 						GameClient.getClientState().getGlobalGameControlManager().getIngameControlManager().getPlayerGameControlManager().deactivateAll();
 						exchangeMenuControlManager.setActive(true);
+						exchangeMenuControlManager.getMenuPanel().recreateTabs();
 					}
 				}
 
@@ -309,6 +307,7 @@ public class EdenCore extends StarMod {
 							GameClient.getClientState().getController().queueUIAudio("0022_menu_ui - enter");
 							GameClient.getClientState().getGlobalGameControlManager().getIngameControlManager().getPlayerGameControlManager().deactivateAll();
 							exchangeMenuControlManager.setActive(true);
+							exchangeMenuControlManager.getMenuPanel().recreateTabs();
 						}
 					}
 
