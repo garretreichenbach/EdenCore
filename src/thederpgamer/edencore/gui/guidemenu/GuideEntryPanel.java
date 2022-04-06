@@ -16,16 +16,23 @@ import thederpgamer.edencore.data.guide.GuideEntryData;
  */
 public class GuideEntryPanel extends GUIInputDialogPanel {
 
-	public GuideEntryPanel(InputState inputState, GUICallback guiCallback) {
-		super(inputState, "GuideEntryPanel", "Guide", "", (int) (GLFrame.getWidth() / 1.5), (int) (GLFrame.getHeight() / 1.5), guiCallback);
-		setCancelButtonText("EXIT");
-		setOkButton(false);
-		getButtonCancel().setUserPointer("EXIT");
-	}
+  public GuideEntryPanel(InputState inputState, GUICallback guiCallback) {
+    super(
+        inputState,
+        "GuideEntryPanel",
+        "Guide",
+        "",
+        (int) (GLFrame.getWidth() / 1.5),
+        (int) (GLFrame.getHeight() / 1.5),
+        guiCallback);
+    setCancelButtonText("EXIT");
+    setOkButton(false);
+    getButtonCancel().setUserPointer("EXIT");
+  }
 
-	public void createPanel(GuideEntryData guideEntry) {
-		GUIContentPane contentPane = ((GUIDialogWindow) background).getMainContentPane();
-		contentPane.setTextBoxHeightLast((int) getHeight());
-		guideEntry.createEntryPane(contentPane);
-	}
+  public void createPanel(GuideEntryData guideEntry) {
+    GUIContentPane contentPane = ((GUIDialogWindow) background).getMainContentPane();
+    contentPane.setTextBoxHeightLast((int) getHeight());
+    guideEntry.createEntryPane(contentPane);
+  }
 }
