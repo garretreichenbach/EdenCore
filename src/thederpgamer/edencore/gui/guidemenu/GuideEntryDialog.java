@@ -12,25 +12,25 @@ import org.schema.schine.graphicsengine.forms.gui.GUIElement;
  */
 public class GuideEntryDialog extends GUIInputDialog {
 
-	@Override
-	public GuideEntryPanel createPanel() {
-		return new GuideEntryPanel(getState(), this);
-	}
+  @Override
+  public GuideEntryPanel createPanel() {
+    return new GuideEntryPanel(getState(), this);
+  }
 
-	@Override
-	public void callback(GUIElement callingElement, MouseEvent mouseEvent) {
-		if(!isOccluded() && mouseEvent.pressedLeftMouse()) {
-			switch((String) callingElement.getUserPointer()) {
-				case "X":
-				case "EXIT":
-					deactivate();
-					break;
-			}
-		}
-	}
+  @Override
+  public void callback(GUIElement callingElement, MouseEvent mouseEvent) {
+    if (!isOccluded() && mouseEvent.pressedLeftMouse()) {
+      switch ((String) callingElement.getUserPointer()) {
+        case "X":
+        case "EXIT":
+          deactivate();
+          break;
+      }
+    }
+  }
 
-	@Override
-	public GuideEntryPanel getInputPanel() {
-		return (GuideEntryPanel) super.getInputPanel();
-	}
+  @Override
+  public GuideEntryPanel getInputPanel() {
+    return (GuideEntryPanel) super.getInputPanel();
+  }
 }

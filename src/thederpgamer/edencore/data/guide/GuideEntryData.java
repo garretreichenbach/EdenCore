@@ -10,13 +10,13 @@ import org.schema.schine.graphicsengine.forms.gui.newgui.GUIContentPane;
  */
 public abstract class GuideEntryData {
 
-	public String name;
-	public GuideEntryCategory category;
+  public String name;
+  public GuideEntryCategory category;
 
-	public GuideEntryData(String name, GuideEntryCategory category) {
-		this.name = name;
-		this.category = category;
-	}
+  public GuideEntryData(String name, GuideEntryCategory category) {
+    this.name = name;
+    this.category = category;
+  }
 
-	public abstract void createEntryPane(GUIContentPane contentPane);
+  public abstract void createEntryPane(GUIContentPane contentPane);
 }
