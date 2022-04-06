@@ -5,7 +5,9 @@ import api.network.packets.PacketUtil;
 import api.utils.game.inventory.InventoryUtils;
 import api.utils.gui.GUIMenuPanel;
 import org.schema.game.client.controller.PlayerOkCancelInput;
+import org.schema.game.common.data.player.BlueprintPlayerHandleRequest;
 import org.schema.game.common.data.player.inventory.Inventory;
+import org.schema.game.network.objects.remote.RemoteBlueprintPlayerRequest;
 import org.schema.schine.graphicsengine.core.GLFrame;
 import org.schema.schine.graphicsengine.core.MouseEvent;
 import org.schema.schine.graphicsengine.forms.font.FontLibrary;
@@ -20,7 +22,6 @@ import thederpgamer.edencore.element.ElementManager;
 import thederpgamer.edencore.manager.ClientCacheManager;
 import thederpgamer.edencore.network.client.ExchangeItemRemovePacket;
 import thederpgamer.edencore.network.client.RequestClientCacheUpdatePacket;
-import thederpgamer.edencore.network.client.RequestExchangeBPItemGivePacket;
 import thederpgamer.edencore.network.client.RequestMetaObjectPacket;
 import thederpgamer.edencore.utils.APIUtils;
 import thederpgamer.edencore.utils.DataUtils;
@@ -1358,8 +1359,17 @@ public class ExchangeMenuPanel extends GUIMenuPanel {
 
 	public void givePlayerItem(ExchangeItem item) {
 		Inventory inventory = GameClient.getClientPlayerState().getInventory();
-		if(item instanceof BlueprintExchangeItem) PacketUtil.sendPacketToServer(new RequestExchangeBPItemGivePacket((BlueprintExchangeItem) item));
-		else if(item instanceof ResourceExchangeItem) InventoryUtils.addItem(inventory, ((ResourceExchangeItem) item).itemId, ((ResourceExchangeItem) item).itemCount);
+		if(item instanceof BlueprintExchangeItem) {
+			BlueprintPlayerHandleRequest req = new BlueprintPlayerHandleRequest();
+			req.catalogName = item.name;
+			req.entitySpawnName = "";
+			req.save = false;
+			req.toSaveShip = -1;
+			req.directBuy = false;
+			req.setOwnFaction = true;
+			GameClient.getClientPlayerState().getNetworkObject().catalogPlayerHandleBuffer.add(new RemoteBlueprintPlayerRequest(req, false));
+			//PacketUtil.sendPacketToServer(new RequestExchangeBPItemGivePacket((BlueprintExchangeItem) item));
+		} else if(item instanceof ResourceExchangeItem) InventoryUtils.addItem(inventory, ((ResourceExchangeItem) item).itemId, ((ResourceExchangeItem) item).itemCount);
 		else if(item instanceof ItemExchangeItem) {
 			ItemExchangeItem itemExchangeItem = (ItemExchangeItem) item;
 			PacketUtil.sendPacketToServer(new RequestMetaObjectPacket(itemExchangeItem.itemId, itemExchangeItem.metaId, itemExchangeItem.subType));

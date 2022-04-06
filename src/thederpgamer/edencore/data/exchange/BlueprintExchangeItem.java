@@ -3,9 +3,8 @@ package thederpgamer.edencore.data.exchange;
 import api.common.GameClient;
 import api.network.PacketReadBuffer;
 import api.network.PacketWriteBuffer;
-import org.schema.game.server.controller.BluePrintController;
-import org.schema.game.server.controller.EntityNotFountException;
-import org.schema.game.server.data.blueprintnw.BlueprintEntry;
+import org.schema.common.util.StringTools;
+import org.schema.game.common.data.player.catalog.CatalogPermission;
 import org.schema.schine.graphicsengine.forms.Sprite;
 import org.schema.schine.graphicsengine.forms.gui.GUIOverlay;
 import thederpgamer.edencore.manager.ResourceManager;
@@ -22,21 +21,21 @@ import java.io.IOException;
 public class BlueprintExchangeItem extends ExchangeItem {
 
     //public static final transient Vector3i SECTOR = new Vector3i(100000000, 100000000, 100000000);
-    public long blocks;
+    //public long blocks;
     public String iconPath;
 
     public BlueprintExchangeItem(PacketReadBuffer readBuffer) {
         super(readBuffer);
     }
 
-    public BlueprintExchangeItem(BlueprintEntry blueprint, short barType, int price, String description, String iconPath) {
-        super(barType, price, blueprint.getName(), description);
+    public BlueprintExchangeItem(CatalogPermission blueprint, short barType, int price, String description, String iconPath) {
+        super(barType, price, blueprint.getUid(), description);
         this.barType = barType;
         this.price = price;
-        this.name = blueprint.getName();
-        this.blocks = blueprint.getElementCountMapWithChilds().getTotalAmount();
+        this.name = blueprint.getUid();
+        //this.blocks = blueprint.getElementCountMapWithChilds().getTotalAmount();
         this.iconPath = iconPath;
-        this.description = blocks + " blocks\n" + description;
+        this.description = StringTools.massFormat(blueprint.mass) + " mass\n" + description;
     }
 
     @Override
@@ -79,7 +78,7 @@ public class BlueprintExchangeItem extends ExchangeItem {
         writeBuffer.writeInt(price);
         writeBuffer.writeString(name);
         writeBuffer.writeString(description);
-        writeBuffer.writeLong(blocks);
+        //writeBuffer.writeLong(blocks);
         writeBuffer.writeString(iconPath);
         /* Todo: Somehow generate a preview of the entity that can be used as it's icon
         try {
@@ -96,22 +95,13 @@ public class BlueprintExchangeItem extends ExchangeItem {
         price = readBuffer.readInt();
         name = readBuffer.readString();
         description = readBuffer.readString();
-        blocks = readBuffer.readLong();
+        //blocks = readBuffer.readLong();
         iconPath = readBuffer.readString();
     }
 
     @Override
     public boolean equals(ExchangeItem exchangeItem) {
         return exchangeItem instanceof BlueprintExchangeItem && exchangeItem.name.equals(name) && exchangeItem.barType == barType && exchangeItem.price == price;
-    }
-
-    public BlueprintEntry getBlueprintEntry() {
-        try {
-            return BluePrintController.active.getBlueprint(name);
-        } catch(EntityNotFountException e) {
-            e.printStackTrace();
-            return null;
-        }
     }
 
     /*

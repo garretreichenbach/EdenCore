@@ -6,8 +6,7 @@ import org.schema.game.client.view.gui.GUIBlockSprite;
 import org.schema.game.client.view.gui.advanced.tools.*;
 import org.schema.game.common.data.element.ElementInformation;
 import org.schema.game.common.data.element.ElementKeyMap;
-import org.schema.game.server.controller.BluePrintController;
-import org.schema.game.server.data.blueprintnw.BlueprintEntry;
+import org.schema.game.common.data.player.catalog.CatalogPermission;
 import org.schema.schine.graphicsengine.forms.font.FontLibrary;
 import org.schema.schine.graphicsengine.forms.gui.GUIAncor;
 import org.schema.schine.graphicsengine.forms.gui.GUICallback;
@@ -35,7 +34,7 @@ public class AddBlueprintExchangePanel extends GUIInputDialogPanel {
     public short barId;
     public String currentBarText = "";
 
-    public BlueprintEntry blueprintEntry;
+    public CatalogPermission catalogEntry;
     private boolean bpTextChanged;
     private String currentBPText = "";
 
@@ -163,7 +162,7 @@ public class AddBlueprintExchangePanel extends GUIInputDialogPanel {
                 return new DropdownCallback() {
                     @Override
                     public void onChanged(Object value) {
-                        if(value instanceof BlueprintEntry) blueprintEntry = (BlueprintEntry) value;
+                        if(value instanceof CatalogPermission) catalogEntry = (CatalogPermission) value;
                     }
                 };
             }
@@ -196,7 +195,7 @@ public class AddBlueprintExchangePanel extends GUIInputDialogPanel {
 
             @Override
             public Object getDefault() {
-                if(blueprintEntry != null && blueprints.size() > 0) return blueprints.get(0);
+                if(catalogEntry != null && blueprints.size() > 0) return blueprints.get(0);
                 return null;
             }
 
@@ -246,13 +245,13 @@ public class AddBlueprintExchangePanel extends GUIInputDialogPanel {
 
     private ArrayList<GUIElement> getBlueprints() {
         ArrayList<GUIElement> blueprintList = new ArrayList<>();
-        List<BlueprintEntry> blueprints = BluePrintController.active.readBluePrints();
-        for(BlueprintEntry entry : blueprints) {
-            if(currentBPText.isEmpty() || entry.getName().toLowerCase().contains(currentBPText.toLowerCase())) {
+        List<CatalogPermission> blueprints = GameClient.getClientPlayerState().getCatalog().getAvailableCatalog();
+        for(CatalogPermission entry : blueprints) {
+            if(currentBPText.isEmpty() || entry.getUid().toLowerCase().contains(currentBPText.toLowerCase())) {
                 GUIAncor anchor = new GUIAncor(GameClient.getClientState(), 300.0f, 26.0f);
                 GUITextOverlay textOverlay = new GUITextOverlay(100, 26, FontLibrary.getBoldArial12White(), GameClient.getClientState());
                 textOverlay.onInit();
-                textOverlay.setTextSimple(entry.getName());
+                textOverlay.setTextSimple(entry.getUid());
                 anchor.setUserPointer(entry);
                 anchor.attach(textOverlay);
                 textOverlay.getPos().x = 7.0F;
