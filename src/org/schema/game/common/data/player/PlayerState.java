@@ -118,7 +118,6 @@ import org.schema.schine.resource.tag.FinishTag;
 import org.schema.schine.resource.tag.ListSpawnObjectCallback;
 import org.schema.schine.resource.tag.Tag;
 import org.schema.schine.resource.tag.Tag.Type;
-import thederpgamer.edencore.manager.LogManager;
 import thederpgamer.edencore.utils.DataUtils;
 
 import javax.vecmath.Matrix3f;
@@ -4428,7 +4427,9 @@ public class PlayerState extends AbstractOwnerState implements Sendable, DiskWri
                         }
                     } else {
                         this.giveMetaBlueprint = catalogName;
-
+                        //INSERTED CODE
+                        if(entitySpawnName.equals("EDENCORE_TEMP")) this.bypass = true;
+                        //
                     }
 
                 }
@@ -5182,6 +5183,10 @@ public class PlayerState extends AbstractOwnerState implements Sendable, DiskWri
 
     }
 
+    //INSERTED CODE
+    private boolean bypass = false;
+    //
+
     private void handleMetaBlueprintGive() {
         if (giveMetaBlueprint != null) {
             SimpleTransformableSendableObject o = getFirstControlledTransformableWOExc();
@@ -5190,18 +5195,20 @@ public class PlayerState extends AbstractOwnerState implements Sendable, DiskWri
                 ShopperInterface sh = (ShopperInterface) o;
                 boolean ok = false;
                 boolean inInfiniteShop = false;
-                if (!sh.getShopsInDistance().isEmpty()) {
-                    ok = true;
 
-                    inInfiniteShop = sh.getShopsInDistance().iterator().next().isInfiniteSupply();
+                if(!bypass) {
+                    if(!sh.getShopsInDistance().isEmpty()) {
+                        ok = true;
 
-                } else if (getNetworkObject().isAdminClient.get()) {
-                    ok = true;
+                        inInfiniteShop = sh.getShopsInDistance().iterator().next().isInfiniteSupply();
+                    } else if(getNetworkObject().isAdminClient.get()) {
+                        ok = true;
 
-                    sendServerMessage(new ServerMessage(Lng.astr("Not near shop,\nOVERWRITTEN BY ADMINRIGHTS!"), ServerMessage.MESSAGE_TYPE_ERROR, getId()));
-                } else {
-                    sendServerMessage(new ServerMessage(Lng.astr("You are not\nnear a shop!"), ServerMessage.MESSAGE_TYPE_ERROR, getId()));
-                }
+                        sendServerMessage(new ServerMessage(Lng.astr("Not near shop,\nOVERWRITTEN BY ADMINRIGHTS!"), ServerMessage.MESSAGE_TYPE_ERROR, getId()));
+                    } else {
+                        sendServerMessage(new ServerMessage(Lng.astr("You are not\nnear a shop!"), ServerMessage.MESSAGE_TYPE_ERROR, getId()));
+                    }
+                } else ok = true;
 
                 //INSERTED CODE
                 PlayerRequestMetaBlueprintEvent event = new PlayerRequestMetaBlueprintEvent(this, ok, inInfiniteShop, giveMetaBlueprint);
@@ -5211,7 +5218,7 @@ public class PlayerState extends AbstractOwnerState implements Sendable, DiskWri
                 giveMetaBlueprint = event.getBlueprintName();
                 ///
 
-                if (ok) {
+                if (ok || bypass) {
                     Faction f = ((FactionState) getState()).getFactionManager().getFaction(getFactionId());
 
                     if (((GameStateInterface) getState()).getGameState().allowedToSpawnBBShips(this, f)) {
@@ -5229,6 +5236,11 @@ public class PlayerState extends AbstractOwnerState implements Sendable, DiskWri
                                 m.blueprintName = giveMetaBlueprint;
                                 m.goal = new ElementCountMap(bb.getElementCountMapWithChilds());
                                 m.progress = new ElementCountMap();
+
+                                if(bypass) {
+                                    m.progress.add(m.goal);
+                                    bypass = false;
+                                }
 //								if(inInfiniteShop){
 //									m.progress = new ElementCountMap(bb.getElementCountMapWithChilds());
 //								}else{
@@ -5255,6 +5267,7 @@ public class PlayerState extends AbstractOwnerState implements Sendable, DiskWri
 
             giveMetaBlueprint = null;
         }
+        bypass = false;
     }
 
     private void onClientChannelCreatedOnServer() {

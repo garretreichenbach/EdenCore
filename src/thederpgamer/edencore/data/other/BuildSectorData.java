@@ -37,7 +37,7 @@ public class BuildSectorData {
 
     @Override
     public boolean equals(Object object) {
-        return object instanceof BuildSectorData && ((BuildSectorData) object).ownerName.equals(ownerName) && ((BuildSectorData) object).sector.equals(sector);
+        return object instanceof BuildSectorData && ((BuildSectorData) object).ownerName.toLowerCase().equals(ownerName.toLowerCase()) && ((BuildSectorData) object).sector.equals(sector);
     }
 
     public void serialize(PacketWriteBuffer writeBuffer) throws IOException {
@@ -132,7 +132,7 @@ public class BuildSectorData {
     }
 
     public HashMap<String, Boolean> getPermissions(String player) {
-        if(!permissions.containsKey(player)) {
+        if(!permissions.containsKey(player) && !permissions.containsKey(player.toLowerCase())) {
             addPlayer(player);
             denyPermission(player, "ENTER");
         }
