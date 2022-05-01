@@ -2341,9 +2341,9 @@ public class PlayerState extends AbstractOwnerState implements Sendable, DiskWri
                 Vector3f forwardVector = getForward(new Vector3f());
                 forwardVector.scale(2);
                 pos.add(forwardVector);
-                int a = Math.min(getCredits(), amount);
+                long a = Math.min(getCredits(), amount);
                 modCreditsServer(-a);
-                s.getRemoteSector().addItem(pos, FreeItem.CREDITS_TYPE, -1, a);
+                s.getRemoteSector().addItem(pos, FreeItem.CREDITS_TYPE, -1, (int) a);
 
             } catch (PlayerControlledTransformableNotFound e) {
                 System.err.println("[SERVER][PLAYERSTATE] CANNOT DROP CREDITS: no transformable for player found");
