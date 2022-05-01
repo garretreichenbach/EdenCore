@@ -193,7 +193,7 @@ public class PlayerState extends AbstractOwnerState implements Sendable, DiskWri
     long lastHitConfirm;
     long lastHelmetCommand;
     private float health = MAX_HEALTH;
-    private int credits;
+    private long credits;
     private int id;
     private int helmetSlot = -1;
     private NetworkPlayer networkPlayerObject;
@@ -592,7 +592,7 @@ public class PlayerState extends AbstractOwnerState implements Sendable, DiskWri
 
         setId(p.id.getInt());
         setClientId(p.clientId.getInt());
-        setCredits(p.credits.getInt());
+        setCredits(p.credits.getLong());
         setCurrentSector(p.sectorPos.getVector());
         setCurrentSectorId(p.sectorId.getInt());
         handleServerHealthAndCheckAliveOnServer(p.health.getFloat(), null);
@@ -792,11 +792,11 @@ public class PlayerState extends AbstractOwnerState implements Sendable, DiskWri
             setInvisibilityMode(p.invisibility.get());
 
             boolean changedCred = false;
-            if (credits != p.credits.getInt()) {
+            if (credits != p.credits.getLong()) {
                 changedCred = true;
             }
 
-            setCredits(p.credits.getInt());
+            setCredits(p.credits.getLong());
 
             if (changedCred) {
                 Starter.modManager.onPlayerCreditsChanged(this);
@@ -3661,14 +3661,14 @@ public class PlayerState extends AbstractOwnerState implements Sendable, DiskWri
     /**
      * @return the credits
      */
-    public int getCredits() {
+    public long getCredits() {
         return credits;
     }
 
     /**
      * @param credits the credits to set
      */
-    public void setCredits(int credits) {
+    public void setCredits(long credits) {
         // System.err.println("SETTING CREDITS TO "+credits+" on "+getState());
         this.credits = Math.min(Integer.MAX_VALUE, Math.max(0, credits));
 
@@ -4543,7 +4543,7 @@ public class PlayerState extends AbstractOwnerState implements Sendable, DiskWri
                 return;
             }
 
-            int credits = this.getCredits();
+            long credits = this.getCredits();
             for (RemoteIntegerArray s : p.buyBuffer.getReceiveBuffer()) {
                 int quantity = s.get()[0].get();
                 int elementId = s.get()[1].get();
