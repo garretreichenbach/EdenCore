@@ -123,18 +123,13 @@ import thederpgamer.edencore.utils.DataUtils;
 import javax.vecmath.Matrix3f;
 import javax.vecmath.Vector3f;
 import java.io.*;
+import java.math.BigInteger;
 import java.nio.ByteBuffer;
 import java.sql.SQLException;
 import java.util.*;
 import java.util.Map.Entry;
 import java.util.zip.ZipException;
 
-/**
- * Modified version of PlayerState.
- *
- * @author Schema, TheDerpGamer
- * @since 08/03/2021
- */
 public class PlayerState extends AbstractOwnerState implements Sendable, DiskWritable, FogOfWarReceiver, RuleEntityContainer {
     public static final float MAX_HEALTH = 120;
     private static final long DEFAULT_BLUEPRINT_DELAY = 10000;
@@ -319,7 +314,7 @@ public class PlayerState extends AbstractOwnerState implements Sendable, DiskWri
         return isUseCreativeMode() && isHasCreativeMode();
     }
 
-    //INSERTED CODE
+    //INSERTED CODE @322 [EDENCORE]
     @Override
     public Inventory getInventory() {
         Inventory cargoInv;
@@ -1343,7 +1338,7 @@ public class PlayerState extends AbstractOwnerState implements Sendable, DiskWri
             getPlayerChannelManager().update(timer);
         }
         if(isOnServer() && checkForOvercap && getAssingedPlayerCharacter() != null){
-            if(getPersonalInventory().isOverCapacity()) {
+            if(getPersonalInventory().isOverCapacity()){
                 BlockStorageMetaItem storage = (BlockStorageMetaItem)MetaObjectManager.instantiate(MetaObjectType.BLOCK_STORAGE, (short) -1, true);
 
                 addAllToStorageMetaItem(storage, getPersonalInventory());
@@ -1738,12 +1733,14 @@ public class PlayerState extends AbstractOwnerState implements Sendable, DiskWri
                     }
                     creditModifications.clear();
                 }
-                long newP = getCredits() + p;
-                if (newP > Integer.MAX_VALUE) {
+                BigInteger newP = BigInteger.valueOf(getCredits());
+                newP = newP.add(BigInteger.valueOf(p));
+                if (newP.compareTo(BigInteger.valueOf(Long.MAX_VALUE)) > 0) { //Detect overflow // if (newP > Integer.MAX_VALUE) {
                     sendServerMessage(new ServerMessage(Lng.astr("WARNING:\nCannot hold more credits!"), ServerMessage.MESSAGE_TYPE_ERROR, getId()));
-                    newP = Integer.MAX_VALUE;
+                    setCredits(Long.MAX_VALUE);
+                }else{
+                    setCredits(newP.longValue());
                 }
-                setCredits((int) newP);
 
                 if (changed) {
                     Starter.modManager.onPlayerCreditsChanged(this);
@@ -2632,10 +2629,19 @@ public class PlayerState extends AbstractOwnerState implements Sendable, DiskWri
                                 Sector sector = ((GameServerState) getState()).getUniverse().getSectorWithoutLoading(sec);
                                 if (sector == null) {
                                     //this sector is not loaded. that means it is ok to do tutorial there
-                                    //SectorUtil.importSectorFullDir("./data/prefabSectors", "tutorial-v2.0.smsec", sec, (GameServerState) state);
+                                    try {
+                                        SectorUtil.importSectorFullDir("./data/prefabSectors", "tutorial-v2.0.smsec", sec, (GameServerState) state);
 
-                                    SectorSwitch sw = new SectorSwitch(getAssingedPlayerCharacter(), sec, SectorSwitch.TRANS_JUMP);
-                                    ((GameServerState) getState()).getSectorSwitches().add(sw);
+                                        SectorSwitch sw = new SectorSwitch(getAssingedPlayerCharacter(), sec, SectorSwitch.TRANS_JUMP);
+                                        ((GameServerState) getState()).getSectorSwitches().add(sw);
+                                        return;
+                                    } catch (IOException e) {
+                                        e.printStackTrace();
+                                    } catch (SQLException e) {
+                                        e.printStackTrace();
+                                    }
+
+                                    sendServerMessage(new ServerMessage(Lng.astr("Something went wrong!\nPlease tell an admin or\ntry in a new universe.\nReport the error!"), ServerMessage.MESSAGE_TYPE_ERROR, getId()));
                                     return;
                                 }
                             }
@@ -3348,7 +3354,14 @@ public class PlayerState extends AbstractOwnerState implements Sendable, DiskWri
     public void fromTagStructure(Tag tag) {
         newPlayerOnServer = false;
         Tag[] struct = (Tag[]) tag.getValue();
-        this.setCredits((Integer) struct[0].getValue());
+
+        Object creditsObj = struct[0].getValue();
+        if(creditsObj instanceof Long){
+            this.setCredits((Long) creditsObj);
+        }else if(creditsObj instanceof Integer){
+            this.setCredits((Integer) creditsObj);
+        }
+
         //		System.err.println("["+(isOnServer()? "SERVER": "CLIENT")+"][TAG] SPAWNING POINT OF "+this+" READ: "+this.getSpawnPoint());
         if (struct[1].getType() == Type.VECTOR3f) {
             //old
@@ -3520,7 +3533,7 @@ public class PlayerState extends AbstractOwnerState implements Sendable, DiskWri
         }
 
         Tag[] d = new Tag[32];
-        d[0] = (new Tag(Type.INT, "credits", credits));
+        d[0] = (new Tag(Type.LONG, "credits", credits));
 //		System.err.println("["+(isOnServer()? "SERVER": "CLIENT")+"][TAG] SPAWNING POINT OF "+this+" WRITTEN: "+this.getSpawnPoint());
         d[1] = spawnData.toTagStructure();
         d[2] = getPersonalInventory().toTagStructure();
@@ -3666,11 +3679,18 @@ public class PlayerState extends AbstractOwnerState implements Sendable, DiskWri
     }
 
     /**
+     * @return Credits as an integer, MAX_INT if above
+     */
+    public int getCreditsInt() {
+        return (int) Math.min(Integer.MAX_VALUE, credits);
+    }
+
+    /**
      * @param credits the credits to set
      */
     public void setCredits(long credits) {
         // System.err.println("SETTING CREDITS TO "+credits+" on "+getState());
-        this.credits = Math.min(Integer.MAX_VALUE, Math.max(0, credits));
+        this.credits = Math.max(0, credits);
 
         if(isOnServer()) {
             getRuleEntityManager().triggerPlayerCreditsChanged();
@@ -3838,7 +3858,7 @@ public class PlayerState extends AbstractOwnerState implements Sendable, DiskWri
     }
 
     /**
-     * @param controller the inventoryController to set
+     * @param inventoryController the inventoryController to set
      */
     public void setInventoryController(InventoryController controller) {
         this.inventoryController = controller;
@@ -4427,7 +4447,7 @@ public class PlayerState extends AbstractOwnerState implements Sendable, DiskWri
                         }
                     } else {
                         this.giveMetaBlueprint = catalogName;
-                        //INSERTED CODE
+                        //INSERTED CODE @4437 [EDENCORE]
                         if(entitySpawnName.equals("EDENCORE_TEMP")) this.bypass = true;
                         //
                     }
@@ -5183,7 +5203,7 @@ public class PlayerState extends AbstractOwnerState implements Sendable, DiskWri
 
     }
 
-    //INSERTED CODE
+    //INSERTED CODE @5206 [EDENCORE]
     private boolean bypass = false;
     //
 
@@ -5195,7 +5215,6 @@ public class PlayerState extends AbstractOwnerState implements Sendable, DiskWri
                 ShopperInterface sh = (ShopperInterface) o;
                 boolean ok = false;
                 boolean inInfiniteShop = false;
-
                 if(!bypass) {
                     if(!sh.getShopsInDistance().isEmpty()) {
                         ok = true;
@@ -5218,7 +5237,9 @@ public class PlayerState extends AbstractOwnerState implements Sendable, DiskWri
                 giveMetaBlueprint = event.getBlueprintName();
                 ///
 
+                //INSERTED CODE @5240 [EDENCORE]
                 if (ok || bypass) {
+                    //
                     Faction f = ((FactionState) getState()).getFactionManager().getFaction(getFactionId());
 
                     if (((GameStateInterface) getState()).getGameState().allowedToSpawnBBShips(this, f)) {
@@ -5236,11 +5257,6 @@ public class PlayerState extends AbstractOwnerState implements Sendable, DiskWri
                                 m.blueprintName = giveMetaBlueprint;
                                 m.goal = new ElementCountMap(bb.getElementCountMapWithChilds());
                                 m.progress = new ElementCountMap();
-
-                                if(bypass) {
-                                    m.progress.add(m.goal);
-                                    bypass = false;
-                                }
 //								if(inInfiniteShop){
 //									m.progress = new ElementCountMap(bb.getElementCountMapWithChilds());
 //								}else{
@@ -5267,7 +5283,9 @@ public class PlayerState extends AbstractOwnerState implements Sendable, DiskWri
 
             giveMetaBlueprint = null;
         }
+        //INSERTED CODE @5279 [EDENCORE]
         bypass = false;
+        //
     }
 
     private void onClientChannelCreatedOnServer() {
@@ -5859,4 +5877,5 @@ public class PlayerState extends AbstractOwnerState implements Sendable, DiskWri
     public PlayerRuleEntityManager getRuleEntityManager() {
         return ruleEntityManager;
     }
+
 }
