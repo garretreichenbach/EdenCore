@@ -1,0 +1,43 @@
+plugins {
+    id 'java'
+    id'application'
+}
+
+def starmadeDirectory = 'C:/Program Files (x86)/Steam/steamapps/common/StarMade/StarMade/'
+def jarName = 'EdenCore'
+mainClassName = 'thederpgamer.edencore.EdenCore'
+group 'thederpgamer.edencore'
+version '1.6.6'
+
+repositories {
+    mavenCentral()
+}
+
+dependencies {
+    testImplementation "org.junit.jupiter:junit-jupiter-api:5.6.0"
+    testRuntimeOnly "org.junit.jupiter:junit-jupiter-engine"
+    //compile(files(starmadeDirectory + "starloader.jar"))
+    implementation(files(starmadeDirectory + "StarMade.jar"))
+    implementation(fileTree(dir: (starmadeDirectory + "lib"), include: "*.jar"))
+    //EdenCoreSupportImplementation(files(starmadeDirectory + "mods/EdenCorev" + edenCoreVersion + ".jar"))
+}
+
+compileJava.options.encoding = 'UTF-8'
+
+jar {
+    duplicatesStrategy(DuplicatesStrategy.EXCLUDE)
+    destinationDirectory.set(file(starmadeDirectory + "mods"))
+    archiveFileName = jarName + '.jar'
+    manifest.attributes('Main-Class': mainClassName)
+    from {
+        configurations.runtimeClasspath.collect {
+            if(!it.getPath().contains("StarMade") && it.getName().endsWith(".jar")) {
+                it.isDirectory() ? it : zipTree(it)
+            } else return null;
+        }
+    }
+}
+
+test {
+    useJUnitPlatform()
+}
