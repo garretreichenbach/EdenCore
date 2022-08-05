@@ -3,11 +3,15 @@ plugins {
     id'application'
 }
 
+apply plugin: 'java'
+sourceCompatibility = 1.7
+targetCompatibility = 1.7
+
 def starmadeDirectory = 'C:/Program Files (x86)/Steam/steamapps/common/StarMade/StarMade/'
 def jarName = 'EdenCore'
 mainClassName = 'thederpgamer.edencore.EdenCore'
 group 'thederpgamer.edencore'
-version '1.6.6'
+version '1.6.9'
 
 repositories {
     mavenCentral()
