@@ -130,7 +130,7 @@ public class BuildSectorUtils {
 	public static void setPeace(BuildSectorData sectorData, boolean protect) {
 		if(GameCommon.isDedicatedServer() || GameCommon.isOnSinglePlayer()) {
 			try {
-				//DataUtils.deleteEnemies(sectorData, 0);
+				DataUtils.deleteEnemies(sectorData, 0);
 				Sector sector = GameServer.getUniverse().getSector(sectorData.sector);
 				sector.peace(protect);
 				sector.protect(protect);

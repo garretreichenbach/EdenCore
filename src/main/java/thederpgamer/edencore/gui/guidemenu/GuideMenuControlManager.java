@@ -47,7 +47,7 @@ public class GuideMenuControlManager extends GUIControlManager {
             for(File file : guidesFolder.listFiles()) {
 				try {
 					if(file.isDirectory()) { //Organize sub folders as categories
-						GuideEntryCategory category = GuideEntryCategory.valueOf(file.getName());
+						GuideEntryCategory category = GuideEntryCategory.getFromFile(file.getName());
 						for(File subFile : file.listFiles()) {
 							if(subFile.isFile()) {
 								GuideEntryData entry = GuideEntryData.loadFromFile(subFile, subFile.getName().split(".txt")[0], category);

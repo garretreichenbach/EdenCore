@@ -20,10 +20,8 @@ repositories {
 dependencies {
     testImplementation "org.junit.jupiter:junit-jupiter-api:5.6.0"
     testRuntimeOnly "org.junit.jupiter:junit-jupiter-engine"
-    //compile(files(starmadeDirectory + "starloader.jar"))
     implementation(files(starmadeDirectory + "StarMade.jar"))
     implementation(fileTree(dir: (starmadeDirectory + "lib"), include: "*.jar"))
-    //EdenCoreSupportImplementation(files(starmadeDirectory + "mods/EdenCorev" + edenCoreVersion + ".jar"))
 }
 
 compileJava.options.encoding = 'UTF-8'

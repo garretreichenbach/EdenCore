@@ -161,6 +161,7 @@ public class EdenCore extends StarMod {
 		PacketUtil.registerPacket(RequestMetaObjectPacket.class);
 		PacketUtil.registerPacket(RequestMoveToBuildSectorPacket.class);
 		PacketUtil.registerPacket(RequestMoveFromBuildSectorPacket.class);
+		PacketUtil.registerPacket(RequestBuildSectorProtectPacket.class);
 		PacketUtil.registerPacket(RequestBuildSectorInvitePacket.class);
 		PacketUtil.registerPacket(RequestBuildSectorKickPacket.class);
 		PacketUtil.registerPacket(RequestBuildSectorBanPacket.class);
@@ -188,7 +189,7 @@ public class EdenCore extends StarMod {
 										getSkeleton(), buildSectorMenuControlManager);
 							}
 
-							if(!GameClient.getClientState().getController().isChatActive() && GameClient.getClientState().getController().getPlayerInputs().isEmpty()) {
+							if(! GameClient.getClientState().getController().isChatActive() && GameClient.getClientState().getController().getPlayerInputs().isEmpty()) {
 								GameClient.getClientState().getController().queueUIAudio("0022_menu_ui - enter");
 								GameClient.getClientState()
 										.getGlobalGameControlManager()
@@ -340,11 +341,11 @@ public class EdenCore extends StarMod {
 													.getPlayerGameControlManager()
 													.deactivateAll();
 											exchangeMenuControlManager.setActive(true);
-                                            try {
-                                              exchangeMenuControlManager.getMenuPanel().recreateTabs();
-                                            } catch(Exception exception) {
-                                                exception.printStackTrace();
-                                            }
+											try {
+												exchangeMenuControlManager.getMenuPanel().recreateTabs();
+											} catch(Exception exception) {
+												exception.printStackTrace();
+											}
 										}
 									}
 

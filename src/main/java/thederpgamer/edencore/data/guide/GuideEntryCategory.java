@@ -20,4 +20,17 @@ public enum GuideEntryCategory {
 	GuideEntryCategory(String display) {
 		this.display = display;
 	}
+
+	public static GuideEntryCategory getFromFile(String name) {
+		switch(name) {
+			case "Config Changes": return CONFIG_CHANGES;
+			case "Build Sectors": return BUILD_SECTORS;
+			case "Exchange": return EXCHANGE;
+			case "Resources": return RESOURCES;
+			case "FTL": return FTL;
+			case "Misc": return MISC;
+			//Todo: Remove this class
+		}
+		return null;
+	}
 }
