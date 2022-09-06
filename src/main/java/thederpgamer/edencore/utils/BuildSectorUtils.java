@@ -134,6 +134,7 @@ public class BuildSectorUtils {
 				Sector sector = GameServer.getUniverse().getSector(sectorData.sector);
 				sector.peace(protect);
 				sector.protect(protect);
+				sectorData.allAIDisabled = protect;
 			} catch(IOException exception) {
 				LogManager.logException("Failed to protect " + sectorData.ownerName + "'s build sector from enemy spawns due to an unexpected error", exception);
 				PlayerUtils.sendMessage(GameCommon.getPlayerFromName(sectorData.ownerName), "An unexpected error occurred while trying to protect your sector from pirate spawns." + " Let an admin know ASAP!");

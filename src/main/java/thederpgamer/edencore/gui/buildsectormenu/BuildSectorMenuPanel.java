@@ -111,6 +111,7 @@ public class BuildSectorMenuPanel extends GUIMenuPanel {
                             public void pressedOK() {
                                 PacketUtil.sendPacketToServer(new RequestBuildSectorProtectPacket(false));
                                 PacketUtil.sendPacketToServer(new RequestClientCacheUpdatePacket());
+                                deactivate();
                                 recreateTabs();
                             }
                         }).activate();
@@ -147,6 +148,7 @@ public class BuildSectorMenuPanel extends GUIMenuPanel {
                             public void pressedOK() {
                                 PacketUtil.sendPacketToServer(new RequestBuildSectorProtectPacket(true));
                                 PacketUtil.sendPacketToServer(new RequestClientCacheUpdatePacket());
+                                deactivate();
                                 recreateTabs();
                             }
                         }).activate();
