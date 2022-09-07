@@ -390,7 +390,7 @@ public class DataUtils {
         return false;
     }
 
-    private static BuildSectorData createNewBuildSector(String playerName) {
+    public static BuildSectorData createNewBuildSector(String playerName) {
         Vector3i sector = getRandomSector(1000000000);
         BuildSectorData data = new BuildSectorData(playerName, sector, new HashMap<String, HashMap<String, Boolean>>());
         PersistentObjectUtil.addObject(instance, data);

@@ -724,14 +724,12 @@ public class EdenCore extends StarMod {
 					@Override
 					public void onEvent(final PlayerJoinWorldEvent event) {
 						if(GameCommon.isDedicatedServer() || GameCommon.isOnSinglePlayer()) {
+							if(DataUtils.getBuildSector(event.getPlayerName()) == null) DataUtils.createNewBuildSector(event.getPlayerName());
 							new StarRunnable() {
 								@Override
 								public void run() {
 									try {
-										PacketUtil.sendPacket(
-												GameServer.getServerState().getPlayerFromName(event.getPlayerName()),
-												new SendCacheUpdatePacket(
-														GameServer.getServerState().getPlayerFromName(event.getPlayerName())));
+										PacketUtil.sendPacket(GameServer.getServerState().getPlayerFromName(event.getPlayerName()), new SendCacheUpdatePacket(GameServer.getServerState().getPlayerFromName(event.getPlayerName())));
 									} catch(PlayerNotFountException exception) {
 										exception.printStackTrace();
 									}
