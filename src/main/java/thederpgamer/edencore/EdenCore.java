@@ -129,7 +129,6 @@ public class EdenCore extends StarMod {
 		registerPackets();
 		registerListeners();
 		registerCommands();
-		initGlossary();
 
 		startRunners();
 	}
@@ -144,6 +143,7 @@ public class EdenCore extends StarMod {
 	public void onClientCreated(ClientInitializeEvent clientInitializeEvent) {
 		super.onClientCreated(clientInitializeEvent);
 		new EdenMapDrawer();
+		initGlossary();
 	}
 
 	@Override
