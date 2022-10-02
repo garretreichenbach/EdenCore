@@ -239,9 +239,13 @@ public class EdenMapDrawer implements GameMapDrawListener {
         StarLoader.registerListener(MousePressEvent.class, new Listener<MousePressEvent>() {
             @Override
             public void onEvent(MousePressEvent event) {
-                if (GameClientState.instance != null && GameClientState.instance.getWorldDrawer().getGameMapDrawer().isMapActive() && event.getRawEvent().pressedLeftMouse() && selected != null) {
-                    centerOn(selected.getSector());
-                }
+				try {
+					if(GameClientState.instance != null && GameClientState.instance.getWorldDrawer() != null && GameClientState.getGameMapDrawer() != null) {
+						if(GameClientState.instance.getWorldDrawer().getGameMapDrawer().isMapActive() && event.getRawEvent().pressedLeftMouse() && selected != null) centerOn(selected.getSector());
+					}
+				} catch(NuullpointerException ignored) {
+				}
+
                 //TODO make sure mouse is actually over the marker.
 
                 //turned of auto-nav until event is more reliable. to much accidental navigation to somewhere i dont wanna go.
