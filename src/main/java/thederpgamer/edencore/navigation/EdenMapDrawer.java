@@ -240,10 +240,10 @@ public class EdenMapDrawer implements GameMapDrawListener {
             @Override
             public void onEvent(MousePressEvent event) {
 				try {
-					if(GameClientState.instance != null && GameClientState.instance.getWorldDrawer() != null && GameClientState.getGameMapDrawer() != null) {
+					if(GameClientState.instance != null && GameClientState.instance.getWorldDrawer() != null && GameClientState.instance.getWorldDrawer().getGameMapDrawer() != null) {
 						if(GameClientState.instance.getWorldDrawer().getGameMapDrawer().isMapActive() && event.getRawEvent().pressedLeftMouse() && selected != null) centerOn(selected.getSector());
 					}
-				} catch(NuullpointerException ignored) {
+				} catch(NullPointerException ignored) {
 				}
 
                 //TODO make sure mouse is actually over the marker.
