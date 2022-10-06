@@ -23,7 +23,7 @@ import org.schema.game.server.controller.SectorSwitch;
 import org.schema.game.server.data.ServerConfig;
 import thederpgamer.edencore.EdenCore;
 import thederpgamer.edencore.data.other.BuildSectorData;
-import thederpgamer.edencore.data.other.PlayerData;
+import thederpgamer.edencore.data.player.PlayerData;
 import thederpgamer.edencore.manager.ClientCacheManager;
 import thederpgamer.edencore.manager.DataManager;
 import thederpgamer.edencore.manager.LogManager;
@@ -128,7 +128,7 @@ public class DataUtils {
         playerState.setCurrentSector(sectorData.sector);
         playerState.setCurrentSectorId(sector.getSectorId());
 
-        BuildSectorUtils.setPeace(sectorData, false);
+        BuildSectorUtils.setPeace(sectorData, true);
         sector.noEnter(true);
         sector.noExit(true);
         //deleteEnemies(sectorData, 0);
@@ -287,6 +287,14 @@ public class DataUtils {
         return createNewPlayerData(playerState);
     }
 
+    public static PlayerData getPlayerDataByName(String name) {
+        for(Object obj : PersistentObjectUtil.getObjects(instance, PlayerData.class)) {
+            PlayerData playerData = (PlayerData) obj;
+            if(playerData.playerName.equals(name)) return playerData;
+        }
+        return null;
+    }
+
     public static PlayerData createNewPlayerData(PlayerState playerState) {
         PlayerData playerData = new PlayerData(playerState);
         PersistentObjectUtil.addObject(instance, playerData);
@@ -401,6 +409,7 @@ public class DataUtils {
         } catch(IOException | SQLException exception) {
             exception.printStackTrace();
         }
+        BuildSectorUtils.setPeace(data, true);
         return data;
     }
 

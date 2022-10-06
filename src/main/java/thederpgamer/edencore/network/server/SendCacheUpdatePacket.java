@@ -9,7 +9,6 @@ import org.schema.game.common.controller.SegmentController;
 import org.schema.game.common.data.player.PlayerState;
 import thederpgamer.edencore.EdenCore;
 import thederpgamer.edencore.data.event.EventData;
-import thederpgamer.edencore.data.event.SortieData;
 import thederpgamer.edencore.data.exchange.BlueprintExchangeItem;
 import thederpgamer.edencore.data.exchange.ItemExchangeItem;
 import thederpgamer.edencore.data.exchange.ResourceExchangeItem;
@@ -40,7 +39,6 @@ public class SendCacheUpdatePacket extends Packet {
 
     //Events
     private final ArrayList<EventData> eventData = new ArrayList<>();
-    private final ArrayList<SortieData> sortieData = new ArrayList<>();
 
     //Build Sector
     private final ArrayList<BuildSectorData> sectorData = new ArrayList<>();

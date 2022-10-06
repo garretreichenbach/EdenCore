@@ -7,7 +7,7 @@ import org.schema.game.common.data.player.PlayerState;
 import org.schema.game.server.data.GameServerState;
 import thederpgamer.edencore.EdenCore;
 import thederpgamer.edencore.data.other.BankingTransactionLog;
-import thederpgamer.edencore.data.other.PlayerData;
+import thederpgamer.edencore.data.player.PlayerData;
 import thederpgamer.edencore.utils.DataUtils;
 
 import javax.annotation.Nullable;

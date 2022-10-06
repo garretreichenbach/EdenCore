@@ -3,6 +3,7 @@ package thederpgamer.edencore.gui.buildsectormenu;
 import api.common.GameClient;
 import api.common.GameCommon;
 import api.network.packets.PacketUtil;
+import api.utils.StarRunnable;
 import api.utils.gui.GUIMenuPanel;
 import api.utils.gui.SimplePlayerTextInput;
 import org.schema.game.client.controller.PlayerOkCancelInput;
@@ -15,6 +16,7 @@ import org.schema.schine.graphicsengine.forms.gui.newgui.GUIContentPane;
 import org.schema.schine.graphicsengine.forms.gui.newgui.GUIHorizontalArea;
 import org.schema.schine.graphicsengine.forms.gui.newgui.GUIHorizontalButtonTablePane;
 import org.schema.schine.input.InputState;
+import thederpgamer.edencore.EdenCore;
 import thederpgamer.edencore.network.client.RequestBuildSectorInvitePacket;
 import thederpgamer.edencore.network.client.RequestBuildSectorProtectPacket;
 import thederpgamer.edencore.network.client.RequestClientCacheUpdatePacket;
@@ -111,8 +113,13 @@ public class BuildSectorMenuPanel extends GUIMenuPanel {
                             public void pressedOK() {
                                 PacketUtil.sendPacketToServer(new RequestBuildSectorProtectPacket(false));
                                 PacketUtil.sendPacketToServer(new RequestClientCacheUpdatePacket());
+                                new StarRunnable() {
+                                    @Override
+                                    public void run() {
+                                        recreateTabs();
+                                    }
+                                }.runLater(EdenCore.getInstance(), 5);
                                 deactivate();
-                                recreateTabs();
                             }
                         }).activate();
                     }
@@ -148,8 +155,13 @@ public class BuildSectorMenuPanel extends GUIMenuPanel {
                             public void pressedOK() {
                                 PacketUtil.sendPacketToServer(new RequestBuildSectorProtectPacket(true));
                                 PacketUtil.sendPacketToServer(new RequestClientCacheUpdatePacket());
+                                new StarRunnable() {
+                                    @Override
+                                    public void run() {
+                                        recreateTabs();
+                                    }
+                                }.runLater(EdenCore.getInstance(), 5);
                                 deactivate();
-                                recreateTabs();
                             }
                         }).activate();
                     }

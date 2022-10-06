@@ -1,9 +1,10 @@
-package thederpgamer.edencore.data.other;
+package thederpgamer.edencore.data.player;
 
 import api.common.GameCommon;
 import com.bulletphysics.linearmath.Transform;
 import org.schema.common.util.linAlg.Vector3i;
 import org.schema.game.common.data.player.PlayerState;
+import thederpgamer.edencore.data.other.BankingTransactionLog;
 import thederpgamer.edencore.utils.DataUtils;
 
 import javax.vecmath.Vector3f;
@@ -25,6 +26,7 @@ public class PlayerData {
     public Vector3f lastRealSectorPos;
     public Vector3f lastBuildSectorPos;
     public long lastDailyPrizeClaim;
+    public PlayerSettingsData settings;
 
     //collection of banking transactions that player has sent or received.
     private final List<BankingTransactionLog> transactions = new ArrayList<>();
