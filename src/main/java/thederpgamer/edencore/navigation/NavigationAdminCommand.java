@@ -3,10 +3,6 @@ package thederpgamer.edencore.navigation;
 import api.mod.StarMod;
 import api.utils.game.PlayerUtils;
 import api.utils.game.chat.CommandInterface;
-import java.util.ArrayList;
-import java.util.Random;
-import javax.annotation.Nullable;
-import javax.vecmath.Vector4f;
 import org.schema.common.util.linAlg.Vector3i;
 import org.schema.game.common.controller.SpaceStation;
 import org.schema.game.common.data.player.PlayerState;
@@ -14,6 +10,11 @@ import org.schema.game.common.data.world.FTLConnection;
 import org.schema.game.server.data.GameServerState;
 import org.schema.schine.network.objects.Sendable;
 import thederpgamer.edencore.EdenCore;
+
+import javax.annotation.Nullable;
+import javax.vecmath.Vector4f;
+import java.util.ArrayList;
+import java.util.Random;
 
 /** STARMADE MOD CREATOR: Max1M DATE: 18.09.2021 TIME: 15:31 */
 public class NavigationAdminCommand implements CommandInterface {
@@ -162,7 +163,7 @@ public class NavigationAdminCommand implements CommandInterface {
           GateMarker gMarker;
           if (!(marker instanceof GateMarker)) {
             gMarker =
-                new GateMarker(gateSector, gateName, MapIcon.GATE_3, GateMarker.publicGateColor);
+                new GateMarker(gateSector, gateName, MapIcon.WARPGATE, GateMarker.publicGateColor);
           } else {
             // already exists
             gMarker = (GateMarker) marker;

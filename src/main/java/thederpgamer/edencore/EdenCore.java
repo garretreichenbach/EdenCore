@@ -13,7 +13,10 @@ import api.listener.events.entity.SegmentControllerInstantiateEvent;
 import api.listener.events.gui.GUITopBarCreateEvent;
 import api.listener.events.gui.MainWindowTabAddEvent;
 import api.listener.events.input.KeyPressEvent;
-import api.listener.events.player.*;
+import api.listener.events.player.PlayerDeathEvent;
+import api.listener.events.player.PlayerJoinWorldEvent;
+import api.listener.events.player.PlayerPickupFreeItemEvent;
+import api.listener.events.player.PlayerSpawnEvent;
 import api.mod.StarLoader;
 import api.mod.StarMod;
 import api.mod.config.PersistentObjectUtil;
@@ -22,13 +25,6 @@ import api.utils.StarRunnable;
 import api.utils.game.PlayerUtils;
 import api.utils.game.inventory.InventoryUtils;
 import api.utils.gui.ModGUIHandler;
-
-import java.io.FileInputStream;
-import java.io.IOException;
-import java.sql.Date;
-import java.util.zip.ZipEntry;
-import java.util.zip.ZipInputStream;
-
 import glossar.GlossarCategory;
 import glossar.GlossarEntry;
 import glossar.GlossarInit;
@@ -48,7 +44,7 @@ import org.schema.schine.network.server.ServerMessage;
 import org.schema.schine.resource.ResourceLoader;
 import thederpgamer.edencore.commands.*;
 import thederpgamer.edencore.data.other.BuildSectorData;
-import thederpgamer.edencore.data.other.PlayerData;
+import thederpgamer.edencore.data.player.PlayerData;
 import thederpgamer.edencore.element.ElementManager;
 import thederpgamer.edencore.element.items.PrizeBars;
 import thederpgamer.edencore.gui.buildsectormenu.BuildSectorMenuControlManager;
@@ -68,6 +64,12 @@ import thederpgamer.edencore.network.server.SendCacheUpdatePacket;
 import thederpgamer.edencore.utils.BuildSectorUtils;
 import thederpgamer.edencore.utils.DataUtils;
 import thederpgamer.edencore.utils.DateUtils;
+
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.sql.Date;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipInputStream;
 
 /**
  * Main class for EdenCore mod.

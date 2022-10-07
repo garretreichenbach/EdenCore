@@ -14,18 +14,12 @@ import java.util.HashMap;
  * offers sprites to draw onto the map
  */
 public enum MapIcon {
-    ERROR             ("edencore_sprites",0),
-    WARPGATE          ("edencore_sprites",1),
-    PRIVATE           ("edencore_sprites",2),
-    MC_DONALDS("edencore_sprites",3),
-    GATE_1  ("edencore_sprites",4),
-    GATE_2  ("edencore_sprites",5),
-    GATE_3  ("edencore_sprites",6),
-    GATE_4  ("edencore_sprites",7),
-    GATE_5  ("edencore_sprites",8),
-    GATE_LIGHTS            ("edencore_sprites",9),
-    GATE_WORMHOLE  ("edencore_sprites",10),
-    GATE_GLOWHOLE ("edencore_sprites",11);
+    OUTPOST("map-sprites",0),
+    SHIPYARD("map-sprites",1),
+    //FACTORY("map-sprites",2),
+    WARPGATE("map-sprites",2),
+    SIPHON("map-sprites", 3),
+    BASE("map-sprites", 4);
 
     int index;
     String resourceName;
