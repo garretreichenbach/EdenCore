@@ -31,11 +31,13 @@ public class BuildSectorCatalogScrollableList extends ScrollableTableList<Catalo
     private BuildSectorData sectorData;
     private BuildSectorSpawnEntityDialog spawnEntityDialog;
     private final GUIElement p;
+    private final BuildSectorMenuPanel menuPanel;
 
-    public BuildSectorCatalogScrollableList(InputState state, BuildSectorData sectorData, GUIElement p) {
+    public BuildSectorCatalogScrollableList(InputState state, BuildSectorData sectorData, GUIElement p, BuildSectorMenuPanel menuPanel) {
         super(state, 800, 500, p);
         this.sectorData = sectorData;
         this.p = p;
+        this.menuPanel = menuPanel;
         p.attach(this);
     }
 
@@ -54,6 +56,7 @@ public class BuildSectorCatalogScrollableList extends ScrollableTableList<Catalo
                         spawnEntityDialog.catalogPermission = catalogPermission;
                         spawnEntityDialog.activate();
                         spawnEntityDialog.getInputPanel().setSpawnName(catalogPermission.getUid());
+                        menuPanel.refresh();
                     } else getState().getController().queueUIAudio("0022_menu_ui - error 1");
                 }
             }
@@ -76,7 +79,7 @@ public class BuildSectorCatalogScrollableList extends ScrollableTableList<Catalo
 
         buttonPane.addButton(1, 0, "SPAWN ENEMY", GUIHorizontalArea.HButtonColor.RED, new GUICallback() {
             @Override
-            public void callback(GUIElement guiElement, MouseEvent mouseEvent) {
+            public void callback(GUIElement guiElement, final MouseEvent mouseEvent) {
                 if(mouseEvent.pressedLeftMouse()) {
                     if(hasPermission("SPAWN_ENEMIES")) {
                         getState().getController().queueUIAudio("0022_menu_ui - select 3");
@@ -85,6 +88,7 @@ public class BuildSectorCatalogScrollableList extends ScrollableTableList<Catalo
                             public boolean onInput(String s) {
                                 if(s == null || s.isEmpty()) s = catalogPermission.getUid();
                                 PacketUtil.sendPacketToServer(new RequestSpawnEntryPacket(s, catalogPermission.getUid(), false, FactionManager.PIRATES_ID));
+                                menuPanel.refresh();
                                 return true;
                             }
                         }).activate();

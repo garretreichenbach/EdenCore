@@ -7,9 +7,11 @@ import org.schema.schine.graphicsengine.forms.Sprite;
 import org.schema.schine.resource.ResourceLoader;
 import thederpgamer.edencore.EdenCore;
 
+import javax.imageio.ImageIO;
 import javax.vecmath.Vector3f;
 import java.io.IOException;
 import java.util.HashMap;
+import java.util.Objects;
 
 /**
  * Manages mod resources.
@@ -46,9 +48,9 @@ public class ResourceManager {
                 for(String textureName : textureNames) {
                     try {
                         if(textureName.endsWith("icon")) {
-                            textureMap.put(textureName, StarLoaderTexture.newIconTexture(EdenCore.getInstance().getJarBufferedImage("thederpgamer/edencore/resources/textures/" + textureName + ".png")));
+                            textureMap.put(textureName, StarLoaderTexture.newIconTexture(ImageIO.read(Objects.requireNonNull(EdenCore.class.getResourceAsStream("/textures/" + textureName + ".png")))));
                         } else {
-                            textureMap.put(textureName, StarLoaderTexture.newBlockTexture(EdenCore.getInstance().getJarBufferedImage("thederpgamer/edencore/resources/textures/" + textureName + ".png")));
+                            textureMap.put(textureName, StarLoaderTexture.newBlockTexture(ImageIO.read(Objects.requireNonNull(EdenCore.class.getResourceAsStream("/textures/" + textureName + ".png")))));
                         }
                     } catch(Exception exception) {
                         LogManager.logException("Failed to load texture \"" + textureName + "\"", exception);
@@ -58,7 +60,7 @@ public class ResourceManager {
                 //Load Sprites
                 for(String spriteName : spriteNames) {
                     try {
-                        Sprite sprite = StarLoaderTexture.newSprite(EdenCore.getInstance().getJarBufferedImage("thederpgamer/edencore/resources/sprites/" + spriteName + ".png"), EdenCore.getInstance(), spriteName);
+                        Sprite sprite = StarLoaderTexture.newSprite(ImageIO.read(Objects.requireNonNull(EdenCore.class.getResourceAsStream("/sprites/" + spriteName + ".png"))), EdenCore.getInstance(),  spriteName);
                         sprite.setPositionCenter(false);
                         sprite.setName(spriteName);
                         spriteMap.put(spriteName, sprite);
@@ -79,12 +81,12 @@ public class ResourceManager {
                             offset.x = Float.parseFloat(values[0]);
                             offset.y = Float.parseFloat(values[1]);
                             offset.z = Float.parseFloat(values[2]);
-                            resourceLoader.getMeshLoader().loadModMesh(EdenCore.getInstance(), meshName, EdenCore.getInstance().getJarResource("thederpgamer/edencore/resources/models/" + meshName + ".zip"), null);
+                            resourceLoader.getMeshLoader().loadModMesh(EdenCore.getInstance(), meshName, EdenCore.class.getResourceAsStream("/models/" + meshName + ".zip"), null);
                             Mesh mesh = resourceLoader.getMeshLoader().getModMesh(EdenCore.getInstance(), meshName);
                             mesh.getTransform().origin.add(offset);
                             meshMap.put(meshName, mesh);
                         } else {
-                            resourceLoader.getMeshLoader().loadModMesh(EdenCore.getInstance(), modelName, EdenCore.getInstance().getJarResource("thederpgamer/edencore/resources/models/" + modelName + ".zip"), null);
+                            resourceLoader.getMeshLoader().loadModMesh(EdenCore.getInstance(), modelName, EdenCore.class.getResourceAsStream("/models/" + modelName + ".zip"), null);
                             Mesh mesh = resourceLoader.getMeshLoader().getModMesh(EdenCore.getInstance(), modelName);
                             mesh.setFirstDraw(true);
                             meshMap.put(modelName, mesh);

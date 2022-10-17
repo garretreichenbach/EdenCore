@@ -3,13 +3,14 @@ package thederpgamer.edencore.data.exchange;
 import api.common.GameClient;
 import api.network.PacketReadBuffer;
 import api.network.PacketWriteBuffer;
-import java.io.IOException;
 import org.schema.common.util.StringTools;
 import org.schema.game.common.data.player.catalog.CatalogPermission;
 import org.schema.schine.graphicsengine.forms.Sprite;
 import org.schema.schine.graphicsengine.forms.gui.GUIOverlay;
 import thederpgamer.edencore.manager.ResourceManager;
 import thederpgamer.edencore.utils.ImageUtils;
+
+import java.io.IOException;
 
 /**
  * <Description>

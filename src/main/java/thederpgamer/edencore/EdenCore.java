@@ -33,7 +33,6 @@ import org.schema.common.util.linAlg.Vector3i;
 import org.schema.game.client.view.gui.newgui.GUITopBar;
 import org.schema.game.common.data.player.PlayerState;
 import org.schema.game.common.data.player.faction.FactionManager;
-import org.schema.game.server.data.PlayerNotFountException;
 import org.schema.schine.common.language.Lng;
 import org.schema.schine.graphicsengine.core.MouseEvent;
 import org.schema.schine.graphicsengine.forms.gui.GUIActivationHighlightCallback;
@@ -488,14 +487,12 @@ public class EdenCore extends StarMod {
 							@Override
 							public void run() {
 								try {
-                  /*
-                  if(event.getController().getSector(new Vector3i()).x > 100000000 || event.getController().getSector(new Vector3i()).y > 100000000 || event.getController().getSector(new Vector3i()).z > 100000000) {
-                      updateClientCacheData();
-                  }
-                   */
+									if(event.getController().getSector(new Vector3i()).x > 100000000 || event.getController().getSector(new Vector3i()).y > 100000000 || event.getController().getSector(new Vector3i()).z > 100000000) {
+										updateClientCacheData();
+									}
+
 									if(DataUtils.isBuildSector(event.getController().getSector(new Vector3i()))) {
-										BuildSectorData sectorData =
-												DataUtils.getSectorData(event.getController().getSector(new Vector3i()));
+										BuildSectorData sectorData = DataUtils.getSectorData(event.getController().getSector(new Vector3i()));
 										if(sectorData != null) {
 											if(event.getController().getFactionId() == FactionManager.PIRATES_ID
 													&& ! BuildSectorUtils.getPlayersWithEnemySpawnPerms(sectorData)
@@ -729,7 +726,9 @@ public class EdenCore extends StarMod {
 					@Override
 					public void onEvent(final PlayerJoinWorldEvent event) {
 						if(GameCommon.isDedicatedServer() || GameCommon.isOnSinglePlayer()) {
-							if(DataUtils.getBuildSector(event.getPlayerName()) == null) DataUtils.createNewBuildSector(event.getPlayerName());
+							if(DataUtils.getBuildSector(event.getPlayerName()) == null)
+								DataUtils.createNewBuildSector(event.getPlayerName());
+							/*
 							new StarRunnable() {
 								@Override
 								public void run() {
@@ -739,7 +738,8 @@ public class EdenCore extends StarMod {
 										exception.printStackTrace();
 									}
 								}
-							}.runLater(EdenCore.this, 15);
+							}.runLater(EdenCore.this, 100);
+							 */
 
 							new StarRunnable() {
 								@Override

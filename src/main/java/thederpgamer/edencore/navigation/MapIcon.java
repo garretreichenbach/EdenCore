@@ -44,7 +44,7 @@ public enum MapIcon {
             final InputStream inputStream;
             StarMod mod = EdenCore.getInstance();
             try {
-                inputStream = mod.getJarResource("thederpgamer/edencore/resources/sprites/"+resourceName+".png");
+                inputStream = mod.getJarResource("/sprites/"+resourceName+".png");
                 BufferedImage img;
                 img = ImageIO.read(inputStream);
                 Sprite s = StarLoaderTexture.newSprite(img,mod,resourceName);
