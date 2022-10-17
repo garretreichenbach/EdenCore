@@ -8,6 +8,7 @@ import thederpgamer.edencore.data.event.types.CaptureEvent;
 import thederpgamer.edencore.manager.LogManager;
 
 import java.io.IOException;
+import java.util.ArrayList;
 
 /**
  * <Description>
@@ -21,8 +22,13 @@ public abstract class EventData implements EventUpdater, SerializableData {
     public static final int WAITING = 1;
     public static final int ACTIVE = 2;
     public static final int FINISHED = 3;
+	public static final int PVE = 0;
+	public static final int PVP = 1;
+	public static final int DAILY = 2;
+	public static final int WEEKLY = 4;
+	public static final int MONTHLY = 8;
 
-    public enum EventType {ALL, CAPTURE, DEFENSE, DESTROY, ESCORT, PURSUIT}
+	public enum EventType {ALL, CAPTURE, DEFENSE, DESTROY, ESCORT, PURSUIT}
 
     protected String name;
     protected String description;
@@ -45,8 +51,26 @@ public abstract class EventData implements EventUpdater, SerializableData {
         deserialize(readBuffer);
     }
 
+    public EventEnemyData getToughestEnemy() {
+        double largestMass = 0;
+        EventEnemyData toughestEnemy = null;
+        for(EventEnemyData enemyData : getEnemies()) {
+            if(enemyData.getSpawnCount() <= 0) continue;
+            double currentMass = 0;
+            for(int i = 0; i < enemyData.getSpawnCount(); i ++) currentMass += enemyData.getCatalogEntry().getMass();
+            if(currentMass > largestMass) {
+                largestMass = currentMass;
+                toughestEnemy = enemyData;
+            }
+        }
+        return toughestEnemy;
+    }
+
     public abstract void deserialize(PacketReadBuffer readBuffer) throws IOException;
     public abstract void serialize(PacketWriteBuffer writeBuffer) throws IOException;
+
+    public abstract String getAnnouncement();
+    public abstract ArrayList<EventEnemyData> getEnemies();
 
     public static EventData fromPacket(PacketReadBuffer readBuffer) {
         try {

@@ -4,11 +4,13 @@ import api.network.PacketReadBuffer;
 import api.network.PacketWriteBuffer;
 import org.schema.common.util.linAlg.Vector3i;
 import thederpgamer.edencore.data.event.EventData;
+import thederpgamer.edencore.data.event.EventEnemyData;
 import thederpgamer.edencore.data.event.EventRuleset;
 import thederpgamer.edencore.data.event.EventTarget;
 import thederpgamer.edencore.data.event.target.DefenseTarget;
 
 import java.io.IOException;
+import java.util.ArrayList;
 
 /**
  * <Description>
@@ -49,6 +51,16 @@ public class DefenseEvent extends EventData {
         writeBuffer.writeInt(targets.length);
         if(targets.length > 0) for(EventTarget target : targets) target.serialize(writeBuffer);
 
+    }
+
+    @Override
+    public String getAnnouncement() {
+        return null;
+    }
+
+    @Override
+    public ArrayList<EventEnemyData> getEnemies() {
+        return null;
     }
 
     @Override

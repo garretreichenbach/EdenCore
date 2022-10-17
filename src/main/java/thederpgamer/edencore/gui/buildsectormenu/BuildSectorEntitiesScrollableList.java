@@ -57,6 +57,7 @@ public class BuildSectorEntitiesScrollableList extends ScrollableTableList<Segme
 							if(sectorData.hasPermission(GameClient.getClientPlayerState().getName(), "EDIT")) {
 								getState().getController().queueUIAudio("0022_menu_ui - select 1");
 								EntityUtils.warpPlayerIntoEntity(GameClient.getClientPlayerState(), segmentController);
+								panel.refresh();
 							} else getState().getController().queueUIAudio("0022_menu_ui - error 1");
 						}
 					}
@@ -85,8 +86,9 @@ public class BuildSectorEntitiesScrollableList extends ScrollableTableList<Segme
 								if(sectorData.hasPermission(GameClient.getClientPlayerState().getName(), "DELETE")) {
 									PacketUtil.sendPacketToServer(new RequestEntityDeletePacket(segmentController));
 									getState().getController().queueUIAudio("0022_menu_ui - select 2");
+									panel.refresh();
 								} else getState().getController().queueUIAudio("0022_menu_ui - error 1");
-							} else panel.recreateTabs();
+							} else panel.refresh();
 						}
 					}
 
@@ -113,6 +115,7 @@ public class BuildSectorEntitiesScrollableList extends ScrollableTableList<Segme
 							if(sectorData.hasPermission(GameClient.getClientPlayerState().getName(), "TOGGLE_AI")) {
 								getState().getController().queueUIAudio("0022_menu_ui - select 3");
 								BuildSectorUtils.toggleAI(segmentController, !segmentController.isAIControlled());
+								panel.refresh();
 							} else getState().getController().queueUIAudio("0022_menu_ui - error 1");
 						}
 					}

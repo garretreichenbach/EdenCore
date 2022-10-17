@@ -42,6 +42,7 @@ public class MapMarker implements PositionableSubColorSprite, SelectableSprite, 
     transient private boolean drawIndication;
     private float scale = 0.3f;
     public float scaleFactor = 1;
+    private boolean customizable = false;
 
     /**
      * code that gets called before the marker is drawn.
@@ -50,6 +51,14 @@ public class MapMarker implements PositionableSubColorSprite, SelectableSprite, 
         autoScale(drawer.getCamera());
         if (selected)
             EdenMapDrawer.instance.drawText(pos,name);
+    }
+
+    public boolean isCustomizable() {
+        return customizable;
+    }
+
+    public void setCustomizable(boolean customizable) {
+        this.customizable = customizable;
     }
 
     public void addToDrawList(boolean isPublic) {
@@ -106,7 +115,7 @@ public class MapMarker implements PositionableSubColorSprite, SelectableSprite, 
 
     @Override
     public void setDrawIndication(boolean b) {
-
+        drawIndication = b;
     }//??
 
     public MapIcon getIcon() {

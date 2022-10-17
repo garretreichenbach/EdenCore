@@ -13,7 +13,10 @@ import api.listener.events.entity.SegmentControllerInstantiateEvent;
 import api.listener.events.gui.GUITopBarCreateEvent;
 import api.listener.events.gui.MainWindowTabAddEvent;
 import api.listener.events.input.KeyPressEvent;
-import api.listener.events.player.*;
+import api.listener.events.player.PlayerDeathEvent;
+import api.listener.events.player.PlayerJoinWorldEvent;
+import api.listener.events.player.PlayerPickupFreeItemEvent;
+import api.listener.events.player.PlayerSpawnEvent;
 import api.mod.StarLoader;
 import api.mod.StarMod;
 import api.mod.config.PersistentObjectUtil;
@@ -22,13 +25,6 @@ import api.utils.StarRunnable;
 import api.utils.game.PlayerUtils;
 import api.utils.game.inventory.InventoryUtils;
 import api.utils.gui.ModGUIHandler;
-
-import java.io.FileInputStream;
-import java.io.IOException;
-import java.sql.Date;
-import java.util.zip.ZipEntry;
-import java.util.zip.ZipInputStream;
-
 import glossar.GlossarCategory;
 import glossar.GlossarEntry;
 import glossar.GlossarInit;
@@ -37,7 +33,6 @@ import org.schema.common.util.linAlg.Vector3i;
 import org.schema.game.client.view.gui.newgui.GUITopBar;
 import org.schema.game.common.data.player.PlayerState;
 import org.schema.game.common.data.player.faction.FactionManager;
-import org.schema.game.server.data.PlayerNotFountException;
 import org.schema.schine.common.language.Lng;
 import org.schema.schine.graphicsengine.core.MouseEvent;
 import org.schema.schine.graphicsengine.forms.gui.GUIActivationHighlightCallback;
@@ -48,7 +43,7 @@ import org.schema.schine.network.server.ServerMessage;
 import org.schema.schine.resource.ResourceLoader;
 import thederpgamer.edencore.commands.*;
 import thederpgamer.edencore.data.other.BuildSectorData;
-import thederpgamer.edencore.data.other.PlayerData;
+import thederpgamer.edencore.data.player.PlayerData;
 import thederpgamer.edencore.element.ElementManager;
 import thederpgamer.edencore.element.items.PrizeBars;
 import thederpgamer.edencore.gui.buildsectormenu.BuildSectorMenuControlManager;
@@ -68,6 +63,12 @@ import thederpgamer.edencore.network.server.SendCacheUpdatePacket;
 import thederpgamer.edencore.utils.BuildSectorUtils;
 import thederpgamer.edencore.utils.DataUtils;
 import thederpgamer.edencore.utils.DateUtils;
+
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.sql.Date;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipInputStream;
 
 /**
  * Main class for EdenCore mod.
@@ -129,7 +130,6 @@ public class EdenCore extends StarMod {
 		registerPackets();
 		registerListeners();
 		registerCommands();
-		initGlossary();
 
 		startRunners();
 	}
@@ -144,6 +144,7 @@ public class EdenCore extends StarMod {
 	public void onClientCreated(ClientInitializeEvent clientInitializeEvent) {
 		super.onClientCreated(clientInitializeEvent);
 		new EdenMapDrawer();
+		initGlossary();
 	}
 
 	@Override
@@ -486,14 +487,12 @@ public class EdenCore extends StarMod {
 							@Override
 							public void run() {
 								try {
-                  /*
-                  if(event.getController().getSector(new Vector3i()).x > 100000000 || event.getController().getSector(new Vector3i()).y > 100000000 || event.getController().getSector(new Vector3i()).z > 100000000) {
-                      updateClientCacheData();
-                  }
-                   */
+									if(event.getController().getSector(new Vector3i()).x > 100000000 || event.getController().getSector(new Vector3i()).y > 100000000 || event.getController().getSector(new Vector3i()).z > 100000000) {
+										updateClientCacheData();
+									}
+
 									if(DataUtils.isBuildSector(event.getController().getSector(new Vector3i()))) {
-										BuildSectorData sectorData =
-												DataUtils.getSectorData(event.getController().getSector(new Vector3i()));
+										BuildSectorData sectorData = DataUtils.getSectorData(event.getController().getSector(new Vector3i()));
 										if(sectorData != null) {
 											if(event.getController().getFactionId() == FactionManager.PIRATES_ID
 													&& ! BuildSectorUtils.getPlayersWithEnemySpawnPerms(sectorData)
@@ -727,7 +726,9 @@ public class EdenCore extends StarMod {
 					@Override
 					public void onEvent(final PlayerJoinWorldEvent event) {
 						if(GameCommon.isDedicatedServer() || GameCommon.isOnSinglePlayer()) {
-							if(DataUtils.getBuildSector(event.getPlayerName()) == null) DataUtils.createNewBuildSector(event.getPlayerName());
+							if(DataUtils.getBuildSector(event.getPlayerName()) == null)
+								DataUtils.createNewBuildSector(event.getPlayerName());
+							/*
 							new StarRunnable() {
 								@Override
 								public void run() {
@@ -737,7 +738,8 @@ public class EdenCore extends StarMod {
 										exception.printStackTrace();
 									}
 								}
-							}.runLater(EdenCore.this, 15);
+							}.runLater(EdenCore.this, 100);
+							 */
 
 							new StarRunnable() {
 								@Override
