@@ -267,7 +267,7 @@ public class DataUtils {
 
     public static void destroyEntity(SegmentController entity) {
         for(PlayerState attached : SegmentControllerUtils.getAttachedPlayers(entity)) attached.getControllerState().forcePlayerOutOfSegmentControllers();
-        if(GameCommon.isClientConnectedToServer()) PacketUtil.sendPacketToServer(new RequestEntityDeletePacket(entity));
+        if(GameCommon.isClientConnectedToServer()) PacketUtil.sendPacketToServer(new RequestEntityDeletePacket(entity, false));
         else {
             entity.railController.destroyDockedRecursive();
             for(ElementDocking dock : entity.getDockingController().getDockedOnThis()) {

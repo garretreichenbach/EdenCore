@@ -57,7 +57,7 @@ public class BuildSectorEntitiesScrollableList extends ScrollableTableList<Segme
 							if(sectorData.hasPermission(GameClient.getClientPlayerState().getName(), "EDIT")) {
 								getState().getController().queueUIAudio("0022_menu_ui - select 1");
 								EntityUtils.warpPlayerIntoEntity(GameClient.getClientPlayerState(), segmentController);
-								panel.refresh();
+								//panel.refresh();
 							} else getState().getController().queueUIAudio("0022_menu_ui - error 1");
 						}
 					}
@@ -84,7 +84,7 @@ public class BuildSectorEntitiesScrollableList extends ScrollableTableList<Segme
 						if(mouseEvent.pressedLeftMouse()) {
 							if(segmentController.existsInState() && segmentController.getSector(new Vector3i()).equals(sectorData.sector)) {
 								if(sectorData.hasPermission(GameClient.getClientPlayerState().getName(), "DELETE")) {
-									PacketUtil.sendPacketToServer(new RequestEntityDeletePacket(segmentController));
+									PacketUtil.sendPacketToServer(new RequestEntityDeletePacket(segmentController, false));
 									getState().getController().queueUIAudio("0022_menu_ui - select 2");
 									panel.refresh();
 								} else getState().getController().queueUIAudio("0022_menu_ui - error 1");
@@ -108,7 +108,37 @@ public class BuildSectorEntitiesScrollableList extends ScrollableTableList<Segme
 					}
 				});
 
-				buttonPane.addButton(2, 0, "TOGGLE AI", GUIHorizontalArea.HButtonColor.BLUE, new GUICallback() {
+				buttonPane.addButton(2, 0, "DELETE DOCKED", GUIHorizontalArea.HButtonColor.RED, new GUICallback() {
+					@Override
+					public void callback(GUIElement guiElement, MouseEvent mouseEvent) {
+						if(mouseEvent.pressedLeftMouse()) {
+							if(segmentController.existsInState() && segmentController.getSector(new Vector3i()).equals(sectorData.sector)) {
+								if(sectorData.hasPermission(GameClient.getClientPlayerState().getName(), "DELETE")) {
+									PacketUtil.sendPacketToServer(new RequestEntityDeletePacket(segmentController, true));
+									getState().getController().queueUIAudio("0022_menu_ui - select 2");
+									panel.refresh();
+								} else getState().getController().queueUIAudio("0022_menu_ui - error 1");
+							} else panel.refresh();
+						}
+					}
+
+					@Override
+					public boolean isOccluded() {
+						return !getState().getController().getPlayerInputs().isEmpty() || !sectorData.hasPermission(GameClient.getClientPlayerState().getName(), "DELETE");
+					}
+				}, new GUIActivationCallback() {
+					@Override
+					public boolean isVisible(InputState inputState) {
+						return true;
+					}
+
+					@Override
+					public boolean isActive(InputState inputState) {
+						return getState().getController().getPlayerInputs().isEmpty() && sectorData.hasPermission(GameClient.getClientPlayerState().getName(), "DELETE");
+					}
+				});
+
+				buttonPane.addButton(3, 0, "TOGGLE AI", GUIHorizontalArea.HButtonColor.BLUE, new GUICallback() {
 					@Override
 					public void callback(GUIElement guiElement, MouseEvent mouseEvent) {
 						if(mouseEvent.pressedLeftMouse() && segmentController.existsInState()) {

@@ -23,23 +23,27 @@ import java.util.Objects;
 public class RequestEntityDeletePacket extends Packet {
 
     private int entityId;
+    private boolean destroyDocks;
 
     public RequestEntityDeletePacket() {
 
     }
 
-    public RequestEntityDeletePacket(SegmentController segmentController) {
+    public RequestEntityDeletePacket(SegmentController segmentController, boolean destroyDocks) {
         this.entityId = segmentController.getId();
+        this.destroyDocks = destroyDocks;
     }
 
     @Override
     public void readPacketData(PacketReadBuffer packetReadBuffer) throws IOException {
         entityId = packetReadBuffer.readInt();
+        destroyDocks = packetReadBuffer.readBoolean();
     }
 
     @Override
     public void writePacketData(PacketWriteBuffer packetWriteBuffer) throws IOException {
         packetWriteBuffer.writeInt(entityId);
+        packetWriteBuffer.writeBoolean(destroyDocks);
     }
 
     @Override
@@ -58,8 +62,10 @@ public class RequestEntityDeletePacket extends Packet {
                     dock.from.getSegment().getSegmentController().markForPermanentDelete(true);
                     dock.from.getSegment().getSegmentController().setMarkedForDeleteVolatile(true);
                 }
-                segmentController.markForPermanentDelete(true);
-                segmentController.setMarkedForDeleteVolatile(true);
+                if(!destroyDocks) {
+                    segmentController.markForPermanentDelete(true);
+                    segmentController.setMarkedForDeleteVolatile(true);
+                }
             }
         }
     }

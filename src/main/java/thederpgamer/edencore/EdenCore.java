@@ -487,6 +487,7 @@ public class EdenCore extends StarMod {
 							@Override
 							public void run() {
 								try {
+									if(event.getController() == null || !event.getController().isFullyLoadedWithDock()) return;
 									if(event.getController().getSector(new Vector3i()).x > 100000000 || event.getController().getSector(new Vector3i()).y > 100000000 || event.getController().getSector(new Vector3i()).z > 100000000) {
 										updateClientCacheData();
 									}
