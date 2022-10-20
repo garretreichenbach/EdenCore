@@ -19,6 +19,11 @@ public class BuildSectorSpawnEntityDialog extends GUIInputDialog {
 
 	public BuildSectorData sectorData;
 	public CatalogPermission catalogPermission;
+	private final BuildSectorMenuPanel menuPanel;
+
+	public BuildSectorSpawnEntityDialog(BuildSectorMenuPanel menuPanel) {
+		this.menuPanel = menuPanel;
+	}
 
 	@Override
 	public BuildSectorSpawnEntityPanel createPanel() {
@@ -38,6 +43,7 @@ public class BuildSectorSpawnEntityDialog extends GUIInputDialog {
 					if(sectorData != null && catalogPermission != null) {
 						String spawnName = (getInputPanel().getSpawnName().isEmpty()) ? catalogPermission.getUid() : getInputPanel().getSpawnName();
 						PacketUtil.sendPacketToServer(new RequestSpawnEntryPacket(spawnName, catalogPermission.getUid(), getInputPanel().spawnDocked(), getInputPanel().spawnAsFaction()));
+						menuPanel.refresh();
 						deactivate();
 					}
 					break;

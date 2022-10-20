@@ -51,12 +51,11 @@ public class BuildSectorCatalogScrollableList extends ScrollableTableList<Catalo
                 if(mouseEvent.pressedLeftMouse()) {
                     if(hasPermission("SPAWN")) {
                         getState().getController().queueUIAudio("0022_menu_ui - select 1");
-                        spawnEntityDialog = new BuildSectorSpawnEntityDialog();
+                        spawnEntityDialog = new BuildSectorSpawnEntityDialog(menuPanel);
                         spawnEntityDialog.sectorData = sectorData;
                         spawnEntityDialog.catalogPermission = catalogPermission;
                         spawnEntityDialog.activate();
                         spawnEntityDialog.getInputPanel().setSpawnName(catalogPermission.getUid());
-                        menuPanel.refresh();
                     } else getState().getController().queueUIAudio("0022_menu_ui - error 1");
                 }
             }
