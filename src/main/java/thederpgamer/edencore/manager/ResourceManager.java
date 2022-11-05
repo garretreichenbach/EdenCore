@@ -28,7 +28,6 @@ public class ResourceManager {
     private static final String[] spriteNames = {
             "default-sprite",
             "map-sprites"
-            //"edencore-sprites-old"
     };
 
     private static final String[] modelNames = {

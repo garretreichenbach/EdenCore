@@ -1,13 +1,11 @@
 package thederpgamer.edencore.navigation;
 
-import api.ModPlayground;
 import api.listener.Listener;
 import api.listener.events.input.KeyPressEvent;
 import api.listener.events.player.PlayerSpawnEvent;
 import api.mod.StarLoader;
 import org.schema.game.client.data.GameClientState;
 import org.schema.game.client.view.gamemap.GameMapDrawer;
-import org.schema.game.server.data.GameServerState;
 import thederpgamer.edencore.EdenCore;
 
 /**
@@ -33,8 +31,7 @@ public class NavigationEventManager {
             public void onEvent(KeyPressEvent keyPressEvent) {
                 GameMapDrawer drawer = GameClientState.instance.getWorldDrawer().getGameMapDrawer();
                 if (keyPressEvent.isKeyDown() && keyPressEvent.getChar()=='m' && !drawer.isMapActive()) { //TODO this is a very unspecific event and fires way to often
-                    if (EdenMapDrawer.instance == null)
-                        return;
+                    if (EdenMapDrawer.instance == null) return;
                 //    ModPlayground.broadcastMessage("M clicked");
                     EdenMapDrawer.instance.updatePrivateMarkers();
                     EdenMapDrawer.instance.updateInternalList();

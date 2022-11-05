@@ -1,13 +1,13 @@
-package thederpgamer.edencore.data.event.types;
+package thederpgamer.edencore.data.event.types.defense;
 
 import api.network.PacketReadBuffer;
 import api.network.PacketWriteBuffer;
 import org.schema.common.util.linAlg.Vector3i;
 import thederpgamer.edencore.data.event.EventData;
 import thederpgamer.edencore.data.event.EventEnemyData;
-import thederpgamer.edencore.data.event.EventRuleset;
 import thederpgamer.edencore.data.event.EventTarget;
 import thederpgamer.edencore.data.event.target.DefenseTarget;
+import thederpgamer.edencore.data.event.types.EventRuleSet;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -20,7 +20,7 @@ import java.util.ArrayList;
  */
 public class DefenseEvent extends EventData {
 
-    public DefenseEvent(String name, String description, EventRuleset ruleset, Vector3i sector, EventTarget... targets) {
+    public DefenseEvent(String name, String description, EventRuleSet ruleset, Vector3i sector, EventTarget... targets) {
         super(name, description, EventType.DEFENSE, ruleset, sector, targets);
     }
 
@@ -33,7 +33,7 @@ public class DefenseEvent extends EventData {
         name = readBuffer.readString();
         description = readBuffer.readString();
         eventType = EventType.DEFENSE;
-        ruleset = new EventRuleset(readBuffer);
+        ruleset = new EventRuleSet(readBuffer);
         sector = readBuffer.readVector();
         int size = readBuffer.readInt();
         if(size > 0) {

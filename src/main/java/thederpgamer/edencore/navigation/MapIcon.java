@@ -44,8 +44,9 @@ public enum MapIcon {
             final InputStream inputStream;
             StarMod mod = EdenCore.getInstance();
             try {
-                inputStream = mod.getJarResource("/sprites/"+resourceName+".png");
+                inputStream = EdenCore.class.getResourceAsStream("/sprites/" + resourceName + ".png");
                 BufferedImage img;
+                assert inputStream != null;
                 img = ImageIO.read(inputStream);
                 Sprite s = StarLoaderTexture.newSprite(img,mod,resourceName);
                 s.setMultiSpriteMax(8,8); //TODO map this somewhere, file dependent?/make standard?

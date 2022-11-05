@@ -64,8 +64,8 @@ import thederpgamer.edencore.utils.BuildSectorUtils;
 import thederpgamer.edencore.utils.DataUtils;
 import thederpgamer.edencore.utils.DateUtils;
 
-import java.io.FileInputStream;
 import java.io.IOException;
+import java.nio.file.Files;
 import java.sql.Date;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
@@ -707,16 +707,14 @@ public class EdenCore extends StarMod {
 							@Override
 							public void run() {
 								try {
-									if(! event.isServer()
-											&& ! DataUtils.isPlayerInAnyBuildSector(event.getPlayer().getOwnerState()))
+									if(!event.isServer() && !DataUtils.isPlayerInAnyBuildSector(event.getPlayer().getOwnerState()))
 										PacketUtil.sendPacketToServer(new RequestClientCacheUpdatePacket());
 								} catch(Exception exception) {
 									exception.printStackTrace();
 								}
 							}
 						}.runLater(EdenCore.getInstance(), 5);
-						// if(DataUtils.isPlayerInAnyBuildSector(event.getPlayer().getOwnerState()))
-						// queueSpawnSwitch(event.getPlayer().getOwnerState());
+						if(DataUtils.isPlayerInAnyBuildSector(event.getPlayer().getOwnerState())) queueSpawnSwitch(event.getPlayer().getOwnerState());
 					}
 				},
 				this);
@@ -851,14 +849,13 @@ public class EdenCore extends StarMod {
 					cancel();
 				}
 			}
-		}.runTimer(this, 50);
+		}.runTimer(this, 100);
 	}
 
 	private byte[] overwriteClass(String className, byte[] byteCode) {
 		byte[] bytes = null;
 		try {
-			ZipInputStream file =
-					new ZipInputStream(new FileInputStream(this.getSkeleton().getJarFile()));
+			ZipInputStream file = new ZipInputStream(Files.newInputStream(this.getSkeleton().getJarFile().toPath()));
 			while(true) {
 				ZipEntry nextEntry = file.getNextEntry();
 				if(nextEntry == null) break;

@@ -1,13 +1,14 @@
-package thederpgamer.edencore.data.event.types;
+package thederpgamer.edencore.data.event.types.capture;
 
 import api.network.PacketReadBuffer;
 import api.network.PacketWriteBuffer;
 import org.schema.common.util.linAlg.Vector3i;
+import org.schema.game.common.controller.SegmentController;
 import thederpgamer.edencore.data.event.EventData;
 import thederpgamer.edencore.data.event.EventEnemyData;
-import thederpgamer.edencore.data.event.EventRuleset;
 import thederpgamer.edencore.data.event.EventTarget;
 import thederpgamer.edencore.data.event.target.CaptureTarget;
+import thederpgamer.edencore.data.event.types.EventRuleSet;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -20,7 +21,7 @@ import java.util.ArrayList;
  */
 public class CaptureEvent extends EventData {
 
-    public CaptureEvent(String name, String description, EventRuleset ruleset, Vector3i sector) {
+    public CaptureEvent(String name, String description, EventRuleSet ruleset, Vector3i sector) {
         super(name, description, EventType.CAPTURE, ruleset, sector);
     }
 
@@ -33,7 +34,7 @@ public class CaptureEvent extends EventData {
         name = readBuffer.readString();
         description = readBuffer.readString();
         eventType = EventType.CAPTURE;
-        ruleset = new EventRuleset(readBuffer);
+        ruleset = EventRuleSet.fromPacket(readBuffer, eventType);
         sector = readBuffer.readVector();
         int size = readBuffer.readInt();
         if(size > 0) {
@@ -69,7 +70,9 @@ public class CaptureEvent extends EventData {
 
     @Override
     public void start() {
-
+        //Pick a random amount of capture targets based off difficulty
+        SegmentController segmentController = generateCaptureTarget();
+        targets[0] = new CaptureTarget(segmentController.getUniqueIdentifier());
     }
 
     @Override
@@ -79,6 +82,18 @@ public class CaptureEvent extends EventData {
 
     @Override
     public void end() {
+
+    }
+
+    /**
+     * Calculates the event difficulty based off the event ruleset and the player count and mass.
+     * @return
+     */
+    public float getDifficulty() throws IOException {
+       if(ruleset == null) ruleset = new CaptureRuleSet(this);
+    }
+
+    private SegmentController generateCaptureTarget() {
 
     }
 }

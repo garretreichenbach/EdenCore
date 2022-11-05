@@ -24,6 +24,7 @@ public class EventEnemyData implements SerializableData {
 
 	private int spawnCount = 1;
 	private String entryName;
+	private double mass;
 
 	public EventEnemyData(PacketReadBuffer readBuffer) throws Exception {
 		deserialize(readBuffer);
@@ -45,6 +46,14 @@ public class EventEnemyData implements SerializableData {
 
 	public int getSpawnCount() {
 		return spawnCount;
+	}
+
+	public double getMass() {
+		return mass;
+	}
+
+	public void setMass(double mass) {
+		this.mass = mass;
 	}
 
 	public BlueprintEntry getCatalogEntry() {

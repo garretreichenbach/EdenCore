@@ -4,6 +4,7 @@ import api.network.PacketReadBuffer;
 import thederpgamer.edencore.data.SerializableData;
 
 import java.io.IOException;
+import java.io.Serializable;
 
 /**
  * <Description>
@@ -11,7 +12,7 @@ import java.io.IOException;
  * @author TheDerpGamer
  * @version 1.0 - [11/05/2021]
  */
-public abstract class EventTarget implements SerializableData {
+public abstract class EventTarget implements SerializableData, Serializable {
 
     protected Object target;
 
@@ -23,5 +24,5 @@ public abstract class EventTarget implements SerializableData {
         deserialize(readBuffer);
     }
 
-    public abstract int getProgress();
+    public abstract float getProgress();
 }

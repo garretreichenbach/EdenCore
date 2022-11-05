@@ -23,7 +23,7 @@ public class DefenseTarget extends EventTarget {
     }
 
     @Override
-    public int getProgress() {
+    public float getProgress() {
         return 0; //Todo
     }
 
