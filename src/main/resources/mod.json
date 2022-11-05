@@ -2,7 +2,7 @@
   "name": "EdenCore",
   "author": "TheDerpGamer",
   "description": "Core mod for Skies of Eden StarMade Server.",
-  "version": "1.8.1",
+  "version": "1.8.2",
   "starmade_version": "0.203.125",
   "client_mod": false,
   "server_mod": false,
