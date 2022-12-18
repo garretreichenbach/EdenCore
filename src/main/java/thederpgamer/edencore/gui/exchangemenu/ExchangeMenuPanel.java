@@ -165,10 +165,9 @@ public class ExchangeMenuPanel extends GUIMenuPanel {
 				GUIOverlay spriteOverlay = item.getIcon();
 				spriteOverlay.onInit();
 				if(spriteOverlay.getUserPointer() == null) spriteOverlay.setUserPointer("default-icon");
-				if(!spriteOverlay.getUserPointer().equals("default-icon")) spriteOverlay.getScale().scale(0.5f);
 				tile.attach(spriteOverlay);
 				spriteOverlay.getPos().x += 100;
-				spriteOverlay.getPos().y += 230;
+				spriteOverlay.getPos().y += 300;
 				/*
 				if(item.barType == BRONZE) {
 					GUITile tile =
@@ -1687,8 +1686,8 @@ public class ExchangeMenuPanel extends GUIMenuPanel {
 		if (item instanceof BlueprintExchangeItem) {
 			BlueprintPlayerHandleRequest req = new BlueprintPlayerHandleRequest();
 			req.catalogName = item.name;
-			if(((BlueprintExchangeItem) item).community) req.entitySpawnName = "EDENCORE_TEMP";
-			else req.entitySpawnName = "EDENCORE_TEMP_NOAUTOFILL";
+			if(((BlueprintExchangeItem) item).community) req.entitySpawnName = "EDENCORE_TEMP_COMMUNITY";
+			else req.entitySpawnName = "EDENCORE_TEMP";
 			req.save = false;
 			req.toSaveShip = -1;
 			req.directBuy = false;
