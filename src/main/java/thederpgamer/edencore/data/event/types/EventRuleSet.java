@@ -6,7 +6,6 @@ import thederpgamer.edencore.data.SerializableData;
 import thederpgamer.edencore.data.event.EventData;
 import thederpgamer.edencore.data.event.EventModifier;
 import thederpgamer.edencore.data.event.SquadData;
-import thederpgamer.edencore.data.event.types.capture.CaptureRuleSet;
 
 import java.io.IOException;
 import java.io.Serializable;
@@ -33,7 +32,7 @@ public abstract class EventRuleSet implements SerializableData, Serializable {
 
     public static EventRuleSet fromPacket(PacketReadBuffer readBuffer, EventData.EventType type) throws IOException {
         switch(type) {
-            case CAPTURE: return new CaptureRuleSet(readBuffer);
+            //case CAPTURE: return new CaptureRuleSet(readBuffer);
             //case DEFENSE: return new DefenseRuleSet(readBuffer);
             //case DESTROY: return new DestroyRuleSet(readBuffer);
             //case ESCORT: return new EscortRuleSet(readBuffer);

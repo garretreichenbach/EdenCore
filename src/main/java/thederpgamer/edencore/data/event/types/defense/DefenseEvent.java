@@ -58,7 +58,7 @@ public class DefenseEvent extends EventData {
         for(EventTarget target : targets) {
             if(target instanceof DefenseTarget) {
                 DefenseTarget defenseTarget = (DefenseTarget) target;
-                squadData.add   (defenseTarget.getSquadName(), defenseTarget.getSquadSize());
+                //squadData.add   (defenseTarget.getSquadName(), defenseTarget.getSquadSize());
             }
         }
     }
@@ -93,7 +93,6 @@ public class DefenseEvent extends EventData {
                 if(squadData.ready()) status = ACTIVE;
                 break;
             case ACTIVE:
-                targets
                 break;
         }
     }
