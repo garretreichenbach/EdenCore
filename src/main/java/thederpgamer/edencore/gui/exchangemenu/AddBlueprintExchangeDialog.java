@@ -18,6 +18,8 @@ import thederpgamer.edencore.network.client.ExchangeItemCreatePacket;
  */
 public class AddBlueprintExchangeDialog extends GUIInputDialog {
 
+	public boolean community = true;
+
 	@Override
 	public AddBlueprintExchangePanel createPanel() {
 		return new AddBlueprintExchangePanel(getState(), this);
@@ -65,6 +67,7 @@ public class AddBlueprintExchangeDialog extends GUIInputDialog {
 							Math.abs(Integer.parseInt(getInputPanel().currentBarText)),
 							description,
 							iconPath);
+			item.community = community;
 			PacketUtil.sendPacketToServer(new ExchangeItemCreatePacket(0, item));
 			return item;
 		} else return null;

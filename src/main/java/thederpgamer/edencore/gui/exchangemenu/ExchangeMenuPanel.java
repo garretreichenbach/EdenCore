@@ -111,6 +111,7 @@ public class ExchangeMenuPanel extends GUIMenuPanel {
 			GUITilePane<BlueprintExchangeItem> blueprintsTilePane;
 			(blueprintsTilePane = new GUITilePane<>(getState(), scrollPanel, 200, 300)).onInit();
 			for (final BlueprintExchangeItem item : getBlueprints()) {
+				if(item.community) continue;
 				GUITile tile = blueprintsTilePane.addButtonTile("EXCHANGE", item.createDescription(), getTileColor(item), new GUICallback() {
 					@Override
 					public void callback(GUIElement guiElement, MouseEvent mouseEvent) {
@@ -134,7 +135,7 @@ public class ExchangeMenuPanel extends GUIMenuPanel {
 										@Override
 										public void pressedOK() {
 											GameClient.getClientState().getController().queueUIAudio("0022_menu_ui - highlight 1");
-											item.autofill = true;
+											item.community = false;
 											givePlayerItem(item);
 											InventoryUtils.consumeItems(GameClient.getClientPlayerState().getInventory(), item.barType, item.price);
 											lastClickedBP = null;
@@ -163,11 +164,11 @@ public class ExchangeMenuPanel extends GUIMenuPanel {
 				});
 				GUIOverlay spriteOverlay = item.getIcon();
 				spriteOverlay.onInit();
-				spriteOverlay.getSprite().setWidth(130);
-				spriteOverlay.getSprite().setHeight(115);
+				if(spriteOverlay.getUserPointer() == null) spriteOverlay.setUserPointer("default-icon");
+				if(!spriteOverlay.getUserPointer().equals("default-icon")) spriteOverlay.getScale().scale(0.5f);
 				tile.attach(spriteOverlay);
-				spriteOverlay.getPos().x += 5;
-				spriteOverlay.getPos().y += 70;
+				spriteOverlay.getPos().x += 100;
+				spriteOverlay.getPos().y += 230;
 				/*
 				if(item.barType == BRONZE) {
 					GUITile tile =
@@ -264,7 +265,9 @@ public class ExchangeMenuPanel extends GUIMenuPanel {
 							@Override
 							public void callback(GUIElement guiElement, MouseEvent mouseEvent) {
 								if (mouseEvent.pressedLeftMouse()) {
-									(new AddBlueprintExchangeDialog()).activate();
+									AddBlueprintExchangeDialog dialog = new AddBlueprintExchangeDialog();
+									dialog.community = false;
+									dialog.activate();
 									recreateTabs();
 								}
 							}
@@ -347,6 +350,7 @@ public class ExchangeMenuPanel extends GUIMenuPanel {
 			GUITilePane<BlueprintExchangeItem> blueprintsTilePane;
 			(blueprintsTilePane = new GUITilePane<>(getState(), scrollPanel, 200, 300)).onInit();
 			for (final BlueprintExchangeItem item : getBlueprints()) {
+				if(!item.community) continue;
 				GUITile tile = blueprintsTilePane.addButtonTile("EXCHANGE", item.createDescription(), getTileColor(item), new GUICallback() {
 					@Override
 					public void callback(GUIElement guiElement, MouseEvent mouseEvent) {
@@ -370,7 +374,7 @@ public class ExchangeMenuPanel extends GUIMenuPanel {
 										@Override
 										public void pressedOK() {
 											GameClient.getClientState().getController().queueUIAudio("0022_menu_ui - highlight 1");
-											item.autofill = false;
+											item.community = true;
 											givePlayerItem(item);
 											InventoryUtils.consumeItems(
 													GameClient.getClientPlayerState().getInventory(),
@@ -505,7 +509,9 @@ public class ExchangeMenuPanel extends GUIMenuPanel {
 						@Override
 						public void callback(GUIElement guiElement, MouseEvent mouseEvent) {
 							if (mouseEvent.pressedLeftMouse()) {
-								(new AddBlueprintExchangeDialog()).activate();
+								AddBlueprintExchangeDialog dialog = new AddBlueprintExchangeDialog();
+								dialog.community = true;
+								dialog.activate();
 								recreateTabs();
 							}
 						}
@@ -1681,7 +1687,7 @@ public class ExchangeMenuPanel extends GUIMenuPanel {
 		if (item instanceof BlueprintExchangeItem) {
 			BlueprintPlayerHandleRequest req = new BlueprintPlayerHandleRequest();
 			req.catalogName = item.name;
-			if(((BlueprintExchangeItem) item).autofill) req.entitySpawnName = "EDENCORE_TEMP";
+			if(((BlueprintExchangeItem) item).community) req.entitySpawnName = "EDENCORE_TEMP";
 			else req.entitySpawnName = "EDENCORE_TEMP_NOAUTOFILL";
 			req.save = false;
 			req.toSaveShip = -1;
