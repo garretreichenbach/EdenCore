@@ -23,6 +23,7 @@ public class BlueprintExchangeItem extends ExchangeItem {
 	// public static final transient Vector3i SECTOR = new Vector3i(100000000, 100000000, 100000000);
 	// public long blocks;
 	public String iconPath;
+	public boolean autofill;
 
 	public BlueprintExchangeItem(PacketReadBuffer readBuffer) {
 		super(readBuffer);
@@ -37,6 +38,7 @@ public class BlueprintExchangeItem extends ExchangeItem {
 		// this.blocks = blueprint.getElementCountMapWithChilds().getTotalAmount();
 		this.iconPath = iconPath;
 		this.description = StringTools.massFormat(blueprint.mass) + " mass\n" + description;
+		this.autofill = false;
 	}
 
 	@Override

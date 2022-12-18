@@ -2,10 +2,8 @@ package thederpgamer.edencore.data.event;
 
 import api.network.PacketReadBuffer;
 import api.network.PacketWriteBuffer;
-import org.schema.common.util.linAlg.Vector3i;
 import thederpgamer.edencore.data.SerializableData;
 import thederpgamer.edencore.data.event.types.EventRuleSet;
-import thederpgamer.edencore.data.event.types.capture.CaptureEvent;
 import thederpgamer.edencore.data.event.types.defense.DefenseEvent;
 import thederpgamer.edencore.manager.LogManager;
 
@@ -37,12 +35,11 @@ public abstract class EventData implements EventUpdater, SerializableData, Seria
     protected String description;
     protected EventType eventType;
     protected EventRuleSet ruleset;
-    protected Vector3i sector;
     protected EventTarget[] targets;
-
+    protected SquadData squadData;
     protected int status;
 
-    public EventData(String name, String description, EventType eventType, EventRuleSet ruleset, Vector3i sector, EventTarget... targets) {
+    public EventData(String name, String description, EventType eventType, EventRuleSet ruleset, EventTarget... targets) {
         this.name = name;
         this.description = description;
         this.eventType = eventType;
@@ -71,6 +68,7 @@ public abstract class EventData implements EventUpdater, SerializableData, Seria
 
     public abstract void deserialize(PacketReadBuffer readBuffer) throws IOException;
     public abstract void serialize(PacketWriteBuffer writeBuffer) throws IOException;
+    public abstract void initializeEvent();
 
     public abstract String getAnnouncement();
     public abstract ArrayList<EventEnemyData> getEnemies();
@@ -79,11 +77,11 @@ public abstract class EventData implements EventUpdater, SerializableData, Seria
         try {
             EventType type = EventType.values()[readBuffer.readInt()];
             switch(type) {
-                case CAPTURE: return new CaptureEvent(readBuffer);
+                //case CAPTURE: return new CaptureEvent(readBuffer);
                 case DEFENSE: return new DefenseEvent(readBuffer);
-                case DESTROY: return new DestroyEvent(readBuffer);
-                case ESCORT: return new EscortEvent(readBuffer);
-                case PURSUIT: return new PursuitEvent(readBuffer);
+                //case DESTROY: return new DestroyEvent(readBuffer);
+                //case ESCORT: return new EscortEvent(readBuffer);
+                //case PURSUIT: return new PursuitEvent(readBuffer);
                 default: throw new IllegalStateException("Invalid event type: " + type.name());
             }
         } catch(Exception exception) {
