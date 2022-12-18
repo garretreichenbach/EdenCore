@@ -85,6 +85,7 @@ public class BlueprintExchangeItem extends ExchangeItem {
 		writeBuffer.writeString(description);
 		// writeBuffer.writeLong(blocks);
 		writeBuffer.writeString(iconPath);
+		writeBuffer.writeBoolean(community);
     /* Todo: Somehow generate a preview of the entity that can be used as it's icon
     try {
         writeBuffer.writeSendable(createEntity());
@@ -102,6 +103,7 @@ public class BlueprintExchangeItem extends ExchangeItem {
 		description = readBuffer.readString();
 		// blocks = readBuffer.readLong();
 		iconPath = readBuffer.readString();
+		community = readBuffer.readBoolean();
 	}
 
 	@Override
