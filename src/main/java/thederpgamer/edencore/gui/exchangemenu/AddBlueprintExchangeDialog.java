@@ -18,55 +18,58 @@ import thederpgamer.edencore.network.client.ExchangeItemCreatePacket;
  */
 public class AddBlueprintExchangeDialog extends GUIInputDialog {
 
-  @Override
-  public AddBlueprintExchangePanel createPanel() {
-    return new AddBlueprintExchangePanel(getState(), this);
-  }
+	public boolean community = true;
 
-  @Override
-  public void callback(GUIElement callingElement, MouseEvent mouseEvent) {
-    if (!isOccluded() && mouseEvent.pressedLeftMouse()) {
-      switch ((String) callingElement.getUserPointer()) {
-        case "X":
-        case "CANCEL":
-          deactivate();
-          break;
-        case "OK":
-          if (createItem() != null) {
-            deactivate();
-            EdenCore.getInstance().exchangeMenuControlManager.getMenuPanel().recreateTabs();
-          }
-          break;
-      }
-    }
-  }
+	@Override
+	public AddBlueprintExchangePanel createPanel() {
+		return new AddBlueprintExchangePanel(getState(), this);
+	}
 
-  @Override
-  public AddBlueprintExchangePanel getInputPanel() {
-    return (AddBlueprintExchangePanel) super.getInputPanel();
-  }
+	@Override
+	public void callback(GUIElement callingElement, MouseEvent mouseEvent) {
+		if (!isOccluded() && mouseEvent.pressedLeftMouse()) {
+			switch ((String) callingElement.getUserPointer()) {
+				case "X":
+				case "CANCEL":
+					deactivate();
+					break;
+				case "OK":
+					if (createItem() != null) {
+						deactivate();
+						EdenCore.getInstance().exchangeMenuControlManager.getMenuPanel().recreateTabs();
+					}
+					break;
+			}
+		}
+	}
 
-  private BlueprintExchangeItem createItem() {
-    if (NumberUtils.isNumber(getInputPanel().currentBarText)
-        && getInputPanel().catalogEntry != null
-        && getInputPanel().barId > 0) {
-      String iconPath = "";
-      String description = "";
-      CatalogPermission permission = getInputPanel().catalogEntry;
-      if (permission != null) description = permission.description;
-      if (getInputPanel().currentIconText != null
-          && getInputPanel().currentIconText.startsWith("https://")
-          && getInputPanel().currentIconText.endsWith(".png"))
-        iconPath = getInputPanel().currentIconText;
-      BlueprintExchangeItem item =
-          new BlueprintExchangeItem(
-              getInputPanel().catalogEntry,
-              getInputPanel().barId,
-              Math.abs(Integer.parseInt(getInputPanel().currentBarText)),
-              description,
-              iconPath);
-      PacketUtil.sendPacketToServer(new ExchangeItemCreatePacket(0, item));
-      return item;
-    } else return null;
-  }
+	@Override
+	public AddBlueprintExchangePanel getInputPanel() {
+		return (AddBlueprintExchangePanel) super.getInputPanel();
+	}
+
+	private BlueprintExchangeItem createItem() {
+		if (NumberUtils.isNumber(getInputPanel().currentBarText)
+				&& getInputPanel().catalogEntry != null
+				&& getInputPanel().barId > 0) {
+			String iconPath = "";
+			String description = "";
+			CatalogPermission permission = getInputPanel().catalogEntry;
+			if (permission != null) description = permission.description;
+			if (getInputPanel().currentIconText != null
+					&& getInputPanel().currentIconText.startsWith("https://")
+					&& getInputPanel().currentIconText.endsWith(".png"))
+				iconPath = getInputPanel().currentIconText;
+			BlueprintExchangeItem item =
+					new BlueprintExchangeItem(
+							getInputPanel().catalogEntry,
+							getInputPanel().barId,
+							Math.abs(Integer.parseInt(getInputPanel().currentBarText)),
+							description,
+							iconPath);
+			item.community = community;
+			PacketUtil.sendPacketToServer(new ExchangeItemCreatePacket(0, item));
+			return item;
+		} else return null;
+	}
 }

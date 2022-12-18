@@ -37,7 +37,7 @@ public class DestroyTarget extends EventTarget {
     }
 
     @Override
-    public int getProgress() {
+    public float getProgress() {
         SegmentController entity = ServerUtils.getEntityFromUID((String) target);
         if(entity instanceof Ship) {
             return (int) ((int) ((Ship) entity).getReactorHp() / ((Ship) entity).getReactorHpMax());

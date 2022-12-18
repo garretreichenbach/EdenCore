@@ -2,12 +2,13 @@ package thederpgamer.edencore.data.event;
 
 import api.network.PacketReadBuffer;
 import api.network.PacketWriteBuffer;
-import org.schema.common.util.linAlg.Vector3i;
 import thederpgamer.edencore.data.SerializableData;
-import thederpgamer.edencore.data.event.types.CaptureEvent;
+import thederpgamer.edencore.data.event.types.EventRuleSet;
+import thederpgamer.edencore.data.event.types.defense.DefenseEvent;
 import thederpgamer.edencore.manager.LogManager;
 
 import java.io.IOException;
+import java.io.Serializable;
 import java.util.ArrayList;
 
 /**
@@ -16,7 +17,7 @@ import java.util.ArrayList;
  * @author TheDerpGamer
  * @version 1.0 - [09/21/2021]
  */
-public abstract class EventData implements EventUpdater, SerializableData {
+public abstract class EventData implements EventUpdater, SerializableData, Serializable {
 
     public static final int NONE = 0;
     public static final int WAITING = 1;
@@ -33,13 +34,12 @@ public abstract class EventData implements EventUpdater, SerializableData {
     protected String name;
     protected String description;
     protected EventType eventType;
-    protected EventRuleset ruleset;
-    protected Vector3i sector;
+    protected EventRuleSet ruleset;
     protected EventTarget[] targets;
-
+    protected SquadData squadData;
     protected int status;
 
-    public EventData(String name, String description, EventType eventType, EventRuleset ruleset, Vector3i sector, EventTarget... targets) {
+    public EventData(String name, String description, EventType eventType, EventRuleSet ruleset, EventTarget... targets) {
         this.name = name;
         this.description = description;
         this.eventType = eventType;
@@ -68,6 +68,7 @@ public abstract class EventData implements EventUpdater, SerializableData {
 
     public abstract void deserialize(PacketReadBuffer readBuffer) throws IOException;
     public abstract void serialize(PacketWriteBuffer writeBuffer) throws IOException;
+    public abstract void initializeEvent();
 
     public abstract String getAnnouncement();
     public abstract ArrayList<EventEnemyData> getEnemies();
@@ -76,8 +77,8 @@ public abstract class EventData implements EventUpdater, SerializableData {
         try {
             EventType type = EventType.values()[readBuffer.readInt()];
             switch(type) {
-                case CAPTURE: return new CaptureEvent(readBuffer);
-                //case DEFENSE: return new DefenseEvent(readBuffer);
+                //case CAPTURE: return new CaptureEvent(readBuffer);
+                case DEFENSE: return new DefenseEvent(readBuffer);
                 //case DESTROY: return new DestroyEvent(readBuffer);
                 //case ESCORT: return new EscortEvent(readBuffer);
                 //case PURSUIT: return new PursuitEvent(readBuffer);

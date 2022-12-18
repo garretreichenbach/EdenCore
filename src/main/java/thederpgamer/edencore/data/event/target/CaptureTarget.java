@@ -37,7 +37,8 @@ public class CaptureTarget extends EventTarget {
     }
 
     @Override
-    public int getProgress() {
+    public float getProgress() {
+        //Todo: Capture phases
         SegmentController entity = ServerUtils.getEntityFromUID((String) target);
         if(entity instanceof Ship) {
             return (int) ((int) ((Ship) entity).getReactorHp() / ((Ship) entity).getReactorHpMax());

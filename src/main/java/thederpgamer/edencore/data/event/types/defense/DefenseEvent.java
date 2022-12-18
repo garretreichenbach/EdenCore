@@ -1,13 +1,13 @@
-package thederpgamer.edencore.data.event.types;
+package thederpgamer.edencore.data.event.types.defense;
 
 import api.network.PacketReadBuffer;
 import api.network.PacketWriteBuffer;
-import org.schema.common.util.linAlg.Vector3i;
 import thederpgamer.edencore.data.event.EventData;
 import thederpgamer.edencore.data.event.EventEnemyData;
-import thederpgamer.edencore.data.event.EventRuleset;
 import thederpgamer.edencore.data.event.EventTarget;
+import thederpgamer.edencore.data.event.SquadData;
 import thederpgamer.edencore.data.event.target.DefenseTarget;
+import thederpgamer.edencore.data.event.types.EventRuleSet;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -20,8 +20,8 @@ import java.util.ArrayList;
  */
 public class DefenseEvent extends EventData {
 
-    public DefenseEvent(String name, String description, EventRuleset ruleset, Vector3i sector, EventTarget... targets) {
-        super(name, description, EventType.DEFENSE, ruleset, sector, targets);
+    public DefenseEvent(String name, String description, EventRuleSet ruleset, EventTarget... targets) {
+        super(name, description, EventType.DEFENSE, ruleset, targets);
     }
 
     public DefenseEvent(PacketReadBuffer readBuffer) throws IOException {
@@ -33,13 +33,13 @@ public class DefenseEvent extends EventData {
         name = readBuffer.readString();
         description = readBuffer.readString();
         eventType = EventType.DEFENSE;
-        ruleset = new EventRuleset(readBuffer);
-        sector = readBuffer.readVector();
+        ruleset = EventRuleSet.fromPacket(readBuffer, eventType);
         int size = readBuffer.readInt();
         if(size > 0) {
             targets = new EventTarget[size];
             for(int i = 0; i < size; i ++) targets[i] = new DefenseTarget(readBuffer);
         }
+        squadData = new SquadData(readBuffer);
     }
 
     @Override
@@ -47,15 +47,25 @@ public class DefenseEvent extends EventData {
         writeBuffer.writeString(name);
         writeBuffer.writeString(description);
         ruleset.serialize(writeBuffer);
-        writeBuffer.writeVector(sector);
         writeBuffer.writeInt(targets.length);
         if(targets.length > 0) for(EventTarget target : targets) target.serialize(writeBuffer);
+        squadData.serialize(writeBuffer);
+    }
 
+    @Override
+    public void initializeEvent() {
+        squadData = new SquadData();
+        for(EventTarget target : targets) {
+            if(target instanceof DefenseTarget) {
+                DefenseTarget defenseTarget = (DefenseTarget) target;
+                //squadData.add   (defenseTarget.getSquadName(), defenseTarget.getSquadSize());
+            }
+        }
     }
 
     @Override
     public String getAnnouncement() {
-        return null;
+        return "A new Defense Event is starting [" + name + "]";
     }
 
     @Override
@@ -65,12 +75,26 @@ public class DefenseEvent extends EventData {
 
     @Override
     public int getStatus() {
-        return 0;
+        return status;
     }
 
     @Override
     public void start() {
+        if(squadData == null) {
+            squadData = new SquadData();
+            status = WAITING;
+        }
 
+        switch(status) {
+            case NONE:
+                status = WAITING;
+                break;
+            case WAITING:
+                if(squadData.ready()) status = ACTIVE;
+                break;
+            case ACTIVE:
+                break;
+        }
     }
 
     @Override

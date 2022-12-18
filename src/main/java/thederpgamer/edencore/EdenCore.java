@@ -64,8 +64,8 @@ import thederpgamer.edencore.utils.BuildSectorUtils;
 import thederpgamer.edencore.utils.DataUtils;
 import thederpgamer.edencore.utils.DateUtils;
 
-import java.io.FileInputStream;
 import java.io.IOException;
+import java.nio.file.Files;
 import java.sql.Date;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
@@ -707,16 +707,14 @@ public class EdenCore extends StarMod {
 							@Override
 							public void run() {
 								try {
-									if(! event.isServer()
-											&& ! DataUtils.isPlayerInAnyBuildSector(event.getPlayer().getOwnerState()))
+									if(!event.isServer() && !DataUtils.isPlayerInAnyBuildSector(event.getPlayer().getOwnerState()))
 										PacketUtil.sendPacketToServer(new RequestClientCacheUpdatePacket());
 								} catch(Exception exception) {
 									exception.printStackTrace();
 								}
 							}
 						}.runLater(EdenCore.getInstance(), 5);
-						// if(DataUtils.isPlayerInAnyBuildSector(event.getPlayer().getOwnerState()))
-						// queueSpawnSwitch(event.getPlayer().getOwnerState());
+						if(DataUtils.isPlayerInAnyBuildSector(event.getPlayer().getOwnerState())) queueSpawnSwitch(event.getPlayer().getOwnerState());
 					}
 				},
 				this);
@@ -824,6 +822,7 @@ public class EdenCore extends StarMod {
 				"You can use these bars in the Server Exchange menu, which can be opened with the * key on your keypad, or by looking in the top right menu bar under PLAYER.\n" +
 				"You can use the Server Exchange to buy items from the server shop, such as resources, items, and blueprints. Please note that some of these features are work in progress and may not always be available.\n" +
 				"Some items in the Server Exchange require silver or gold bars instead of bronze. To upgrade your bronze bars into silver or gold, see the EXCHANGE tab in the Server Exchange menu."));
+		edenCore.addEntry(new GlossarEntry("Listing Blueprints in the Exchange", "Players are able to sell blueprints in the COMMUNITY tab of the blueprint exchange."));
 		GlossarInit.addCategory(edenCore);
 	}
 
@@ -851,14 +850,13 @@ public class EdenCore extends StarMod {
 					cancel();
 				}
 			}
-		}.runTimer(this, 50);
+		}.runTimer(this, 100);
 	}
 
 	private byte[] overwriteClass(String className, byte[] byteCode) {
 		byte[] bytes = null;
 		try {
-			ZipInputStream file =
-					new ZipInputStream(new FileInputStream(this.getSkeleton().getJarFile()));
+			ZipInputStream file = new ZipInputStream(Files.newInputStream(this.getSkeleton().getJarFile().toPath()));
 			while(true) {
 				ZipEntry nextEntry = file.getNextEntry();
 				if(nextEntry == null) break;

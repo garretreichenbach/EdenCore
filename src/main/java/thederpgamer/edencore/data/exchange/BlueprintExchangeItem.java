@@ -23,6 +23,7 @@ public class BlueprintExchangeItem extends ExchangeItem {
 	// public static final transient Vector3i SECTOR = new Vector3i(100000000, 100000000, 100000000);
 	// public long blocks;
 	public String iconPath;
+	public boolean community;
 
 	public BlueprintExchangeItem(PacketReadBuffer readBuffer) {
 		super(readBuffer);

@@ -25,6 +25,10 @@ public class SquadData implements SerializableData {
         SquadManager.addSquadData(this);
     }
 
+    public SquadData(PacketReadBuffer readBuffer) throws IOException {
+        deserialize(readBuffer);
+    }
+
     public boolean ready() {
         for(SquadMemberData memberData : squadMembers) if(!memberData.ready) return false;
         return true;

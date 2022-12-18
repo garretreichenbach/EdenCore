@@ -3,11 +3,16 @@ package thederpgamer.edencore.manager;
 import api.common.GameServer;
 import org.jdesktop.swingx.calendar.DateUtils;
 import org.schema.schine.network.RegisteredClientOnServer;
-import thederpgamer.edencore.data.event.*;
+import thederpgamer.edencore.data.event.EventData;
+import thederpgamer.edencore.data.event.EventInstanceData;
+import thederpgamer.edencore.data.event.SquadData;
 import thederpgamer.edencore.data.player.PlayerData;
 import thederpgamer.edencore.utils.DataUtils;
 
+import java.io.File;
+import java.io.FileInputStream;
 import java.io.IOException;
+import java.io.ObjectInputStream;
 import java.util.Date;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -67,7 +72,36 @@ public class EventManager {
 	}
 
 	public static EventData generateEvent(int eventCode) {
+		if((eventCode & EventData.PVE) == EventData.PVE) {
+			if((eventCode & EventData.DAILY) == EventData.DAILY) return generateDailyPVE();
+			//else if((eventCode & EventData.WEEKLY) == EventData.WEEKLY) return new generateWeeklyPVE();
+			//else if((eventCode & EventData.MONTHLY) == EventData.MONTHLY) return new generateMonthlyPVE();
+		} else if((eventCode & EventData.PVP) == EventData.PVP) {
+			//if((eventCode & EventData.DAILY) == EventData.DAILY) return new generateDailyPVP();
+			//else if((eventCode & EventData.WEEKLY) == EventData.WEEKLY) return new generateWeeklyPVP();
+			//else if((eventCode & EventData.MONTHLY) == EventData.MONTHLY) return new generateWeeklyPVP();
+		}
 		return null;
+	}
+
+	private static EventData generateDailyPVE() {
+		try {
+			File folder = new File(DataUtils.getWorldDataPath() + "/pve/daily");
+			//Pick a random file from the folder
+			File[] files = folder.listFiles();
+			assert files != null;
+			File file = files[(int) (Math.random() * files.length)];
+			//Deserialize the file
+			FileInputStream fileInputStream = new FileInputStream(file);
+			ObjectInputStream objectInputStream = new ObjectInputStream(fileInputStream);
+			EventData eventData = (EventData) objectInputStream.readObject();
+			objectInputStream.close();
+			fileInputStream.close();
+			return eventData;
+		} catch(Exception exception) {
+			exception.printStackTrace();
+			return null;
+		}
 	}
 
 	public static void announceEvent(int eventCode, EventData eventData) {
