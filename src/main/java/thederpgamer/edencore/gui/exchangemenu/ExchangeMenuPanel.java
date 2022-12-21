@@ -21,6 +21,7 @@ import thederpgamer.edencore.data.exchange.ResourceExchangeItem;
 import thederpgamer.edencore.element.ElementManager;
 import thederpgamer.edencore.manager.ClientCacheManager;
 import thederpgamer.edencore.network.client.ExchangeItemRemovePacket;
+import thederpgamer.edencore.network.client.PlayerBuyBPPacket;
 import thederpgamer.edencore.network.client.RequestClientCacheUpdatePacket;
 import thederpgamer.edencore.network.client.RequestMetaObjectPacket;
 import thederpgamer.edencore.utils.APIUtils;
@@ -162,87 +163,7 @@ public class ExchangeMenuPanel extends GUIMenuPanel {
 						return true;
 					}
 				});
-				GUIOverlay spriteOverlay = item.getIcon();
-				spriteOverlay.onInit();
-				if(spriteOverlay.getUserPointer() == null) spriteOverlay.setUserPointer("default-icon");
-				if(!spriteOverlay.getUserPointer().equals("default-icon")) spriteOverlay.getScale().scale(0.5f);
-				tile.attach(spriteOverlay);
-				spriteOverlay.getPos().x += 100;
-				spriteOverlay.getPos().y += 230;
-				/*
-				if(item.barType == BRONZE) {
-					GUITile tile =
-							blueprintsTilePane.addButtonTile(
-									"EXCHANGE",
-									item.createDescription(),
-									getTileColor(item),
-									new GUICallback() {
-										@Override
-										public void callback(GUIElement guiElement, MouseEvent mouseEvent) {
-											if(mouseEvent.pressedLeftMouse()) {
-												lastClickedBP = item;
-												if(canAffordItem(item)) {
-													(new PlayerOkCancelInput(
-															"ConfirmExchangePanel",
-															getState(),
-															"CONFIRM EXCHANGE",
-															"Are you sure you wish to exchange "
-																	+ item.price
-																	+ " "
-																	+ getBarTypeName(item)
-																	+ "s for this item?") {
-														@Override
-														public void onDeactivate() {}
-
-														@Override
-														public void pressedOK() {
-															GameClient.getClientState()
-																	.getController()
-																	.queueUIAudio("0022_menu_ui - highlight 1");
-															givePlayerItem(item);
-															InventoryUtils.consumeItems(
-																	GameClient.getClientPlayerState().getInventory(),
-																	item.barType,
-																	item.price);
-															lastClickedBP = null;
-															deactivate();
-														}
-													})
-															.activate();
-												} else
-													GameClient.getClientState()
-															.getController()
-															.queueUIAudio("0022_menu_ui - error 1");
-											}
-										}
-
-										@Override
-										public boolean isOccluded() {
-											return ! getState().getController().getPlayerInputs().isEmpty();
-										}
-									},
-									new GUIActivationCallback() {
-										@Override
-										public boolean isVisible(InputState inputState) {
-											return true;
-										}
-
-										@Override
-										public boolean isActive(InputState inputState) {
-											return true;
-										}
-									});
-					GUIOverlay spriteOverlay = item.getIcon();
-					spriteOverlay.onInit();
-					tile.attach(spriteOverlay);
-					if(spriteOverlay.getUserPointer() == null) spriteOverlay.setUserPointer("default-icon");
-					if(! spriteOverlay.getUserPointer().equals("default-icon")) spriteOverlay.getScale().scale(0.5f);
-					spriteOverlay.getPos().x += 100;
-					spriteOverlay.getPos().y += 230;
-				}
-
-				 */
-
+				setIcon(item, tile);
 			}
 			scrollPanel.setContent(blueprintsTilePane);
 			scrollPanel.onInit();
@@ -250,10 +171,9 @@ public class ExchangeMenuPanel extends GUIMenuPanel {
 
 			if (isAdmin()) {
 				subTab.setTextBoxHeightLast(0, guiWindow.getInnerHeigth() - 90);
-				subTab.addNewTextBox(0, 28);
+				subTab.addNewTextBox(0, 18);
 
-				GUIHorizontalButtonTablePane adminPane =
-						new GUIHorizontalButtonTablePane(getState(), 2, 1, subTab.getContent(1));
+				GUIHorizontalButtonTablePane adminPane = new GUIHorizontalButtonTablePane(getState(), 2, 1, subTab.getContent(1));
 				adminPane.onInit();
 
 				adminPane.addButton(
@@ -408,94 +328,14 @@ public class ExchangeMenuPanel extends GUIMenuPanel {
 						return true;
 					}
 				});
-				GUIOverlay spriteOverlay = item.getIcon();
-				spriteOverlay.onInit();
-				spriteOverlay.getSprite().setWidth(130);
-				spriteOverlay.getSprite().setHeight(115);
-				tile.attach(spriteOverlay);
-				spriteOverlay.getPos().x += 5;
-				spriteOverlay.getPos().y += 70;
-				/*
-				if(item.barType == BRONZE) {
-					GUITile tile =
-							blueprintsTilePane.addButtonTile(
-									"EXCHANGE",
-									item.createDescription(),
-									getTileColor(item),
-									new GUICallback() {
-										@Override
-										public void callback(GUIElement guiElement, MouseEvent mouseEvent) {
-											if(mouseEvent.pressedLeftMouse()) {
-												lastClickedBP = item;
-												if(canAffordItem(item)) {
-													(new PlayerOkCancelInput(
-															"ConfirmExchangePanel",
-															getState(),
-															"CONFIRM EXCHANGE",
-															"Are you sure you wish to exchange "
-																	+ item.price
-																	+ " "
-																	+ getBarTypeName(item)
-																	+ "s for this item?") {
-														@Override
-														public void onDeactivate() {}
-
-														@Override
-														public void pressedOK() {
-															GameClient.getClientState()
-																	.getController()
-																	.queueUIAudio("0022_menu_ui - highlight 1");
-															givePlayerItem(item);
-															InventoryUtils.consumeItems(
-																	GameClient.getClientPlayerState().getInventory(),
-																	item.barType,
-																	item.price);
-															lastClickedBP = null;
-															deactivate();
-														}
-													})
-															.activate();
-												} else
-													GameClient.getClientState()
-															.getController()
-															.queueUIAudio("0022_menu_ui - error 1");
-											}
-										}
-
-										@Override
-										public boolean isOccluded() {
-											return ! getState().getController().getPlayerInputs().isEmpty();
-										}
-									},
-									new GUIActivationCallback() {
-										@Override
-										public boolean isVisible(InputState inputState) {
-											return true;
-										}
-
-										@Override
-										public boolean isActive(InputState inputState) {
-											return true;
-										}
-									});
-					GUIOverlay spriteOverlay = item.getIcon();
-					spriteOverlay.onInit();
-					tile.attach(spriteOverlay);
-					if(spriteOverlay.getUserPointer() == null) spriteOverlay.setUserPointer("default-icon");
-					if(! spriteOverlay.getUserPointer().equals("default-icon")) spriteOverlay.getScale().scale(0.5f);
-					spriteOverlay.getPos().x += 100;
-					spriteOverlay.getPos().y += 230;
-				}
-
-				 */
-
+				setIcon(item, tile);
 			}
 			scrollPanel.setContent(blueprintsTilePane);
 			scrollPanel.onInit();
 			subTab.getContent(0).attach(scrollPanel);
 
 			subTab.setTextBoxHeightLast(0, guiWindow.getInnerHeigth() - 90);
-			subTab.addNewTextBox(0, 28);
+			subTab.addNewTextBox(0, 18);
 
 			GUIHorizontalButtonTablePane adminPane = new GUIHorizontalButtonTablePane(getState(), 2, 1, subTab.getContent(1));
 			adminPane.onInit();
@@ -587,10 +427,8 @@ public class ExchangeMenuPanel extends GUIMenuPanel {
 	}
 
 	private void createResourcesTab(GUIContentPane contentPane) {
-		GUIAncor tabAnchor =
-				new GUIAncor(getState(), guiWindow.getInnerWidth() - 20, guiWindow.getInnerHeigth() - 13);
-		if (resourcesTabbedContent == null)
-			(resourcesTabbedContent = new GUITabbedContent(getState(), tabAnchor)).onInit();
+		GUIAncor tabAnchor = new GUIAncor(getState(), guiWindow.getInnerWidth() - 20, guiWindow.getInnerHeigth() - 13);
+		if (resourcesTabbedContent == null) (resourcesTabbedContent = new GUITabbedContent(getState(), tabAnchor)).onInit();
 		else {
 			lastResourceTab = resourcesTabbedContent.getSelectedTab();
 			resourcesTabbedContent.clearTabs();
@@ -600,8 +438,7 @@ public class ExchangeMenuPanel extends GUIMenuPanel {
 			GUIContentPane subTab = resourcesTabbedContent.addTab("BRONZE");
 			subTab.setTextBoxHeightLast((int) (GLFrame.getHeight() / 1.5));
 			subTab.orientateInsideFrame();
-			GUIScrollablePanel scrollPanel =
-					new GUIScrollablePanel(1, 1, subTab.getContent(0), getState());
+			GUIScrollablePanel scrollPanel = new GUIScrollablePanel(1, 1, subTab.getContent(0), getState());
 			scrollPanel.setScrollable(GUIScrollablePanel.SCROLLABLE_VERTICAL);
 			scrollPanel.setLeftRightClipOnly = true;
 
@@ -671,17 +508,7 @@ public class ExchangeMenuPanel extends GUIMenuPanel {
 											return true;
 										}
 									});
-					GUIOverlay spriteOverlay = item.getIcon();
-					spriteOverlay.onInit();
-					tile.attach(spriteOverlay);
-					if (spriteOverlay.getUserPointer() == null) spriteOverlay.setUserPointer("default-icon");
-					if (spriteOverlay.getUserPointer().equals("default-icon")) {
-						spriteOverlay.getPos().x += 80;
-						spriteOverlay.getPos().y += 180;
-					} else {
-						spriteOverlay.getPos().x += 100;
-						spriteOverlay.getPos().y += 200;
-					}
+					setIcon(item, tile);
 				}
 			}
 			scrollPanel.setContent(resourcesTilePane);
@@ -690,7 +517,7 @@ public class ExchangeMenuPanel extends GUIMenuPanel {
 
 			if (isAdmin()) {
 				subTab.setTextBoxHeightLast(0, guiWindow.getInnerHeigth() - 90);
-				subTab.addNewTextBox(28);
+				subTab.addNewTextBox(18);
 				GUIHorizontalButtonTablePane adminPane =
 						new GUIHorizontalButtonTablePane(getState(), 2, 1, subTab.getContent(1));
 				adminPane.onInit();
@@ -750,8 +577,7 @@ public class ExchangeMenuPanel extends GUIMenuPanel {
 											recreateTabs();
 											deactivate();
 										}
-									})
-											.activate();
+									}).activate();
 								}
 							}
 
@@ -850,17 +676,7 @@ public class ExchangeMenuPanel extends GUIMenuPanel {
 											return true;
 										}
 									});
-					GUIOverlay spriteOverlay = item.getIcon();
-					spriteOverlay.onInit();
-					tile.attach(spriteOverlay);
-					if (spriteOverlay.getUserPointer() == null) spriteOverlay.setUserPointer("default-icon");
-					if (spriteOverlay.getUserPointer().equals("default-icon")) {
-						spriteOverlay.getPos().x += 80;
-						spriteOverlay.getPos().y += 180;
-					} else {
-						spriteOverlay.getPos().x += 100;
-						spriteOverlay.getPos().y += 200;
-					}
+					setIcon(item, tile);
 				}
 			}
 			scrollPanel.setContent(resourcesTilePane);
@@ -869,7 +685,7 @@ public class ExchangeMenuPanel extends GUIMenuPanel {
 
 			if (isAdmin()) {
 				subTab.setTextBoxHeightLast(0, guiWindow.getInnerHeigth() - 90);
-				subTab.addNewTextBox(28);
+				subTab.addNewTextBox(18);
 				GUIHorizontalButtonTablePane adminPane =
 						new GUIHorizontalButtonTablePane(getState(), 2, 1, subTab.getContent(1));
 				adminPane.onInit();
@@ -958,8 +774,7 @@ public class ExchangeMenuPanel extends GUIMenuPanel {
 			GUIContentPane subTab = resourcesTabbedContent.addTab("GOLD");
 			subTab.setTextBoxHeightLast((int) (GLFrame.getHeight() / 1.5));
 			subTab.orientateInsideFrame();
-			GUIScrollablePanel scrollPanel =
-					new GUIScrollablePanel(1, 1, subTab.getContent(0), getState());
+			GUIScrollablePanel scrollPanel = new GUIScrollablePanel(1, 1, subTab.getContent(0), getState());
 			scrollPanel.setScrollable(GUIScrollablePanel.SCROLLABLE_VERTICAL);
 			scrollPanel.setLeftRightClipOnly = true;
 
@@ -1029,17 +844,7 @@ public class ExchangeMenuPanel extends GUIMenuPanel {
 											return true;
 										}
 									});
-					GUIOverlay spriteOverlay = item.getIcon();
-					spriteOverlay.onInit();
-					tile.attach(spriteOverlay);
-					if (spriteOverlay.getUserPointer() == null) spriteOverlay.setUserPointer("default-icon");
-					if (spriteOverlay.getUserPointer().equals("default-icon")) {
-						spriteOverlay.getPos().x += 80;
-						spriteOverlay.getPos().y += 180;
-					} else {
-						spriteOverlay.getPos().x += 100;
-						spriteOverlay.getPos().y += 200;
-					}
+					setIcon(item, tile);
 				}
 			}
 			scrollPanel.setContent(resourcesTilePane);
@@ -1048,7 +853,7 @@ public class ExchangeMenuPanel extends GUIMenuPanel {
 
 			if (isAdmin()) {
 				subTab.setTextBoxHeightLast(0, guiWindow.getInnerHeigth() - 90);
-				subTab.addNewTextBox(28);
+				subTab.addNewTextBox(18);
 				GUIHorizontalButtonTablePane adminPane =
 						new GUIHorizontalButtonTablePane(getState(), 2, 1, subTab.getContent(1));
 				adminPane.onInit();
@@ -1139,8 +944,7 @@ public class ExchangeMenuPanel extends GUIMenuPanel {
 	}
 
 	private void createItemsTab(GUIContentPane contentPane) {
-		GUIScrollablePanel scrollPanel =
-				new GUIScrollablePanel(1, 1, contentPane.getContent(0), getState());
+		GUIScrollablePanel scrollPanel = new GUIScrollablePanel(1, 1, contentPane.getContent(0), getState());
 		scrollPanel.setScrollable(GUIScrollablePanel.SCROLLABLE_VERTICAL);
 		scrollPanel.setLeftRightClipOnly = true;
 
@@ -1210,20 +1014,7 @@ public class ExchangeMenuPanel extends GUIMenuPanel {
 										return true;
 									}
 								});
-				item.setTempOverlay(tile.getContent());
-				GUIOverlay spriteOverlay = item.getIcon();
-				if (spriteOverlay != null) {
-					spriteOverlay.onInit();
-					tile.attach(spriteOverlay);
-					if (spriteOverlay.getUserPointer() == null) spriteOverlay.setUserPointer("default-icon");
-					if (spriteOverlay.getUserPointer().equals("default-icon")) {
-						spriteOverlay.getPos().x += 80;
-						spriteOverlay.getPos().y += 180;
-					} else {
-						spriteOverlay.getPos().x += 100;
-						spriteOverlay.getPos().y += 200;
-					}
-				}
+				setIcon(item, tile);
 			}
 		}
 		scrollPanel.setContent(itemsTilePane);
@@ -1232,9 +1023,8 @@ public class ExchangeMenuPanel extends GUIMenuPanel {
 
 		if (isAdmin()) {
 			contentPane.setTextBoxHeightLast(0, guiWindow.getInnerHeigth() - 90);
-			contentPane.addNewTextBox(28);
-			GUIHorizontalButtonTablePane adminPane =
-					new GUIHorizontalButtonTablePane(getState(), 2, 1, contentPane.getContent(0, 1));
+			contentPane.addNewTextBox(18);
+			GUIHorizontalButtonTablePane adminPane = new GUIHorizontalButtonTablePane(getState(), 2, 1, contentPane.getContent(0, 1));
 			adminPane.onInit();
 
 			adminPane.addButton(
@@ -1406,9 +1196,7 @@ public class ExchangeMenuPanel extends GUIMenuPanel {
 					}
 				});
 		bronzeSection.attach(bronzePane);
-		GUIOverlay bronzeOverlay =
-				IconDatabase.getBuildIconsInstance(
-						getState(), ElementManager.getItem(BRONZE).getItemInfo().getBuildIconNum());
+		GUIOverlay bronzeOverlay = IconDatabase.getBuildIconsInstance(getState(), ElementManager.getItem(BRONZE).getItemInfo().getBuildIconNum());
 		bronzeOverlay.setScale(iconScale);
 		bronzeSection.attach(bronzeOverlay);
 		bronzeOverlay.getPos().y += 250;
@@ -1420,8 +1208,7 @@ public class ExchangeMenuPanel extends GUIMenuPanel {
 		bronzeText.setScale(new Vector3f(3.0f, 3.0f, 1.0f));
 		bronzeText.setPos(new Vector3f(230, 430, 0));
 
-		GUIHorizontalButtonTablePane silverPane =
-				new GUIHorizontalButtonTablePane(getState(), 1, 2, silverSection);
+		GUIHorizontalButtonTablePane silverPane = new GUIHorizontalButtonTablePane(getState(), 1, 2, silverSection);
 		silverPane.onInit();
 		silverPane.addButton(
 				0,
@@ -1494,9 +1281,7 @@ public class ExchangeMenuPanel extends GUIMenuPanel {
 					}
 				});
 		silverSection.attach(silverPane);
-		GUIOverlay silverOverlay =
-				IconDatabase.getBuildIconsInstance(
-						getState(), ElementManager.getItem(SILVER).getItemInfo().getBuildIconNum());
+		GUIOverlay silverOverlay = IconDatabase.getBuildIconsInstance(getState(), ElementManager.getItem(SILVER).getItemInfo().getBuildIconNum());
 		silverOverlay.setScale(iconScale);
 		silverSection.attach(silverOverlay);
 		silverOverlay.getPos().y += 250;
@@ -1508,8 +1293,7 @@ public class ExchangeMenuPanel extends GUIMenuPanel {
 		silverText.setScale(new Vector3f(3.0f, 3.0f, 1.0f));
 		silverText.setPos(new Vector3f(230, 430, 0));
 
-		GUIHorizontalButtonTablePane goldPane =
-				new GUIHorizontalButtonTablePane(getState(), 1, 2, goldSection);
+		GUIHorizontalButtonTablePane goldPane = new GUIHorizontalButtonTablePane(getState(), 1, 2, goldSection);
 		goldPane.onInit();
 		goldPane.addButton(
 				0,
@@ -1674,12 +1458,8 @@ public class ExchangeMenuPanel extends GUIMenuPanel {
 
 	private boolean canAffordItem(ExchangeItem item) {
 		short barType = item.barType;
-		int count =
-				InventoryUtils.getItemAmount(GameClient.getClientPlayerState().getInventory(), barType);
-		return (count >= item.price && GameClient.getClientPlayerState().getInventory().hasFreeSlot())
-				|| (GameClient.getClientPlayerState().isCreativeModeEnabled()
-				&& isAdmin()
-				&& !DataUtils.isPlayerInAnyBuildSector(GameClient.getClientPlayerState()));
+		int count = InventoryUtils.getItemAmount(GameClient.getClientPlayerState().getInventory(), barType);
+		return (count >= item.price && GameClient.getClientPlayerState().getInventory().hasFreeSlot()) || (GameClient.getClientPlayerState().isCreativeModeEnabled() && isAdmin() && !DataUtils.isPlayerInAnyBuildSector(GameClient.getClientPlayerState()));
 	}
 
 	public void givePlayerItem(ExchangeItem item) {
@@ -1687,27 +1467,31 @@ public class ExchangeMenuPanel extends GUIMenuPanel {
 		if (item instanceof BlueprintExchangeItem) {
 			BlueprintPlayerHandleRequest req = new BlueprintPlayerHandleRequest();
 			req.catalogName = item.name;
-			if(((BlueprintExchangeItem) item).community) req.entitySpawnName = "EDENCORE_TEMP";
-			else req.entitySpawnName = "EDENCORE_TEMP_NOAUTOFILL";
+			if(((BlueprintExchangeItem) item).community) req.entitySpawnName = "EDENCORE_TEMP_COMMUNITY";
+			else req.entitySpawnName = "EDENCORE_TEMP";
 			req.save = false;
 			req.toSaveShip = -1;
 			req.directBuy = false;
 			req.setOwnFaction = true;
 			GameClient.getClientPlayerState().getNetworkObject().catalogPlayerHandleBuffer.add(new RemoteBlueprintPlayerRequest(req, false));
-			// PacketUtil.sendPacketToServer(new RequestExchangeBPItemGivePacket((BlueprintExchangeItem)
-			// item));
+			if(((BlueprintExchangeItem) item).community) PacketUtil.sendPacketToServer(new PlayerBuyBPPacket((BlueprintExchangeItem) item));
 		} else if (item instanceof ResourceExchangeItem)
-			InventoryUtils.addItem(
-					inventory, ((ResourceExchangeItem) item).itemId, ((ResourceExchangeItem) item).itemCount);
+			InventoryUtils.addItem(inventory, ((ResourceExchangeItem) item).itemId, ((ResourceExchangeItem) item).itemCount);
 		else if (item instanceof ItemExchangeItem) {
 			ItemExchangeItem itemExchangeItem = (ItemExchangeItem) item;
-			PacketUtil.sendPacketToServer(
-					new RequestMetaObjectPacket(
-							itemExchangeItem.itemId, itemExchangeItem.metaId, itemExchangeItem.subType));
+			PacketUtil.sendPacketToServer(new RequestMetaObjectPacket(itemExchangeItem.itemId, itemExchangeItem.metaId, itemExchangeItem.subType));
 		}
 	}
 
 	private void sendExchangeItemRemoval(int type, ExchangeItem item) {
 		PacketUtil.sendPacketToServer(new ExchangeItemRemovePacket(type, item));
+	}
+
+	private void setIcon(ExchangeItem item, GUITile tile) {
+		GUIOverlay spriteOverlay = item.getIcon();
+		spriteOverlay.onInit();
+		if(spriteOverlay.getUserPointer() == null) spriteOverlay.setUserPointer("default-icon");
+		spriteOverlay.setPos(100.0f, 230.0f, 0.0f);
+		tile.getContent().attach(spriteOverlay);
 	}
 }
