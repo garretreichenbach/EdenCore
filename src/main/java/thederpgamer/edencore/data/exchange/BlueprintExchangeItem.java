@@ -58,8 +58,10 @@ public class BlueprintExchangeItem extends ExchangeItem {
 
 		if (overlay == null) {
 			Sprite sprite = ResourceManager.getSprite("default-sprite");
-			sprite.setWidth(32);
-			sprite.setHeight(32);
+			//sprite.setWidth(32);
+			//sprite.setHeight(32);
+			sprite.setWidth(128);
+			sprite.setHeight(128);
 			overlay = new GUIOverlay(sprite, GameClient.getClientState());
 			overlay.setUserPointer("default-sprite");
 		}
