@@ -178,6 +178,7 @@ public class EdenCore extends StarMod {
 		PacketUtil.registerPacket(SendCacheUpdatePacket.class);
 		PacketUtil.registerPacket(PlayerWarpIntoEntityPacket.class);
 		PacketUtil.registerPacket(NavigationMapPacket.class);
+		PacketUtil.registerPacket(PlayerBuyBPPacket.class);
 	}
 
 	private void registerListeners() {

@@ -21,6 +21,7 @@ import thederpgamer.edencore.data.exchange.ResourceExchangeItem;
 import thederpgamer.edencore.element.ElementManager;
 import thederpgamer.edencore.manager.ClientCacheManager;
 import thederpgamer.edencore.network.client.ExchangeItemRemovePacket;
+import thederpgamer.edencore.network.client.PlayerBuyBPPacket;
 import thederpgamer.edencore.network.client.RequestClientCacheUpdatePacket;
 import thederpgamer.edencore.network.client.RequestMetaObjectPacket;
 import thederpgamer.edencore.utils.APIUtils;
@@ -1693,6 +1694,7 @@ public class ExchangeMenuPanel extends GUIMenuPanel {
 			req.directBuy = false;
 			req.setOwnFaction = true;
 			GameClient.getClientPlayerState().getNetworkObject().catalogPlayerHandleBuffer.add(new RemoteBlueprintPlayerRequest(req, false));
+			if(((BlueprintExchangeItem) item).community) PacketUtil.sendPacketToServer(new PlayerBuyBPPacket((BlueprintExchangeItem) item));
 			// PacketUtil.sendPacketToServer(new RequestExchangeBPItemGivePacket((BlueprintExchangeItem)
 			// item));
 		} else if (item instanceof ResourceExchangeItem)

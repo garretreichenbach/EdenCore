@@ -1,15 +1,19 @@
 package thederpgamer.edencore.utils;
 
+import api.utils.game.PlayerUtils;
+import api.utils.game.inventory.InventoryUtils;
 import org.schema.game.common.controller.database.DatabaseIndex;
 import org.schema.game.common.data.player.PlayerState;
 import org.schema.game.common.updater.FileUtil;
 import org.schema.game.server.controller.EntityNotFountException;
 import org.schema.game.server.data.GameServerState;
+import org.schema.game.server.data.PlayerNotFountException;
 import org.schema.game.server.data.ServerConfig;
 import org.schema.schine.resource.FileExt;
 import org.schema.schine.resource.tag.Tag;
 
 import java.io.*;
+import java.nio.file.Files;
 import java.sql.*;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -80,7 +84,7 @@ public class PlayerDataUtil {
                 tmpFile.delete();
             }
 
-            BufferedOutputStream bufferedOutputStream = new BufferedOutputStream(new FileOutputStream(tmpFile), 4096);
+            BufferedOutputStream bufferedOutputStream = new BufferedOutputStream(Files.newOutputStream(tmpFile.toPath()), 4096);
             DataOutputStream os = new DataOutputStream(bufferedOutputStream);
 
             try {
@@ -147,10 +151,8 @@ public class PlayerDataUtil {
             Tag t = getTagFromFile(playername);
             p.fromTagStructure(t);
             return p;
-        } catch (IOException e) {
-            e.printStackTrace();
-        } catch (EntityNotFountException e) {
-            e.printStackTrace();
+        } catch(IOException | EntityNotFountException exception) {
+            exception.printStackTrace();
         }
         return null;
     }
@@ -167,4 +169,19 @@ public class PlayerDataUtil {
         return GameServerState.instance.getController().readEntity(pUID); //reads the .ent file with that UID
     }
 
+    public static void addBars(String seller, short barType, int amount) {
+        try {
+            PlayerState playerState = GameServerState.instance.getPlayerFromName(seller);
+            InventoryUtils.addItem(playerState.getInventory(), barType, amount);
+            PlayerUtils.sendMessage(playerState, "[COMMUNITY MARKET]: Sold a blueprint for " + amount + " bars.");
+        } catch(PlayerNotFountException ignored) {
+            try { //Seller not online, use database instead
+                PlayerState playerState = loadControlPlayer(seller);
+                InventoryUtils.addItem(playerState.getInventory(), barType, amount);
+                writeTagForPlayer(playerState.toTagStructure(), seller);
+            } catch(Exception exception) {
+                exception.printStackTrace();
+            }
+        }
+    }
 }
