@@ -171,7 +171,7 @@ public class ExchangeMenuPanel extends GUIMenuPanel {
 
 			if (isAdmin()) {
 				subTab.setTextBoxHeightLast(0, guiWindow.getInnerHeigth() - 90);
-				subTab.addNewTextBox(0, 28);
+				subTab.addNewTextBox(0, 18);
 
 				GUIHorizontalButtonTablePane adminPane = new GUIHorizontalButtonTablePane(getState(), 2, 1, subTab.getContent(1));
 				adminPane.onInit();
@@ -335,7 +335,7 @@ public class ExchangeMenuPanel extends GUIMenuPanel {
 			subTab.getContent(0).attach(scrollPanel);
 
 			subTab.setTextBoxHeightLast(0, guiWindow.getInnerHeigth() - 90);
-			subTab.addNewTextBox(0, 28);
+			subTab.addNewTextBox(0, 18);
 
 			GUIHorizontalButtonTablePane adminPane = new GUIHorizontalButtonTablePane(getState(), 2, 1, subTab.getContent(1));
 			adminPane.onInit();
@@ -517,7 +517,7 @@ public class ExchangeMenuPanel extends GUIMenuPanel {
 
 			if (isAdmin()) {
 				subTab.setTextBoxHeightLast(0, guiWindow.getInnerHeigth() - 90);
-				subTab.addNewTextBox(28);
+				subTab.addNewTextBox(18);
 				GUIHorizontalButtonTablePane adminPane =
 						new GUIHorizontalButtonTablePane(getState(), 2, 1, subTab.getContent(1));
 				adminPane.onInit();
@@ -685,7 +685,7 @@ public class ExchangeMenuPanel extends GUIMenuPanel {
 
 			if (isAdmin()) {
 				subTab.setTextBoxHeightLast(0, guiWindow.getInnerHeigth() - 90);
-				subTab.addNewTextBox(28);
+				subTab.addNewTextBox(18);
 				GUIHorizontalButtonTablePane adminPane =
 						new GUIHorizontalButtonTablePane(getState(), 2, 1, subTab.getContent(1));
 				adminPane.onInit();
@@ -853,7 +853,7 @@ public class ExchangeMenuPanel extends GUIMenuPanel {
 
 			if (isAdmin()) {
 				subTab.setTextBoxHeightLast(0, guiWindow.getInnerHeigth() - 90);
-				subTab.addNewTextBox(28);
+				subTab.addNewTextBox(18);
 				GUIHorizontalButtonTablePane adminPane =
 						new GUIHorizontalButtonTablePane(getState(), 2, 1, subTab.getContent(1));
 				adminPane.onInit();
@@ -1023,7 +1023,7 @@ public class ExchangeMenuPanel extends GUIMenuPanel {
 
 		if (isAdmin()) {
 			contentPane.setTextBoxHeightLast(0, guiWindow.getInnerHeigth() - 90);
-			contentPane.addNewTextBox(28);
+			contentPane.addNewTextBox(18);
 			GUIHorizontalButtonTablePane adminPane = new GUIHorizontalButtonTablePane(getState(), 2, 1, contentPane.getContent(0, 1));
 			adminPane.onInit();
 
@@ -1491,7 +1491,7 @@ public class ExchangeMenuPanel extends GUIMenuPanel {
 		GUIOverlay spriteOverlay = item.getIcon();
 		spriteOverlay.onInit();
 		if(spriteOverlay.getUserPointer() == null) spriteOverlay.setUserPointer("default-icon");
-		spriteOverlay.setPos(2.0f, 130.0f, 2.0f);
+		spriteOverlay.setPos(100.0f, 230.0f, 0.0f);
 		tile.getContent().attach(spriteOverlay);
 	}
 }

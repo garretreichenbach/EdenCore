@@ -22,15 +22,15 @@ public enum MapIcon {
     BASE("map-sprites", 4);
 
     int index;
-    String resourceName;
-    int subSpriteIndex;
+    final String resourceName;
+    final int subSpriteIndex;
 
     MapIcon(String resourceName, int subSpriteIndex) {
         this.resourceName = resourceName;
         this.subSpriteIndex = subSpriteIndex;
     }
 
-    static HashMap<String,Sprite> sprites =new HashMap<>();
+    static final HashMap<String,Sprite> sprites =new HashMap<>();
     //map indices and resource names to be loaded as sprites
     static {
         for (int i = 0; i < MapIcon.values().length; i++) {
@@ -55,7 +55,6 @@ public enum MapIcon {
                 sprites.put(resourceName,s);
             } catch (Exception e) { //resource doesnt exist
                 e.printStackTrace();
-                continue;
             }
         }
     }

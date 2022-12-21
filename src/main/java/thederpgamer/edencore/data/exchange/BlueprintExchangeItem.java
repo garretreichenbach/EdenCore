@@ -58,10 +58,8 @@ public class BlueprintExchangeItem extends ExchangeItem {
 
 		if (overlay == null) {
 			Sprite sprite = ResourceManager.getSprite("default-sprite");
-			//sprite.setWidth(32);
-			//sprite.setHeight(32);
-			sprite.setWidth(128);
-			sprite.setHeight(128);
+			sprite.setWidth(100);
+			sprite.setHeight(100);
 			overlay = new GUIOverlay(sprite, GameClient.getClientState());
 			overlay.setUserPointer("default-sprite");
 		}
@@ -73,8 +71,8 @@ public class BlueprintExchangeItem extends ExchangeItem {
 		Sprite sprite = ImageUtils.getImage(url);
 		if (sprite != null) {
 			sprite.setPositionCenter(true);
-			sprite.setWidth(200);
-			sprite.setHeight(200);
+			sprite.setWidth(128);
+			sprite.setHeight(128);
 			overlay = new GUIOverlay(sprite, GameClient.getClientState());
 			overlay.setUserPointer(url);
 		}

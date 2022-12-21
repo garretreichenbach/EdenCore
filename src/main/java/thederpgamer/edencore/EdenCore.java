@@ -60,6 +60,7 @@ import thederpgamer.edencore.navigation.NavigationUtilManager;
 import thederpgamer.edencore.network.client.*;
 import thederpgamer.edencore.network.server.PlayerWarpIntoEntityPacket;
 import thederpgamer.edencore.network.server.SendCacheUpdatePacket;
+import thederpgamer.edencore.network.server.SendGuideMenuPacket;
 import thederpgamer.edencore.utils.BuildSectorUtils;
 import thederpgamer.edencore.utils.DataUtils;
 import thederpgamer.edencore.utils.DateUtils;
@@ -179,6 +180,7 @@ public class EdenCore extends StarMod {
 		PacketUtil.registerPacket(PlayerWarpIntoEntityPacket.class);
 		PacketUtil.registerPacket(NavigationMapPacket.class);
 		PacketUtil.registerPacket(PlayerBuyBPPacket.class);
+		PacketUtil.registerPacket(SendGuideMenuPacket.class);
 	}
 
 	private void registerListeners() {
@@ -287,10 +289,12 @@ public class EdenCore extends StarMod {
             }
              */
 
+						/*
 						if(guideMenuControlManager == null) {
 							guideMenuControlManager = new GuideMenuControlManager();
 							ModGUIHandler.registerNewControlManager(getSkeleton(), guideMenuControlManager);
 						}
+						 */
 
 						dropDownButton.addExpandedButton(
 								"BUILD SECTOR",
@@ -415,15 +419,9 @@ public class EdenCore extends StarMod {
 									@Override
 									public void callback(GUIElement guiElement, MouseEvent mouseEvent) {
 										if(mouseEvent.pressedLeftMouse()) {
-											GameClient.getClientState()
-													.getController()
-													.queueUIAudio("0022_menu_ui - enter");
-											GameClient.getClientState()
-													.getGlobalGameControlManager()
-													.getIngameControlManager()
-													.getPlayerGameControlManager()
-													.deactivateAll();
-											guideMenuControlManager.setActive(true);
+											GameClient.getClientState().getController().queueUIAudio("0022_menu_ui - enter");
+											GameClient.getClientState().getGlobalGameControlManager().getIngameControlManager().getPlayerGameControlManager().deactivateAll();
+											activateGuideMenu();
 										}
 									}
 
@@ -768,6 +766,14 @@ public class EdenCore extends StarMod {
 				this);
 	}
 
+	public void activateGuideMenu() {
+		try {
+			ModGUIHandler.getGUIControlManager("glossarPanel").setActive(true);
+		} catch(Exception exception) {
+			exception.printStackTrace();
+		}
+	}
+
 	private void registerCommands() {
 		StarLoader.registerCommand(new SaveEntityCommand());
 		StarLoader.registerCommand(new LoadEntityCommand());
@@ -778,6 +784,7 @@ public class EdenCore extends StarMod {
 		StarLoader.registerCommand(new BankingListCommand());
 		StarLoader.registerCommand(new BankingAdminListCommand());
 		StarLoader.registerCommand(new CountdownCommand());
+		StarLoader.registerCommand(new GuideCommand());
 		// StarLoader.registerCommand(new ResetPlayerCommand());
 	}
 
@@ -789,6 +796,17 @@ public class EdenCore extends StarMod {
 					updateClientCacheData();
 				}
 			}.runTimer(this, 1000);
+
+			new StarRunnable() {
+				long last = System.currentTimeMillis() - 1800000L + 10000L;
+
+				public void run() {
+					if(this.last + 1800000L < System.currentTimeMillis()) {
+						this.last = System.currentTimeMillis();
+						for(PlayerState playerState : GameServer.getServerState().getPlayerStatesByName().values()) PlayerUtils.sendMessage(playerState, "The guide can be accessed via the /guide command or via the GUIDE button under the PLAYER tab in the top right.");
+					}
+				}
+			}.runTimer(EdenCore.getInstance, 10L);
 		}
 	}
 
@@ -883,5 +901,9 @@ public class EdenCore extends StarMod {
 						"Encountered an exception while trying to update client cache data", exception);
 			}
 		}
+	}
+
+	public void activateGuideMenuForPlayer(PlayerState playerState) {
+		PacketUtil.sendPacket(playerState, new SendGuideMenuPacket());
 	}
 }
