@@ -1,5 +1,6 @@
 package thederpgamer.edencore.api.starbridge;
 
+import api.ModPlayground;
 import api.mod.StarLoader;
 import thederpgamer.edencore.data.player.DonatorData;
 import thederpgamer.edencore.manager.LogManager;
@@ -22,14 +23,13 @@ public class StarBridgeAPI {
 		if(StarLoader.getModFromName("StarBridge") != null) {
 			LogManager.logInfo("StarBridge detected. Initializing API...");
 			try {
-				File donatorsFile = new File("../donators.smdat");
+				File donatorsFile = new File(ModPlayground.inst.getSkeleton().getResourcesFolder().getPath().replace('\\', '/') + "/donators.smdat");
 				if(donatorsFile.exists()) {
 					try {
 						FileInputStream fileInputStream = new FileInputStream(donatorsFile);
 						byte[] data = new byte[(int) donatorsFile.length()];
 						fileInputStream.read(data);
 						fileInputStream.close();
-						//Format is: <donator name> | <donator id> | <donator tier>
 						String[] donators = new String(data).split(", ");
 						for(String donator : donators) {
 							String[] donatorData = donator.split(" \\| ");

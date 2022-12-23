@@ -166,7 +166,6 @@ public class EdenCore extends StarMod {
 	public void onBlockConfigLoad(BlockConfig blockConfig) {
 		// Items
 		ElementManager.addItemGroup(new PrizeBars());
-
 		ElementManager.initialize();
 	}
 

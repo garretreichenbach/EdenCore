@@ -1,15 +1,18 @@
 package org.schema.schine.graphicsengine.forms.gui;
 
+import api.common.GameClient;
 import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
 import it.unimi.dsi.fastutil.objects.ObjectArrayList;
 import org.lwjgl.opengl.GL11;
 import org.newdawn.slick.Color;
 import org.newdawn.slick.UnicodeFont;
 import org.schema.common.FastMath;
+import org.schema.game.network.objects.ChatMessage;
 import org.schema.schine.graphicsengine.core.GlUtil;
 import org.schema.schine.graphicsengine.forms.font.FontLibrary;
 import org.schema.schine.graphicsengine.forms.font.FontLibrary.FontSize;
 import org.schema.schine.input.InputState;
+import thederpgamer.edencore.api.starbridge.StarBridgeAPI;
 import thederpgamer.edencore.utils.ColorUtils;
 
 import javax.vecmath.Vector2f;
@@ -538,24 +541,49 @@ public class GUITextOverlay extends GUIElement {
 					}
 					break;
 				}
+				Color c = Color.white;
 				String s = textCache.get(i).toString();
 
 				//INSERTED CODE
-
-				StringBuilder builder = new StringBuilder();
-				char[] charArray = s.toCharArray();
-				for(int l = 0; i < charArray.length; i++) {
-					if(charArray[i] == '&' && charArray.length > l + 1) {
-						l++;
-						color = ColorUtils.fromCode(Character.toLowerCase(charArray[l]));
-					} else {
-						GlUtil.glColor4f(new Vector4f(color.r, color.g, color.b, color.a));
-						builder.append(charArray[i]);
+				boolean donator = false;
+				if(textCache.get(i) instanceof ChatMessage) {
+					if(GameClient.getClientState() != null && GameClient.getClientPlayerState() != null && (StarBridgeAPI.isDonator(GameClient.getClientState().getPlayerName()) || GameClient.getClientPlayerState().isAdmin())) donator = true;
+					String donatorType = StarBridgeAPI.getDonatorType(((ChatMessage) textCache.get(i)).sender);
+					//Name tag format is [<playername>] <message>
+					//Append name tag color to front of playername, then reset it to white before message
+					String nameTag = ((ChatMessage) textCache.get(i)).sender;
+					StringBuilder builder = new StringBuilder();
+					switch(donatorType) {
+						case "Explorer":
+							nameTag = "&" + ColorUtils.GREY + nameTag;
+							break;
+						case "Captain":
+							nameTag = "&" + ColorUtils.YELLOW + nameTag;
+							break;
 					}
-				}
-				s = builder.toString();
+					String[] split = s.split(nameTag);
+					String message = split[1].replaceAll("] ", "");
+					nameTag = nameTag + "&" + ColorUtils.WHITE;
+					s = "[" + nameTag + "]: " + message;
+					char[] charArray = s.toCharArray();
+					for(int l = 0; l < charArray.length; l ++) {
+						if(charArray[l] == '&' && charArray.length > l + 1) {
+							l ++;
+							if(donator) c = ColorUtils.fromCode(Character.toLowerCase(charArray[l]));
+							else c = Color.white;
+						} else {
+							GlUtil.glColor4f(c.getRed() / 255f, c.getGreen() / 255f, c.getBlue() / 255f, 1.0f);
+							font.drawDisplayList(x, y, "" + charArray[l], c, 0, 1);
+							x += getFont().getWidth("" + charArray[l]);
+							builder.append(charArray[l]);
+						}
+					}
+					x = 0;
+					s = builder.toString();
+					((ChatMessage) textCache.get(i)).text = s;
+				} else font.drawDisplayList(x, y, s, c, 0, s.length());
 				//
-				font.drawDisplayList(x, y, s, color, 0, s.length());
+				GlUtil.glColor4f(Color.white.getRed() / 255f, Color.white.getGreen() / 255f, Color.white.getBlue() / 255f, 1.0f);
 				y += getFont().getLineHeight();
 				if(dirty) maxLineWidth = Math.max(maxLineWidth, getFont().getWidth(s));
 			}
@@ -567,9 +595,7 @@ public class GUITextOverlay extends GUIElement {
 				textHeight = (((int) y));
 			}
 
-			if (isMouseUpdateEnabled()) {
-				checkMouseInside();
-			}
+			if(isMouseUpdateEnabled()) checkMouseInside();
 			GlUtil.glColor4f(1, 1, 1, 1);
 			GlUtil.glDisable(GL11.GL_BLEND);
 			GlUtil.glEnable(GL11.GL_LIGHTING);
