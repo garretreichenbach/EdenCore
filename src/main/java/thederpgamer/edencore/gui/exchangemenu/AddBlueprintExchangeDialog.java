@@ -8,7 +8,7 @@ import org.schema.schine.graphicsengine.core.MouseEvent;
 import org.schema.schine.graphicsengine.forms.gui.GUIElement;
 import thederpgamer.edencore.EdenCore;
 import thederpgamer.edencore.data.exchange.BlueprintExchangeItem;
-import thederpgamer.edencore.network.client.ExchangeItemCreatePacket;
+import thederpgamer.edencore.network.client.exchange.ExchangeItemCreatePacket;
 
 /**
  * <Description>

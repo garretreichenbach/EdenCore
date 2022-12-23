@@ -36,4 +36,9 @@ public class DefenseTarget extends EventTarget {
     public void serialize(PacketWriteBuffer writeBuffer) throws IOException {
         writeBuffer.writeString((String) target);
     }
+
+    @Override
+    public void updateClients() {
+
+    }
 }

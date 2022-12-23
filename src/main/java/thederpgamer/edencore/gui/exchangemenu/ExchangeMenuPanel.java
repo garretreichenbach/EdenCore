@@ -20,10 +20,10 @@ import thederpgamer.edencore.data.exchange.ItemExchangeItem;
 import thederpgamer.edencore.data.exchange.ResourceExchangeItem;
 import thederpgamer.edencore.element.ElementManager;
 import thederpgamer.edencore.manager.ClientCacheManager;
-import thederpgamer.edencore.network.client.ExchangeItemRemovePacket;
-import thederpgamer.edencore.network.client.PlayerBuyBPPacket;
-import thederpgamer.edencore.network.client.RequestClientCacheUpdatePacket;
-import thederpgamer.edencore.network.client.RequestMetaObjectPacket;
+import thederpgamer.edencore.network.client.exchange.ExchangeItemRemovePacket;
+import thederpgamer.edencore.network.client.exchange.PlayerBuyBPPacket;
+import thederpgamer.edencore.network.client.misc.RequestClientCacheUpdatePacket;
+import thederpgamer.edencore.network.client.misc.RequestMetaObjectPacket;
 import thederpgamer.edencore.utils.APIUtils;
 import thederpgamer.edencore.utils.DataUtils;
 
@@ -53,11 +53,7 @@ public class ExchangeMenuPanel extends GUIMenuPanel {
 	private int lastResourceTab;
 
 	public ExchangeMenuPanel(InputState inputState) {
-		super(
-				inputState,
-				"ServerExchange",
-				(int) (GLFrame.getWidth() / 1.5),
-				(int) (GLFrame.getHeight() / 1.5));
+		super(inputState, "ServerExchange", (int) (GLFrame.getWidth() / 1.5), (int) (GLFrame.getHeight() / 1.5));
 		BRONZE = ElementManager.getItem("Bronze Bar").getId();
 		SILVER = ElementManager.getItem("Silver Bar").getId();
 		GOLD = ElementManager.getItem("Gold Bar").getId();
@@ -66,6 +62,7 @@ public class ExchangeMenuPanel extends GUIMenuPanel {
 	@Override
 	public void recreateTabs() {
 		PacketUtil.sendPacketToServer(new RequestClientCacheUpdatePacket());
+		if(guiWindow == null) return;
 		int lastTab = guiWindow.getSelectedTab();
 		if (guiWindow.getTabs().size() > 0) guiWindow.clearTabs();
 
@@ -233,8 +230,7 @@ public class ExchangeMenuPanel extends GUIMenuPanel {
 											recreateTabs();
 											deactivate();
 										}
-									})
-											.activate();
+									}).activate();
 								}
 							}
 
@@ -296,19 +292,12 @@ public class ExchangeMenuPanel extends GUIMenuPanel {
 											GameClient.getClientState().getController().queueUIAudio("0022_menu_ui - highlight 1");
 											item.community = true;
 											givePlayerItem(item);
-											InventoryUtils.consumeItems(
-													GameClient.getClientPlayerState().getInventory(),
-													item.barType,
-													item.price);
+											InventoryUtils.consumeItems(GameClient.getClientPlayerState().getInventory(), item.barType, item.price);
 											lastClickedBP = null;
 											deactivate();
 										}
-									})
-											.activate();
-								} else
-									GameClient.getClientState()
-											.getController()
-											.queueUIAudio("0022_menu_ui - error 1");
+									}).activate();
+								} else GameClient.getClientState().getController().queueUIAudio("0022_menu_ui - error 1");
 							}
 						}
 					}
@@ -446,8 +435,7 @@ public class ExchangeMenuPanel extends GUIMenuPanel {
 			(resourcesTilePane = new GUITilePane<>(getState(), scrollPanel, 200, 300)).onInit();
 			for (final ResourceExchangeItem item : getResources()) {
 				if (item.barType == BRONZE) {
-					GUITile tile =
-							resourcesTilePane.addButtonTile(
+					GUITile tile = resourcesTilePane.addButtonTile(
 									"EXCHANGE",
 									item.createDescription(),
 									getTileColor(item),
@@ -1014,6 +1002,7 @@ public class ExchangeMenuPanel extends GUIMenuPanel {
 										return true;
 									}
 								});
+				item.setTempOverlay(tile.getContent());
 				setIcon(item, tile);
 			}
 		}
@@ -1122,8 +1111,7 @@ public class ExchangeMenuPanel extends GUIMenuPanel {
 
 		Vector3f iconScale = new Vector3f(5.0f, 5.0f, 5.0f);
 
-		GUIHorizontalButtonTablePane bronzePane =
-				new GUIHorizontalButtonTablePane(getState(), 1, 2, bronzeSection);
+		GUIHorizontalButtonTablePane bronzePane = new GUIHorizontalButtonTablePane(getState(), 1, 2, bronzeSection);
 		bronzePane.onInit();
 		bronzePane.addButton(
 				0,
@@ -1144,8 +1132,7 @@ public class ExchangeMenuPanel extends GUIMenuPanel {
 
 					@Override
 					public boolean isOccluded() {
-						return !getState().getController().getPlayerInputs().isEmpty()
-								|| !canConvert(BRONZE, SILVER);
+						return !getState().getController().getPlayerInputs().isEmpty() || !canConvert(BRONZE, SILVER);
 					}
 				},
 				new GUIActivationCallback() {
@@ -1156,8 +1143,7 @@ public class ExchangeMenuPanel extends GUIMenuPanel {
 
 					@Override
 					public boolean isActive(InputState inputState) {
-						return inputState.getController().getPlayerInputs().isEmpty()
-								&& canConvert(BRONZE, SILVER);
+						return inputState.getController().getPlayerInputs().isEmpty() && canConvert(BRONZE, SILVER);
 					}
 				});
 		bronzePane.addButton(
@@ -1179,8 +1165,7 @@ public class ExchangeMenuPanel extends GUIMenuPanel {
 
 					@Override
 					public boolean isOccluded() {
-						return !getState().getController().getPlayerInputs().isEmpty()
-								|| !canConvert(BRONZE, GOLD);
+						return !getState().getController().getPlayerInputs().isEmpty() || !canConvert(BRONZE, GOLD);
 					}
 				},
 				new GUIActivationCallback() {
@@ -1191,8 +1176,7 @@ public class ExchangeMenuPanel extends GUIMenuPanel {
 
 					@Override
 					public boolean isActive(InputState inputState) {
-						return inputState.getController().getPlayerInputs().isEmpty()
-								&& canConvert(BRONZE, GOLD);
+						return inputState.getController().getPlayerInputs().isEmpty() && canConvert(BRONZE, GOLD);
 					}
 				});
 		bronzeSection.attach(bronzePane);
@@ -1229,8 +1213,7 @@ public class ExchangeMenuPanel extends GUIMenuPanel {
 
 					@Override
 					public boolean isOccluded() {
-						return !getState().getController().getPlayerInputs().isEmpty()
-								|| !canConvert(SILVER, GOLD);
+						return !getState().getController().getPlayerInputs().isEmpty() || !canConvert(SILVER, GOLD);
 					}
 				},
 				new GUIActivationCallback() {
@@ -1241,8 +1224,7 @@ public class ExchangeMenuPanel extends GUIMenuPanel {
 
 					@Override
 					public boolean isActive(InputState inputState) {
-						return inputState.getController().getPlayerInputs().isEmpty()
-								&& canConvert(SILVER, GOLD);
+						return inputState.getController().getPlayerInputs().isEmpty() && canConvert(SILVER, GOLD);
 					}
 				});
 		silverPane.addButton(
@@ -1264,8 +1246,7 @@ public class ExchangeMenuPanel extends GUIMenuPanel {
 
 					@Override
 					public boolean isOccluded() {
-						return !getState().getController().getPlayerInputs().isEmpty()
-								|| !canConvert(SILVER, BRONZE);
+						return !getState().getController().getPlayerInputs().isEmpty() || !canConvert(SILVER, BRONZE);
 					}
 				},
 				new GUIActivationCallback() {
@@ -1276,8 +1257,7 @@ public class ExchangeMenuPanel extends GUIMenuPanel {
 
 					@Override
 					public boolean isActive(InputState inputState) {
-						return inputState.getController().getPlayerInputs().isEmpty()
-								&& canConvert(SILVER, BRONZE);
+						return inputState.getController().getPlayerInputs().isEmpty() && canConvert(SILVER, BRONZE);
 					}
 				});
 		silverSection.attach(silverPane);
@@ -1314,8 +1294,7 @@ public class ExchangeMenuPanel extends GUIMenuPanel {
 
 					@Override
 					public boolean isOccluded() {
-						return !getState().getController().getPlayerInputs().isEmpty()
-								|| !canConvert(GOLD, SILVER);
+						return !getState().getController().getPlayerInputs().isEmpty() || !canConvert(GOLD, SILVER);
 					}
 				},
 				new GUIActivationCallback() {
@@ -1326,8 +1305,7 @@ public class ExchangeMenuPanel extends GUIMenuPanel {
 
 					@Override
 					public boolean isActive(InputState inputState) {
-						return inputState.getController().getPlayerInputs().isEmpty()
-								&& canConvert(GOLD, SILVER);
+						return inputState.getController().getPlayerInputs().isEmpty() && canConvert(GOLD, SILVER);
 					}
 				});
 		goldPane.addButton(
@@ -1349,8 +1327,7 @@ public class ExchangeMenuPanel extends GUIMenuPanel {
 
 					@Override
 					public boolean isOccluded() {
-						return !getState().getController().getPlayerInputs().isEmpty()
-								|| !canConvert(GOLD, BRONZE);
+						return !getState().getController().getPlayerInputs().isEmpty() || !canConvert(GOLD, BRONZE);
 					}
 				},
 				new GUIActivationCallback() {
@@ -1361,14 +1338,11 @@ public class ExchangeMenuPanel extends GUIMenuPanel {
 
 					@Override
 					public boolean isActive(InputState inputState) {
-						return inputState.getController().getPlayerInputs().isEmpty()
-								&& canConvert(GOLD, BRONZE);
+						return inputState.getController().getPlayerInputs().isEmpty() && canConvert(GOLD, BRONZE);
 					}
 				});
 		goldSection.attach(goldPane);
-		GUIOverlay goldOverlay =
-				IconDatabase.getBuildIconsInstance(
-						getState(), ElementManager.getItem(GOLD).getItemInfo().getBuildIconNum());
+		GUIOverlay goldOverlay = IconDatabase.getBuildIconsInstance(getState(), ElementManager.getItem(GOLD).getItemInfo().getBuildIconNum());
 		goldOverlay.setScale(iconScale);
 		goldSection.attach(goldOverlay);
 		goldOverlay.getPos().y += 250;

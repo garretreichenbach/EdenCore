@@ -18,7 +18,7 @@ public class DataManager {
     //Client Access Modifiers
     public static final int VIEW = 4; //Can read data sent from a source that has READ access
     public static final int SEND = 8; //Can send data to a destination that has WRITE access
-    public static final int UPDATE = 16; //Can update data from a source that has REPLY access
+    public static final int UPDATE = 16; //Can updateClients data from a source that has REPLY access
 
     //Server Access Modifiers
     public static final int RECEIVE = 32; //Can receive data sent from a source that has SEND access

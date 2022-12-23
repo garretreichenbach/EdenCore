@@ -340,7 +340,7 @@ public class PlayerState extends AbstractOwnerState implements Sendable, DiskWri
     public void announceKill(Damager killerEntity) {
 
         if (isOnServer()) {
-            //don't hide. it might fuck up client as he tried to update a hidden kinematic controller
+            //don't hide. it might fuck up client as he tried to updateClients a hidden kinematic controller
             //while object is still in physics
             getControllerState().removeAllUnitsFromPlayer(this, false);
 

@@ -24,14 +24,13 @@ public class BlueprintExchangeItem extends ExchangeItem {
 	// public long blocks;
 	public String iconPath;
 	public boolean community;
-	public String seller;
+	public String seller = "server";
 
 	public BlueprintExchangeItem(PacketReadBuffer readBuffer) {
 		super(readBuffer);
 	}
 
-	public BlueprintExchangeItem(
-			CatalogPermission blueprint, short barType, int price, String description, String iconPath) {
+	public BlueprintExchangeItem(CatalogPermission blueprint, short barType, int price, String description, String iconPath) {
 		super(barType, price, blueprint.getUid(), description);
 		this.barType = barType;
 		this.price = price;
@@ -45,10 +44,7 @@ public class BlueprintExchangeItem extends ExchangeItem {
 	@Override
 	public GUIOverlay getIcon() {
 		GUIOverlay overlay = null;
-		if (iconPath != null
-				&& !iconPath.isEmpty()
-				&& iconPath.startsWith("https://")
-				&& iconPath.endsWith(".png")) {
+		if (iconPath != null && !iconPath.isEmpty() && iconPath.startsWith("https://") && iconPath.endsWith(".png")) {
 			int attempts = 0;
 			while (attempts < 5 && overlay == null) {
 				overlay = fetchImageIcon(iconPath);
@@ -88,6 +84,7 @@ public class BlueprintExchangeItem extends ExchangeItem {
 		// writeBuffer.writeLong(blocks);
 		writeBuffer.writeString(iconPath);
 		writeBuffer.writeBoolean(community);
+		if(seller == null) seller = "server";
 		writeBuffer.writeString(seller);
     /* Todo: Somehow generate a preview of the entity that can be used as it's icon
     try {
@@ -104,18 +101,18 @@ public class BlueprintExchangeItem extends ExchangeItem {
 		price = readBuffer.readInt();
 		name = readBuffer.readString();
 		description = readBuffer.readString();
-		// blocks = readBuffer.readLong();
 		iconPath = readBuffer.readString();
 		community = readBuffer.readBoolean();
-		seller = readBuffer.readString();
+		try {
+			seller = readBuffer.readString();
+		} catch(NullPointerException ignored) {
+			seller = "server";
+		}
 	}
 
 	@Override
 	public boolean equals(ExchangeItem exchangeItem) {
-		return exchangeItem instanceof BlueprintExchangeItem
-				&& exchangeItem.name.equals(name)
-				&& exchangeItem.barType == barType
-				&& exchangeItem.price == price;
+		return exchangeItem instanceof BlueprintExchangeItem && exchangeItem.name.equals(name) && exchangeItem.barType == barType && exchangeItem.price == price;
 	}
 
   /*

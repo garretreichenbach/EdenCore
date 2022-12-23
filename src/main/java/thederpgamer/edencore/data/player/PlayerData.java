@@ -26,6 +26,7 @@ public class PlayerData {
     public Vector3f lastRealSectorPos;
     public Vector3f lastBuildSectorPos;
     public long lastDailyPrizeClaim;
+    public long lastLogin;
     public PlayerSettingsData settings;
 
     //collection of banking transactions that player has sent or received.

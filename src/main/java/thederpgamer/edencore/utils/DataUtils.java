@@ -27,8 +27,8 @@ import thederpgamer.edencore.data.player.PlayerData;
 import thederpgamer.edencore.manager.ClientCacheManager;
 import thederpgamer.edencore.manager.DataManager;
 import thederpgamer.edencore.manager.LogManager;
-import thederpgamer.edencore.network.client.RequestClientCacheUpdatePacket;
-import thederpgamer.edencore.network.client.RequestEntityDeletePacket;
+import thederpgamer.edencore.network.client.misc.RequestClientCacheUpdatePacket;
+import thederpgamer.edencore.network.client.misc.RequestEntityDeletePacket;
 
 import javax.vecmath.Vector3f;
 import java.io.IOException;

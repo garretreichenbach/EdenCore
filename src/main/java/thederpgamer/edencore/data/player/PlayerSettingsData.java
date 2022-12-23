@@ -47,6 +47,11 @@ public class PlayerSettingsData implements SerializableData {
 		writeBuffer.writeIntList(subscribedEvents);
 	}
 
+	@Override
+	public void updateClients() {
+
+	}
+
 	public String getPlayerName() {
 		return playerName;
 	}

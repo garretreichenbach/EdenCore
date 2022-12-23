@@ -15,4 +15,5 @@ public interface SerializableData {
 
     void deserialize(PacketReadBuffer readBuffer) throws IOException;
     void serialize(PacketWriteBuffer writeBuffer) throws IOException;
+    void updateClients();
 }

@@ -1,6 +1,6 @@
 plugins {
     id 'java'
-    id'application'
+    id 'application'
 }
 
 apply plugin: 'java'
@@ -11,7 +11,7 @@ def starmadeDirectory = 'C:/Program Files (x86)/Steam/steamapps/common/StarMade/
 def jarName = 'EdenCore'
 mainClassName = 'thederpgamer.edencore.EdenCore'
 group 'thederpgamer.edencore'
-version '1.8.6'
+version '1.9.0'
 
 repositories {
     mavenCentral()
@@ -20,7 +20,8 @@ repositories {
 dependencies {
     implementation(files(starmadeDirectory + "StarMade.jar"))
     implementation(fileTree(dir: (starmadeDirectory + "lib"), include: "*.jar"))
-    implementation(fileTree(dir: ("lib"), include: "*.jar"))
+    implementation(fileTree(dir: ("lib"), include: "*.jar", excludes: ["StarBridge.jar"]))
+    compileOnly(files("lib/StarBridge.jar"))
 }
 
 compileJava.options.encoding = 'UTF-8'

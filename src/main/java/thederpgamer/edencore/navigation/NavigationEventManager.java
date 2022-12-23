@@ -13,7 +13,7 @@ import thederpgamer.edencore.EdenCore;
  * CREATOR: Max1M
  * DATE: 27.09.2021
  * TIME: 16:51
- * core of the eventbased update system
+ * core of the eventbased updateClients system
  */
 public class NavigationEventManager {
     public static void clientInit() {

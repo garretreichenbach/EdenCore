@@ -41,11 +41,21 @@ public class SquadData implements SerializableData {
 
     @Override
     public void deserialize(PacketReadBuffer readBuffer) throws IOException {
-
+        squadID = readBuffer.readInt();
+        int size = readBuffer.readInt();
+        squadMembers = new ArrayList<>();
+        for(int i = 0; i < size; i ++) squadMembers.add(new SquadMemberData(readBuffer));
     }
 
     @Override
     public void serialize(PacketWriteBuffer writeBuffer) throws IOException {
+        writeBuffer.writeInt(squadID);
+        writeBuffer.writeInt(squadMembers.size());
+        for(SquadMemberData memberData : squadMembers) memberData.serialize(writeBuffer);
+    }
+
+    @Override
+    public void updateClients() {
 
     }
 }

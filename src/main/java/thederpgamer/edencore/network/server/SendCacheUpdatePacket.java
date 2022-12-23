@@ -21,7 +21,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 
 /**
- * Sends a cache update to clients.
+ * Sends a cache updateClients to clients.
  * <p>[SERVER] -> [CLIENT]</p>
  *
  * @author TheDerpGamer
@@ -151,7 +151,7 @@ public class SendCacheUpdatePacket extends Packet {
 
             //EdenCore.getInstance().exchangeMenuControlManager.getMenuPanel().recreateTabs();
         } catch(Exception exception) {
-            LogManager.logException("Encountered an exception while trying to update client cache", exception);
+            LogManager.logException("Encountered an exception while trying to updateClients client cache", exception);
         }
 
         //try { //Events
@@ -174,7 +174,7 @@ public class SendCacheUpdatePacket extends Packet {
 
             //EdenCore.getInstance().buildSectorMenuControlManager.getMenuPanel().recreateTabs();
         } catch(Exception exception) {
-            LogManager.logException("Encountered an exception while trying to update client cache", exception);
+            LogManager.logException("Encountered an exception while trying to updateClients client cache", exception);
         }
     }
 

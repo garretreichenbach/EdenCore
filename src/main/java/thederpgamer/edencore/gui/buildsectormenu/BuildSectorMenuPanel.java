@@ -17,9 +17,9 @@ import org.schema.schine.graphicsengine.forms.gui.newgui.GUIHorizontalArea;
 import org.schema.schine.graphicsengine.forms.gui.newgui.GUIHorizontalButtonTablePane;
 import org.schema.schine.input.InputState;
 import thederpgamer.edencore.EdenCore;
-import thederpgamer.edencore.network.client.RequestBuildSectorInvitePacket;
-import thederpgamer.edencore.network.client.RequestBuildSectorProtectPacket;
-import thederpgamer.edencore.network.client.RequestClientCacheUpdatePacket;
+import thederpgamer.edencore.network.client.buildsector.RequestBuildSectorInvitePacket;
+import thederpgamer.edencore.network.client.buildsector.RequestBuildSectorProtectPacket;
+import thederpgamer.edencore.network.client.misc.RequestClientCacheUpdatePacket;
 import thederpgamer.edencore.utils.DataUtils;
 
 /**

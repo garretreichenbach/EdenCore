@@ -13,8 +13,8 @@ import org.schema.schine.input.InputState;
 import thederpgamer.edencore.data.other.BuildSectorData;
 import thederpgamer.edencore.manager.ClientCacheManager;
 import thederpgamer.edencore.manager.LogManager;
-import thederpgamer.edencore.network.client.RequestClientCacheUpdatePacket;
-import thederpgamer.edencore.network.client.RequestEntityDeletePacket;
+import thederpgamer.edencore.network.client.misc.RequestClientCacheUpdatePacket;
+import thederpgamer.edencore.network.client.misc.RequestEntityDeletePacket;
 import thederpgamer.edencore.utils.BuildSectorUtils;
 import thederpgamer.edencore.utils.DataUtils;
 import thederpgamer.edencore.utils.EntityUtils;
@@ -314,7 +314,7 @@ public class BuildSectorEntitiesScrollableList extends ScrollableTableList<Segme
 						guiElementList.addWithoutUpdate(listRow);
 					}
 				} catch(Exception exception) {
-					LogManager.logException("Encountered an exception while trying to update build sector entities", exception);
+					LogManager.logException("Encountered an exception while trying to updateClients build sector entities", exception);
 				}
 			}
 		}

@@ -5,8 +5,8 @@ import api.utils.gui.GUIInputDialog;
 import org.schema.schine.graphicsengine.core.MouseEvent;
 import org.schema.schine.graphicsengine.forms.gui.GUIElement;
 import thederpgamer.edencore.data.other.BuildSectorData;
-import thederpgamer.edencore.network.client.RequestClientCacheUpdatePacket;
-import thederpgamer.edencore.network.client.UpdateBuildSectorPermissionsPacket;
+import thederpgamer.edencore.network.client.misc.RequestClientCacheUpdatePacket;
+import thederpgamer.edencore.network.client.buildsector.UpdateBuildSectorPermissionsPacket;
 
 /**
  * <Description>
