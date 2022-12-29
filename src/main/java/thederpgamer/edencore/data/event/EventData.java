@@ -198,14 +198,15 @@ public abstract class EventData implements EventUpdater, SerializableData, Seria
     }
 
     public static EventData createRandom(int code) {
-        EventType type = EventType.values()[new Random().nextInt(EventType.values().length)];
+        EventType type = EventType.values()[new Random().nextInt(EventType.values().length - 1) + 1];
         switch(type) {
             //case CAPTURE: return new CaptureEvent(code);
-            case DEFENSE: return DefenseEvent.getRandom();
+            //case DEFENSE: return DefenseEvent.getRandom();
             //case DESTROY: return new DestroyEvent(code);
             //case ESCORT: return new EscortEvent(code);
             //case PURSUIT: return new PursuitEvent(code);
-            default: throw new IllegalStateException("Invalid event type: " + type.name());
+            //default: throw new IllegalStateException("Invalid event type: " + type.name());
         }
+        return DefenseEvent.getRandom(); //Temp
     }
 }

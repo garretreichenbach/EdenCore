@@ -666,6 +666,8 @@ public class EdenCore extends StarMod {
 		StarLoader.registerCommand(new BankingAdminListCommand());
 		StarLoader.registerCommand(new CountdownCommand());
 		StarLoader.registerCommand(new GuideCommand());
+		StarLoader.registerCommand(new ResetEventsCommand());
+		StarLoader.registerCommand(new EditEventCommand());
 		// StarLoader.registerCommand(new ResetPlayerCommand());
 	}
 

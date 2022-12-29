@@ -28,7 +28,7 @@ public class DefenseEvent extends EventData {
         super(readBuffer);
     }
 
-    @Override
+	@Override
     public void deserialize(PacketReadBuffer readBuffer) throws IOException {
         name = readBuffer.readString();
         description = readBuffer.readString();
@@ -106,5 +106,19 @@ public class DefenseEvent extends EventData {
         }
         if(defenseEvents.size() > 0) return defenseEvents.get((int) (Math.random() * defenseEvents.size()));
         else return null;
+    }
+
+    public static DefenseEvent create(String combatType, String name) {
+        DefenseEvent defenseEvent = new DefenseEvent(name, "No description", genTargets());
+        defenseEvent.code = Integer.parseInt(combatType) | EventData.DAILY; //Todo: Add weekly and monthly events
+        PersistentObjectUtil.addObject(EdenCore.getInstance().getSkeleton(), defenseEvent);
+        PersistentObjectUtil.save(EdenCore.getInstance().getSkeleton());
+        return defenseEvent;
+    }
+
+    private static EventTarget[] genTargets() {
+        ArrayList<EventTarget> targets = new ArrayList<>();
+        targets.add(new DefenseTarget("DEFENSE_TARGET_0"));
+        return targets.toArray(new EventTarget[0]);
     }
 }

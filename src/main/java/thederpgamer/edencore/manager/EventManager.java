@@ -3,9 +3,11 @@ package thederpgamer.edencore.manager;
 import api.common.GameServer;
 import api.utils.StarRunnable;
 import org.jdesktop.swingx.calendar.DateUtils;
+import org.schema.game.common.data.player.PlayerState;
 import org.schema.schine.network.RegisteredClientOnServer;
 import thederpgamer.edencore.EdenCore;
 import thederpgamer.edencore.data.event.EventData;
+import thederpgamer.edencore.data.event.types.defense.DefenseEvent;
 import thederpgamer.edencore.data.player.PlayerData;
 import thederpgamer.edencore.utils.DataUtils;
 
@@ -71,6 +73,35 @@ public class EventManager {
 		}
 	}
 
+	public static void forceGen() {
+		{ //Daily
+			int eventCode = EventData.DAILY;
+			EventData[] events = new EventData[] {generateEvent(eventCode |  EventData.PVE), generateEvent(eventCode | EventData.PVP)};
+			eventMap.replace(eventCode | EventData.PVE, events[0]);
+			eventMap.replace(eventCode | EventData.PVP, events[1]);
+			announceEvent(eventCode | EventData.PVE, events[0]);
+			announceEvent(eventCode | EventData.PVP, events[1]);
+		}
+
+		{ //Weekly
+			int eventCode = EventData.WEEKLY;
+			EventData[] events = new EventData[] {generateEvent(eventCode |  EventData.PVE), generateEvent(eventCode | EventData.PVP)};
+			eventMap.replace(eventCode | EventData.PVE, events[0]);
+			eventMap.replace(eventCode | EventData.PVP, events[1]);
+			announceEvent(eventCode | EventData.PVE, events[0]);
+			announceEvent(eventCode | EventData.PVP, events[1]);
+		}
+
+		{ //Monthly
+			int eventCode = EventData.MONTHLY;
+			EventData[] events = new EventData[] {generateEvent(eventCode |  EventData.PVE), generateEvent(eventCode | EventData.PVP)};
+			eventMap.replace(eventCode | EventData.PVE, events[0]);
+			eventMap.replace(eventCode | EventData.PVP, events[1]);
+			announceEvent(eventCode | EventData.PVE, events[0]);
+			announceEvent(eventCode | EventData.PVP, events[1]);
+		}
+	}
+
 	private static void startEventChecker() {
 		try {
 			new StarRunnable() {
@@ -125,6 +156,26 @@ public class EventManager {
 					}
 				}
 			}
+		}
+	}
+
+	public static void startEventEditor(PlayerState sender, EventData eventData) {
+		//TODO
+	}
+
+	public static EventData getEventByName(String arg) {
+		for(EventData eventData : getAllEvents()) {
+			if(eventData.getName().equalsIgnoreCase(arg)) return eventData;
+		}
+		return null;
+	}
+
+	public static EventData createEvent(String type, String combatType, String name) {
+		switch(type.toUpperCase()) {
+			case "DEFENSE":
+				return DefenseEvent.create(combatType, name);
+			default:
+				return null;
 		}
 	}
 }

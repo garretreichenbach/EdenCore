@@ -71,7 +71,7 @@ public class AddBlueprintExchangePanel extends GUIInputDialogPanel {
 						return text;
 					}
 				},
-				0);
+				0, "ENTER PRICE");
 
 		addTextBar(
 				new TextBarResult() {
@@ -101,7 +101,7 @@ public class AddBlueprintExchangePanel extends GUIInputDialogPanel {
 						return text;
 					}
 				},
-				30);
+				30, "SEARCH");
 
 		addDropdown(
 				new DropdownResult() {
@@ -166,12 +166,12 @@ public class AddBlueprintExchangePanel extends GUIInputDialogPanel {
 
 					@Override
 					public String getToolTipText() {
-						return "Enter icon link";
+						return "Enter icon url";
 					}
 
 					@Override
 					public String getName() {
-						return "Icon link";
+						return "Icon url";
 					}
 
 					@Override
@@ -180,7 +180,7 @@ public class AddBlueprintExchangePanel extends GUIInputDialogPanel {
 						if (!t.equals(currentIconText)) currentIconText = t;
 						return text;
 					}
-				}, 90);
+				}, 90, "ENTER ICON URL");
 	}
 
 	private void addDropdown(DropdownResult result, int y) {
@@ -189,8 +189,14 @@ public class AddBlueprintExchangePanel extends GUIInputDialogPanel {
 		contentPane.getContent(0).attach(dropDown);
 	}
 
-	private void addTextBar(TextBarResult textBarResult, int y) {
-		GUIAdvTextBar textBar = new GUIAdvTextBar(getState(), contentPane, textBarResult);
+	private void addTextBar(TextBarResult textBarResult, int y, final String hintText) {
+		GUIAdvTextBar textBar = new GUIAdvTextBar(getState(), contentPane, textBarResult) {
+			@Override
+			public void onInit() {
+				super.onInit();
+				infoText.setTextSimple(hintText);
+			}
+		};
 		textBar.setPos(0, y, 0);
 		contentPane.getContent(0).attach(textBar);
 	}

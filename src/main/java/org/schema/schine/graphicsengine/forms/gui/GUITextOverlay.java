@@ -546,7 +546,7 @@ public class GUITextOverlay extends GUIElement {
 
 				//INSERTED CODE
 				boolean donator = false;
-				if(textCache.get(i) instanceof ChatMessage) {
+				if(textCache.get(i) instanceof ChatMessage && !(((ChatMessage) textCache.get(i)).sender.isEmpty())){
 					if(GameClient.getClientState() != null && GameClient.getClientPlayerState() != null && (StarBridgeAPI.isDonator(GameClient.getClientState().getPlayerName()) || GameClient.getClientPlayerState().isAdmin())) donator = true;
 					String donatorType = StarBridgeAPI.getDonatorType(((ChatMessage) textCache.get(i)).sender);
 					//Name tag format is [<playername>] <message>
@@ -559,6 +559,9 @@ public class GUITextOverlay extends GUIElement {
 							break;
 						case "Captain":
 							nameTag = "&" + ColorUtils.YELLOW + nameTag;
+							break;
+						case "Staff":
+							nameTag = "&" + ColorUtils.RED + nameTag;
 							break;
 					}
 					String[] split = s.split(nameTag);
@@ -583,7 +586,7 @@ public class GUITextOverlay extends GUIElement {
 					((ChatMessage) textCache.get(i)).text = s;
 				} else font.drawDisplayList(x, y, s, c, 0, s.length());
 				//
-				GlUtil.glColor4f(Color.white.getRed() / 255f, Color.white.getGreen() / 255f, Color.white.getBlue() / 255f, 1.0f);
+				GlUtil.glColor4f(color.r / 255f, color.g / 255f, color.b / 255f, 1.0f);
 				y += getFont().getLineHeight();
 				if(dirty) maxLineWidth = Math.max(maxLineWidth, getFont().getWidth(s));
 			}

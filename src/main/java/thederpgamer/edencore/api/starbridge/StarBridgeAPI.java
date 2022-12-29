@@ -34,7 +34,7 @@ public class StarBridgeAPI {
 						for(String donator : donators) {
 							String[] donatorData = donator.split(" \\| ");
 							if(donatorData.length == 3) {
-								if(donatorData[2].equals("Explorer") || donatorData[2].equals("Captain")) supporters.put(donatorData[0], new DonatorData(donatorData[0], Long.parseLong(donatorData[1]), donatorData[2]));
+								if(!donatorData[2].equals("None")) supporters.put(donatorData[0], new DonatorData(donatorData[0], Long.parseLong(donatorData[1]), donatorData[2]));
 							}
 						}
 					} catch(Exception e) {
@@ -61,9 +61,14 @@ public class StarBridgeAPI {
 		else {
 			for(DonatorData supporter : supporters.values()) {
 				if(supporter.name.equals(name)) {
-					if(supporter.tier.equals("Explorer")) return "Explorer";
-					else if(supporter.tier.equals("Captain")) return "Captain";
-					else return "None";
+					switch (supporter.tier) {
+						case "Explorer":
+							return "Explorer";
+						case "Captain":
+							return "Captain";
+						case "Staff":
+							return "Staff";
+					}
 				}
 			}
 		}
