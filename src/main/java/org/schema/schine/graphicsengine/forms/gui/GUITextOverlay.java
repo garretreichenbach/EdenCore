@@ -584,9 +584,9 @@ public class GUITextOverlay extends GUIElement {
 					x = 0;
 					s = builder.toString();
 					((ChatMessage) textCache.get(i)).text = s;
+					GlUtil.glColor4f(color.r / 255f, color.g / 255f, color.b / 255f, 1.0f);
 				} else font.drawDisplayList(x, y, s, c, 0, s.length());
 				//
-				GlUtil.glColor4f(color.r / 255f, color.g / 255f, color.b / 255f, 1.0f);
 				y += getFont().getLineHeight();
 				if(dirty) maxLineWidth = Math.max(maxLineWidth, getFont().getWidth(s));
 			}
