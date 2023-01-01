@@ -726,6 +726,22 @@ public class EdenCore extends StarMod {
 				"You can use the Server Exchange to buy items from the server shop, such as resources, items, and blueprints. Please note that some of these features are work in progress and may not always be available.\n" +
 				"Some items in the Server Exchange require silver or gold bars instead of bronze. To upgrade your bronze bars into silver or gold, see the EXCHANGE tab in the Server Exchange menu."));
 		edenCore.addEntry(new GlossarEntry("Listing Blueprints in the Exchange", "Players are able to sell blueprints in the COMMUNITY tab of the blueprint exchange."));
+		edenCore.addEntry(new GlossarEntry("Donator Perks", "Donators can use chat colors and get free bars each day.\n" +
+				"Chat colors:\n" +
+				" - &0 = Transparent\n" +
+				" - &1 = White\n" +
+				" - &2 = Light Grey\n" +
+				" - &3 = Grey\n" +
+				" - &4 = Dark Grey\n" +
+				" - &5 = Black\n" +
+				" - &y = Yellow\n" +
+				" - &o = Orange\n" +
+				" - &r = Red\n" +
+				" - &m = Magenta\n" +
+				" - &p = Pink\n" +
+				" - &b = Blue\n" +
+				" - &c = Cyan\n" +
+				" - &g = Green\n"));
 		GlossarInit.addCategory(edenCore);
 	}
 
