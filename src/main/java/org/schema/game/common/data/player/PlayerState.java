@@ -5256,12 +5256,16 @@ public class PlayerState extends AbstractOwnerState implements Sendable, DiskWri
                                         .instantiate(MetaObjectType.BLUEPRINT, (short) -1, true);
                                 m.blueprintName = giveMetaBlueprint;
                                 m.goal = new ElementCountMap(bb.getElementCountMapWithChilds());
-                                m.progress = new ElementCountMap();
+                                //INSERTED CODE
+                                //m.progress = new ElementCountMap();
+                                if(bypass) m.progress = new ElementCountMap(bb.getElementCountMapWithChilds());
+                                else m.progress = new ElementCountMap();
 //								if(inInfiniteShop){
 //									m.progress = new ElementCountMap(bb.getElementCountMapWithChilds());
 //								}else{
 //									m.progress = new ElementCountMap();
 //								}
+                                //
                                 getInventory().put(slot, m);
                                 sendInventoryModification(slot, Long.MIN_VALUE);
                             } else {
