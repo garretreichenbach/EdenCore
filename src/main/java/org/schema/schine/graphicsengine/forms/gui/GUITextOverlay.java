@@ -575,7 +575,7 @@ public class GUITextOverlay extends GUIElement {
 							if(donator) c = ColorUtils.fromCode(Character.toLowerCase(charArray[l]));
 							else c = Color.white;
 						} else {
-							GlUtil.glColor4f(c.getRed() / 255f, c.getGreen() / 255f, c.getBlue() / 255f, 1.0f);
+							//GlUtil.glColor4f(c.getRed() / 255f, c.getGreen() / 255f, c.getBlue() / 255f, 1.0f);
 							font.drawDisplayList(x, y, "" + charArray[l], c, 0, 1);
 							x += getFont().getWidth("" + charArray[l]);
 							builder.append(charArray[l]);
@@ -584,7 +584,7 @@ public class GUITextOverlay extends GUIElement {
 					x = 0;
 					s = builder.toString();
 					((ChatMessage) textCache.get(i)).text = s;
-					GlUtil.glColor4f(color.r / 255f, color.g / 255f, color.b / 255f, 1.0f);
+					//GlUtil.glColor4f(color.r / 255f, color.g / 255f, color.b / 255f, 1.0f);
 				} else font.drawDisplayList(x, y, s, c, 0, s.length());
 				//
 				y += getFont().getLineHeight();
