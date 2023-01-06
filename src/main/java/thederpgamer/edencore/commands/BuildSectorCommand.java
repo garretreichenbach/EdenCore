@@ -328,7 +328,7 @@ public class BuildSectorCommand implements CommandInterface {
 											|| state.equals("enable")
 											|| state.equals("activated")
 											|| state.equals("activate")) {
-										if (args[1].toLowerCase().equals("*") || args[1].toLowerCase().equals("all")) {
+										if (args[1].equalsIgnoreCase("*") || args[1].equalsIgnoreCase("all")) {
 											ArrayList<SegmentController> entityList =
 													DataUtils.getEntitiesInBuildSector(sectorData);
 											for (SegmentController entity : entityList)
@@ -355,7 +355,7 @@ public class BuildSectorCommand implements CommandInterface {
 											|| state.equals("disable")
 											|| state.equals("deactivated")
 											|| state.equals("deactivate")) {
-										if (args[1].toLowerCase().equals("*") || args[1].toLowerCase().equals("all")) {
+										if (args[1].equalsIgnoreCase("*") || args[1].equalsIgnoreCase("all")) {
 											ArrayList<SegmentController> entityList =
 													DataUtils.getEntitiesInBuildSector(sectorData);
 											for (SegmentController entity : entityList) {

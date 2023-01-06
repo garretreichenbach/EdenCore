@@ -14,5 +14,5 @@ import java.io.Serializable;
  * TIME: 15:34
  */
 public interface LineDrawer {
-    public void drawLines(GameMapDrawer gameMapDrawer);
+    void drawLines(GameMapDrawer gameMapDrawer);
 }

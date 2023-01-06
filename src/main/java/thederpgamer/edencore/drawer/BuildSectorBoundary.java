@@ -33,7 +33,7 @@ import java.util.Observable;
 public class BuildSectorBoundary extends Observable implements Drawable, Shaderable {
 
 	public BuildSectorData sectorData;
-	private Vector3f center = new Vector3f();
+	private final Vector3f center = new Vector3f();
 
 	public static final int MAX_NUM = 8;
 	private final static FloatBuffer fbAlphas = BufferUtils.createFloatBuffer(MAX_NUM);
@@ -51,15 +51,15 @@ public class BuildSectorBoundary extends Observable implements Drawable, Shadera
 	}
 
 	public Shader s = null;
-	private float[] alphas = new float[MAX_NUM];
-	private Vector4f[] points = new Vector4f[MAX_NUM];
+	private final float[] alphas = new float[MAX_NUM];
+	private final Vector4f[] points = new Vector4f[MAX_NUM];
 	private int collisionNum;
-	private float minAlpha = 0.0f;
-	private float maxDistance = 4f;
+	private final float minAlpha = 0.0f;
+	private final float maxDistance = 4f;
 	private boolean pointsChanged = false;
-	private float[] percent = new float[MAX_NUM];
+	private final float[] percent = new float[MAX_NUM];
 
-	private Vector3f[] tempQuads = new Vector3f[4];
+	private final Vector3f[] tempQuads = new Vector3f[4];
 
 	public BuildSectorBoundary(BuildSectorData sectorData) {
 		this.sectorData = sectorData;

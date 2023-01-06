@@ -50,8 +50,8 @@ public class AwardBarsCommand implements CommandInterface {
     @Override
     public boolean onCommand(PlayerState sender, String[] args) {
         if(!(args.length == 3 || args.length == 4)) return false;
-        boolean onlineOnly = args.length == 4 && args[3].toLowerCase().equals("true");
-        if(args[0].toLowerCase().equals("all") || args[0].toLowerCase().equals("*")) {
+        boolean onlineOnly = args.length == 4 && args[3].equalsIgnoreCase("true");
+        if(args[0].equalsIgnoreCase("all") || args[0].equalsIgnoreCase("*")) {
             Item bar;
             switch(args[1].toLowerCase()) {
                 case "bronze":

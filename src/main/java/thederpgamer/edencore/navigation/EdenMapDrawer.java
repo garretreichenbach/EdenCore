@@ -328,18 +328,18 @@ public class EdenMapDrawer implements GameMapDrawListener {
 		return out;
 	}
 
-	private static Vector4f darkYellow = new Vector4f(0.5f,0.5f,0,1);
-	private static Vector4f brightYellow = new Vector4f(0.97f,1.0f,0,1);
-	private static Vector4f darkRed = new Vector4f(0.5f,0f,0,1);
-	private static Vector4f brightRed = new Vector4f(1f,0f,0,1);
-	private static Vector4f brightGreen = new Vector4f(0,1,0,1);
-	private static Vector4f darkGreen = new Vector4f(0,0.5f,0,1);
-	private static Vector4f grey = new Vector4f(0.5f,0.5f,0.5f,1);
+	private static final Vector4f darkYellow = new Vector4f(0.5f,0.5f,0,1);
+	private static final Vector4f brightYellow = new Vector4f(0.97f,1.0f,0,1);
+	private static final Vector4f darkRed = new Vector4f(0.5f,0f,0,1);
+	private static final Vector4f brightRed = new Vector4f(1f,0f,0,1);
+	private static final Vector4f brightGreen = new Vector4f(0,1,0,1);
+	private static final Vector4f darkGreen = new Vector4f(0,0.5f,0,1);
+	private static final Vector4f grey = new Vector4f(0.5f,0.5f,0.5f,1);
 	public static float scale32px = 0.2f;
 
 	public static class MarkerCustomizeMenu extends GUIAncor {
 
-		private MapMarker marker;
+		private final MapMarker marker;
 		private GUIHorizontalButtonTablePane buttonPane;
 
 		public MarkerCustomizeMenu(MapMarker marker) {

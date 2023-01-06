@@ -183,14 +183,14 @@ public abstract class EventData implements EventUpdater, SerializableData, Seria
     public static EventData fromPacket(PacketReadBuffer readBuffer) {
         try {
             EventType type = EventType.values()[readBuffer.readInt()];
-            switch(type) {
-                //case CAPTURE: return new CaptureEvent(readBuffer);
-                case DEFENSE: return new DefenseEvent(readBuffer);
+            //case CAPTURE: return new CaptureEvent(readBuffer);
+            if(type == EventType.DEFENSE) {
+                return new DefenseEvent(readBuffer);
                 //case DESTROY: return new DestroyEvent(readBuffer);
                 //case ESCORT: return new EscortEvent(readBuffer);
                 //case PURSUIT: return new PursuitEvent(readBuffer);
-                default: throw new IllegalStateException("Invalid event type: " + type.name());
             }
+            throw new IllegalStateException("Invalid event type: " + type.name());
         } catch(Exception exception) {
             LogManager.logException("Failed to deserialize EventData", exception);
         }

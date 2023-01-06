@@ -77,7 +77,7 @@ public class NavigationAdminCommand implements CommandInterface {
                     new Vector4f(0, 0, 1, 1)); // TODO add way to parse color
             NavigationUtilManager.instance.addCoordinateToList(marker);
 
-            PlayerUtils.sendMessage(admin, "Added " + marker.toString() + " to list");
+            PlayerUtils.sendMessage(admin, "Added " + marker + " to list");
             return true;
           } catch (Exception e) {
             return false;

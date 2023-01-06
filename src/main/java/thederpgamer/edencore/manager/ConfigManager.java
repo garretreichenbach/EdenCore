@@ -58,7 +58,7 @@ public class ConfigManager {
 
 	public static char getKeyBinding(String field) {
 		String binding = keyConfig.getString(field);
-		if (binding != null && !binding.toUpperCase().equals("NONE"))
+		if (binding != null && !binding.equalsIgnoreCase("NONE"))
 			return binding.toUpperCase().charAt(0);
 		else return '\0';
 	}

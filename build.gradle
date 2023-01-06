@@ -36,7 +36,7 @@ jar {
         configurations.runtimeClasspath.collect {
             if(!it.getPath().contains("StarMade") && it.getName().endsWith(".jar")) {
                 it.isDirectory() ? it : zipTree(it)
-            } else return null;
+            } else return null
         }
     }
 }

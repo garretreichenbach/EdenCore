@@ -18,6 +18,7 @@ import thederpgamer.edencore.utils.ColorUtils;
 import javax.vecmath.Vector2f;
 import javax.vecmath.Vector4f;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 public class GUITextOverlay extends GUIElement {
@@ -34,7 +35,7 @@ public class GUITextOverlay extends GUIElement {
 	private UnicodeFont font;
 	private boolean firstDraw = true;
 	private List<Object> text;
-	private Color color = new Color(Color.white);
+	private final Color color = new Color(Color.white);
 	private int limitTextDraw = -1;
 	private boolean beginTextAtLast;
 	private boolean blend = true;
@@ -797,9 +798,7 @@ public class GUITextOverlay extends GUIElement {
 
 		text = new ArrayList<Object>(split.length);
 
-		for (int i = 0; i < split.length; i++) {
-			text.add(split[i]);
-		}
+		Collections.addAll(text, split);
 	}
 
 	/**

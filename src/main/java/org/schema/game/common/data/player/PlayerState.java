@@ -182,9 +182,9 @@ public class PlayerState extends AbstractOwnerState implements Sendable, DiskWri
     public long lastFriendlyFireStrike;
     public SavedCoordinatesScrollableListNew savedCoordinatesList;
     public boolean hasSpawnWait;
-    boolean wasKeyDown[] = new boolean[KeyboardMappings.remoteMappings.length];
-    boolean wasMouseEvent[] = new boolean[4];
-    boolean wasMouseDown[] = new boolean[4];
+    boolean[] wasKeyDown = new boolean[KeyboardMappings.remoteMappings.length];
+    boolean[] wasMouseEvent = new boolean[4];
+    boolean[] wasMouseDown = new boolean[4];
     long lastHitConfirm;
     long lastHelmetCommand;
     private float health = MAX_HEALTH;
@@ -198,9 +198,9 @@ public class PlayerState extends AbstractOwnerState implements Sendable, DiskWri
     private int clientId;
     private boolean markedForDelete;
     private int ping;
-    private ArrayList<BluePrintSpawnQueueElement> bluePrintSpawnQueue = new ArrayList<BluePrintSpawnQueueElement>();
-    private ArrayList<BluePrintWriteQueueElement> bluePrintWriteQueue = new ArrayList<BluePrintWriteQueueElement>();
-    private List<String> ignored = new ArrayList<String>();
+    private final ArrayList<BluePrintSpawnQueueElement> bluePrintSpawnQueue = new ArrayList<BluePrintSpawnQueueElement>();
+    private final ArrayList<BluePrintWriteQueueElement> bluePrintWriteQueue = new ArrayList<BluePrintWriteQueueElement>();
+    private final List<String> ignored = new ArrayList<String>();
     private int currentSectorId;
 
 
@@ -211,21 +211,21 @@ public class PlayerState extends AbstractOwnerState implements Sendable, DiskWri
     private SimpleTransformableSendableObject<?> aquiredTarget;
     private PlayerCharacter playerCharacter;
     private RegisteredClientOnServer serverClient;
-    private ArrayList<ServerMessage> serverToSendMessages = new ArrayList<ServerMessage>();
-    private LongArrayList creditModifications = new LongArrayList();
-    private ClientProximitySector proximitySector;
+    private final ArrayList<ServerMessage> serverToSendMessages = new ArrayList<ServerMessage>();
+    private final LongArrayList creditModifications = new LongArrayList();
+    private final ClientProximitySector proximitySector;
     private boolean sectorChanged = true;
-    private ClientProximitySystem proximitySystem;
+    private final ClientProximitySystem proximitySystem;
     private long sectorBlackHoleEffectStart = -1;
     private long lastInventoryFullMsgSent;
     private boolean markedForPermanentDelete;
     private long lastDeathTime;
     private String ip;
     private long lastBlueprintSpawn;
-    private long blueprintDelay = DEFAULT_BLUEPRINT_DELAY;
+    private final long blueprintDelay = DEFAULT_BLUEPRINT_DELAY;
     private float lastHP = MAX_HEALTH;
     private boolean checkForOvercap = true;
-    private Transform transTmp = new Transform();
+    private final Transform transTmp = new Transform();
     private boolean godMode;
     private boolean invisibilityMode;
     private String lastEnteredEntity;
@@ -255,13 +255,13 @@ public class PlayerState extends AbstractOwnerState implements Sendable, DiskWri
     private VoidUniqueSegmentPiece cargoInventoryBlock;
     private byte shipControllerSlotClient;
     private float slotChangeUpdateDelay;
-    private Vector3i lastSector = new Vector3i();
-    private ObjectArrayFIFOQueue<Vector3i> resetFowSystem = new ObjectArrayFIFOQueue<Vector3i>();
-    private ObjectArrayFIFOQueue<DragDrop> dropsIntoSpace = new ObjectArrayFIFOQueue<DragDrop>();
+    private final Vector3i lastSector = new Vector3i();
+    private final ObjectArrayFIFOQueue<Vector3i> resetFowSystem = new ObjectArrayFIFOQueue<Vector3i>();
+    private final ObjectArrayFIFOQueue<DragDrop> dropsIntoSpace = new ObjectArrayFIFOQueue<DragDrop>();
     private int inputBasedSeed;
     private boolean lastCanKeyPressCheckResult;
     private short lastCanKeyPressCheck;
-    private ByteArrayList mouseEvents = new ByteArrayList();
+    private final ByteArrayList mouseEvents = new ByteArrayList();
     private long lastSentHitDeniedMessage;
     private final BuildModePosition buildModePosition;
 
@@ -411,7 +411,7 @@ public class PlayerState extends AbstractOwnerState implements Sendable, DiskWri
 
                     float cMult = (Float) ServerConfig.PLAYER_DEATH_CREDIT_PUNISHMENT.getCurrentState();
                     int secsUntilPunish = (Integer) ServerConfig.PLAYER_DEATH_PUNISHMENT_TIME.getCurrentState();
-                    if (lastSpawnedThisSession == 0 || System.currentTimeMillis() - lastSpawnedThisSession > secsUntilPunish * 1000) {
+                    if (lastSpawnedThisSession == 0 || System.currentTimeMillis() - lastSpawnedThisSession > secsUntilPunish * 1000L) {
                         if (cMult < 1f) {
                             int lost = (int) (getCredits() * cMult);
 
@@ -786,10 +786,7 @@ public class PlayerState extends AbstractOwnerState implements Sendable, DiskWri
             getNetworkObject().tint.getVector(getTint());
             setInvisibilityMode(p.invisibility.get());
 
-            boolean changedCred = false;
-            if (credits != p.credits.getLong()) {
-                changedCred = true;
-            }
+            boolean changedCred = credits != p.credits.getLong();
 
             setCredits(p.credits.getLong());
 
@@ -2594,8 +2591,8 @@ public class PlayerState extends AbstractOwnerState implements Sendable, DiskWri
                             if (s instanceof SimpleTransformableSendableObject && ((SimpleTransformableSendableObject) s).getUniqueIdentifier() != null &&
                                     ((SimpleTransformableSendableObject) s).getUniqueIdentifier().startsWith(uid) &&
                                     ((SimpleTransformableSendableObject) s).getSectorId() == getCurrentSectorId()) {
-                                ((SimpleTransformableSendableObject) s).markForPermanentDelete(true);
-                                ((SimpleTransformableSendableObject) s).setMarkedForDeleteVolatile(true);
+                                s.markForPermanentDelete(true);
+                                s.setMarkedForDeleteVolatile(true);
                             }
 
                         }
@@ -4090,11 +4087,11 @@ public class PlayerState extends AbstractOwnerState implements Sendable, DiskWri
             BluePrintWriteQueueElement e = bluePrintWriteQueue.get(i);
 
             if (!e.requestedAdditionalBlueprintData) {
-                ((SendableSegmentController) e.segmentController).getNetworkObject().additionalBlueprintData.set(false, true);
+                e.segmentController.getNetworkObject().additionalBlueprintData.set(false, true);
                 e.requestedAdditionalBlueprintData = true;
                 sendSimpleCommand(SimplePlayerCommands.SEND_ALL_DESTINATIONS_OF_ENTITY, e.segmentController.getId());
                 System.err.println("[CLIENT][PLAYER][BLUEPRINT] " + this + " REQUESTED EXTRA INFO FOR LOCAL BLUEPRINT " + e.segmentController);
-            } else if (((SendableSegmentController) e.segmentController).railController.getRoot().railController.isAllAdditionalBlueprintInfoReceived()) {
+            } else if (e.segmentController.railController.getRoot().railController.isAllAdditionalBlueprintInfoReceived()) {
 
                 try {
                     ((CatalogState) getState()).getCatalogManager().writeEntryClient(e, this.getName());
@@ -4732,8 +4729,9 @@ public class PlayerState extends AbstractOwnerState implements Sendable, DiskWri
                     boolean contains = false;
                     synchronized (state.getPlayerInputs()) {
                         for (DialogInterface p : state.getPlayerInputs()) {
-                            if (p instanceof RoundEndMenu) {
+                            if(p instanceof RoundEndMenu) {
                                 contains = true;
+                                break;
                             }
                         }
                     }
@@ -4963,7 +4961,6 @@ public class PlayerState extends AbstractOwnerState implements Sendable, DiskWri
             }
             {
                 float joystickAxis = getNetworkObject().upDownAxis.getFloat();
-                ;
                 Vector3f jForw = new Vector3f(up);
                 jForw.scale(joystickAxis);
                 dir.add(jForw);
@@ -5440,10 +5437,7 @@ public class PlayerState extends AbstractOwnerState implements Sendable, DiskWri
 
     public boolean isSpectator() {
         Faction f = ((FactionState) getState()).getFactionManager().getFaction(getFactionId());
-        if (f != null && f.isFactionMode(Faction.MODE_SPECTATORS)) {
-            return true;
-        }
-        return false;
+        return f != null && f.isFactionMode(Faction.MODE_SPECTATORS);
     }
 
     public boolean isNewPlayerServer() {
@@ -5661,7 +5655,7 @@ public class PlayerState extends AbstractOwnerState implements Sendable, DiskWri
     private long dbId = -1;
     private final Vector3i tmpSystem = new Vector3i();
     private final FogOfWarController fow = new FogOfWarController(this);
-    private LinkedHashSet<Vector3i> lastVisitedSectors = new LinkedHashSet<Vector3i>();
+    private final LinkedHashSet<Vector3i> lastVisitedSectors = new LinkedHashSet<Vector3i>();
     public final long[] offlinePermssion = new long[2];
     public int tempSeed;
     private boolean infiniteInventoryVolume;
@@ -5858,7 +5852,7 @@ public class PlayerState extends AbstractOwnerState implements Sendable, DiskWri
         return ((GameStateInterface)getState()).getGameState().getSpawnProtectionSec();
     }
     private long getSpawnProtectionTimeLeft() {
-        return (lastSpawnedThisSession + getSpawnProtectionTimeSecsMax() * 1000) - getState().getUpdateTime();
+        return (lastSpawnedThisSession + getSpawnProtectionTimeSecsMax() * 1000L) - getState().getUpdateTime();
     }
     public boolean isSpawnProtected() {
         return getSpawnProtectionTimeLeft() > 0;

@@ -94,7 +94,7 @@ public class LogManager {
               if (i > 1) for (int j = 0; j < prefix.length(); j++) builder.append(" ");
           }
         } else builder.append(message);
-        System.out.println(builder.toString());
+        System.out.println(builder);
         logWriter.append(builder.toString()).append("\n");
         logWriter.flush();
         DebugFile.log(builder.toString(), EdenCore.getInstance());

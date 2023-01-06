@@ -38,7 +38,7 @@ public class BuildSectorData {
   @Override
   public boolean equals(Object object) {
     return object instanceof BuildSectorData
-        && ((BuildSectorData) object).ownerName.toLowerCase().equals(ownerName.toLowerCase())
+        && ((BuildSectorData) object).ownerName.equalsIgnoreCase(ownerName)
         && ((BuildSectorData) object).sector.equals(sector);
   }
 

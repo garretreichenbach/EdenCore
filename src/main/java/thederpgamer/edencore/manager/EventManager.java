@@ -171,11 +171,9 @@ public class EventManager {
 	}
 
 	public static EventData createEvent(String type, String combatType, String name) {
-		switch(type.toUpperCase()) {
-			case "DEFENSE":
-				return DefenseEvent.create(combatType, name);
-			default:
-				return null;
+		if("DEFENSE".equals(type.toUpperCase())) {
+			return DefenseEvent.create(combatType, name);
 		}
+		return null;
 	}
 }

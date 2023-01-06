@@ -17,7 +17,7 @@ public class GateMarker extends MapMarker implements LineDrawer {
     public static Vector4f publicGateColor = new Vector4f(0,0.667f,1,1);
     public static Vector4f publicFTLColor = new Vector4f(1,0.333f,0,1);
 
-    private HashSet<Vector3i> connectionTargetSectors = new HashSet<>();
+    private final HashSet<Vector3i> connectionTargetSectors = new HashSet<>();
 
     /**
      * make a new mapmarker for a warpgate.

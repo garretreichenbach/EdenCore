@@ -798,10 +798,7 @@ public class BlueprintEntry implements BlueprintInterface {
         DataInputStream stream = new DataInputStream(new BufferedInputStream(new FileInputStream(meta), 1024 * 64));
 
         int metaVersionRead = stream.readInt();
-        boolean loadedChunk16 = false;
-        if(metaVersionRead < 4){
-            loadedChunk16 = true;
-        }
+        boolean loadedChunk16 = metaVersionRead < 4;
         //		System.err.println("[BLUEPRINT] META VERSION: "+metaVersion);
         byte dataType = -1;
         boolean end = false;
@@ -1739,12 +1736,7 @@ public class BlueprintEntry implements BlueprintInterface {
         this.tookStructureRead = tookStructureRead;
     }
     public boolean isFilesDirty() {
-        if(headerModified == header.lastModified() &&
-           metaModified == meta.lastModified() &&
-           structModified == structure.lastModified()){
-            return false;
-        }
-        return true;
+        return headerModified != header.lastModified() || metaModified != meta.lastModified() || structModified != structure.lastModified();
     }
     public Long2ObjectOpenHashMap<VoidSegmentPiece> getDockerPoints() {
         return dockerPoints;

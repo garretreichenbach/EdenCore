@@ -20,7 +20,7 @@ import java.util.HashMap;
 public class NavigationUtilManager {
     public static NavigationUtilManager instance;
 
-    private HashMap<Long,MapMarker> publicMarkers = new HashMap<>();
+    private final HashMap<Long,MapMarker> publicMarkers = new HashMap<>();
 
     public NavigationUtilManager() {
         instance = this;

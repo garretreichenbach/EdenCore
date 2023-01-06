@@ -59,8 +59,6 @@ public class StarBridgeAPI {
 	}
 
 	public static String getDonatorType(String name) {
-		if(!initialized || !isDonator(name)) return "None";
-		else {
 			/*
 			for(DonatorData supporter : supporters.values()) {
 				if(supporter.name.equals(name)) {
@@ -90,7 +88,6 @@ public class StarBridgeAPI {
 			} catch(Exception exception) {
 				exception.printStackTrace();
 			}
-		}
 		return "None";
 	}
 
