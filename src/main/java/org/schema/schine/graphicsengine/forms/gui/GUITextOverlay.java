@@ -11,6 +11,7 @@ import org.schema.game.network.objects.ChatMessage;
 import org.schema.schine.graphicsengine.core.GlUtil;
 import org.schema.schine.graphicsengine.forms.font.FontLibrary;
 import org.schema.schine.graphicsengine.forms.font.FontLibrary.FontSize;
+import org.schema.schine.graphicsengine.forms.gui.newgui.config.ChatColorPalette;
 import org.schema.schine.input.InputState;
 import thederpgamer.edencore.api.starbridge.StarBridgeAPI;
 import thederpgamer.edencore.utils.ColorUtils;
@@ -548,7 +549,7 @@ public class GUITextOverlay extends GUIElement {
 				//UnicodeFont defaultFont = font;
 				//INSERTED CODE
 				boolean donator = false;
-				if(textCache.get(i) instanceof ChatMessage && !(((ChatMessage) textCache.get(i)).sender.isEmpty())){
+				if(textCache.get(i) instanceof ChatMessage && !(((ChatMessage) textCache.get(i)).sender.isEmpty()) && !((ChatMessage) textCache.get(i)).text.contains("[SERVER]")) {
 					//font = FontLibrary.getFont(FontSize.MEDIUM);
 					//font = ResourceManager.getFont("NotoSans-Regular");
 					if(GameClient.getClientState() != null && GameClient.getClientPlayerState() != null && (StarBridgeAPI.isDonator(GameClient.getClientState().getPlayerName()) || GameClient.getClientPlayerState().isAdmin())) donator = true;
@@ -557,21 +558,21 @@ public class GUITextOverlay extends GUIElement {
 					//Append name tag color to front of playername, then reset it to white before message
 					String nameTag = ((ChatMessage) textCache.get(i)).sender;
 					StringBuilder builder = new StringBuilder();
+					String[] split = s.split(nameTag);
 					switch(donatorType) {
 						case "Explorer":
-							nameTag = "&" + ColorUtils.GREY + nameTag;
+							nameTag = "&" + ColorUtils.GREY + "[Explorer]&1 [" + nameTag + "]: ";
 							break;
 						case "Captain":
-							nameTag = "&" + ColorUtils.YELLOW + nameTag;
+							nameTag = "&" + ColorUtils.YELLOW + "[Captain]&1 [" + nameTag + "]: ";
 							break;
 						case "Staff":
-							nameTag = "&" + ColorUtils.RED + nameTag;
+							nameTag = "&" + ColorUtils.RED + "[Staff]&1 [" + nameTag + "]: ";
 							break;
 					}
-					String[] split = s.split(nameTag);
 					String message = split[1].replaceAll("] ", "");
 					nameTag = nameTag + "&" + ColorUtils.WHITE;
-					s = "[" + nameTag + "]: " + message;
+					s = nameTag + message;
 					char[] charArray = s.toCharArray();
 					for(int l = 0; l < charArray.length; l ++) {
 						if(charArray[l] == '&' && charArray.length > l + 1) {
@@ -617,8 +618,21 @@ public class GUITextOverlay extends GUIElement {
 					((ChatMessage) textCache.get(i)).text = s;
 					GlUtil.glColor4f(color.r / 255f, color.g / 255f, color.b / 255f, 1.0f);
 				} else {
-					//font = defaultFont;
-					font.drawDisplayList(x, y, s, c, 0, s.length());
+					if(textCache.get(i) instanceof ChatMessage) {
+						ChatMessage message = (ChatMessage) textCache.get(i);
+						switch(message.receiverType) {
+							case DIRECT:
+								GlUtil.glColor4f(ChatColorPalette.whisper);
+								break;
+							case CHANNEL:
+								GlUtil.glColor4f(message.getChannel().getColor());
+								break;
+							case SYSTEM:
+								GlUtil.glColor4f(ChatColorPalette.system);
+								break;
+						}
+					}
+					font.drawDisplayList(x, y, s, color, 0, s.length());
 				}
 				//
 				y += getFont().getLineHeight();
@@ -633,7 +647,7 @@ public class GUITextOverlay extends GUIElement {
 			}
 
 			if(isMouseUpdateEnabled()) checkMouseInside();
-			GlUtil.glColor4f(1, 1, 1, 1);
+			//GlUtil.glColor4f(1, 1, 1, 1);
 			GlUtil.glDisable(GL11.GL_BLEND);
 			GlUtil.glEnable(GL11.GL_LIGHTING);
 		}catch(Exception e){
