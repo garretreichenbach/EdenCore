@@ -1,8 +1,11 @@
 package thederpgamer.edencore.api.starbridge;
 
+import api.common.GameServer;
 import api.mod.StarLoader;
 import thederpgamer.edencore.data.player.DonatorData;
+import thederpgamer.edencore.data.player.PlayerData;
 import thederpgamer.edencore.manager.LogManager;
+import thederpgamer.edencore.utils.DataUtils;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -49,15 +52,16 @@ public class StarBridgeAPI {
 
 	public static boolean isDonator(String name) {
 		if(!initialized) return false;
-		for(DonatorData supporter : supporters.values()) {
-			if(supporter.name.equals(name)) return true;
-		}
-		return false;
+		//for(DonatorData supporter : supporters.values()) {
+		//	if(supporter.name.equals(name)) return true;
+		//}
+		return !getDonatorType(name).equals("None");
 	}
 
 	public static String getDonatorType(String name) {
 		if(!initialized || !isDonator(name)) return "None";
 		else {
+			/*
 			for(DonatorData supporter : supporters.values()) {
 				if(supporter.name.equals(name)) {
 					switch (supporter.tier) {
@@ -69,6 +73,22 @@ public class StarBridgeAPI {
 							return "Staff";
 					}
 				}
+			}
+			 */
+			try {
+				PlayerData playerData = DataUtils.getPlayerData(GameServer.getServerState().getPlayerFromName(name));
+				switch(playerData.donatorType) {
+					case PlayerData.STAFF:
+						return "Staff";
+					case PlayerData.EXPLORER:
+						return "Explorer";
+					case PlayerData.CAPTAIN:
+						return "Captain";
+					default:
+						return "None";
+				}
+			} catch(Exception exception) {
+				exception.printStackTrace();
 			}
 		}
 		return "None";

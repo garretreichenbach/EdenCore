@@ -544,9 +544,12 @@ public class GUITextOverlay extends GUIElement {
 				Color c = Color.white;
 				String s = textCache.get(i).toString();
 
+				//UnicodeFont defaultFont = font;
 				//INSERTED CODE
 				boolean donator = false;
 				if(textCache.get(i) instanceof ChatMessage && !(((ChatMessage) textCache.get(i)).sender.isEmpty())){
+					//font = FontLibrary.getFont(FontSize.MEDIUM);
+					//font = ResourceManager.getFont("NotoSans-Regular");
 					if(GameClient.getClientState() != null && GameClient.getClientPlayerState() != null && (StarBridgeAPI.isDonator(GameClient.getClientState().getPlayerName()) || GameClient.getClientPlayerState().isAdmin())) donator = true;
 					String donatorType = StarBridgeAPI.getDonatorType(((ChatMessage) textCache.get(i)).sender);
 					//Name tag format is [<playername>] <message>
@@ -571,10 +574,37 @@ public class GUITextOverlay extends GUIElement {
 					char[] charArray = s.toCharArray();
 					for(int l = 0; l < charArray.length; l ++) {
 						if(charArray[l] == '&' && charArray.length > l + 1) {
-							l ++;
+							l++;
 							if(donator) c = ColorUtils.fromCode(Character.toLowerCase(charArray[l]));
 							else c = Color.white;
-						} else {
+						} /*else if(charArray[l] == ':' && charArray.length > l + 1) { //Parse emoji
+							//Find next :
+							int next = -1;
+							for(int j = l + 1; j < charArray.length; j++) {
+								if(charArray[j] == ':') {
+									next = j;
+									break;
+								}
+							}
+							//Get emoji name between index l and next
+							if(next != -1) {
+								String emojiName = s.substring(l + 1, next);
+								//Get emoji from name
+								Emoji emoji = EmojiManager.getForAlias(emojiName);
+								if(emoji != null && donator) {
+									//Switch font to emoji font
+									font = ResourceManager.getFont("NotoColorEmoji-Regular");
+									if(emoji.getUnicode().isEmpty()) continue;
+									font.drawDisplayList(x, y, emoji.getUnicode(), c, 1, emoji.getUnicode().length() - 1);
+									builder.append(":").append(emoji.getUnicode()).append(":");
+									x += getFont().getWidth("" + charArray[l]);
+									//Switch font back to default
+									font = ResourceManager.getFont("NotoSans-Regular");
+									//Increase index to end of emoji
+									l = next;
+								}
+							}
+						}*/ else {
 							//GlUtil.glColor4f(c.getRed() / 255f, c.getGreen() / 255f, c.getBlue() / 255f, 1.0f);
 							font.drawDisplayList(x, y, "" + charArray[l], c, 0, 1);
 							x += getFont().getWidth("" + charArray[l]);
@@ -584,8 +614,11 @@ public class GUITextOverlay extends GUIElement {
 					x = 0;
 					s = builder.toString();
 					((ChatMessage) textCache.get(i)).text = s;
-					//GlUtil.glColor4f(color.r / 255f, color.g / 255f, color.b / 255f, 1.0f);
-				} else font.drawDisplayList(x, y, s, c, 0, s.length());
+					GlUtil.glColor4f(color.r / 255f, color.g / 255f, color.b / 255f, 1.0f);
+				} else {
+					//font = defaultFont;
+					font.drawDisplayList(x, y, s, c, 0, s.length());
+				}
 				//
 				y += getFont().getLineHeight();
 				if(dirty) maxLineWidth = Math.max(maxLineWidth, getFont().getWidth(s));

@@ -11,7 +11,7 @@ def starmadeDirectory = 'C:/Program Files (x86)/Steam/steamapps/common/StarMade/
 def jarName = 'EdenCore'
 mainClassName = 'thederpgamer.edencore.EdenCore'
 group 'thederpgamer.edencore'
-version '1.9.0b'
+version '1.9.0c'
 
 repositories {
     mavenCentral()
@@ -22,6 +22,7 @@ dependencies {
     implementation(fileTree(dir: (starmadeDirectory + "lib"), include: "*.jar"))
     implementation(fileTree(dir: ("lib"), include: "*.jar", excludes: ["StarBridge.jar"]))
     compileOnly(files("lib/StarBridge.jar"))
+    implementation 'com.vdurmont:emoji-java:5.1.1'
 }
 
 compileJava.options.encoding = 'UTF-8'

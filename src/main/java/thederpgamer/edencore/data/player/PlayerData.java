@@ -20,6 +20,12 @@ import java.util.Locale;
  */
 public class PlayerData {
 
+    public static final int NONE = 0;
+    public static final int STAFF = 1;
+    public static final int EXPLORER = 2;
+    public static final int CAPTAIN = 3;
+
+
     public String playerName;
     public int factionId;
     public Vector3i lastRealSector;
@@ -31,6 +37,7 @@ public class PlayerData {
 
     //collection of banking transactions that player has sent or received.
     private final List<BankingTransactionLog> transactions = new ArrayList<>();
+    public int donatorType;
 
     public PlayerData(PlayerState playerState) {
         playerName = playerState.getName();
@@ -48,6 +55,7 @@ public class PlayerData {
         this.lastRealSector = lastRealSector;
         this.lastRealSectorPos = lastRealSectorPos;
         this.lastBuildSectorPos = lastBuildSectorPos;
+        this.donatorType = NONE;
     }
 
     @Override

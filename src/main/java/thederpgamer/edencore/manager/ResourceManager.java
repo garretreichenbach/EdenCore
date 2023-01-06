@@ -1,6 +1,8 @@
 package thederpgamer.edencore.manager;
 
 import api.utils.textures.StarLoaderTexture;
+import org.newdawn.slick.UnicodeFont;
+import org.newdawn.slick.font.effects.ColorEffect;
 import org.schema.schine.graphicsengine.core.ResourceException;
 import org.schema.schine.graphicsengine.forms.Mesh;
 import org.schema.schine.graphicsengine.forms.Sprite;
@@ -9,6 +11,7 @@ import thederpgamer.edencore.EdenCore;
 
 import javax.imageio.ImageIO;
 import javax.vecmath.Vector3f;
+import java.awt.*;
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.Objects;
@@ -34,11 +37,32 @@ public class ResourceManager {
 
     };
 
+    private static final String[] fontNames = {
+            "NotoSans-Regular",
+            "NotoColorEmoji-Regular",
+    };
+
     private static final HashMap<String, StarLoaderTexture> textureMap = new HashMap<>();
     private static final HashMap<String, Sprite> spriteMap = new HashMap<>();
     private static final HashMap<String, Mesh> meshMap = new HashMap<>();
+    private static final HashMap<String, UnicodeFont> fontMap = new HashMap<>();
 
     public static void loadResources(final ResourceLoader resourceLoader) {
+        //Load Fonts
+        for(String fontName : fontNames) {
+            try {
+                Font font = Font.createFont(Font.TRUETYPE_FONT, Objects.requireNonNull(EdenCore.class.getResourceAsStream("/fonts/" + fontName + ".ttf")));
+                UnicodeFont unicodeFont = new UnicodeFont(font);
+                unicodeFont.getEffects().add(new ColorEffect(new Color(255, 255, 255)));
+                unicodeFont.addGlyphs(0x4E00, 0x9FBF);
+                unicodeFont.addAsciiGlyphs();
+                unicodeFont.loadGlyphs();
+                fontMap.put(fontName, unicodeFont);
+            } catch(Exception exception) {
+                LogManager.logException("Failed to load font \"" + fontName + "\"", exception);
+            }
+        }
+
 
         StarLoaderTexture.runOnGraphicsThread(new Runnable() {
             @Override
@@ -114,5 +138,9 @@ public class ResourceManager {
     public static Mesh getMesh(String name) {
         if(meshMap.containsKey(name)) return (Mesh) meshMap.get(name).getChilds().get(0);
         else return null;
+    }
+
+    public static UnicodeFont getFont(String fontName) {
+        return fontMap.get(fontName);
     }
 }
