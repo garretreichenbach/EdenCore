@@ -1,6 +1,8 @@
 package org.schema.schine.graphicsengine.forms.gui;
 
 import api.common.GameClient;
+import com.vdurmont.emoji.Emoji;
+import com.vdurmont.emoji.EmojiManager;
 import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
 import it.unimi.dsi.fastutil.objects.ObjectArrayList;
 import org.lwjgl.opengl.GL11;
@@ -24,8 +26,15 @@ import java.util.List;
 
 public class GUITextOverlay extends GUIElement {
 
-	private static final Object2ObjectOpenHashMap<UnicodeFont, int[]> fontWidths = new Object2ObjectOpenHashMap<UnicodeFont, int[]>();
-	private static final String itoa64 = "./0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz ?,;+*#'=)({}\\&%$�\"!@-_.:,;|~^";
+	private static final Object2ObjectOpenHashMap<UnicodeFont, int[]> fontWidths = new Object2ObjectOpenHashMap<>();
+	private static final String itoa64 = "./0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz ?,;+*#'=)({}\\&%$�\"!@-_.:,;|~^" + getAllEmojis();
+
+	private static String getAllEmojis() {
+		StringBuilder sb = new StringBuilder();
+		for(Emoji emoji : EmojiManager.getAll()) sb.append(emoji.getUnicode());
+		return sb.toString();
+	}
+
 	public static UnicodeFont defaultFont;
 	public boolean doDepthTest = false;
 	public GUIResizableElement autoWrapOn;
@@ -90,6 +99,7 @@ public class GUITextOverlay extends GUIElement {
 		for (int i = 0; i < itoa64.length(); i++) {
 
 			h[itoa64.charAt(i)] = getWidthOfFont(String.valueOf(itoa64.charAt(i)));
+			if(h[itoa64.charAt(i)] == 0) h[itoa64.charAt(i)] = 2;
 		}
 		return h;
 	}
@@ -358,7 +368,11 @@ public class GUITextOverlay extends GUIElement {
 		return wrap(s, wrapWidth);
 	}
 	private int getWidthOfFont(String str){
-		return FontLibrary.getMetrics(font).stringWidth(str);
+		try {
+			return FontLibrary.getMetrics(font).stringWidth(str);
+		} catch(NullPointerException ignored) {
+			return font.getWidth(str);
+		}
 	}
 	private int findLenOnWidth(String text, int len) {
 		if (getWidthOfFont(text) < len) {
@@ -546,32 +560,26 @@ public class GUITextOverlay extends GUIElement {
 				Color c = Color.white;
 				String s = textCache.get(i).toString();
 
-				//UnicodeFont defaultFont = font;
 				//INSERTED CODE
 				boolean donator = false;
 				if(textCache.get(i) instanceof ChatMessage && !(((ChatMessage) textCache.get(i)).sender.isEmpty()) && !((ChatMessage) textCache.get(i)).text.contains("[SERVER]")) {
-					//font = FontLibrary.getFont(FontSize.MEDIUM);
-					//font = ResourceManager.getFont("NotoSans-Regular");
 					if(GameClient.getClientState() != null && GameClient.getClientPlayerState() != null && (StarBridgeAPI.isDonator(GameClient.getClientState().getPlayerName()) || GameClient.getClientPlayerState().isAdmin())) donator = true;
+					//font = ResourceManager.getFont("NotoSans-Regular");
 					String donatorType = StarBridgeAPI.getDonatorType(((ChatMessage) textCache.get(i)).sender);
-					//Name tag format is [<playername>] <message>
-					//Append name tag color to front of playername, then reset it to white before message
 					String nameTag = ((ChatMessage) textCache.get(i)).sender;
+					String message = ((ChatMessage) textCache.get(i)).text.split("] ")[1];
 					StringBuilder builder = new StringBuilder();
-					String[] split = s.split(nameTag);
 					switch(donatorType) {
 						case "Explorer":
-							nameTag = "&" + ColorUtils.GREY + "[Explorer]&1 [" + nameTag + "]: ";
+							nameTag = "&3[Explorer]&1 [" + nameTag + "]:&1 ";
 							break;
 						case "Captain":
-							nameTag = "&" + ColorUtils.YELLOW + "[Captain]&1 [" + nameTag + "]: ";
+							nameTag = "&y[Captain]&1 [" + nameTag + "]:&1 ";
 							break;
 						case "Staff":
-							nameTag = "&" + ColorUtils.RED + "[Staff]&1 [" + nameTag + "]: ";
+							nameTag = "&r[Staff]&1 [" + nameTag + "]:&1 ";
 							break;
 					}
-					String message = split[1].replaceAll("] ", "");
-					nameTag = nameTag + "&" + ColorUtils.WHITE;
 					s = nameTag + message;
 					char[] charArray = s.toCharArray();
 					for(int l = 0; l < charArray.length; l ++) {
@@ -579,7 +587,7 @@ public class GUITextOverlay extends GUIElement {
 							l++;
 							if(donator) c = ColorUtils.fromCode(Character.toLowerCase(charArray[l]));
 							else c = Color.white;
-						} /*else if(charArray[l] == ':' && charArray.length > l + 1) { //Parse emoji
+						} /* else if(charArray[l] == ':' && charArray.length > l + 1) { //Parse emoji
 							//Find next :
 							int next = -1;
 							for(int j = l + 1; j < charArray.length; j++) {
@@ -597,8 +605,9 @@ public class GUITextOverlay extends GUIElement {
 									//Switch font to emoji font
 									font = ResourceManager.getFont("NotoColorEmoji-Regular");
 									if(emoji.getUnicode().isEmpty()) continue;
-									font.drawDisplayList(x, y, emoji.getUnicode(), c, 1, emoji.getUnicode().length() - 1);
-									builder.append(":").append(emoji.getUnicode()).append(":");
+									//font.drawDisplayList(x, y, emoji.getUnicode(), c, 0, emoji.getUnicode().length());
+									font.drawString(x, y, emoji.getUnicode(), c);
+									builder.append(":").append(emojiName).append(":");
 									x += getFont().getWidth("" + charArray[l]);
 									//Switch font back to default
 									font = ResourceManager.getFont("NotoSans-Regular");
@@ -606,9 +615,10 @@ public class GUITextOverlay extends GUIElement {
 									l = next;
 								}
 							}
-						}*/ else {
+						} */
+						else {
 							//GlUtil.glColor4f(c.getRed() / 255f, c.getGreen() / 255f, c.getBlue() / 255f, 1.0f);
-							font.drawDisplayList(x, y, "" + charArray[l], c, 0, 1);
+							getFont().drawDisplayList(x, y, "" + charArray[l], c, 0, 1);
 							x += getFont().getWidth("" + charArray[l]);
 							builder.append(charArray[l]);
 						}
@@ -619,6 +629,7 @@ public class GUITextOverlay extends GUIElement {
 					GlUtil.glColor4f(color.r / 255f, color.g / 255f, color.b / 255f, 1.0f);
 				} else {
 					if(textCache.get(i) instanceof ChatMessage) {
+						//font = ResourceManager.getFont("NotoSans-Regular");
 						ChatMessage message = (ChatMessage) textCache.get(i);
 						switch(message.receiverType) {
 							case DIRECT:
@@ -631,8 +642,8 @@ public class GUITextOverlay extends GUIElement {
 								GlUtil.glColor4f(ChatColorPalette.system);
 								break;
 						}
-					}
-					font.drawDisplayList(x, y, s, color, 0, s.length());
+					} else font = defaultFont;
+					getFont().drawDisplayList(x, y, s, color, 0, s.length());
 				}
 				//
 				y += getFont().getLineHeight();
@@ -692,6 +703,7 @@ public class GUITextOverlay extends GUIElement {
 	 * @return the font
 	 */
 	public UnicodeFont getFont() {
+		if(font == null) font = FontLibrary.getFont(FontSize.MEDIUM);
 		return font;
 	}
 

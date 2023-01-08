@@ -52,7 +52,7 @@ public class ResourceManager {
         for(String fontName : fontNames) {
             try {
                 Font font = Font.createFont(Font.TRUETYPE_FONT, Objects.requireNonNull(EdenCore.class.getResourceAsStream("/fonts/" + fontName + ".ttf")));
-                UnicodeFont unicodeFont = new UnicodeFont(font);
+                UnicodeFont unicodeFont = new UnicodeFont(font.deriveFont(12.0f));
                 unicodeFont.getEffects().add(new ColorEffect(new Color(255, 255, 255)));
                 unicodeFont.addGlyphs(0x4E00, 0x9FBF);
                 unicodeFont.addAsciiGlyphs();
