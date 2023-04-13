@@ -35,6 +35,7 @@ public class ClientCacheManager {
     //Build Sector
     public static final ArrayList<BuildSectorData> accessibleSectors = new ArrayList<>();
     public static final ArrayList<SegmentController> sectorEntities = new ArrayList<>();
+    public static EventData editingEvent;
 
     public static void updateCache(int type, Object data) {
         switch(type) {

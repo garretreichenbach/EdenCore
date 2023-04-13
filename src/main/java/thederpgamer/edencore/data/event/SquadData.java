@@ -16,7 +16,7 @@ import java.util.ArrayList;
  */
 public class SquadData implements SerializableData {
 
-    public ArrayList<SquadMemberData> squadMembers;
+    public final ArrayList<SquadMemberData> squadMembers = new ArrayList<>();
     public int squadID;
 
     public SquadData() {
@@ -43,7 +43,6 @@ public class SquadData implements SerializableData {
     public void deserialize(PacketReadBuffer readBuffer) throws IOException {
         squadID = readBuffer.readInt();
         int size = readBuffer.readInt();
-        squadMembers = new ArrayList<>();
         for(int i = 0; i < size; i ++) squadMembers.add(new SquadMemberData(readBuffer));
     }
 

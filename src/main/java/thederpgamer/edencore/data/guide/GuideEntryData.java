@@ -8,7 +8,6 @@ import org.schema.schine.graphicsengine.forms.gui.GUITextOverlay;
 import org.schema.schine.graphicsengine.forms.gui.newgui.GUIContentPane;
 import thederpgamer.edencore.utils.ImageUtils;
 
-import javax.validation.constraints.Null;
 import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;

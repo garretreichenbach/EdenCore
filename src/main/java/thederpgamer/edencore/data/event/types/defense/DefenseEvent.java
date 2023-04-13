@@ -1,15 +1,22 @@
 package thederpgamer.edencore.data.event.types.defense;
 
+import api.common.GameServer;
 import api.mod.config.PersistentObjectUtil;
 import api.network.PacketReadBuffer;
 import api.network.PacketWriteBuffer;
+import org.schema.common.util.linAlg.Vector3i;
+import org.schema.game.common.data.player.faction.Faction;
+import org.schema.game.common.data.world.Sector;
+import org.schema.game.common.data.world.Universe;
 import thederpgamer.edencore.EdenCore;
 import thederpgamer.edencore.data.event.EventData;
 import thederpgamer.edencore.data.event.EventTarget;
 import thederpgamer.edencore.data.event.SquadData;
 import thederpgamer.edencore.data.event.target.DefenseTarget;
+import thederpgamer.edencore.utils.EventUtils;
 
 import java.io.IOException;
+import java.sql.SQLException;
 import java.util.ArrayList;
 
 /**
@@ -30,9 +37,10 @@ public class DefenseEvent extends EventData {
 
 	@Override
     public void deserialize(PacketReadBuffer readBuffer) throws IOException {
+        //eventType = EventType.values()[readBuffer.readInt()];
+        id = readBuffer.readLong();
         name = readBuffer.readString();
         description = readBuffer.readString();
-        eventType = EventType.DEFENSE;
         int size = readBuffer.readInt();
         if(size > 0) {
             targets = new EventTarget[size];
@@ -43,6 +51,8 @@ public class DefenseEvent extends EventData {
 
     @Override
     public void serialize(PacketWriteBuffer writeBuffer) throws IOException {
+        writeBuffer.writeInt(eventType.ordinal());
+        writeBuffer.writeLong(id);
         writeBuffer.writeString(name);
         writeBuffer.writeString(description);
         writeBuffer.writeInt(targets.length);
@@ -71,7 +81,7 @@ public class DefenseEvent extends EventData {
     }
 
     @Override
-    public void start() {
+    public void transition() {
         if(squadData == null) {
             squadData = new SquadData();
             status = WAITING;
@@ -80,12 +90,49 @@ public class DefenseEvent extends EventData {
         switch(status) {
             case NONE:
                 status = WAITING;
+                initializeEvent();
                 break;
             case WAITING:
-                if(squadData.ready()) status = ACTIVE;
+                if(squadData.ready()) {
+                    status = ACTIVE;
+                    start();
+                }
                 break;
             case ACTIVE:
                 break;
+        }
+    }
+
+    @Override
+    public void start() {
+        //Pick a random far away sector to set up the event in
+        Vector3i coords = EventUtils.getRandomSector();
+        try {
+            //Load the sector
+            Universe universe = GameServer.getServerState().getUniverse();
+            universe.loadOrGenerateSector(coords);
+            Sector sector = universe.getSector(coords);
+            if(sector.isTutorialSector() || sector.isPersonalOrTestSector()) {
+                EventUtils.logEventMessage(this, "[CATASTROPHIC FAILURE]: Somehow, despite all odds, the event sector " + coords + " is a tutorial or personal sector. This should be statistically impossible.");
+                throw new IllegalStateException("Event sector " + coords + " is a tutorial or personal sector. This should be statistically impossible.");
+            }
+
+            //Set up the factions
+            Faction blueTeam = EventUtils.getBlueTeam();
+            //Faction redTeam = EventUtils.getRedTeam();
+            //We don't need a red team for now, as the events are currently only PVE. When PVP events are added, the above will be needed.
+            EventUtils.setTeam(squadData, blueTeam); //Temporarily change the faction of all the squad members to the blue team for the event.
+
+            //Set up the targets
+            for(EventTarget target : targets) {
+                if(target instanceof DefenseTarget) {
+                    DefenseTarget defenseTarget = (DefenseTarget) target;
+
+                }
+            }
+        } catch(IOException | SQLException exception) {
+            exception.printStackTrace();
+            EventUtils.cancelEvent(this);
         }
     }
 
@@ -109,16 +156,10 @@ public class DefenseEvent extends EventData {
     }
 
     public static DefenseEvent create(String combatType, String name) {
-        DefenseEvent defenseEvent = new DefenseEvent(name, "No description", genTargets());
-        defenseEvent.code = Integer.parseInt(combatType) | EventData.DAILY; //Todo: Add weekly and monthly events
+        DefenseEvent defenseEvent = new DefenseEvent(name, "No description");
+        defenseEvent.code = (combatType.equalsIgnoreCase("pvp") ? 1 : 0) | EventData.DAILY; //Todo: Add weekly and monthly events
         PersistentObjectUtil.addObject(EdenCore.getInstance().getSkeleton(), defenseEvent);
         PersistentObjectUtil.save(EdenCore.getInstance().getSkeleton());
         return defenseEvent;
-    }
-
-    private static EventTarget[] genTargets() {
-        ArrayList<EventTarget> targets = new ArrayList<>();
-        targets.add(new DefenseTarget("DEFENSE_TARGET_0"));
-        return targets.toArray(new EventTarget[0]);
     }
 }

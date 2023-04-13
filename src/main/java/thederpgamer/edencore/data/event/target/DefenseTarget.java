@@ -14,8 +14,8 @@ import java.io.IOException;
  */
 public class DefenseTarget extends EventTarget {
 
-    public DefenseTarget(String targetEntityUID) {
-        super(targetEntityUID);
+    public DefenseTarget(String name, Object target, int count, int selectedIndex) {
+        super("DEFEND", target);
     }
 
     public DefenseTarget(PacketReadBuffer readBuffer) throws IOException {

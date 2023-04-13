@@ -120,7 +120,7 @@ public class NavigationAdminCommand implements CommandInterface {
                   .getLocalObjects()
                   .get(selectedEntId);
           // Sendable sendable =
-          // getEntityState().getState().getLocalAndRemoteObjectContainer().getLocalObjects().get(selectedEntityId);
+          // getEntityState().getClientState().getLocalAndRemoteObjectContainer().getLocalObjects().get(selectedEntityId);
           if (selected == null) {
             PlayerUtils.sendMessage(admin, "No entity selected");
             return false;
@@ -215,7 +215,7 @@ public class NavigationAdminCommand implements CommandInterface {
               // add a splitoff arm to the gate
               ArrayList<MapMarker> arm =
                   DebugUtil.mockGateNetwork(m.sector, 1 + rand.nextInt(4), rand.nextLong());
-              ((GateMarker) arm.get(0)).addLine(m.sector); // connect to arm start
+              ((GateMarker) arm.get(0)).addLine(m.sector); // connect to arm transition
               for (MapMarker armM : arm) {
                 NavigationUtilManager.instance.addCoordinateToList(armM);
               }

@@ -637,11 +637,11 @@ public class PlayerState extends AbstractOwnerState implements Sendable, DiskWri
                                 + getState() + ", owner: " + getClientId());
                 //				clientRequestProxmitySectors();
             } else {
-                // System.err.println("[PlayerState] Client received player state "+getState()+", owner: "+getClientId());
+                // System.err.println("[PlayerState] Client received player state "+getClientState()+", owner: "+getClientId());
             }
         }
         buildModePosition.initFromNetworkObject();
-        // System.err.println("[PLAYER] "+getState()+" initializing data from network object "+getId()+", credits "+getCredits());
+        // System.err.println("[PLAYER] "+getClientState()+" initializing data from network object "+getId()+", credits "+getCredits());
 
     }
 
@@ -797,7 +797,7 @@ public class PlayerState extends AbstractOwnerState implements Sendable, DiskWri
             setHelmetSlot(p.helmetSlot.getInt());
 
             //			if(p.health.get() < this.health && isClientOwnPlayer()){
-            //				SimpleTransformableSendableObject c = ((GameClientState)getState()).getCurrentPlayerObject();
+            //				SimpleTransformableSendableObject c = ((GameClientState)getClientState()).getCurrentPlayerObject();
             //				if(c != null && c instanceof PlayerControllable){
             //					PlayerControllable pc = (PlayerControllable)c;
             //					for(int i = 0; i < pc.getAttachedPlayers().size(); i++){
@@ -844,7 +844,7 @@ public class PlayerState extends AbstractOwnerState implements Sendable, DiskWri
 
         ping = p.ping.get();
 
-        // System.err.println("player "+getId()+" on "+getState()+" received CREDITS: "+credits);
+        // System.err.println("player "+getId()+" on "+getClientState()+" received CREDITS: "+credits);
         // System.err.println("UPDATE BUY PLAYER FROMNT "+p.buyBuffer.getReceiveBuffer().size());
 //		getSpawnPoint().set(getNetworkObject().spawnPoint.getVector());
         spawnData.fromNetworkObject();
@@ -1667,7 +1667,7 @@ public class PlayerState extends AbstractOwnerState implements Sendable, DiskWri
 
                 assert (((GameServerState) getState()).getUniverse().getStellarSystemFromStellarPos(currentSystem) == ((GameServerState) getState()).getUniverse().getStellarSystemFromSecPos(currentSector));
 
-//				System.err.println("SERVER CENTER TYPE: "+((GameServerState)getState()).getUniverse().getStellarSystemFromStellarPos(currentSystem).getCenterSectorType());
+//				System.err.println("SERVER CENTER TYPE: "+((GameServerState)getClientState()).getUniverse().getStellarSystemFromStellarPos(currentSystem).getCenterSectorType());
             } catch (IOException e) {
                 e.printStackTrace();
             }
@@ -1698,9 +1698,9 @@ public class PlayerState extends AbstractOwnerState implements Sendable, DiskWri
         //		if (!getShopsInDistance().isEmpty() && !isOnServer()) {
         //			AbstractScene.infoList.add("PLAYER " + this
         //					+ " IS IN SHOP DISTANCE "
-        //					+ ((GameClientState) getState()).getCharacter() + "; "
-        //					+ ((GameClientState) getState()).getShip() + "; "
-        //					+ ((GameClientState) getState()).getCurrentPlayerObject());
+        //					+ ((GameClientState) getClientState()).getCharacter() + "; "
+        //					+ ((GameClientState) getClientState()).getShip() + "; "
+        //					+ ((GameClientState) getClientState()).getCurrentPlayerObject());
         //		}
 
 //		System.err.println("CURRENT: "+currentSectorType);
@@ -2742,7 +2742,7 @@ public class PlayerState extends AbstractOwnerState implements Sendable, DiskWri
 //				case REPAIR_ARMOR: {
 //					int id = (Integer) simpleCommand.getArgs()[0];
 //					boolean fast = (Boolean) simpleCommand.getArgs()[1];
-//					Sendable sendable = getState().getLocalAndRemoteObjectContainer().getLocalObjects().get(id);
+//					Sendable sendable = getClientState().getLocalAndRemoteObjectContainer().getLocalObjects().get(id);
 //					if (sendable != null && sendable instanceof SegmentController) {
 //						if (fast) {
 //							long shopRebootCost = ((SegmentController) sendable).getHpController().getShopArmorRepairCost();
@@ -3537,7 +3537,7 @@ public class PlayerState extends AbstractOwnerState implements Sendable, DiskWri
         d[3] = (new Tag(Type.BYTE, null, (byte) 0)); //removed (spawnpoint meta). can be used for somethign else
 
 //		if(getLogoutSpawnPoint().lengthSquared() == 0){
-//			((GameServerState)getState()).getController().setLogoutSpawnToPlayerPos(this);
+//			((GameServerState)getClientState()).getController().setLogoutSpawnToPlayerPos(this);
 //		}
 //		System.err.println("["+(isOnServer()? "SERVER": "CLIENT")+"][TAG] LOGOUT SPAWNING POINT OF "+this+" WRITTEN: "+this.getLogoutSpawnPoint()+" SECTOR "+getLogoutSpawnSector());
         d[4] = (new Tag(Type.BYTE, null, (byte) 0));//removed (spawnpoint meta). can be used for somethign else
@@ -3686,7 +3686,7 @@ public class PlayerState extends AbstractOwnerState implements Sendable, DiskWri
      * @param credits the credits to set
      */
     public void setCredits(long credits) {
-        // System.err.println("SETTING CREDITS TO "+credits+" on "+getState());
+        // System.err.println("SETTING CREDITS TO "+credits+" on "+getClientState());
         this.credits = Math.max(0, credits);
 
         if(isOnServer()) {
@@ -3697,7 +3697,7 @@ public class PlayerState extends AbstractOwnerState implements Sendable, DiskWri
 //	public void handleSpawnSetFromNT(NetworkPlayer p) {
 //		if(isOnServer()){
 //			for (RemoteVector3f s : p.spawnPointSetBuffer.getReceiveBuffer()) {
-//				((GameServerState)getState()).getController().setSpawnToPos(this, s.getVector(), false);
+//				((GameServerState)getClientState()).getController().setSpawnToPos(this, s.getVector(), false);
 //			}
 //		}
 //	}
@@ -4663,7 +4663,7 @@ public class PlayerState extends AbstractOwnerState implements Sendable, DiskWri
 //				//commencing jump
 //
 //				try {
-//					((GameServerState)getState()).getController().queueSectorSwitch(getFirstControlledTransformable(), new Vector3i(getCurrentSector().x+60, getCurrentSector().y+60, getCurrentSector().z+60), SectorSwitch.TRANS_JUMP, false);
+//					((GameServerState)getClientState()).getController().queueSectorSwitch(getFirstControlledTransformable(), new Vector3i(getCurrentSector().x+60, getCurrentSector().y+60, getCurrentSector().z+60), SectorSwitch.TRANS_JUMP, false);
 //
 //				} catch (PlayerControlledTransformableNotFound e) {
 //					e.printStackTrace();
@@ -5164,13 +5164,13 @@ public class PlayerState extends AbstractOwnerState implements Sendable, DiskWri
     //		if (changed) {
     //			// System.err.println("setting team");
     //			if(send){
-    //				System.err.println("SENDING NEW TEAM "+((Teamable)getState()).getTeamOf(this).getClass().getSimpleName()+
+    //				System.err.println("SENDING NEW TEAM "+((Teamable)getClientState()).getTeamOf(this).getClass().getSimpleName()+
     //						" OF "+this+" TO CLIENTS");
     //				getNetworkObject().requestTeamChange.add(new RemoteInteger(teamId,
     //						getNetworkObject()));
     //			}
     //
-    //			((Teamable) getState()).notifyOfChangedTeams(this);
+    //			((Teamable) getClientState()).notifyOfChangedTeams(this);
     //		}
     //	}
     public void suicideOnClient() {

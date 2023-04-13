@@ -1,6 +1,7 @@
 package thederpgamer.edencore.manager;
 
 import api.common.GameServer;
+import api.network.packets.PacketUtil;
 import api.utils.StarRunnable;
 import org.jdesktop.swingx.calendar.DateUtils;
 import org.schema.game.common.data.player.PlayerState;
@@ -9,6 +10,7 @@ import thederpgamer.edencore.EdenCore;
 import thederpgamer.edencore.data.event.EventData;
 import thederpgamer.edencore.data.event.types.defense.DefenseEvent;
 import thederpgamer.edencore.data.player.PlayerData;
+import thederpgamer.edencore.network.server.event.OpenEventEditorPacket;
 import thederpgamer.edencore.utils.DataUtils;
 
 import java.io.IOException;
@@ -42,7 +44,7 @@ public class EventManager {
 		if(date.after(twelveAM) && date.before(oneAM)) {
 			{ //Daily
 				int eventCode = EventData.DAILY;
-				EventData[] events = new EventData[] {generateEvent(eventCode |  EventData.PVE), generateEvent(eventCode | EventData.PVP)};
+				EventData[] events = {generateEvent(eventCode |  EventData.PVE), generateEvent(eventCode | EventData.PVP)};
 				eventMap.replace(eventCode | EventData.PVE, events[0]);
 				eventMap.replace(eventCode | EventData.PVP, events[1]);
 				announceEvent(eventCode | EventData.PVE, events[0]);
@@ -52,7 +54,7 @@ public class EventManager {
 			{ //Weekly
 				if(DateUtils.getDayOfWeek(ms) == 1) {
 					int eventCode = EventData.WEEKLY;
-					EventData[] events = new EventData[] {generateEvent(eventCode |  EventData.PVE), generateEvent(eventCode | EventData.PVP)};
+					EventData[] events = {generateEvent(eventCode |  EventData.PVE), generateEvent(eventCode | EventData.PVP)};
 					eventMap.replace(eventCode | EventData.PVE, events[0]);
 					eventMap.replace(eventCode | EventData.PVP, events[1]);
 					announceEvent(eventCode | EventData.PVE, events[0]);
@@ -63,7 +65,7 @@ public class EventManager {
 			{ //Monthly
 				if(DateUtils.isFirstOfMonth(ms)) {
 					int eventCode = EventData.MONTHLY;
-					EventData[] events = new EventData[] {generateEvent(eventCode |  EventData.PVE), generateEvent(eventCode | EventData.PVP)};
+					EventData[] events = {generateEvent(eventCode |  EventData.PVE), generateEvent(eventCode | EventData.PVP)};
 					eventMap.replace(eventCode | EventData.PVE, events[0]);
 					eventMap.replace(eventCode | EventData.PVP, events[1]);
 					announceEvent(eventCode | EventData.PVE, events[0]);
@@ -76,7 +78,7 @@ public class EventManager {
 	public static void forceGen() {
 		{ //Daily
 			int eventCode = EventData.DAILY;
-			EventData[] events = new EventData[] {generateEvent(eventCode |  EventData.PVE), generateEvent(eventCode | EventData.PVP)};
+			EventData[] events = {generateEvent(eventCode |  EventData.PVE), generateEvent(eventCode | EventData.PVP)};
 			eventMap.replace(eventCode | EventData.PVE, events[0]);
 			eventMap.replace(eventCode | EventData.PVP, events[1]);
 			announceEvent(eventCode | EventData.PVE, events[0]);
@@ -85,7 +87,7 @@ public class EventManager {
 
 		{ //Weekly
 			int eventCode = EventData.WEEKLY;
-			EventData[] events = new EventData[] {generateEvent(eventCode |  EventData.PVE), generateEvent(eventCode | EventData.PVP)};
+			EventData[] events = {generateEvent(eventCode |  EventData.PVE), generateEvent(eventCode | EventData.PVP)};
 			eventMap.replace(eventCode | EventData.PVE, events[0]);
 			eventMap.replace(eventCode | EventData.PVP, events[1]);
 			announceEvent(eventCode | EventData.PVE, events[0]);
@@ -94,7 +96,7 @@ public class EventManager {
 
 		{ //Monthly
 			int eventCode = EventData.MONTHLY;
-			EventData[] events = new EventData[] {generateEvent(eventCode |  EventData.PVE), generateEvent(eventCode | EventData.PVP)};
+			EventData[] events = {generateEvent(eventCode |  EventData.PVE), generateEvent(eventCode | EventData.PVP)};
 			eventMap.replace(eventCode | EventData.PVE, events[0]);
 			eventMap.replace(eventCode | EventData.PVP, events[1]);
 			announceEvent(eventCode | EventData.PVE, events[0]);
@@ -109,7 +111,7 @@ public class EventManager {
 				public void run() {
 					for(EventData eventData : getAllEvents()) {
 						if(eventData.getSquadData().ready() && eventData.waitingTime <= 0) {
-							eventData.start();
+							eventData.transition();
 							announceEvent(eventData.getCode(), eventData);
 						} else eventData.waitingTime --;
 					}
@@ -160,7 +162,7 @@ public class EventManager {
 	}
 
 	public static void startEventEditor(PlayerState sender, EventData eventData) {
-		//TODO
+		PacketUtil.sendPacket(sender, new OpenEventEditorPacket(eventData));
 	}
 
 	public static EventData getEventByName(String arg) {
@@ -171,7 +173,7 @@ public class EventManager {
 	}
 
 	public static EventData createEvent(String type, String combatType, String name) {
-		if("DEFENSE".equals(type.toUpperCase())) {
+		if("DEFENSE".equalsIgnoreCase(type)) {
 			return DefenseEvent.create(combatType, name);
 		}
 		return null;

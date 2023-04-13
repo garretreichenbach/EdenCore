@@ -22,6 +22,7 @@ public class SquadMemberData implements SerializableData {
     public String playerName;
     public String shipName;
     public int factionId;
+    public byte factionRank;
     public double shipMass;
     public boolean ready;
 
@@ -29,6 +30,7 @@ public class SquadMemberData implements SerializableData {
         this.playerName = playerState.getName();
         this.shipName = null;
         this.factionId = playerState.getFactionId();
+        this.factionRank = playerState.getFactionController().getFactionRank();
         this.shipMass = 0.0;
         this.ready = false;
     }
@@ -42,6 +44,7 @@ public class SquadMemberData implements SerializableData {
         playerName = readBuffer.readString();
         shipName = readBuffer.readString();
         factionId = readBuffer.readInt();
+        factionRank = readBuffer.readByte();
         shipMass = readBuffer.readDouble();
         ready = readBuffer.readBoolean();
     }
@@ -51,6 +54,7 @@ public class SquadMemberData implements SerializableData {
         writeBuffer.writeString(playerName);
         writeBuffer.writeString(shipName);
         writeBuffer.writeInt(factionId);
+        writeBuffer.writeByte(factionRank);
         writeBuffer.writeDouble(shipMass);
         writeBuffer.writeBoolean(ready);
     }

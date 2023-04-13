@@ -35,6 +35,8 @@ import org.apache.commons.io.IOUtils;
 import org.lwjgl.input.Keyboard;
 import org.schema.common.util.linAlg.Vector3i;
 import org.schema.game.client.view.gui.newgui.GUITopBar;
+import org.schema.game.client.view.gui.playerstats.PlayerStatisticsPanelNew;
+import org.schema.game.client.view.gui.playerstats.PlayerStatisticsScrollableListNew;
 import org.schema.game.common.data.player.PlayerState;
 import org.schema.game.common.data.player.faction.FactionManager;
 import org.schema.schine.common.language.Lng;
@@ -43,6 +45,7 @@ import org.schema.schine.graphicsengine.forms.gui.GUIActivationHighlightCallback
 import org.schema.schine.graphicsengine.forms.gui.GUICallback;
 import org.schema.schine.graphicsengine.forms.gui.GUIElement;
 import org.schema.schine.input.InputState;
+import org.schema.schine.network.RegisteredClientOnServer;
 import org.schema.schine.resource.ResourceLoader;
 import thederpgamer.edencore.api.starbridge.StarBridgeAPI;
 import thederpgamer.edencore.commands.*;
@@ -53,6 +56,7 @@ import thederpgamer.edencore.element.items.PrizeBars;
 import thederpgamer.edencore.gui.buildsectormenu.BuildSectorMenuControlManager;
 import thederpgamer.edencore.gui.eventsmenu.EventsMenuControlManager;
 import thederpgamer.edencore.gui.exchangemenu.ExchangeMenuControlManager;
+import thederpgamer.edencore.gui.misc.NewPlayerStatisticsScrollableListNew;
 import thederpgamer.edencore.manager.*;
 import thederpgamer.edencore.navigation.EdenMapDrawer;
 import thederpgamer.edencore.navigation.MapIcon;
@@ -67,18 +71,21 @@ import thederpgamer.edencore.network.client.misc.NavigationMapPacket;
 import thederpgamer.edencore.network.client.misc.RequestClientCacheUpdatePacket;
 import thederpgamer.edencore.network.client.misc.RequestEntityDeletePacket;
 import thederpgamer.edencore.network.client.misc.RequestMetaObjectPacket;
-import thederpgamer.edencore.network.server.PlayerWarpIntoEntityPacket;
-import thederpgamer.edencore.network.server.SendCacheUpdatePacket;
-import thederpgamer.edencore.network.server.SendDonatorsPacket;
-import thederpgamer.edencore.network.server.SendGuideMenuPacket;
+import thederpgamer.edencore.network.server.*;
+import thederpgamer.edencore.network.server.event.OpenEventEditorPacket;
 import thederpgamer.edencore.network.server.event.ServerSendEventDataPacket;
 import thederpgamer.edencore.utils.BuildSectorUtils;
 import thederpgamer.edencore.utils.DataUtils;
 import thederpgamer.edencore.utils.DateUtils;
+import thederpgamer.edencore.utils.EventUtils;
 
 import java.io.IOException;
+import java.lang.reflect.Field;
 import java.nio.file.Files;
 import java.sql.Date;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Objects;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 
@@ -93,7 +100,7 @@ public class EdenCore extends StarMod {
 	// Instance
 	private static EdenCore getInstance;
 	// Overwrites
-	private final String[] overwriteClasses = new String[]{"PlayerState", "BlueprintEntry", "TorchBeam", "GUITextOverlay"};
+	private final String[] overwriteClasses = new String[]{"PlayerState", "BlueprintEntry", "TorchBeam", "ChatPanel"};
 	// Disabled Blocks
 	private final short[] disabledBlocks =
 			new short[]{
@@ -112,6 +119,7 @@ public class EdenCore extends StarMod {
 	public ExchangeMenuControlManager exchangeMenuControlManager;
 	public BuildSectorMenuControlManager buildSectorMenuControlManager;
 	public EventsMenuControlManager eventsMenuControlManager;
+	private static final ArrayList<RegisteredClientOnServer> fakePlayers = new ArrayList<>();
 
 	public EdenCore() {
 	}
@@ -197,6 +205,9 @@ public class EdenCore extends StarMod {
 		PacketUtil.registerPacket(ClientModifyEventPacket.class);
 		PacketUtil.registerPacket(ServerSendEventDataPacket.class);
 		PacketUtil.registerPacket(SendDonatorsPacket.class);
+		PacketUtil.registerPacket(ChatRefreshPacket.class);
+		PacketUtil.registerPacket(ChatPacket.class);
+		PacketUtil.registerPacket(OpenEventEditorPacket.class);
 	}
 
 	private void registerListeners() {
@@ -411,11 +422,30 @@ public class EdenCore extends StarMod {
 				new Listener<MainWindowTabAddEvent>() {
 					@Override
 					public void onEvent(MainWindowTabAddEvent event) {
-						if (DataUtils.isPlayerInAnyBuildSector(GameClient.getClientPlayerState())) {
-							for (String s : disabledTabs) {
-								if (event.getTitleAsString().equals(Lng.str(s))) {
+						if(event.getTitleAsString().equals(Lng.str("PlayerStatsPanelNew"))) {
+							try {
+								PlayerStatisticsPanelNew panel = GameClient.getClientState().getWorldDrawer().getGuiDrawer().getPlayerStatisticsPanel();
+								if(panel != null) {
+									Field field = panel.getClass().getDeclaredField("wList");
+									field.setAccessible(true);
+									if(field.get(panel) instanceof PlayerStatisticsScrollableListNew) {
+										PlayerStatisticsScrollableListNew old = (PlayerStatisticsScrollableListNew) field.get(panel);
+										NewPlayerStatisticsScrollableListNew list = new NewPlayerStatisticsScrollableListNew(old.getState(), event.getPane().getContent(0));
+										list.onInit();
+										field.set(panel, list);
+										panel.playerListUpdated();
+									}
+								}
+							} catch(NoSuchFieldException | IllegalAccessException exception) {
+								exception.printStackTrace();
+							}
+						}
+						for(String s : disabledTabs) {
+							if(event.getTitleAsString().equals(Lng.str(s))) {
+								if(DataUtils.isPlayerInAnyBuildSector(GameClient.getClientPlayerState())) {
 									event.setCanceled(true);
 									event.getWindow().cleanUp();
+									PlayerUtils.sendMessage(GameClient.getClientPlayerState(), "You cannot access this menu right now.");
 								}
 							}
 						}
@@ -596,6 +626,8 @@ public class EdenCore extends StarMod {
 												PersistentObjectUtil.removeObject(EdenCore.getInstance.getSkeleton(), playerData);
 												PersistentObjectUtil.addObject(EdenCore.getInstance.getSkeleton(), playerData);
 												PersistentObjectUtil.save(EdenCore.getInstance.getSkeleton());
+
+												if(playerState != null && !Objects.equals(playerState.getFactionName(), playerData.getFactionName())) EventUtils.resetPlayerFaction(playerState, playerData);
 											}
 										} catch(Exception exception) {
 											LogManager.logException("Failed to get player data for " + event.getPlayerName(), exception);
@@ -669,6 +701,7 @@ public class EdenCore extends StarMod {
 		StarLoader.registerCommand(new ResetEventsCommand());
 		StarLoader.registerCommand(new EditEventCommand());
 		StarLoader.registerCommand(new SetDonatorCommand());
+		StarLoader.registerCommand(new FakePlayerCommand());
 		// StarLoader.registerCommand(new ResetPlayerCommand());
 	}
 
@@ -804,7 +837,12 @@ public class EdenCore extends StarMod {
 		}
 	}
 
+	public static Collection<RegisteredClientOnServer> getFakePlayers() {
+		return fakePlayers;
+	}
+
 	public void activateGuideMenuForPlayer(PlayerState playerState) {
 		PacketUtil.sendPacket(playerState, new SendGuideMenuPacket());
 	}
+
 }

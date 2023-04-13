@@ -1,15 +1,22 @@
 package thederpgamer.edencore.utils;
 
 import api.common.GameCommon;
+import api.common.GameServer;
 import api.network.packets.PacketUtil;
+import api.utils.game.PlayerUtils;
+import org.schema.common.util.linAlg.Vector3i;
 import org.schema.game.common.data.player.PlayerState;
+import org.schema.game.common.data.player.faction.Faction;
 import thederpgamer.edencore.data.event.EventData;
+import thederpgamer.edencore.data.event.SquadData;
 import thederpgamer.edencore.data.event.SquadMemberData;
+import thederpgamer.edencore.data.player.PlayerData;
 import thederpgamer.edencore.manager.ClientCacheManager;
 import thederpgamer.edencore.manager.EventManager;
 import thederpgamer.edencore.network.client.event.ClientModifyEventPacket;
 
 import java.util.ArrayList;
+import java.util.Random;
 
 /**
  * [Description]
@@ -58,5 +65,70 @@ public class EventUtils {
 			ClientModifyEventPacket packet = new ClientModifyEventPacket(eventData, ClientModifyEventPacket.LEAVE_EVENT);
 			PacketUtil.sendPacketToServer(packet);
 		}
+	}
+
+	public static Vector3i getRandomSector() {
+		Vector3i sector = new Vector3i();
+		sector.x = new Random().nextInt(10000) - 5000;
+		sector.y = new Random().nextInt(10000) - 5000;
+		sector.z = new Random().nextInt(10000) - 5000;
+		return sector;
+	}
+
+	public static void logEventMessage(EventData eventData, String message) {
+		for(SquadMemberData memberData : eventData.getSquadData().squadMembers) {
+			PlayerState playerState = GameServer.getServerState().getPlayerFromNameIgnoreCaseWOException(memberData.playerName);
+			if(playerState != null) PlayerUtils.sendMessage(playerState, "[Event] " + message);
+		}
+		cancelEvent(eventData);
+	}
+
+	public static void cancelEvent(EventData eventData) {
+		//Todo: Cancel event
+	}
+
+	public static Faction getBlueTeam() {
+		for(Faction faction : GameCommon.getGameState().getFactionManager().getFactionCollection()) {
+			if(faction.getName().equals("Blue Team")) return faction;
+		}
+		return null;
+	}
+
+	public static Faction getRedTeam() {
+		for(Faction faction : GameCommon.getGameState().getFactionManager().getFactionCollection()) {
+			if(faction.getName().equals("Red Team")) return faction;
+		}
+		return null;
+	}
+
+	public static void setTeam(SquadData squadData, Faction team) {
+		for(SquadMemberData memberData : squadData.squadMembers) {
+			PlayerState playerState = GameServer.getServerState().getPlayerFromNameIgnoreCaseWOException(memberData.playerName);
+			if(playerState != null) {
+				playerState.getFactionController().setFactionId(team.getIdFaction());
+				PlayerUtils.sendMessage(playerState, "[Event] You have been assigned to" + team.getName());
+			}
+		}
+	}
+
+	/**
+	 * Sets all members of the squad back to their actual faction.
+	 * @param squadData Squad to reset.
+	 */
+	public static void resetTeamFaction(SquadData squadData) {
+		for(SquadMemberData memberData : squadData.squadMembers) {
+			PlayerState playerState = GameServer.getServerState().getPlayerFromNameIgnoreCaseWOException(memberData.playerName);
+			if(playerState != null) {
+				playerState.getFactionController().setFactionId(memberData.factionId);
+				//Todo: Figure out how to set the player's faction rank back to what it was before the event
+				PlayerUtils.sendMessage(playerState, "[Event] You have been reset to your original faction.");
+			}
+		}
+	}
+
+	public static void resetPlayerFaction(PlayerState playerState, PlayerData playerData) {
+		playerState.getFactionController().setFactionId(playerData.factionId);
+		//Todo: Figure out how to set the player's faction rank back to what it was before the event
+		PlayerUtils.sendMessage(playerState, "[Event] You have been reset to your original faction.");
 	}
 }

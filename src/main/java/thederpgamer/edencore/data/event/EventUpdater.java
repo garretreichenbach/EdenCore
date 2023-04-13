@@ -8,6 +8,7 @@ package thederpgamer.edencore.data.event;
  */
 public interface EventUpdater {
     int getStatus();
+    void transition();
     void start();
     void update(float deltaTime);
     void end();

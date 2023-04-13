@@ -14,9 +14,11 @@ import java.io.Serializable;
  */
 public abstract class EventTarget implements SerializableData, Serializable {
 
+    protected String name;
     protected Object target;
 
-    public EventTarget(Object target) {
+    public EventTarget(String name, Object target) {
+        this.name = name;
         this.target = target;
     }
 
