@@ -14,62 +14,57 @@ import java.util.HashMap;
  * offers sprites to draw onto the map
  */
 public enum MapIcon {
-    OUTPOST("map-sprites",0),
-    SHIPYARD("map-sprites",1),
-    //FACTORY("map-sprites",2),
-    WARPGATE("map-sprites",2),
-    SIPHON("map-sprites", 3),
-    BASE("map-sprites", 4);
+	OUTPOST("map-sprites", 0), SHIPYARD("map-sprites", 1), //FACTORY("map-sprites",2),
+	WARPGATE("map-sprites", 2), SIPHON("map-sprites", 3), BASE("map-sprites", 4);
+	static final HashMap<String, Sprite> sprites = new HashMap<>();
 
-    int index;
-    final String resourceName;
-    final int subSpriteIndex;
+	//map indices and resource names to be loaded as sprites
+	static {
+		for(int i = 0; i < MapIcon.values().length; i++) {
+			MapIcon.values()[i].index = i;
+			sprites.put(MapIcon.values()[i].resourceName, null);
+		}
+	}
 
-    MapIcon(String resourceName, int subSpriteIndex) {
-        this.resourceName = resourceName;
-        this.subSpriteIndex = subSpriteIndex;
-    }
+	final String resourceName;
+	final int subSpriteIndex;
+	int index;
 
-    static final HashMap<String,Sprite> sprites =new HashMap<>();
-    //map indices and resource names to be loaded as sprites
-    static {
-        for (int i = 0; i < MapIcon.values().length; i++) {
-            MapIcon.values()[i].index = i;
-            sprites.put(MapIcon.values()[i].resourceName,null);
-        }
-    }
+	MapIcon(String resourceName, int subSpriteIndex) {
+		this.resourceName = resourceName;
+		this.subSpriteIndex = subSpriteIndex;
+	}
 
-    public static void loadSprites() {
-        for (String resourceName: sprites.keySet()) {
-            final InputStream inputStream;
-            StarMod mod = EdenCore.getInstance();
-            try {
-                inputStream = EdenCore.class.getResourceAsStream("/sprites/" + resourceName + ".png");
-                BufferedImage img;
-                assert inputStream != null;
-                img = ImageIO.read(inputStream);
-                Sprite s = StarLoaderTexture.newSprite(img,mod,resourceName);
-                s.setMultiSpriteMax(8,8); //TODO map this somewhere, file dependent?/make standard?
-                s.setHeight(32);
-                s.setWidth(32);
-                sprites.put(resourceName,s);
-            } catch (Exception e) { //resource doesnt exist
-                e.printStackTrace();
-            }
-        }
-    }
+	public static void loadSprites() {
+		for(String resourceName : sprites.keySet()) {
+			final InputStream inputStream;
+			StarMod mod = EdenCore.getInstance();
+			try {
+				inputStream = EdenCore.class.getResourceAsStream("/sprites/" + resourceName + ".png");
+				BufferedImage img;
+				assert inputStream != null;
+				img = ImageIO.read(inputStream);
+				Sprite s = StarLoaderTexture.newSprite(img, mod, resourceName);
+				s.setMultiSpriteMax(8, 8); //TODO map this somewhere, file dependent?/make standard?
+				s.setHeight(32);
+				s.setWidth(32);
+				sprites.put(resourceName, s);
+			} catch(Exception e) { //resource doesnt exist
+				e.printStackTrace();
+			}
+		}
+	}
+	//getters and stuff
 
-    //getters and stuff
+	public static MapIcon getByIndex(int index) {
+		return MapIcon.values()[Math.abs(index) % MapIcon.values().length];
+	}
 
-    public static MapIcon getByIndex(int index) {
-        return MapIcon.values()[Math.abs(index)%MapIcon.values().length];
-    }
+	public int getSubSpriteIndex() {
+		return subSpriteIndex;
+	}
 
-    public int getSubSpriteIndex() {
-        return subSpriteIndex;
-    }
-
-    public Sprite getSprite() {
-        return sprites.get(resourceName);
-    }
+	public Sprite getSprite() {
+		return sprites.get(resourceName);
+	}
 }

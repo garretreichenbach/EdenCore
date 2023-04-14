@@ -15,7 +15,6 @@ import java.io.IOException;
  * @version 1.0 - [11/24/2021]
  */
 public class ItemExchangeItem extends ExchangeItem {
-
 	public short itemId;
 	public short metaId;
 	public short subType;
@@ -25,14 +24,7 @@ public class ItemExchangeItem extends ExchangeItem {
 		super(readBuffer);
 	}
 
-	public ItemExchangeItem(
-			short barType,
-			int price,
-			String name,
-			String description,
-			short itemId,
-			short metaId,
-			short subType) {
+	public ItemExchangeItem(short barType, int price, String name, String description, short itemId, short metaId, short subType) {
 		super(barType, price, name, description);
 		this.itemId = itemId;
 		this.metaId = metaId;
@@ -44,9 +36,20 @@ public class ItemExchangeItem extends ExchangeItem {
 	}
 
 	@Override
+	public void deserialize(PacketReadBuffer readBuffer) throws IOException {
+		barType = readBuffer.readShort();
+		price = readBuffer.readInt();
+		name = readBuffer.readString();
+		description = readBuffer.readString();
+		if(description.length() > 96) this.description = description.substring(0, 95) + " ...";
+		itemId = readBuffer.readShort();
+		metaId = readBuffer.readShort();
+		subType = readBuffer.readShort();
+	}
+
+	@Override
 	public GUIOverlay getIcon() {
-		InventorySlotOverlayElement blockSprite =
-				new InventorySlotOverlayElement(false, parent.getState(), false, parent);
+		InventorySlotOverlayElement blockSprite = new InventorySlotOverlayElement(false, parent.getState(), false, parent);
 		blockSprite.setMeta(metaId);
 		blockSprite.setSubSlotType(subType);
 		blockSprite.setSlot(0);
@@ -59,7 +62,7 @@ public class ItemExchangeItem extends ExchangeItem {
 		writeBuffer.writeShort(barType);
 		writeBuffer.writeInt(price);
 		writeBuffer.writeString(name);
-		if (description.length() > 96) this.description = description.substring(0, 95) + " ...";
+		if(description.length() > 96) this.description = description.substring(0, 95) + " ...";
 		writeBuffer.writeString(description);
 		writeBuffer.writeShort(itemId);
 		writeBuffer.writeShort(metaId);
@@ -67,22 +70,7 @@ public class ItemExchangeItem extends ExchangeItem {
 	}
 
 	@Override
-	public void deserialize(PacketReadBuffer readBuffer) throws IOException {
-		barType = readBuffer.readShort();
-		price = readBuffer.readInt();
-		name = readBuffer.readString();
-		description = readBuffer.readString();
-		if (description.length() > 96) this.description = description.substring(0, 95) + " ...";
-		itemId = readBuffer.readShort();
-		metaId = readBuffer.readShort();
-		subType = readBuffer.readShort();
-	}
-
-	@Override
 	public boolean equals(ExchangeItem exchangeItem) {
-		return exchangeItem instanceof ItemExchangeItem
-				&& exchangeItem.name.equals(name)
-				&& exchangeItem.barType == barType
-				&& exchangeItem.price == price;
+		return exchangeItem instanceof ItemExchangeItem && exchangeItem.name.equals(name) && exchangeItem.barType == barType && exchangeItem.price == price;
 	}
 }

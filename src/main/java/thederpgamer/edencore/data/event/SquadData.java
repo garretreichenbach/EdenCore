@@ -15,37 +15,45 @@ import java.util.ArrayList;
  * @version 1.0 - [10/13/2021]
  */
 public class SquadData implements SerializableData {
+	public ArrayList<SquadMemberData> squadMembers;
+	public int squadID;
 
-    public ArrayList<SquadMemberData> squadMembers;
-    public int squadID;
+	public SquadData() {
+		squadID = SquadManager.squadIDCounter;
+		SquadManager.squadIDCounter++;
+		SquadManager.addSquadData(this);
+	}
 
-    public SquadData() {
-        squadID = SquadManager.squadIDCounter;
-        SquadManager.squadIDCounter ++;
-        SquadManager.addSquadData(this);
-    }
+	public SquadData(PacketReadBuffer readBuffer) throws IOException {
+		deserialize(readBuffer);
+	}
 
-    public SquadData(PacketReadBuffer readBuffer) throws IOException {
-        deserialize(readBuffer);
-    }
+	@Override
+	public void deserialize(PacketReadBuffer readBuffer) throws IOException {
+		squadID = readBuffer.readInt();
+		int size = readBuffer.readInt();
+		squadMembers = new ArrayList<>();
+		for(int i = 0; i < size; i++) squadMembers.add(new SquadMemberData(readBuffer));
+	}
 
-    public boolean ready() {
-        for(SquadMemberData memberData : squadMembers) if(!memberData.ready) return false;
-        return true;
-    }
+	@Override
+	public void serialize(PacketWriteBuffer writeBuffer) throws IOException {
+		writeBuffer.writeInt(squadID);
+		writeBuffer.writeInt(squadMembers.size());
+		for(SquadMemberData memberData : squadMembers) memberData.serialize(writeBuffer);
+	}
 
-    public boolean isPlayerInSquad(String playerName) {
-        for(SquadMemberData memberData : squadMembers) if(memberData.playerName.equals(playerName)) return true;
-        return false;
-    }
+	@Override
+	public void updateClients() {
+	}
 
-    @Override
-    public void deserialize(PacketReadBuffer readBuffer) throws IOException {
+	public boolean ready() {
+		for(SquadMemberData memberData : squadMembers) if(!memberData.ready) return false;
+		return true;
+	}
 
-    }
-
-    @Override
-    public void serialize(PacketWriteBuffer writeBuffer) throws IOException {
-
-    }
+	public boolean isPlayerInSquad(String playerName) {
+		for(SquadMemberData memberData : squadMembers) if(memberData.playerName.equals(playerName)) return true;
+		return false;
+	}
 }

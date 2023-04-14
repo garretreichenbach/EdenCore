@@ -9,8 +9,7 @@ import api.mod.StarLoader;
  * @version 1.0 - [11/04/2021]
  */
 public class APIUtils {
-
-    public static boolean isRRSInstalled() {
-        return StarLoader.getModFromName("Resources ReSourced") != null;
-    }
+	public static boolean isRRSInstalled() {
+		return StarLoader.getModFromName("Resources ReSourced") != null;
+	}
 }

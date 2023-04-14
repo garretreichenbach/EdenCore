@@ -31,10 +31,6 @@ import java.util.Observable;
  * @version 1.0 - [02/26/2022]
  */
 public class BuildSectorBoundary extends Observable implements Drawable, Shaderable {
-
-	public BuildSectorData sectorData;
-	private Vector3f center = new Vector3f();
-
 	public static final int MAX_NUM = 8;
 	private final static FloatBuffer fbAlphas = BufferUtils.createFloatBuffer(MAX_NUM);
 	private final static FloatBuffer fbDmg = BufferUtils.createFloatBuffer(MAX_NUM);
@@ -45,25 +41,26 @@ public class BuildSectorBoundary extends Observable implements Drawable, Shadera
 	private final static Transform closestBorder = new Transform();
 
 	static {
-		for (int i = 0; i < tmpP.length; i++) {
+		for(int i = 0; i < tmpP.length; i++) {
 			tmpP[i] = new Vector3f();
 		}
 	}
 
+	private final Vector3f center = new Vector3f();
+	private final float[] alphas = new float[MAX_NUM];
+	private final Vector4f[] points = new Vector4f[MAX_NUM];
+	private final float minAlpha = 0.0f;
+	private final float maxDistance = 4f;
+	private final float[] percent = new float[MAX_NUM];
+	private final Vector3f[] tempQuads = new Vector3f[4];
+	public BuildSectorData sectorData;
 	public Shader s = null;
-	private float[] alphas = new float[MAX_NUM];
-	private Vector4f[] points = new Vector4f[MAX_NUM];
 	private int collisionNum;
-	private float minAlpha = 0.0f;
-	private float maxDistance = 4f;
 	private boolean pointsChanged = false;
-	private float[] percent = new float[MAX_NUM];
-
-	private Vector3f[] tempQuads = new Vector3f[4];
 
 	public BuildSectorBoundary(BuildSectorData sectorData) {
 		this.sectorData = sectorData;
-		for(int i = 0; i < MAX_NUM; i ++) {
+		for(int i = 0; i < MAX_NUM; i++) {
 			points[i] = new Vector4f();
 			contacts[i] = null;
 		}
@@ -86,13 +83,18 @@ public class BuildSectorBoundary extends Observable implements Drawable, Shadera
 			percent[collisionNum] = 1.0f;
 			contacts[collisionNum] = new Transform();
 			contacts[collisionNum].origin.set(c);
-			collisionNum ++;
+			collisionNum++;
 			pointsChanged = true;
 		}
 	}
 
+	private boolean hasContact(Transform transform) {
+		if(collisionNum == 0) return false;
+		else return hasCollisionInRange(transform.origin.x, transform.origin.y, transform.origin.z);
+	}
+
 	private boolean hasCollisionInRange(float x, float y, float z) {
-		for(int i = 0; i < collisionNum; i ++) {
+		for(int i = 0; i < collisionNum; i++) {
 			float xx = x - points[i].x;
 			float yy = y - points[i].y;
 			float zz = z - points[i].z;
@@ -102,20 +104,44 @@ public class BuildSectorBoundary extends Observable implements Drawable, Shadera
 		return false;
 	}
 
-	private boolean hasContact(Transform transform) {
-		if(collisionNum == 0) return false;
-		else return hasCollisionInRange(transform.origin.x, transform.origin.y, transform.origin.z);
+	private Vector3f[] getQuadCorners(Transform transform) {
+		Vector3f[] directions = new Vector3f[] {GlUtil.getLeftVector(new Vector3f(), closestBorder), GlUtil.getUpVector(new Vector3f(), closestBorder), GlUtil.getForwardVector(new Vector3f(), closestBorder)};
+		Transform currentPos = new Transform();
+		if(PlayerUtils.getCurrentControl(GameClient.getClientPlayerState()) instanceof SegmentController) currentPos.set(((SegmentController) PlayerUtils.getCurrentControl(GameClient.getClientPlayerState())).getWorldTransform());
+		else GameClient.getClientPlayerState().getWordTransform(currentPos);
+		Vector3f[] quadCorners = new Vector3f[4];
+		quadCorners[0] = new Vector3f((transform.origin.x * directions[0].x) - currentPos.origin.x, (transform.origin.x * directions[1].y) + currentPos.origin.y, (transform.origin.z * directions[2].z) + currentPos.origin.z);
+		quadCorners[1] = new Vector3f(transform.origin.x + (currentPos.origin.x * directions[0].length()), transform.origin.y + (currentPos.origin.y * directions[1].length()), transform.origin.z + (currentPos.origin.z * directions[2].length()));
+		quadCorners[2] = new Vector3f(transform.origin.x - (currentPos.origin.x * directions[0].length()), transform.origin.y - (currentPos.origin.y * directions[1].length()), transform.origin.z + (currentPos.origin.z * directions[2].length()));
+		quadCorners[3] = new Vector3f(transform.origin.x + (currentPos.origin.x * directions[0].length()), transform.origin.y - (currentPos.origin.y * directions[1].length()), transform.origin.z + (currentPos.origin.z * directions[2].length()));
+		return quadCorners;
 	}
 
+	public void update(Timer timer) {
+		for(int i = 0; i < collisionNum; i++) {
+			alphas[i] -= timer.getDelta() * 0.7f;
+			if(alphas[i] <= 0) {
+				alphas[i] = 0;
+				alphas[i] = alphas[collisionNum - 1];
+				points[i].set(points[collisionNum - 1]);
+				contacts[i] = null;
+				collisionNum--;
+				pointsChanged = true;
+			}
+		}
+		if(collisionNum <= 0) {
+			setChanged();
+			notifyObservers(false);
+		}
+	}
 
 	@Override
-	public void onInit() {
-
+	public void cleanUp() {
 	}
 
 	@Override
 	public void draw() {
-		for(int i = 0; i < MAX_NUM; i ++) {
+		for(int i = 0; i < MAX_NUM; i++) {
 			if(contacts[i] != null && contacts[i].origin.length() > 0) drawContact(contacts[i]);
 		}
 	}
@@ -124,12 +150,10 @@ public class BuildSectorBoundary extends Observable implements Drawable, Shadera
 		contact.inverse();
 		GlUtil.glMatrixMode(GL11.GL_PROJECTION);
 		GlUtil.glPushMatrix();
-
 		float aspect = (float) GLFrame.getWidth() / (float) GLFrame.getHeight();
 		GlUtil.gluPerspective(Controller.projectionMatrix, (Float) EngineSettings.G_FOV.getCurrentState(), aspect, 10, 1000, true);
 		GlUtil.glMatrixMode(GL11.GL_MODELVIEW);
 		Vector3i selectedPos = new Vector3i();
-
 		selectedPos.x = ByteUtil.modU16(selectedPos.x);
 		selectedPos.y = ByteUtil.modU16(selectedPos.y);
 		selectedPos.z = ByteUtil.modU16(selectedPos.z);
@@ -148,51 +172,32 @@ public class BuildSectorBoundary extends Observable implements Drawable, Shadera
 		 */
 		ShaderLibrary.cubeShieldShader.unload();
 		//GlUtil.glEnd();
-
 		GlUtil.glMatrixMode(GL11.GL_PROJECTION);
 		GlUtil.glPopMatrix();
 		GlUtil.glMatrixMode(GL11.GL_MODELVIEW);
 	}
 
-	private Vector3f[] getQuadCorners(Transform transform) {
-		Vector3f[] directions = new Vector3f[] {
-				GlUtil.getLeftVector(new Vector3f(), closestBorder),
-				GlUtil.getUpVector(new Vector3f(), closestBorder),
-				GlUtil.getForwardVector(new Vector3f(), closestBorder)
-		};
-		Transform currentPos = new Transform();
-		if(PlayerUtils.getCurrentControl(GameClient.getClientPlayerState()) instanceof SegmentController) currentPos.set(((SegmentController) PlayerUtils.getCurrentControl(GameClient.getClientPlayerState())).getWorldTransform());
-		else GameClient.getClientPlayerState().getWordTransform(currentPos);
-		Vector3f[] quadCorners = new Vector3f[4];
-		quadCorners[0] = new Vector3f((transform.origin.x * directions[0].x) - currentPos.origin.x, (transform.origin.x * directions[1].y) + currentPos.origin.y, (transform.origin.z * directions[2].z) + currentPos.origin.z);
-		quadCorners[1] = new Vector3f(transform.origin.x + (currentPos.origin.x * directions[0].length()), transform.origin.y + (currentPos.origin.y * directions[1].length()), transform.origin.z + (currentPos.origin.z * directions[2].length()));
-		quadCorners[2] = new Vector3f(transform.origin.x - (currentPos.origin.x * directions[0].length()), transform.origin.y - (currentPos.origin.y * directions[1].length()), transform.origin.z + (currentPos.origin.z * directions[2].length()));
-		quadCorners[3] = new Vector3f(transform.origin.x + (currentPos.origin.x * directions[0].length()), transform.origin.y - (currentPos.origin.y * directions[1].length()), transform.origin.z + (currentPos.origin.z * directions[2].length()));
-		return quadCorners;
+	@Override
+	public boolean isInvisible() {
+		return false;
 	}
 
-	public void update(Timer timer) {
-		for(int i = 0; i < collisionNum; i ++) {
-			alphas[i] -= timer.getDelta() * 0.7f;
-			if(alphas[i] <= 0) {
-				alphas[i] = 0;
-				alphas[i] = alphas[collisionNum - 1];
-				points[i].set(points[collisionNum- 1]);
-				contacts[i] = null;
-				collisionNum --;
-				pointsChanged = true;
-			}
-		}
+	@Override
+	public void onInit() {
+	}
 
-		if(collisionNum <= 0) {
-			setChanged();
-			notifyObservers(false);
-		}
+	@Override
+	public void onExit() {
+		GlUtil.glActiveTexture(GL13.GL_TEXTURE2);
+		GlUtil.glBindTexture(GL11.GL_TEXTURE_2D, 0);
+		GlUtil.glActiveTexture(GL13.GL_TEXTURE1);
+		GlUtil.glBindTexture(GL11.GL_TEXTURE_2D, 0);
+		GlUtil.glActiveTexture(GL13.GL_TEXTURE0);
+		GlUtil.glBindTexture(GL11.GL_TEXTURE_2D, 0);
 	}
 
 	@Override
 	public void updateShader(DrawableScene drawableScene) {
-
 	}
 
 	@Override
@@ -216,13 +221,10 @@ public class BuildSectorBoundary extends Observable implements Drawable, Shadera
 					fb.put(CubeMeshQuadsShader13.quadPosMark[i].y);
 					fb.put(CubeMeshQuadsShader13.quadPosMark[i].z);
 				}
-
 				fb.rewind();
 				GlUtil.updateShaderFloats3(shader, "quadPosMark", fb);
-
 				shader.recompiled = false;
 			}
-
 			for(int i = 0; i < collisionNum; i++) {
 				fbAlphas.put(i, alphas[i]);
 				if(pointsChanged) {
@@ -233,19 +235,15 @@ public class BuildSectorBoundary extends Observable implements Drawable, Shadera
 					fbPerc.put(i, percent[i]);
 				}
 			}
-
 			fbAlphas.rewind();
 			GlUtil.updateShaderFloats1(shader, "m_CollisionAlphas", fbAlphas);
-
 			if(pointsChanged) {
 				fb.rewind();
 				GlUtil.updateShaderFloats3(shader, "m_Collisions", fb);
 				pointsChanged = false;
 				GlUtil.updateShaderInt(shader, "m_CollisionNum", collisionNum);
-
 				fbDmg.rewind();
 				GlUtil.updateShaderFloats1(shader, "m_Damages", fbDmg);
-
 				fbPerc.rewind();
 				GlUtil.updateShaderFloats1(shader, "m_Percent", fbPerc);
 			}
@@ -253,26 +251,6 @@ public class BuildSectorBoundary extends Observable implements Drawable, Shadera
 			GlUtil.updateShaderFloat(shader, "m_MaxDistance", maxDistance);
 			GlUtil.updateShaderFloat(shader, "m_Time", ShieldDrawerManager.time);
 		}
-	}
-
-	@Override
-	public void cleanUp() {
-
-	}
-
-	@Override
-	public void onExit() {
-		GlUtil.glActiveTexture(GL13.GL_TEXTURE2);
-		GlUtil.glBindTexture(GL11.GL_TEXTURE_2D, 0);
-		GlUtil.glActiveTexture(GL13.GL_TEXTURE1);
-		GlUtil.glBindTexture(GL11.GL_TEXTURE_2D, 0);
-		GlUtil.glActiveTexture(GL13.GL_TEXTURE0);
-		GlUtil.glBindTexture(GL11.GL_TEXTURE_2D, 0);
-	}
-
-	@Override
-	public boolean isInvisible() {
-		return false;
 	}
 
 	public void setClosestBorder(Transform closest) {

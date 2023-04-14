@@ -38,7 +38,6 @@ import java.util.Map;
  * @version 1.0 - [10/27/2021]
  */
 public class BuildSectorUtils {
-
 	public static ArrayList<String> getPlayersWithEnemySpawnPerms(BuildSectorData sectorData) {
 		ArrayList<String> players = new ArrayList<>();
 		for(String playerName : sectorData.getAllowedPlayersByName()) {
@@ -64,7 +63,6 @@ public class BuildSectorUtils {
 			spawnOnBlock = ServerUtils.getBlockLookingAt(GameServer.getServerState(), sender);
 		} catch(PlayerNotFountException | PlayerControlledTransformableNotFound | IOException ignored) {
 		}
-
 		Transform transform = new Transform();
 		transform.setIdentity();
 		transform.origin.set(sender.getFirstControlledTransformableWOExc().getWorldTransform().origin);
@@ -73,48 +71,17 @@ public class BuildSectorUtils {
 		size.scale(0.5f);
 		forward.scaleAdd(1.15f, size);
 		transform.origin.set(forward);
-
 		try {
 			SegmentControllerOutline<?> outline = BluePrintController.active.loadBluePrint(GameServerState.instance, entry.getName(), entry.getName(), transform, -1, sender.getFactionId(), sender.getCurrentSector(), sender.getName(), PlayerState.buffer, spawnOnBlock, false, new ChildStats(false));
 			SegmentController entity = outline.spawn(sender.getCurrentSector(), false, new ChildStats(false), new SegmentControllerSpawnCallbackDirect(GameServer.getServerState(), sender.getCurrentSector()) {
 				@Override
-				public void onNoDocker() { }
+				public void onNoDocker() {
+				}
 			});
 			toggleAI(entity, aiEnabled);
 		} catch(EntityNotFountException | IOException | EntityAlreadyExistsException | StateParameterNotFoundException exception) {
 			exception.printStackTrace();
 		}
-	}
-
-	public static void spawnEnemy(PlayerState sender, BlueprintEntry entry, boolean aiEnabled) {
-		Transform transform = new Transform();
-		transform.setIdentity();
-		transform.origin.set(sender.getFirstControlledTransformableWOExc().getWorldTransform().origin);
-		Vector3f forward = GlUtil.getForwardVector(new Vector3f(), transform);
-		Vector3f size = entry.getBb().calculateHalfSize(new Vector3f());
-		size.scale(0.5f);
-		forward.scaleAdd(1.15f, size);
-		transform.origin.set(forward);
-		try {
-			SegmentControllerOutline<?> outline = BluePrintController.active.loadBluePrint(GameServerState.instance, entry.getName(), entry.getName(), transform, -1, FactionManager.PIRATES_ID, sender.getCurrentSector(), sender.getName(), PlayerState.buffer, null, false, new ChildStats(false));
-			SegmentController entity = outline.spawn(sender.getCurrentSector(), false, new ChildStats(false), new SegmentControllerSpawnCallbackDirect(GameServer.getServerState(), sender.getCurrentSector()) {
-				@Override
-				public void onNoDocker() { }
-			});
-			toggleAI(entity, aiEnabled);
-		} catch(EntityNotFountException | IOException | EntityAlreadyExistsException | StateParameterNotFoundException exception) {
-			exception.printStackTrace();
-		}
-	}
-
-	public static SegmentController getEntityByName(PlayerState sender, String entityName) {
-		Map<String, SegmentController> entityMap = GameServer.getServerState().getSegmentControllersByName();
-		for(Map.Entry<String, SegmentController> entry : entityMap.entrySet()) {
-			if(entry.getKey().toLowerCase().contains(entityName.toLowerCase())) {
-				if(entry.getValue().getSectorId() == sender.getSectorId()) return entry.getValue();
-			}
-		}
-		return null;
 	}
 
 	public static void toggleAI(SegmentController entity, boolean toggle) {
@@ -140,5 +107,37 @@ public class BuildSectorUtils {
 				PlayerUtils.sendMessage(GameCommon.getPlayerFromName(sectorData.ownerName), "An unexpected error occurred while trying to protect your sector from pirate spawns." + " Let an admin know ASAP!");
 			}
 		}
+	}
+
+	public static void spawnEnemy(PlayerState sender, BlueprintEntry entry, boolean aiEnabled) {
+		Transform transform = new Transform();
+		transform.setIdentity();
+		transform.origin.set(sender.getFirstControlledTransformableWOExc().getWorldTransform().origin);
+		Vector3f forward = GlUtil.getForwardVector(new Vector3f(), transform);
+		Vector3f size = entry.getBb().calculateHalfSize(new Vector3f());
+		size.scale(0.5f);
+		forward.scaleAdd(1.15f, size);
+		transform.origin.set(forward);
+		try {
+			SegmentControllerOutline<?> outline = BluePrintController.active.loadBluePrint(GameServerState.instance, entry.getName(), entry.getName(), transform, -1, FactionManager.PIRATES_ID, sender.getCurrentSector(), sender.getName(), PlayerState.buffer, null, false, new ChildStats(false));
+			SegmentController entity = outline.spawn(sender.getCurrentSector(), false, new ChildStats(false), new SegmentControllerSpawnCallbackDirect(GameServer.getServerState(), sender.getCurrentSector()) {
+				@Override
+				public void onNoDocker() {
+				}
+			});
+			toggleAI(entity, aiEnabled);
+		} catch(EntityNotFountException | IOException | EntityAlreadyExistsException | StateParameterNotFoundException exception) {
+			exception.printStackTrace();
+		}
+	}
+
+	public static SegmentController getEntityByName(PlayerState sender, String entityName) {
+		Map<String, SegmentController> entityMap = GameServer.getServerState().getSegmentControllersByName();
+		for(Map.Entry<String, SegmentController> entry : entityMap.entrySet()) {
+			if(entry.getKey().toLowerCase().contains(entityName.toLowerCase())) {
+				if(entry.getValue().getSectorId() == sender.getSectorId()) return entry.getValue();
+			}
+		}
+		return null;
 	}
 }

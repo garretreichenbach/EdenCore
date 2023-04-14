@@ -6,7 +6,7 @@ import org.schema.schine.graphicsengine.forms.gui.newgui.GUIContentPane;
 import org.schema.schine.graphicsengine.forms.gui.newgui.GUITabbedContent;
 import org.schema.schine.input.InputState;
 import thederpgamer.edencore.data.event.EventData;
-import thederpgamer.edencore.network.client.RequestClientCacheUpdatePacket;
+import thederpgamer.edencore.network.client.misc.RequestClientCacheUpdatePacket;
 
 /**
  * <Description>
@@ -15,7 +15,6 @@ import thederpgamer.edencore.network.client.RequestClientCacheUpdatePacket;
  * @version 1.0 - [11/08/2021]
  */
 public class EventsMenuPanel extends GUIMenuPanel {
-
 	private GUITabbedContent pveTabbedContent;
 	private GUITabbedContent pvpTabbedContent;
 
@@ -28,15 +27,12 @@ public class EventsMenuPanel extends GUIMenuPanel {
 		PacketUtil.sendPacketToServer(new RequestClientCacheUpdatePacket());
 		int lastTab = guiWindow.getSelectedTab();
 		if(guiWindow.getTabs().size() > 0) guiWindow.clearTabs();
-
 		GUIContentPane pveTab = guiWindow.addTab("PVE");
 		pveTab.setTextBoxHeightLast((int) (guiWindow.getInnerHeigth() / 1.5));
 		createPVETab(pveTab);
-
 		GUIContentPane pvpTab = guiWindow.addTab("PVP");
 		pvpTab.setTextBoxHeightLast((int) (guiWindow.getInnerHeigth() / 1.5));
 		createPVPTab(pvpTab);
-
 		guiWindow.setSelectedTab(lastTab);
 	}
 
@@ -47,7 +43,6 @@ public class EventsMenuPanel extends GUIMenuPanel {
 			lastTab = pveTabbedContent.getSelectedTab();
 			pveTabbedContent.clearTabs();
 		}
-
 		{ //Daily Tab
 			GUIContentPane subTab = pveTabbedContent.addTab("DAILY");
 			subTab.setTextBoxHeightLast((int) (guiWindow.getInnerHeigth() / 1.5));
@@ -56,7 +51,6 @@ public class EventsMenuPanel extends GUIMenuPanel {
 			eventsList.onInit();
 			subTab.getTextboxes().get(0).attach(eventsList);
 		}
-
 		{ //Weekly Tab
 			GUIContentPane subTab = pveTabbedContent.addTab("WEEKLY");
 			subTab.setTextBoxHeightLast((int) (guiWindow.getInnerHeigth() / 1.5));
@@ -65,7 +59,6 @@ public class EventsMenuPanel extends GUIMenuPanel {
 			eventsList.onInit();
 			subTab.getTextboxes().get(0).attach(eventsList);
 		}
-
 		{ //Monthly Tab
 			GUIContentPane subTab = pveTabbedContent.addTab("MONTHLY");
 			subTab.setTextBoxHeightLast((int) (guiWindow.getInnerHeigth() / 1.5));
@@ -74,7 +67,6 @@ public class EventsMenuPanel extends GUIMenuPanel {
 			eventsList.onInit();
 			subTab.getTextboxes().get(0).attach(eventsList);
 		}
-
 		pveTabbedContent.setSelectedTab(lastTab);
 	}
 
@@ -85,7 +77,6 @@ public class EventsMenuPanel extends GUIMenuPanel {
 			lastTab = pvpTabbedContent.getSelectedTab();
 			pvpTabbedContent.clearTabs();
 		}
-
 		{ //Daily Tab
 			GUIContentPane subTab = pvpTabbedContent.addTab("DAILY");
 			subTab.setTextBoxHeightLast((int) (guiWindow.getInnerHeigth() / 1.5));
@@ -94,7 +85,6 @@ public class EventsMenuPanel extends GUIMenuPanel {
 			eventsList.onInit();
 			subTab.getTextboxes().get(0).attach(eventsList);
 		}
-
 		{ //Weekly Tab
 			GUIContentPane subTab = pvpTabbedContent.addTab("WEEKLY");
 			subTab.setTextBoxHeightLast((int) (guiWindow.getInnerHeigth() / 1.5));
@@ -103,7 +93,6 @@ public class EventsMenuPanel extends GUIMenuPanel {
 			eventsList.onInit();
 			subTab.getTextboxes().get(0).attach(eventsList);
 		}
-
 		{ //Monthly Tab
 			GUIContentPane subTab = pvpTabbedContent.addTab("MONTHLY");
 			subTab.setTextBoxHeightLast((int) (guiWindow.getInnerHeigth() / 1.5));
@@ -112,7 +101,6 @@ public class EventsMenuPanel extends GUIMenuPanel {
 			eventsList.onInit();
 			subTab.getTextboxes().get(0).attach(eventsList);
 		}
-
 		pvpTabbedContent.setSelectedTab(lastTab);
 	}
 }

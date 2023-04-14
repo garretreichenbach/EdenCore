@@ -12,7 +12,9 @@ import java.io.IOException;
  * @version 1.0 - [10/29/2021]
  */
 public interface SerializableData {
+	void deserialize(PacketReadBuffer readBuffer) throws IOException;
 
-    void deserialize(PacketReadBuffer readBuffer) throws IOException;
-    void serialize(PacketWriteBuffer writeBuffer) throws IOException;
+	void serialize(PacketWriteBuffer writeBuffer) throws IOException;
+
+	void updateClients();
 }

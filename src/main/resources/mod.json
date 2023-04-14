@@ -2,14 +2,14 @@
   "name": "EdenCore",
   "author": "TheDerpGamer",
   "description": "Core mod for Skies of Eden StarMade Server.",
-  "version": "1.8.6",
-  "starmade_version": "0.203.133",
+  "version": "1.9.3",
+  "starmade_version": "0.203.142",
   "client_mod": false,
   "server_mod": false,
   "main_class": "thederpgamer.edencore.EdenCore",
   "smd_resource_id": 8289,
   "dependencies": [
-    -1
+	-1
   ],
   "core_mod": true,
   "requires_class_resize": true,

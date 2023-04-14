@@ -13,16 +13,15 @@ import java.io.Serializable;
  * @version 1.0 - [11/05/2021]
  */
 public abstract class EventTarget implements SerializableData, Serializable {
+	protected Object target;
 
-    protected Object target;
+	public EventTarget(Object target) {
+		this.target = target;
+	}
 
-    public EventTarget(Object target) {
-        this.target = target;
-    }
+	public EventTarget(PacketReadBuffer readBuffer) throws IOException {
+		deserialize(readBuffer);
+	}
 
-    public EventTarget(PacketReadBuffer readBuffer) throws IOException {
-        deserialize(readBuffer);
-    }
-
-    public abstract float getProgress();
+	public abstract float getProgress();
 }

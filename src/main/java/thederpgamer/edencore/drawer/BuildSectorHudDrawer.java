@@ -18,7 +18,6 @@ import java.util.Arrays;
  * @version 1.0 - [09/08/2021]
  */
 public class BuildSectorHudDrawer extends ModWorldDrawer {
-
 	private boolean wasInBuildSectorLastFrame;
 	private BuildSectorBoundary sectorBoundary;
 	private float update = 0;
@@ -29,7 +28,7 @@ public class BuildSectorHudDrawer extends ModWorldDrawer {
 			if(update <= 0) {
 				updateBoundary(timer);
 				update = 50;
-			} else update --;
+			} else update--;
 		} else update = 0;
 	}
 
@@ -44,7 +43,7 @@ public class BuildSectorHudDrawer extends ModWorldDrawer {
 					hud.getIndicator().drawWaypoints = false;
 					if(GameClient.getClientState().getController().getClientGameData().getWaypoint() != null) GameClient.getClientState().getController().getClientGameData().setWaypoint(null);
 				}
-			} catch(Exception ignored) { }
+			} catch(Exception ignored) {}
 			if(sectorBoundary != null) sectorBoundary.draw();
 			wasInBuildSectorLastFrame = true;
 		} else {
@@ -54,23 +53,9 @@ public class BuildSectorHudDrawer extends ModWorldDrawer {
 					hud.getIndicator().drawSectorIndicators = true;
 					hud.getIndicator().drawWaypoints = true;
 				}
-			} catch(Exception ignored) { }
+			} catch(Exception ignored) {}
 			wasInBuildSectorLastFrame = false;
 		}
-	}
-
-	@Override
-	public void cleanUp() {
-	}
-
-	@Override
-	public boolean isInvisible() {
-		return false;
-	}
-
-	@Override
-	public void onInit() {
-
 	}
 
 	private void updateBoundary(Timer timer) {
@@ -85,7 +70,6 @@ public class BuildSectorHudDrawer extends ModWorldDrawer {
 			t.origin.scale(0.5f);
 			if(closest == null || getDistance(current, t) < getDistance(current, closest)) closest = new Transform(t);
 		}
-
 		if(sectorBoundary == null) (sectorBoundary = new BuildSectorBoundary(DataUtils.getPlayerCurrentBuildSector(GameClient.getClientPlayerState()))).onInit();
 		if(closest != null && getDistance(current, closest) <= 1000) {
 			sectorBoundary.setClosestBorder(closest);
@@ -101,5 +85,18 @@ public class BuildSectorHudDrawer extends ModWorldDrawer {
 		float[] values = new float[] {x, y, z};
 		Arrays.sort(values);
 		return values[0];
+	}
+
+	@Override
+	public void cleanUp() {
+	}
+
+	@Override
+	public boolean isInvisible() {
+		return false;
+	}
+
+	@Override
+	public void onInit() {
 	}
 }

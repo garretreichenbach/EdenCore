@@ -19,19 +19,17 @@ import java.io.IOException;
  * @version 1.0 - [09/17/2021]
  */
 public class BlueprintExchangeItem extends ExchangeItem {
-
 	// public static final transient Vector3i SECTOR = new Vector3i(100000000, 100000000, 100000000);
 	// public long blocks;
 	public String iconPath;
 	public boolean community;
-	public String seller;
+	public String seller = "server";
 
 	public BlueprintExchangeItem(PacketReadBuffer readBuffer) {
 		super(readBuffer);
 	}
 
-	public BlueprintExchangeItem(
-			CatalogPermission blueprint, short barType, int price, String description, String iconPath) {
+	public BlueprintExchangeItem(CatalogPermission blueprint, short barType, int price, String description, String iconPath) {
 		super(barType, price, blueprint.getUid(), description);
 		this.barType = barType;
 		this.price = price;
@@ -43,20 +41,31 @@ public class BlueprintExchangeItem extends ExchangeItem {
 	}
 
 	@Override
+	public void deserialize(PacketReadBuffer readBuffer) throws IOException {
+		barType = readBuffer.readShort();
+		price = readBuffer.readInt();
+		name = readBuffer.readString();
+		description = readBuffer.readString();
+		iconPath = readBuffer.readString();
+		community = readBuffer.readBoolean();
+		try {
+			seller = readBuffer.readString();
+		} catch(NullPointerException ignored) {
+			seller = "server";
+		}
+	}
+
+	@Override
 	public GUIOverlay getIcon() {
 		GUIOverlay overlay = null;
-		if (iconPath != null
-				&& !iconPath.isEmpty()
-				&& iconPath.startsWith("https://")
-				&& iconPath.endsWith(".png")) {
+		if(iconPath != null && !iconPath.isEmpty() && iconPath.startsWith("https://") && iconPath.endsWith(".png")) {
 			int attempts = 0;
-			while (attempts < 5 && overlay == null) {
+			while(attempts < 5 && overlay == null) {
 				overlay = fetchImageIcon(iconPath);
 				attempts++;
 			}
 		}
-
-		if (overlay == null) {
+		if(overlay == null) {
 			Sprite sprite = ResourceManager.getSprite("default-sprite");
 			sprite.setWidth(100);
 			sprite.setHeight(100);
@@ -69,7 +78,7 @@ public class BlueprintExchangeItem extends ExchangeItem {
 	private GUIOverlay fetchImageIcon(String url) {
 		GUIOverlay overlay = null;
 		Sprite sprite = ImageUtils.getImage(url);
-		if (sprite != null) {
+		if(sprite != null) {
 			sprite.setPositionCenter(true);
 			sprite.setWidth(128);
 			sprite.setHeight(128);
@@ -88,6 +97,7 @@ public class BlueprintExchangeItem extends ExchangeItem {
 		// writeBuffer.writeLong(blocks);
 		writeBuffer.writeString(iconPath);
 		writeBuffer.writeBoolean(community);
+		if(seller == null) seller = "server";
 		writeBuffer.writeString(seller);
     /* Todo: Somehow generate a preview of the entity that can be used as it's icon
     try {
@@ -99,23 +109,8 @@ public class BlueprintExchangeItem extends ExchangeItem {
 	}
 
 	@Override
-	public void deserialize(PacketReadBuffer readBuffer) throws IOException {
-		barType = readBuffer.readShort();
-		price = readBuffer.readInt();
-		name = readBuffer.readString();
-		description = readBuffer.readString();
-		// blocks = readBuffer.readLong();
-		iconPath = readBuffer.readString();
-		community = readBuffer.readBoolean();
-		seller = readBuffer.readString();
-	}
-
-	@Override
 	public boolean equals(ExchangeItem exchangeItem) {
-		return exchangeItem instanceof BlueprintExchangeItem
-				&& exchangeItem.name.equals(name)
-				&& exchangeItem.barType == barType
-				&& exchangeItem.price == price;
+		return exchangeItem instanceof BlueprintExchangeItem && exchangeItem.name.equals(name) && exchangeItem.barType == barType && exchangeItem.price == price;
 	}
 
   /*

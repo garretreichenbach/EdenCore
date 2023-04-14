@@ -1,6 +1,7 @@
 plugins {
     id 'java'
-    id'application'
+    id 'application'
+    id 'com.github.johnrengelman.shadow' version '5.2.0'
 }
 
 apply plugin: 'java'
@@ -11,16 +12,19 @@ def starmadeDirectory = 'C:/Program Files (x86)/Steam/steamapps/common/StarMade/
 def jarName = 'EdenCore'
 mainClassName = 'thederpgamer.edencore.EdenCore'
 group 'thederpgamer.edencore'
-version '1.8.6'
+version '1.9.3'
 
 repositories {
     mavenCentral()
+    maven { url 'https://jitpack.io' }
 }
 
 dependencies {
     implementation(files(starmadeDirectory + "StarMade.jar"))
     implementation(fileTree(dir: (starmadeDirectory + "lib"), include: "*.jar"))
-    implementation(fileTree(dir: ("lib"), include: "*.jar"))
+    implementation(fileTree(dir: ("lib"), include: "*.jar", excludes: ["StarBridge.jar"]))
+    compileOnly(files("lib/StarBridge.jar"))
+    implementation 'com.vdurmont:emoji-java:5.1.1'
 }
 
 compileJava.options.encoding = 'UTF-8'
@@ -34,7 +38,7 @@ jar {
         configurations.runtimeClasspath.collect {
             if(!it.getPath().contains("StarMade") && it.getName().endsWith(".jar")) {
                 it.isDirectory() ? it : zipTree(it)
-            } else return null;
+            } else return null
         }
     }
 }

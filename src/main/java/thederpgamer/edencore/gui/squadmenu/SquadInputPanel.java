@@ -14,15 +14,14 @@ import org.schema.schine.input.InputState;
  * @version 1.0 - [11/21/2021]
  */
 public class SquadInputPanel extends GUIInputDialogPanel {
+	public SquadInputPanel(InputState inputState, GUICallback guiCallback) {
+		super(inputState, "SquadInputPanel", "SQUAD", "", (int) (GLFrame.getWidth() / 1.5), (int) (GLFrame.getHeight() / 1.5), guiCallback);
+	}
 
-    public SquadInputPanel(InputState inputState, GUICallback guiCallback) {
-        super(inputState, "SquadInputPanel", "SQUAD", "", (int) (GLFrame.getWidth() / 1.5), (int) (GLFrame.getHeight() / 1.5), guiCallback);
-    }
-
-    @Override
-    public void onInit() {
-        super.onInit();
-        GUIContentPane contentPane = ((GUIDialogWindow) background).getMainContentPane();
-        contentPane.setTextBoxHeightLast((int) (GLFrame.getHeight() / 1.5));
-    }
+	@Override
+	public void onInit() {
+		super.onInit();
+		GUIContentPane contentPane = ((GUIDialogWindow) background).getMainContentPane();
+		contentPane.setTextBoxHeightLast((int) (GLFrame.getHeight() / 1.5));
+	}
 }

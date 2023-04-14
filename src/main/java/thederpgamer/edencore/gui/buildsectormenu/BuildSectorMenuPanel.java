@@ -17,9 +17,9 @@ import org.schema.schine.graphicsengine.forms.gui.newgui.GUIHorizontalArea;
 import org.schema.schine.graphicsengine.forms.gui.newgui.GUIHorizontalButtonTablePane;
 import org.schema.schine.input.InputState;
 import thederpgamer.edencore.EdenCore;
-import thederpgamer.edencore.network.client.RequestBuildSectorInvitePacket;
-import thederpgamer.edencore.network.client.RequestBuildSectorProtectPacket;
-import thederpgamer.edencore.network.client.RequestClientCacheUpdatePacket;
+import thederpgamer.edencore.network.client.buildsector.RequestBuildSectorInvitePacket;
+import thederpgamer.edencore.network.client.buildsector.RequestBuildSectorProtectPacket;
+import thederpgamer.edencore.network.client.misc.RequestClientCacheUpdatePacket;
 import thederpgamer.edencore.utils.DataUtils;
 
 /**
@@ -29,7 +29,6 @@ import thederpgamer.edencore.utils.DataUtils;
  * @version 1.0 - [10/22/2021]
  */
 public class BuildSectorMenuPanel extends GUIMenuPanel {
-
 	public SimplePlayerTextInput textInput;
 
 	public BuildSectorMenuPanel(InputState inputState) {
@@ -42,15 +41,12 @@ public class BuildSectorMenuPanel extends GUIMenuPanel {
 		//PacketUtil.sendPacketToServer(new RequestClientCacheUpdatePacket());
 		int lastTab = guiWindow.getSelectedTab();
 		if(guiWindow.getTabs().size() > 0) guiWindow.clearTabs();
-
 		GUIContentPane managementTab = guiWindow.addTab("MANAGEMENT");
 		managementTab.setTextBoxHeightLast((int) (GLFrame.getHeight() / 1.5));
 		createManagementTab(managementTab);
-
 		GUIContentPane entitiesTab = guiWindow.addTab("ENTITIES");
 		entitiesTab.setTextBoxHeightLast((int) (GLFrame.getHeight() / 1.5));
 		createEntitiesTab(entitiesTab);
-
 		GUIContentPane catalogTab = guiWindow.addTab("CATALOG");
 		catalogTab.setTextBoxHeightLast((int) (GLFrame.getHeight() / 1.5));
 		createCatalogTab(catalogTab);
@@ -62,7 +58,6 @@ public class BuildSectorMenuPanel extends GUIMenuPanel {
 		(new BuildSectorScrollableList(getState(), contentPane.getContent(0, 0), this)).onInit();
 		(new BuildSectorUserScrollableList(getState(), contentPane.getContent(1, 0), this)).onInit();
 		contentPane.setTextBoxHeight(1, 0, (int) (contentPane.getHeight() - 139));
-
 		contentPane.addNewTextBox(1, 28);
 		GUIHorizontalButtonTablePane buttonPane = new GUIHorizontalButtonTablePane(getState(), 2, 1, contentPane.getContent(1, 1));
 		buttonPane.onInit();
@@ -107,7 +102,6 @@ public class BuildSectorMenuPanel extends GUIMenuPanel {
 						(new PlayerOkCancelInput("ENABLE AI", getState(), "Are you sure you wish to enable AI in this sector?", "This will also unprotect the sector, meaning your builds may be damaged or attacked!") {
 							@Override
 							public void onDeactivate() {
-
 							}
 
 							@Override
@@ -122,7 +116,7 @@ public class BuildSectorMenuPanel extends GUIMenuPanel {
 
 				@Override
 				public boolean isOccluded() {
-					return ! getState().getController().getPlayerInputs().isEmpty();
+					return !getState().getController().getPlayerInputs().isEmpty();
 				}
 			}, new GUIActivationCallback() {
 				@Override
@@ -143,7 +137,6 @@ public class BuildSectorMenuPanel extends GUIMenuPanel {
 						(new PlayerOkCancelInput("DISABLE AI", getState(), "Are you sure you wish to disable AI in this sector?", "This will also protect the sector, meaning your builds will be safe from damage and attack.") {
 							@Override
 							public void onDeactivate() {
-
 							}
 
 							@Override
@@ -158,7 +151,7 @@ public class BuildSectorMenuPanel extends GUIMenuPanel {
 
 				@Override
 				public boolean isOccluded() {
-					return ! getState().getController().getPlayerInputs().isEmpty();
+					return !getState().getController().getPlayerInputs().isEmpty();
 				}
 			}, new GUIActivationCallback() {
 				@Override

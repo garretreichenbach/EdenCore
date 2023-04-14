@@ -1,54 +1,55 @@
 package thederpgamer.edencore.navigation;
 
-import javax.vecmath.Vector4f;
 import org.schema.common.util.linAlg.Vector3i;
 
+import javax.vecmath.Vector4f;
 import java.io.Serializable;
 
 /**
  * small container class for line drawing between sectors
  */
 public class SectorConnection implements Serializable {
-    Vector3i start;
-    Vector3i end;
-    Vector4f startColor;
-    Vector4f endColor;
-    public SectorConnection(Vector3i sectorStart, Vector3i sectorEnd, Vector4f startColor, Vector4f endColor) {
-        this.start = sectorStart;
-        this.end = sectorEnd;
-        this.startColor = startColor;
-        this.endColor = endColor;
-    }
+	Vector3i start;
+	Vector3i end;
+	Vector4f startColor;
+	Vector4f endColor;
 
-    public Vector3i getStart() {
-        return start;
-    }
+	public SectorConnection(Vector3i sectorStart, Vector3i sectorEnd, Vector4f startColor, Vector4f endColor) {
+		this.start = sectorStart;
+		this.end = sectorEnd;
+		this.startColor = startColor;
+		this.endColor = endColor;
+	}
 
-    public void setStart(Vector3i start) {
-        this.start = start;
-    }
+	public Vector3i getStart() {
+		return start;
+	}
 
-    public Vector3i getEnd() {
-        return end;
-    }
+	public void setStart(Vector3i start) {
+		this.start = start;
+	}
 
-    public void setEnd(Vector3i end) {
-        this.end = end;
-    }
+	public Vector3i getEnd() {
+		return end;
+	}
 
-    public Vector4f getStartColor() {
-        return startColor;
-    }
+	public void setEnd(Vector3i end) {
+		this.end = end;
+	}
 
-    public void setStartColor(Vector4f startColor) {
-        this.startColor = startColor;
-    }
+	public Vector4f getStartColor() {
+		return startColor;
+	}
 
-    public Vector4f getEndColor() {
-        return endColor;
-    }
+	public void setStartColor(Vector4f startColor) {
+		this.startColor = startColor;
+	}
 
-    public void setEndColor(Vector4f endColor) {
-        this.endColor = endColor;
-    }
+	public Vector4f getEndColor() {
+		return endColor;
+	}
+
+	public void setEndColor(Vector4f endColor) {
+		this.endColor = endColor;
+	}
 }

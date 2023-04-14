@@ -6,8 +6,8 @@ import org.schema.game.common.data.player.catalog.CatalogPermission;
 import org.schema.schine.graphicsengine.core.MouseEvent;
 import org.schema.schine.graphicsengine.forms.gui.GUIElement;
 import thederpgamer.edencore.data.other.BuildSectorData;
-import thederpgamer.edencore.network.client.RequestClientCacheUpdatePacket;
-import thederpgamer.edencore.network.client.RequestSpawnEntryPacket;
+import thederpgamer.edencore.network.client.exchange.RequestSpawnEntryPacket;
+import thederpgamer.edencore.network.client.misc.RequestClientCacheUpdatePacket;
 
 /**
  * <Description>
@@ -16,10 +16,9 @@ import thederpgamer.edencore.network.client.RequestSpawnEntryPacket;
  * @version 1.0 - [03/01/2022]
  */
 public class BuildSectorSpawnEntityDialog extends GUIInputDialog {
-
+	private final BuildSectorMenuPanel menuPanel;
 	public BuildSectorData sectorData;
 	public CatalogPermission catalogPermission;
-	private final BuildSectorMenuPanel menuPanel;
 
 	public BuildSectorSpawnEntityDialog(BuildSectorMenuPanel menuPanel) {
 		this.menuPanel = menuPanel;
@@ -28,6 +27,11 @@ public class BuildSectorSpawnEntityDialog extends GUIInputDialog {
 	@Override
 	public BuildSectorSpawnEntityPanel createPanel() {
 		return new BuildSectorSpawnEntityPanel(getState(), this);
+	}
+
+	@Override
+	public BuildSectorSpawnEntityPanel getInputPanel() {
+		return (BuildSectorSpawnEntityPanel) super.getInputPanel();
 	}
 
 	@Override
@@ -49,10 +53,5 @@ public class BuildSectorSpawnEntityDialog extends GUIInputDialog {
 					break;
 			}
 		}
-	}
-
-	@Override
-	public BuildSectorSpawnEntityPanel getInputPanel() {
-		return (BuildSectorSpawnEntityPanel) super.getInputPanel();
 	}
 }
