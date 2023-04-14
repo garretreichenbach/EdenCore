@@ -93,7 +93,7 @@ public class EdenCore extends StarMod {
 	// Instance
 	private static EdenCore getInstance;
 	// Overwrites
-	private final String[] overwriteClasses = {"PlayerState", "BlueprintEntry", "TorchBeam", "GUITextOverlay"};
+	private final String[] overwriteClasses = {"PlayerState", "BlueprintEntry", "TorchBeam"};
 	// Disabled Blocks
 	private final short[] disabledBlocks = {347, // Shop Module
 		291, // Faction Module
@@ -544,7 +544,8 @@ public class EdenCore extends StarMod {
 									PacketUtil.sendPacket(playerState, new SendDonatorsPacket(StarBridgeAPI.getDonators()));
 									long lastLogin = playerData.lastLogin;
 									//If last login = 0 or last login is more than 1 day ago
-									if(lastLogin == 0 || (System.currentTimeMillis() - lastLogin) > 86400000 && StarBridgeAPI.isDonator(event.getPlayerName())) {
+									Date date = new Date(playerData.lastDailyPrizeClaim);
+									if(lastLogin == 0 || DateUtils.getAgeDays(date) >= 1.0f && StarBridgeAPI.isDonator(event.getPlayerName())) {
 										playerState = GameServer.getServerState().getPlayerFromName(event.getPlayerName());
 										if(playerState != null) {
 											PlayerUtils.sendMessage(playerState, "Thank you for supporting Skies of Eden!");
