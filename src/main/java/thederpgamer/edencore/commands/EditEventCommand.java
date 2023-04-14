@@ -26,9 +26,7 @@ public class EditEventCommand implements CommandInterface {
 
 	@Override
 	public String getDescription() {
-		return "Starts the event editor.\n" +
-				"- /%COMMAND% <type> <pvp|pve> <event_name> : Starts the event editor for a new event of the specified type and name.\n" +
-				"- /%COMMAND% <event_name> : Starts the event editor for the specified event.";
+		return "Starts the event editor.\n" + "- /%COMMAND% <type> <pvp|pve> <event_name> : Starts the event editor for a new event of the specified type and name.\n" + "- /%COMMAND% <event_name> : Starts the event editor for the specified event.";
 	}
 
 	@Override
@@ -52,7 +50,6 @@ public class EditEventCommand implements CommandInterface {
 
 	@Override
 	public void serverAction(@Nullable PlayerState playerState, String[] strings) {
-
 	}
 
 	@Override

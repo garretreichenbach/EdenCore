@@ -16,7 +16,6 @@ import thederpgamer.edencore.utils.PlayerDataUtil;
  * @author TheDerpGamer (TheDerpGamer#0027)
  */
 public class SetDonatorCommand implements CommandInterface {
-
 	@Override
 	public String getCommand() {
 		return "set_donator";
@@ -29,8 +28,7 @@ public class SetDonatorCommand implements CommandInterface {
 
 	@Override
 	public String getDescription() {
-		return "Sets a player to be a donator. Note this is a temporary solution until the Discord integration is fixed.\n" +
-				" - /%COMMAND% <player> <type> : Sets a player to be a donator.";
+		return "Sets a player to be a donator. Note this is a temporary solution until the Discord integration is fixed.\n" + " - /%COMMAND% <player> <type> : Sets a player to be a donator.";
 	}
 
 	@Override
@@ -62,7 +60,6 @@ public class SetDonatorCommand implements CommandInterface {
 						break;
 				}
 				PersistentObjectUtil.save(EdenCore.getInstance().getSkeleton());
-
 				return true;
 			} catch(Exception exception) {
 				exception.printStackTrace();
@@ -73,7 +70,6 @@ public class SetDonatorCommand implements CommandInterface {
 
 	@Override
 	public void serverAction(@Nullable PlayerState playerState, String[] strings) {
-
 	}
 
 	@Override

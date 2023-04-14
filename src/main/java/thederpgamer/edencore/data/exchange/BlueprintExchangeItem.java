@@ -19,7 +19,6 @@ import java.io.IOException;
  * @version 1.0 - [09/17/2021]
  */
 public class BlueprintExchangeItem extends ExchangeItem {
-
 	// public static final transient Vector3i SECTOR = new Vector3i(100000000, 100000000, 100000000);
 	// public long blocks;
 	public String iconPath;
@@ -42,17 +41,31 @@ public class BlueprintExchangeItem extends ExchangeItem {
 	}
 
 	@Override
+	public void deserialize(PacketReadBuffer readBuffer) throws IOException {
+		barType = readBuffer.readShort();
+		price = readBuffer.readInt();
+		name = readBuffer.readString();
+		description = readBuffer.readString();
+		iconPath = readBuffer.readString();
+		community = readBuffer.readBoolean();
+		try {
+			seller = readBuffer.readString();
+		} catch(NullPointerException ignored) {
+			seller = "server";
+		}
+	}
+
+	@Override
 	public GUIOverlay getIcon() {
 		GUIOverlay overlay = null;
-		if (iconPath != null && !iconPath.isEmpty() && iconPath.startsWith("https://") && iconPath.endsWith(".png")) {
+		if(iconPath != null && !iconPath.isEmpty() && iconPath.startsWith("https://") && iconPath.endsWith(".png")) {
 			int attempts = 0;
-			while (attempts < 5 && overlay == null) {
+			while(attempts < 5 && overlay == null) {
 				overlay = fetchImageIcon(iconPath);
 				attempts++;
 			}
 		}
-
-		if (overlay == null) {
+		if(overlay == null) {
 			Sprite sprite = ResourceManager.getSprite("default-sprite");
 			sprite.setWidth(100);
 			sprite.setHeight(100);
@@ -65,7 +78,7 @@ public class BlueprintExchangeItem extends ExchangeItem {
 	private GUIOverlay fetchImageIcon(String url) {
 		GUIOverlay overlay = null;
 		Sprite sprite = ImageUtils.getImage(url);
-		if (sprite != null) {
+		if(sprite != null) {
 			sprite.setPositionCenter(true);
 			sprite.setWidth(128);
 			sprite.setHeight(128);
@@ -93,21 +106,6 @@ public class BlueprintExchangeItem extends ExchangeItem {
         exception.printStackTrace();
     }
      */
-	}
-
-	@Override
-	public void deserialize(PacketReadBuffer readBuffer) throws IOException {
-		barType = readBuffer.readShort();
-		price = readBuffer.readInt();
-		name = readBuffer.readString();
-		description = readBuffer.readString();
-		iconPath = readBuffer.readString();
-		community = readBuffer.readBoolean();
-		try {
-			seller = readBuffer.readString();
-		} catch(NullPointerException ignored) {
-			seller = "server";
-		}
 	}
 
 	@Override

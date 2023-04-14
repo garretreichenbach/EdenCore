@@ -21,52 +21,49 @@ import java.util.Objects;
  * @version 1.0 - [02/20/2022]
  */
 public class RequestEntityDeletePacket extends Packet {
+	private int entityId;
+	private boolean destroyDocks;
 
-    private int entityId;
-    private boolean destroyDocks;
+	public RequestEntityDeletePacket() {
+	}
 
-    public RequestEntityDeletePacket() {
+	public RequestEntityDeletePacket(SegmentController segmentController, boolean destroyDocks) {
+		this.entityId = segmentController.getId();
+		this.destroyDocks = destroyDocks;
+	}
 
-    }
+	@Override
+	public void readPacketData(PacketReadBuffer packetReadBuffer) throws IOException {
+		entityId = packetReadBuffer.readInt();
+		destroyDocks = packetReadBuffer.readBoolean();
+	}
 
-    public RequestEntityDeletePacket(SegmentController segmentController, boolean destroyDocks) {
-        this.entityId = segmentController.getId();
-        this.destroyDocks = destroyDocks;
-    }
+	@Override
+	public void writePacketData(PacketWriteBuffer packetWriteBuffer) throws IOException {
+		packetWriteBuffer.writeInt(entityId);
+		packetWriteBuffer.writeBoolean(destroyDocks);
+	}
 
-    @Override
-    public void readPacketData(PacketReadBuffer packetReadBuffer) throws IOException {
-        entityId = packetReadBuffer.readInt();
-        destroyDocks = packetReadBuffer.readBoolean();
-    }
+	@Override
+	public void processPacketOnClient() {
+	}
 
-    @Override
-    public void writePacketData(PacketWriteBuffer packetWriteBuffer) throws IOException {
-        packetWriteBuffer.writeInt(entityId);
-        packetWriteBuffer.writeBoolean(destroyDocks);
-    }
-
-    @Override
-    public void processPacketOnClient() {
-
-    }
-
-    @Override
-    public void processPacketOnServer(PlayerState playerState) {
-        Sendable sendable = GameCommon.getGameObject(entityId);
-        if(sendable instanceof SegmentController) {
-            SegmentController segmentController = (SegmentController) sendable;
-            if(Objects.requireNonNull(DataUtils.getPlayerCurrentBuildSector(playerState)).sector.equals(segmentController.getSector(new Vector3i()))) {
-                segmentController.railController.destroyDockedRecursive();
-                for(ElementDocking dock : segmentController.getDockingController().getDockedOnThis()) {
-                    dock.from.getSegment().getSegmentController().markForPermanentDelete(true);
-                    dock.from.getSegment().getSegmentController().setMarkedForDeleteVolatile(true);
-                }
-                if(!destroyDocks) {
-                    segmentController.markForPermanentDelete(true);
-                    segmentController.setMarkedForDeleteVolatile(true);
-                }
-            }
-        }
-    }
+	@Override
+	public void processPacketOnServer(PlayerState playerState) {
+		Sendable sendable = GameCommon.getGameObject(entityId);
+		if(sendable instanceof SegmentController) {
+			SegmentController segmentController = (SegmentController) sendable;
+			if(Objects.requireNonNull(DataUtils.getPlayerCurrentBuildSector(playerState)).sector.equals(segmentController.getSector(new Vector3i()))) {
+				segmentController.railController.destroyDockedRecursive();
+				for(ElementDocking dock : segmentController.getDockingController().getDockedOnThis()) {
+					dock.from.getSegment().getSegmentController().markForPermanentDelete(true);
+					dock.from.getSegment().getSegmentController().setMarkedForDeleteVolatile(true);
+				}
+				if(!destroyDocks) {
+					segmentController.markForPermanentDelete(true);
+					segmentController.setMarkedForDeleteVolatile(true);
+				}
+			}
+		}
+	}
 }

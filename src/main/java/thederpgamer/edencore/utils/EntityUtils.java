@@ -41,7 +41,6 @@ import java.io.IOException;
  * @version 1.0 - [09/20/2021]
  */
 public class EntityUtils {
-
 	public static void warpPlayerIntoEntity(PlayerState player, SegmentController entity) {
 		SegmentPiece toEnter = null;
 		if(entity.getType().equals(SimpleTransformableSendableObject.EntityType.SHIP)) toEnter = entity.getSegmentBuffer().getPointUnsave(Ship.core);
@@ -59,7 +58,6 @@ public class EntityUtils {
 		ManagerContainer<?> managerContainer = null;
 		if(segmentController.getType().equals(SimpleTransformableSendableObject.EntityType.SHIP)) managerContainer = ((Ship) segmentController).getManagerContainer();
 		else if(segmentController.getType().equals(SimpleTransformableSendableObject.EntityType.SPACE_STATION)) managerContainer = ((SpaceStation) segmentController).getManagerContainer();
-
 		if(managerContainer != null && managerContainer.getBuildBlocks().size() > 0) return segmentController.getSegmentBuffer().getPointUnsave(managerContainer.getBuildBlocks().toLongArray()[0]);
 		else return null;
 	}
@@ -84,7 +82,8 @@ public class EntityUtils {
 			SegmentControllerOutline<?> outline = BluePrintController.active.loadBluePrint(GameServerState.instance, entry.getName(), spawnName, transform, -1, factionId, owner.getCurrentSector(), owner.getName(), PlayerState.buffer, null, false, new ChildStats(false));
 			SegmentController entity = outline.spawn(owner.getCurrentSector(), false, new ChildStats(false), new SegmentControllerSpawnCallbackDirect(GameServer.getServerState(), owner.getCurrentSector()) {
 				@Override
-				public void onNoDocker() { }
+				public void onNoDocker() {
+				}
 			});
 			PlayerUtils.sendMessage(owner, "Successfully spawned entity \"" + entity.getName() + "\".");
 		} catch(EntityNotFountException | IOException | EntityAlreadyExistsException | StateParameterNotFoundException exception) {
@@ -98,7 +97,6 @@ public class EntityUtils {
 			spawnOnBlock = ServerUtils.getBlockLookingAt(GameServer.getServerState(), owner);
 		} catch(PlayerNotFountException | PlayerControlledTransformableNotFound | IOException ignored) {
 		}
-
 		Transform transform = new Transform();
 		transform.setIdentity();
 		transform.origin.set(owner.getFirstControlledTransformableWOExc().getWorldTransform().origin);
@@ -111,7 +109,8 @@ public class EntityUtils {
 			SegmentControllerOutline<?> outline = BluePrintController.active.loadBluePrint(GameServerState.instance, entry.getName(), spawnName, transform, -1, factionId, owner.getCurrentSector(), owner.getName(), PlayerState.buffer, spawnOnBlock, false, new ChildStats(false));
 			SegmentController entity = outline.spawn(owner.getCurrentSector(), false, new ChildStats(false), new SegmentControllerSpawnCallbackDirect(GameServer.getServerState(), owner.getCurrentSector()) {
 				@Override
-				public void onNoDocker() { }
+				public void onNoDocker() {
+				}
 			});
 			PlayerUtils.sendMessage(owner, "Successfully spawned entity \"" + entity.getName() + "\".");
 		} catch(EntityNotFountException | IOException | EntityAlreadyExistsException | StateParameterNotFoundException exception) {
@@ -132,7 +131,8 @@ public class EntityUtils {
 			SegmentControllerOutline<?> outline = BluePrintController.active.loadBluePrint(GameServerState.instance, entry.getName(), spawnName, transform, -1, FactionManager.PIRATES_ID, owner.getCurrentSector(), owner.getName(), PlayerState.buffer, null, false, new ChildStats(false));
 			SegmentController entity = outline.spawn(owner.getCurrentSector(), false, new ChildStats(false), new SegmentControllerSpawnCallbackDirect(GameServer.getServerState(), owner.getCurrentSector()) {
 				@Override
-				public void onNoDocker() { }
+				public void onNoDocker() {
+				}
 			});
 			BuildSectorUtils.toggleAI(entity, true);
 			PlayerUtils.sendMessage(owner, "Successfully spawned entity \"" + entity.getName() + "\".");

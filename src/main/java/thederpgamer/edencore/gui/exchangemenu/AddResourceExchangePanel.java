@@ -28,248 +28,228 @@ import java.util.List;
  * @version 1.0 - [09/18/2021]
  */
 public class AddResourceExchangePanel extends GUIInputDialogPanel {
+	public short barId;
+	public String currentBarText = "";
+	public short itemId;
+	public String currentItemAmountText = "";
+	private GUIContentPane contentPane;
+	private boolean itemTextChanged;
 
-    private GUIContentPane contentPane;
+	public AddResourceExchangePanel(InputState inputState, GUICallback guiCallback) {
+		super(inputState, "resource_exchange_add_panel", "Add Exchange Entry", "", 650, 350, guiCallback);
+	}
 
-    public short barId;
-    public String currentBarText = "";
+	@Override
+	public void onInit() {
+		super.onInit();
+		contentPane = ((GUIDialogWindow) background).getMainContentPane();
+		contentPane.setTextBoxHeightLast((int) getHeight());
+		addTextBar(new TextBarResult() {
+			@Override
+			public TextBarCallback initCallback() {
+				return super.callback;
+			}
 
-    public short itemId;
-    private boolean itemTextChanged;
-    public String currentItemAmountText = "";
+			@Override
+			public String getName() {
+				return "Price";
+			}
 
-    public AddResourceExchangePanel(InputState inputState, GUICallback guiCallback) {
-        super(inputState, "resource_exchange_add_panel", "Add Exchange Entry", "", 650, 350, guiCallback);
-    }
+			@Override
+			public String getToolTipText() {
+				return "Enter price";
+			}
 
-    @Override
-    public void onInit() {
-        super.onInit();
-        contentPane = ((GUIDialogWindow) background).getMainContentPane();
-        contentPane.setTextBoxHeightLast((int) getHeight());
+			@Override
+			public String onTextChanged(String text) {
+				String t = text.trim();
+				if(!t.equals(currentBarText)) currentBarText = t;
+				return text;
+			}
+		}, 30);
+		addDropdown(new DropdownResult() {
+			private List<GUIElement> bars;
 
-        addTextBar(new TextBarResult() {
+			@Override
+			public DropdownCallback initCallback() {
+				return new DropdownCallback() {
+					@Override
+					public void onChanged(Object value) {
+						if(value instanceof ElementInformation) barId = ((ElementInformation) value).getId();
+					}
+				};
+			}
 
-            @Override
-            public TextBarCallback initCallback() {
-                return callback;
-            }
+			@Override
+			public String getName() {
+				return "Bar type";
+			}
 
-            @Override
-            public String getToolTipText() {
-                return "Enter price";
-            }
+			@Override
+			public String getToolTipText() {
+				return "Select bar type";
+			}
 
-            @Override
-            public String getName() {
-                return "Price";
-            }
+			@Override
+			public Object getDefault() {
+				if(barId != 0 && bars.size() > 0) return bars.get(0);
+				return null;
+			}
 
-            @Override
-            public String onTextChanged(String text) {
-                String t = text.trim();
-                if(!t.equals(currentBarText)) currentBarText = t;
-                return text;
-            }
-        }, 30);
+			@Override
+			public Collection<? extends GUIElement> getDropdownElements(GUIElement guiElement) {
+				bars = getBars();
+				return bars;
+			}
 
-        addDropdown(new DropdownResult() {
-            private List<GUIElement> bars;
+			@Override
+			public boolean needsListUpdate() {
+				return false;
+			}
 
-            @Override
-            public DropdownCallback initCallback() {
-                return new DropdownCallback() {
-                    @Override
-                    public void onChanged(Object value) {
-                        if(value instanceof ElementInformation) barId = ((ElementInformation) value).getId();
-                    }
-                };
-            }
+			@Override
+			public void flagListNeedsUpdate(boolean flag) {
+			}
 
-            @Override
-            public String getToolTipText() {
-                return "Select bar type";
-            }
+			@Override
+			public int getDropdownHeight() {
+				return 26;
+			}
+		}, 60);
+		addTextBar(new TextBarResult() {
+			@Override
+			public TextBarCallback initCallback() {
+				return super.callback;
+			}
 
-            @Override
-            public String getName() {
-                return "Bar type";
-            }
+			@Override
+			public String getName() {
+				return "Resource amount";
+			}
 
-            @Override
-            public boolean needsListUpdate() {
-                return false;
-            }
+			@Override
+			public String getToolTipText() {
+				return "Enter resource amount";
+			}
 
-            @Override
-            public Collection<? extends GUIElement> getDropdownElements(GUIElement guiElement) {
-                bars = getBars();
-                return bars;
-            }
+			@Override
+			public String onTextChanged(String text) {
+				String t = text.trim();
+				if(!t.equals(currentItemAmountText)) {
+					currentItemAmountText = t;
+				}
+				return text;
+			}
+		}, 90);
+		addDropdown(new DropdownResult() {
+			private List<GUIElement> resources;
 
-            @Override
-            public int getDropdownHeight() {
-                return 26;
-            }
+			@Override
+			public DropdownCallback initCallback() {
+				return new DropdownCallback() {
+					@Override
+					public void onChanged(Object value) {
+						if(value instanceof ElementInformation) itemId = ((ElementInformation) value).getId();
+					}
+				};
+			}
 
-            @Override
-            public Object getDefault() {
-                if(barId != 0 && bars.size() > 0) return bars.get(0);
-                return null;
-            }
+			@Override
+			public String getName() {
+				return "Resource";
+			}
 
-            @Override
-            public void flagListNeedsUpdate(boolean flag) {
+			@Override
+			public String getToolTipText() {
+				return "Select resource";
+			}
 
-            }
-        }, 60);
+			@Override
+			public Object getDefault() {
+				if(itemId != 0 && resources.size() > 0) return resources.get(0);
+				return null;
+			}
 
-        addTextBar(new TextBarResult() {
+			@Override
+			public Collection<? extends GUIElement> getDropdownElements(GUIElement guiElement) {
+				resources = getResources();
+				return resources;
+			}
 
-            @Override
-            public TextBarCallback initCallback() {
-                return callback;
-            }
+			@Override
+			public boolean needsListUpdate() {
+				return itemTextChanged;
+			}
 
-            @Override
-            public String getToolTipText() {
-                return "Enter resource amount";
-            }
+			@Override
+			public void flagListNeedsUpdate(boolean flag) {
+				itemTextChanged = flag;
+			}
 
-            @Override
-            public String getName() {
-                return "Resource amount";
-            }
+			@Override
+			public int getDropdownHeight() {
+				return 26;
+			}
+		}, 120);
+	}
 
-            @Override
-            public String onTextChanged(String text) {
-                String t = text.trim();
-                if(!t.equals(currentItemAmountText)) {
-                    currentItemAmountText = t;
-                }
-                return text;
-            }
-        }, 90);
+	private void addTextBar(TextBarResult textBarResult, int y) {
+		GUIAdvTextBar textBar = new GUIAdvTextBar(getState(), contentPane, textBarResult);
+		textBar.setPos(0, y, 0);
+		contentPane.getContent(0).attach(textBar);
+	}
 
-        addDropdown(new DropdownResult() {
-            private List<GUIElement> resources;
+	private void addDropdown(DropdownResult result, int y) {
+		GUIAdvDropdown dropDown = new GUIAdvDropdown(getState(), contentPane, result);
+		dropDown.setPos(0, y, 0);
+		contentPane.getContent(0).attach(dropDown);
+	}
 
-            @Override
-            public DropdownCallback initCallback() {
-                return new DropdownCallback() {
-                    @Override
-                    public void onChanged(Object value) {
-                        if(value instanceof ElementInformation) itemId = ((ElementInformation) value).getId();
-                    }
-                };
-            }
+	private ArrayList<GUIElement> getBars() {
+		ArrayList<GUIElement> barList = new ArrayList<>();
+		short[] bars = {ElementManager.getItem("Bronze Bar").getId(), ElementManager.getItem("Silver Bar").getId(), ElementManager.getItem("Gold Bar").getId()};
+		for(short id : bars) {
+			ElementInformation info = ElementKeyMap.getInfo(id);
+			GUIAncor anchor = new GUIAncor(GameClient.getClientState(), 200.0f, 26.0f);
+			GUITextOverlay textOverlay = new GUITextOverlay(100, 26, FontLibrary.getBoldArial12White(), GameClient.getClientState());
+			textOverlay.onInit();
+			textOverlay.setTextSimple(info.getName());
+			anchor.setUserPointer(info);
+			anchor.attach(textOverlay);
+			GUIBlockSprite blockSprite = new GUIBlockSprite(GameClient.getClientState(), id);
+			blockSprite.getScale().set(0.4F, 0.4F, 0.0F);
+			anchor.attach(blockSprite);
+			textOverlay.getPos().x = 30.0F;
+			textOverlay.getPos().y = 7.0F;
+			barList.add(anchor);
+		}
+		return barList;
+	}
 
-            @Override
-            public String getToolTipText() {
-                return "Select resource";
-            }
+	private ArrayList<GUIElement> getResources() {
+		ArrayList<GUIElement> elementList = new ArrayList<>();
+		GameClientState gameClientState = GameClient.getClientState();
+		for(ElementInformation elementInfo : getResourcesFilter()) {
+			GUIAncor anchor = new GUIAncor(gameClientState, 300.0F, 26.0F);
+			elementList.add(anchor);
+			GUITextOverlay textOverlay = new GUITextOverlay(100, 26, FontLibrary.getBoldArial12White(), gameClientState);
+			textOverlay.setTextSimple(elementInfo.getName());
+			anchor.setUserPointer(elementInfo);
+			GUIBlockSprite blockSprite = new GUIBlockSprite(gameClientState, elementInfo.getId());
+			blockSprite.getScale().set(0.4F, 0.4F, 0.0F);
+			anchor.attach(blockSprite);
+			textOverlay.getPos().x = 50.0F;
+			textOverlay.getPos().y = 7.0F;
+			anchor.attach(textOverlay);
+		}
+		return elementList;
+	}
 
-            @Override
-            public String getName() {
-                return "Resource";
-            }
-
-            @Override
-            public boolean needsListUpdate() {
-                return itemTextChanged;
-            }
-
-            @Override
-            public Collection<? extends GUIElement> getDropdownElements(GUIElement guiElement) {
-                resources = getResources();
-                return resources;
-            }
-
-            @Override
-            public int getDropdownHeight() {
-                return 26;
-            }
-
-            @Override
-            public Object getDefault() {
-                if(itemId != 0 && resources.size() > 0) return resources.get(0);
-                return null;
-            }
-
-            @Override
-            public void flagListNeedsUpdate(boolean flag) {
-                itemTextChanged = flag;
-            }
-        }, 120);
-    }
-
-    private void addDropdown(DropdownResult result, int y) {
-        GUIAdvDropdown dropDown = new GUIAdvDropdown(getState(), contentPane, result);
-        dropDown.setPos(0, y, 0);
-        contentPane.getContent(0).attach(dropDown);
-    }
-
-    private void addTextBar(TextBarResult textBarResult, int y) {
-        GUIAdvTextBar textBar = new GUIAdvTextBar(getState(), contentPane, textBarResult);
-        textBar.setPos(0, y, 0);
-        contentPane.getContent(0).attach(textBar);
-    }
-
-    private ArrayList<GUIElement> getResources() {
-        ArrayList<GUIElement> elementList = new ArrayList<>();
-        GameClientState gameClientState = GameClient.getClientState();
-
-        for (ElementInformation elementInfo : getResourcesFilter()) {
-
-            GUIAncor anchor = new GUIAncor(gameClientState, 300.0F, 26.0F);
-            elementList.add(anchor);
-            GUITextOverlay textOverlay = new GUITextOverlay(100, 26, FontLibrary.getBoldArial12White(), gameClientState);
-
-            textOverlay.setTextSimple(elementInfo.getName());
-            anchor.setUserPointer(elementInfo);
-            GUIBlockSprite blockSprite = new GUIBlockSprite(gameClientState, elementInfo.getId());
-            blockSprite.getScale().set(0.4F, 0.4F, 0.0F);
-            anchor.attach(blockSprite);
-            textOverlay.getPos().x = 50.0F;
-            textOverlay.getPos().y = 7.0F;
-            anchor.attach(textOverlay);
-        }
-        return elementList;
-    }
-
-    private ArrayList<GUIElement> getBars() {
-        ArrayList<GUIElement> barList = new ArrayList<>();
-        short[] bars = new short[] {
-                ElementManager.getItem("Bronze Bar").getId(),
-                ElementManager.getItem("Silver Bar").getId(),
-                ElementManager.getItem("Gold Bar").getId()
-        };
-        for(short id : bars) {
-            ElementInformation info = ElementKeyMap.getInfo(id);
-            GUIAncor anchor = new GUIAncor(GameClient.getClientState(), 200.0f, 26.0f);
-
-            GUITextOverlay textOverlay = new GUITextOverlay(100, 26, FontLibrary.getBoldArial12White(), GameClient.getClientState());
-            textOverlay.onInit();
-            textOverlay.setTextSimple(info.getName());
-            anchor.setUserPointer(info);
-            anchor.attach(textOverlay);
-
-            GUIBlockSprite blockSprite = new GUIBlockSprite(GameClient.getClientState(), id);
-            blockSprite.getScale().set(0.4F, 0.4F, 0.0F);
-            anchor.attach(blockSprite);
-
-            textOverlay.getPos().x = 30.0F;
-            textOverlay.getPos().y = 7.0F;
-            barList.add(anchor);
-        }
-        return barList;
-    }
-
-    private ArrayList<ElementInformation> getResourcesFilter() {
-        ArrayList<ElementInformation> filter = new ArrayList<>();
-        ArrayList<ElementInformation> elementList = new ArrayList<>();
-        ElementKeyMap.getCategoryHirarchy().getChild("Manufacturing").getInfoElementsRecursive(elementList);
-        for(ElementInformation info : elementList) if(!info.isDeprecated()) filter.add(info);
-        return filter;
-    }
+	private ArrayList<ElementInformation> getResourcesFilter() {
+		ArrayList<ElementInformation> filter = new ArrayList<>();
+		ArrayList<ElementInformation> elementList = new ArrayList<>();
+		ElementKeyMap.getCategoryHirarchy().getChild("Manufacturing").getInfoElementsRecursive(elementList);
+		for(ElementInformation info : elementList) if(!info.isDeprecated()) filter.add(info);
+		return filter;
+	}
 }

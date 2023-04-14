@@ -19,33 +19,28 @@ import java.sql.SQLException;
  * @version 1.0 - [10/28/2021]
  */
 public class RequestMoveFromBuildSectorPacket extends Packet {
+	public RequestMoveFromBuildSectorPacket() {
+	}
 
-    public RequestMoveFromBuildSectorPacket() {
+	@Override
+	public void readPacketData(PacketReadBuffer packetReadBuffer) throws IOException {
+	}
 
-    }
+	@Override
+	public void writePacketData(PacketWriteBuffer packetWriteBuffer) throws IOException {
+	}
 
-    @Override
-    public void readPacketData(PacketReadBuffer packetReadBuffer) throws IOException {
+	@Override
+	public void processPacketOnClient() {
+	}
 
-    }
-
-    @Override
-    public void writePacketData(PacketWriteBuffer packetWriteBuffer) throws IOException {
-
-    }
-
-    @Override
-    public void processPacketOnClient() {
-
-    }
-
-    @Override
-    public void processPacketOnServer(PlayerState playerState) {
-        try {
-            DataUtils.movePlayerFromBuildSector(playerState);
-        } catch(IOException | SQLException exception) { //Ideally, this should never fail, because doing so would be a catastrophic problem
-            LogManager.logException("Failed to move player \"" + playerState.getName() + "\" from a build sector!", exception);
-            PlayerUtils.sendMessage(playerState, "The server encountered an error while trying to teleport you. Please report this to an admin!");
-        }
-    }
+	@Override
+	public void processPacketOnServer(PlayerState playerState) {
+		try {
+			DataUtils.movePlayerFromBuildSector(playerState);
+		} catch(IOException | SQLException exception) { //Ideally, this should never fail, because doing so would be a catastrophic problem
+			LogManager.logException("Failed to move player \"" + playerState.getName() + "\" from a build sector!", exception);
+			PlayerUtils.sendMessage(playerState, "The server encountered an error while trying to teleport you. Please report this to an admin!");
+		}
+	}
 }

@@ -45,16 +45,23 @@ import java.util.Map;
  * clientside fastutil listener that draws to the map
  */
 public class EdenMapDrawer implements GameMapDrawListener {
-
+	private static final float sectorScale = 100f / VoidSystem.SYSTEM_SIZE;
+	private static final Vector3f halfSectorOffset = new Vector3f(sectorScale / 2f, sectorScale / 2f, sectorScale / 2f);
+	private static final Vector4f darkYellow = new Vector4f(0.5f, 0.5f, 0, 1);
+	private static final Vector4f brightYellow = new Vector4f(0.97f, 1.0f, 0, 1);
+	private static final Vector4f darkRed = new Vector4f(0.5f, 0f, 0, 1);
+	private static final Vector4f brightRed = new Vector4f(1f, 0f, 0, 1);
+	private static final Vector4f brightGreen = new Vector4f(0, 1, 0, 1);
+	private static final Vector4f darkGreen = new Vector4f(0, 0.5f, 0, 1);
+	private static final Vector4f grey = new Vector4f(0.5f, 0.5f, 0.5f, 1);
 	public static EdenMapDrawer instance;
-	private static final float sectorScale = 100f/ VoidSystem.SYSTEM_SIZE;
-	private static final Vector3f halfSectorOffset = new Vector3f(sectorScale/2f,sectorScale/2f,sectorScale/2f);
-	private final HashMap<Sprite,MapMarker[]> sprite_to_subsprites = new HashMap<>(); //internal mapping from sprite->subsprite for drawer
+	public static float scale32px = 0.2f;
+	private static MarkerCustomizeMenu markerMenu;
+	private final HashMap<Sprite, MapMarker[]> sprite_to_subsprites = new HashMap<>(); //internal mapping from sprite->subsprite for drawer
 	private final HashMap<Long, MapMarker> publicMarkers = new HashMap<>(); //list of all markers to draw, provided by server
 	private final HashMap<Long, MapMarker> privateMarkers = new HashMap<>(); //list of all markers to draw, provided by player
 	private Vector3i centerOn;
 	private MapMarker selected;
-	private static MarkerCustomizeMenu markerMenu;
 
 	public EdenMapDrawer() {
 		super();
@@ -64,201 +71,6 @@ public class EdenMapDrawer implements GameMapDrawListener {
 		addMouseListener();
 	}
 
-	/**
-	 * will make drawables for all custom, non public savedCoordinates
-	 */
-	public void updatePrivateMarkers() {
-		privateMarkers.clear();
-		ObjectArrayList<SavedCoordinate> list = GameClientState.instance.getPlayer().getSavedCoordinates();
-		for (SavedCoordinate c: list) {
-			MapMarker privateMarker = new MapMarker(c.getSector(),c.getName(),MapIcon.OUTPOST,new Vector4f(0,1,0,1));
-			privateMarkers.put(c.getSector().code(),privateMarker);
-		}
-	}
-
-	/**
-	 * will add the marker, requires updateLists() to become effective
-	 * @param marker
-	 */
-	public void addMarker(MapMarker marker, boolean publicMarker) {
-        /*
-        HashMap<Long,MapMarker> map;
-        if (publicMarker) {
-           map = publicMarkers;
-        } else {
-           map = privateMarkers;
-        }
-        publicMarkers.put(marker.sector.code(), marker);
-         */
-		if(publicMarker) publicMarkers.put(marker.sector.code(), marker);
-		else privateMarkers.put(marker.sector.code(), marker);
-	}
-
-	/**
-	 * will remove a marker from the lists. requires updateInternalList to be applied
-	 * @param marker
-	 */
-	public void removeMarker(MapMarker marker) {
-		removeMarker(marker.sector);
-	}
-
-	public void removeMarker(Vector3i sector) {
-		publicMarkers.remove(sector.code());
-		privateMarkers.remove(sector.code());
-	}
-
-	/**
-	 * will copy internal mapping of sprite->subsprite hashset to sprite->subsprite[]
-	 */
-	public void updateInternalList() {
-
-		HashMap<Sprite, HashSet<MapMarker>> sprite_to_subsprites_set = new HashMap<>();
-		sprite_to_subsprites.clear();
-		//collect all markers, sorted by their sprite: PUBLIC
-		for (Map.Entry<Long, MapMarker> entry: publicMarkers.entrySet()) {
-			Sprite sprite = entry.getValue().getSprite();
-			if (sprite == null)
-				continue;
-
-			//get set
-			HashSet<MapMarker> subsprites = sprite_to_subsprites_set.get(sprite);
-			if (subsprites == null) {
-				subsprites = new HashSet<MapMarker>();
-				sprite_to_subsprites_set.put(sprite,subsprites);
-			}
-			subsprites.add(entry.getValue());
-		}
-
-		// PRIVATE
-		for (Map.Entry<Long, MapMarker> entry: privateMarkers.entrySet()) {
-			Sprite sprite = entry.getValue().getSprite();
-			//get set
-			HashSet<MapMarker> subsprites = sprite_to_subsprites_set.get(sprite);
-			if (subsprites == null) {
-				subsprites = new HashSet<MapMarker>();
-				sprite_to_subsprites_set.put(sprite,subsprites);
-			}
-			subsprites.add(entry.getValue());
-		}
-
-		//build the sprite vs SubSprite[] list for drawing
-		for (Map.Entry<Sprite,HashSet<MapMarker>> entry: sprite_to_subsprites_set.entrySet()) {
-			MapMarker[] arr = entry.getValue().toArray(new MapMarker[0]);
-			//TODO remove
-			if (entry.getKey() == null)
-				continue;
-
-			sprite_to_subsprites.put(entry.getKey(),arr);
-		}
-	}
-
-	@Override
-	public void system_PreDraw(GameMapDrawer gameMapDrawer, Vector3i vector3i, boolean b) {
-		if (centerOn != null) {
-			gameMapDrawer.getGameMapPosition().set(centerOn.x,centerOn.y,centerOn.z,true);
-			centerOn = null;
-		}
-		if(markerMenu != null) markerMenu.draw();
-	}
-
-	@Override
-	public void system_PostDraw(GameMapDrawer gameMapDrawer, Vector3i vector3i, boolean b) {
-	}
-
-	@Override
-	public void galaxy_PreDraw(GameMapDrawer gameMapDrawer) {
-
-	}
-
-	@Override
-	public void galaxy_PostDraw(GameMapDrawer gameMapDrawer) {
-	}
-
-	@Override
-	public void galaxy_DrawLines(GameMapDrawer gameMapDrawer) {
-		for (MapMarker marker: publicMarkers.values()) {
-			if (marker instanceof LineDrawer) {
-				((LineDrawer) marker).drawLines(gameMapDrawer);
-			}
-		}
-	}
-
-	@Override
-	public void galaxy_DrawSprites(GameMapDrawer gameMapDrawer) {
-		for (Map.Entry<Sprite,MapMarker[]> entry: sprite_to_subsprites.entrySet()) {
-			for (MapMarker m: entry.getValue()) {
-				m.preDraw(gameMapDrawer);
-			}
-			DrawUtils.drawSprite(gameMapDrawer,entry.getKey(),entry.getValue());
-		}
-	}
-
-	@Override
-	public void galaxy_DrawQuads(GameMapDrawer gameMapDrawer) {
-
-	}
-
-	public void drawLinesSector(Vector3i from, Vector3i to, Vector4f startColor, Vector4f endColor) {
-		Vector3f start = posFromSector(from,false);
-		Vector3f end = posFromSector(to,false);
-		DrawUtils.drawFTLLine(start,end,startColor,endColor);
-	}
-
-	public HashMap<Long,MapMarker> getPublicMarkers() {
-		return publicMarkers;
-	}
-
-	public void drawText(Vector3i sector, String text) {
-		drawText(posFromSector(sector,true),text);
-	}
-
-	public void drawText(Vector3f mapPos, String text) {
-		Transform t = new Transform();
-		t.setIdentity();
-		t.origin.set(mapPos);
-		ConstantIndication indication = new ConstantIndication(t, Lng.str(text));
-		HudIndicatorOverlay.toDrawMapTexts.add(indication);
-	}
-
-	//map navigation util stuff
-
-	/**
-	 * set waypoint to this sector
-	 * @param sector
-	 */
-	public void navigateTo(Vector3i sector) {
-		GameClient.getClientController().getClientGameData().setWaypoint(sector);
-	}
-
-	/**
-	 * move map camera and selection to this sector on next draw
-	 * @param sector
-	 */
-	public void centerOn(Vector3i sector) {
-		centerOn = new Vector3i(sector);
-		if(markerMenu != null) {
-			try {
-				PlayerPanel playerPanel = GameClient.getClientState().getWorldDrawer().getGuiDrawer().getPlayerPanel();
-				Field field = playerPanel.getClass().getDeclaredField("mapPanel");
-				field.setAccessible(true);
-				MapToolsPanel mapPanel = (MapToolsPanel) field.get(playerPanel);
-				mapPanel.detach(markerMenu);
-			} catch(Exception exception) {
-				exception.printStackTrace();
-			}
-			markerMenu.cleanUp();
-			markerMenu = null;
-		}
-	}
-
-	public void setSelected(MapMarker selected) {
-		this.selected = selected;
-	}
-
-	public void unSelect(MapMarker selected) {
-		if (selected.equals(this.selected))
-			this.selected = null;
-	}
 	private void addMouseListener() {
 		StarLoader.registerListener(MousePressEvent.class, new Listener<MousePressEvent>() {
 			@Override
@@ -274,9 +86,7 @@ public class EdenMapDrawer implements GameMapDrawListener {
 					}
 				} catch(NullPointerException ignored) {
 				}
-
 				//TODO make sure mouse is actually over the marker.
-
 				//turned of auto-nav until event is more reliable. to much accidental navigation to somewhere i dont wanna go.
 				//  if (event.getRawEvent().pressedRightMouse() && selected != null) {
 				//      navigateTo(selected.getSector());
@@ -317,28 +127,207 @@ public class EdenMapDrawer implements GameMapDrawListener {
 		}
 	}
 
+	/**
+	 * move map camera and selection to this sector on next draw
+	 *
+	 * @param sector
+	 */
+	public void centerOn(Vector3i sector) {
+		centerOn = new Vector3i(sector);
+		if(markerMenu != null) {
+			try {
+				PlayerPanel playerPanel = GameClient.getClientState().getWorldDrawer().getGuiDrawer().getPlayerPanel();
+				Field field = playerPanel.getClass().getDeclaredField("mapPanel");
+				field.setAccessible(true);
+				MapToolsPanel mapPanel = (MapToolsPanel) field.get(playerPanel);
+				mapPanel.detach(markerMenu);
+			} catch(Exception exception) {
+				exception.printStackTrace();
+			}
+			markerMenu.cleanUp();
+			markerMenu = null;
+		}
+	}
+
+	/**
+	 * will add the marker, requires updateLists() to become effective
+	 *
+	 * @param marker
+	 */
+	public void addMarker(MapMarker marker, boolean publicMarker) {
+        /*
+        HashMap<Long,MapMarker> map;
+        if (publicMarker) {
+           map = publicMarkers;
+        } else {
+           map = privateMarkers;
+        }
+        publicMarkers.put(marker.sector.code(), marker);
+         */
+		if(publicMarker) publicMarkers.put(marker.sector.code(), marker);
+		else privateMarkers.put(marker.sector.code(), marker);
+	}
+
+	/**
+	 * will copy internal mapping of sprite->subsprite hashset to sprite->subsprite[]
+	 */
+	public void updateInternalList() {
+		HashMap<Sprite, HashSet<MapMarker>> sprite_to_subsprites_set = new HashMap<>();
+		sprite_to_subsprites.clear();
+		//collect all markers, sorted by their sprite: PUBLIC
+		for(Map.Entry<Long, MapMarker> entry : publicMarkers.entrySet()) {
+			Sprite sprite = entry.getValue().getSprite();
+			if(sprite == null) continue;
+			//get set
+			HashSet<MapMarker> subsprites = sprite_to_subsprites_set.get(sprite);
+			if(subsprites == null) {
+				subsprites = new HashSet<MapMarker>();
+				sprite_to_subsprites_set.put(sprite, subsprites);
+			}
+			subsprites.add(entry.getValue());
+		}
+		// PRIVATE
+		for(Map.Entry<Long, MapMarker> entry : privateMarkers.entrySet()) {
+			Sprite sprite = entry.getValue().getSprite();
+			//get set
+			HashSet<MapMarker> subsprites = sprite_to_subsprites_set.get(sprite);
+			if(subsprites == null) {
+				subsprites = new HashSet<MapMarker>();
+				sprite_to_subsprites_set.put(sprite, subsprites);
+			}
+			subsprites.add(entry.getValue());
+		}
+		//build the sprite vs SubSprite[] list for drawing
+		for(Map.Entry<Sprite, HashSet<MapMarker>> entry : sprite_to_subsprites_set.entrySet()) {
+			MapMarker[] arr = entry.getValue().toArray(new MapMarker[0]);
+			//TODO remove
+			if(entry.getKey() == null) continue;
+			sprite_to_subsprites.put(entry.getKey(), arr);
+		}
+	}
+
+	/**
+	 * will make drawables for all custom, non public savedCoordinates
+	 */
+	public void updatePrivateMarkers() {
+		privateMarkers.clear();
+		ObjectArrayList<SavedCoordinate> list = GameClientState.instance.getPlayer().getSavedCoordinates();
+		for(SavedCoordinate c : list) {
+			MapMarker privateMarker = new MapMarker(c.getSector(), c.getName(), MapIcon.OUTPOST, new Vector4f(0, 1, 0, 1));
+			privateMarkers.put(c.getSector().code(), privateMarker);
+		}
+	}
+
+	/**
+	 * will remove a marker from the lists. requires updateInternalList to be applied
+	 *
+	 * @param marker
+	 */
+	public void removeMarker(MapMarker marker) {
+		removeMarker(marker.sector);
+	}
+
+	public void removeMarker(Vector3i sector) {
+		publicMarkers.remove(sector.code());
+		privateMarkers.remove(sector.code());
+	}
+	//map navigation util stuff
+
+	@Override
+	public void system_PreDraw(GameMapDrawer gameMapDrawer, Vector3i vector3i, boolean b) {
+		if(centerOn != null) {
+			gameMapDrawer.getGameMapPosition().set(centerOn.x, centerOn.y, centerOn.z, true);
+			centerOn = null;
+		}
+		if(markerMenu != null) markerMenu.draw();
+	}
+
+	@Override
+	public void system_PostDraw(GameMapDrawer gameMapDrawer, Vector3i vector3i, boolean b) {
+	}
+
+	@Override
+	public void galaxy_PreDraw(GameMapDrawer gameMapDrawer) {
+	}
+
+	@Override
+	public void galaxy_PostDraw(GameMapDrawer gameMapDrawer) {
+	}
+
+	@Override
+	public void galaxy_DrawLines(GameMapDrawer gameMapDrawer) {
+		for(MapMarker marker : publicMarkers.values()) {
+			if(marker instanceof LineDrawer) {
+				((LineDrawer) marker).drawLines(gameMapDrawer);
+			}
+		}
+	}
+
+	@Override
+	public void galaxy_DrawSprites(GameMapDrawer gameMapDrawer) {
+		for(Map.Entry<Sprite, MapMarker[]> entry : sprite_to_subsprites.entrySet()) {
+			for(MapMarker m : entry.getValue()) {
+				m.preDraw(gameMapDrawer);
+			}
+			DrawUtils.drawSprite(gameMapDrawer, entry.getKey(), entry.getValue());
+		}
+	}
+
+	@Override
+	public void galaxy_DrawQuads(GameMapDrawer gameMapDrawer) {
+	}
+
+	public void drawLinesSector(Vector3i from, Vector3i to, Vector4f startColor, Vector4f endColor) {
+		Vector3f start = posFromSector(from, false);
+		Vector3f end = posFromSector(to, false);
+		DrawUtils.drawFTLLine(start, end, startColor, endColor);
+	}
+
 	//helper stuff //TODO move to UTIL
 	public static Vector3f posFromSector(Vector3i sector, boolean isSprite) {
-
 		Vector3f out = sector.toVector3f();
-		if (isSprite) {
-			out.add(new Vector3f(-VoidSystem.SYSTEM_SIZE_HALF,-VoidSystem.SYSTEM_SIZE_HALF,-VoidSystem.SYSTEM_SIZE_HALF));
+		if(isSprite) {
+			out.add(new Vector3f(-VoidSystem.SYSTEM_SIZE_HALF, -VoidSystem.SYSTEM_SIZE_HALF, -VoidSystem.SYSTEM_SIZE_HALF));
 		}
-		out.scale(sectorScale); out.add(halfSectorOffset);
+		out.scale(sectorScale);
+		out.add(halfSectorOffset);
 		return out;
 	}
 
-	private static final Vector4f darkYellow = new Vector4f(0.5f,0.5f,0,1);
-	private static final Vector4f brightYellow = new Vector4f(0.97f,1.0f,0,1);
-	private static final Vector4f darkRed = new Vector4f(0.5f,0f,0,1);
-	private static final Vector4f brightRed = new Vector4f(1f,0f,0,1);
-	private static final Vector4f brightGreen = new Vector4f(0,1,0,1);
-	private static final Vector4f darkGreen = new Vector4f(0,0.5f,0,1);
-	private static final Vector4f grey = new Vector4f(0.5f,0.5f,0.5f,1);
-	public static float scale32px = 0.2f;
+	public HashMap<Long, MapMarker> getPublicMarkers() {
+		return publicMarkers;
+	}
+
+	public void drawText(Vector3i sector, String text) {
+		drawText(posFromSector(sector, true), text);
+	}
+
+	public void drawText(Vector3f mapPos, String text) {
+		Transform t = new Transform();
+		t.setIdentity();
+		t.origin.set(mapPos);
+		ConstantIndication indication = new ConstantIndication(t, Lng.str(text));
+		HudIndicatorOverlay.toDrawMapTexts.add(indication);
+	}
+
+	/**
+	 * set waypoint to this sector
+	 *
+	 * @param sector
+	 */
+	public void navigateTo(Vector3i sector) {
+		GameClient.getClientController().getClientGameData().setWaypoint(sector);
+	}
+
+	public void setSelected(MapMarker selected) {
+		this.selected = selected;
+	}
+
+	public void unSelect(MapMarker selected) {
+		if(selected.equals(this.selected)) this.selected = null;
+	}
 
 	public static class MarkerCustomizeMenu extends GUIAncor {
-
 		private final MapMarker marker;
 		private GUIHorizontalButtonTablePane buttonPane;
 
@@ -375,12 +364,10 @@ public class EdenMapDrawer implements GameMapDrawListener {
 
 							@Override
 							public void onFailedTextCheck(String s) {
-
 							}
 
 							@Override
 							public void onDeactivate() {
-
 							}
 
 							@Override
@@ -508,7 +495,6 @@ public class EdenMapDrawer implements GameMapDrawListener {
 						(new PlayerOkCancelInput("DELETE_MARKER", getState(), "DELETE MARKER", "Are you sure you want to delete this marker?") {
 							@Override
 							public void onDeactivate() {
-
 							}
 
 							@Override
@@ -542,7 +528,6 @@ public class EdenMapDrawer implements GameMapDrawListener {
 		}
 
 		private static class ChangeMarkerIconMenu extends GUIAncor {
-
 			private final MapMarker marker;
 			private final GUIIconButton[] icons = new GUIIconButton[MapIcon.values().length];
 
@@ -554,7 +539,7 @@ public class EdenMapDrawer implements GameMapDrawListener {
 			@Override
 			public void onInit() {
 				super.onInit();
-				for(int i = 0; i < icons.length; i ++) {
+				for(int i = 0; i < icons.length; i++) {
 					GUIOverlay overlay = new GUIOverlay(marker.icon.getSprite(), getState());
 					overlay.onInit();
 					overlay.setUserPointer(MapIcon.values()[i]);
@@ -580,7 +565,6 @@ public class EdenMapDrawer implements GameMapDrawListener {
 		}
 
 		private static class ChangeMarkerColorMenu extends GUIAncor {
-
 			private final MapMarker marker;
 
 			public ChangeMarkerColorMenu(InputState inputState, MapMarker marker) {
@@ -741,7 +725,6 @@ public class EdenMapDrawer implements GameMapDrawListener {
 		}
 
 		private static class ShareMarkerMenu extends GUIAncor {
-
 			private final MapMarker marker;
 			private final boolean toFaction;
 

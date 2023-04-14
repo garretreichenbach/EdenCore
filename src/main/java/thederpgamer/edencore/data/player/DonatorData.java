@@ -6,7 +6,6 @@ package thederpgamer.edencore.data.player;
  * @author TheDerpGamer (TheDerpGamer#0027)
  */
 public class DonatorData {
-
 	public String name;
 	public long discordId;
 	public String tier;

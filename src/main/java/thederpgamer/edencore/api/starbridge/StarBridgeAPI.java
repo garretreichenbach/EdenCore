@@ -9,6 +9,7 @@ import thederpgamer.edencore.utils.DataUtils;
 
 import java.io.File;
 import java.io.FileInputStream;
+import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
 
 /**
@@ -17,9 +18,8 @@ import java.util.HashMap;
  * @author TheDerpGamer (TheDerpGamer#0027)
  */
 public class StarBridgeAPI {
-
 	private static final HashMap<String, DonatorData> supporters = new HashMap<>();
-	private static boolean initialized = false;
+	private static boolean initialized;
 
 	public static void initialize() {
 		if(StarLoader.getModFromName("StarBridge") != null) {
@@ -32,11 +32,11 @@ public class StarBridgeAPI {
 						byte[] data = new byte[(int) donatorsFile.length()];
 						fileInputStream.read(data);
 						fileInputStream.close();
-						String[] donators = new String(data).split(", ");
+						String[] donators = new String(data, StandardCharsets.UTF_8).split(", ");
 						for(String donator : donators) {
 							String[] donatorData = donator.split(" \\| ");
 							if(donatorData.length == 3) {
-								if(!donatorData[2].equals("None")) supporters.put(donatorData[0], new DonatorData(donatorData[0], Long.parseLong(donatorData[1]), donatorData[2]));
+								if(!"None".equals(donatorData[2])) supporters.put(donatorData[0], new DonatorData(donatorData[0], Long.parseLong(donatorData[1]), donatorData[2]));
 							}
 						}
 					} catch(Exception e) {
@@ -55,7 +55,7 @@ public class StarBridgeAPI {
 		//for(DonatorData supporter : supporters.values()) {
 		//	if(supporter.name.equals(name)) return true;
 		//}
-		return !getDonatorType(name).equals("None");
+		return !"None".equals(getDonatorType(name));
 	}
 
 	public static String getDonatorType(String name) {
@@ -73,21 +73,21 @@ public class StarBridgeAPI {
 				}
 			}
 			 */
-			try {
-				PlayerData playerData = DataUtils.getPlayerData(GameServer.getServerState().getPlayerFromName(name));
-				switch(playerData.donatorType) {
-					case PlayerData.STAFF:
-						return "Staff";
-					case PlayerData.EXPLORER:
-						return "Explorer";
-					case PlayerData.CAPTAIN:
-						return "Captain";
-					default:
-						return "None";
-				}
-			} catch(Exception exception) {
-				exception.printStackTrace();
+		try {
+			PlayerData playerData = DataUtils.getPlayerData(GameServer.getServerState().getPlayerFromName(name));
+			switch(playerData.donatorType) {
+				case PlayerData.STAFF:
+					return "Staff";
+				case PlayerData.EXPLORER:
+					return "Explorer";
+				case PlayerData.CAPTAIN:
+					return "Captain";
+				default:
+					return "None";
 			}
+		} catch(Exception exception) {
+			exception.printStackTrace();
+		}
 		return "None";
 	}
 

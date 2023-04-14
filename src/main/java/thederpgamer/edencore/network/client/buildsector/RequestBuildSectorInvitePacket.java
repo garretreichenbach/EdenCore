@@ -18,35 +18,32 @@ import java.util.Objects;
  * @version 1.0 - [10/29/2021]
  */
 public class RequestBuildSectorInvitePacket extends Packet {
+	private String playerName;
 
-    private String playerName;
+	public RequestBuildSectorInvitePacket() {
+	}
 
-    public RequestBuildSectorInvitePacket() {
+	public RequestBuildSectorInvitePacket(String playerName) {
+		this.playerName = playerName;
+	}
 
-    }
+	@Override
+	public void readPacketData(PacketReadBuffer packetReadBuffer) throws IOException {
+		playerName = packetReadBuffer.readString();
+	}
 
-    public RequestBuildSectorInvitePacket(String playerName) {
-        this.playerName = playerName;
-    }
+	@Override
+	public void writePacketData(PacketWriteBuffer packetWriteBuffer) throws IOException {
+		packetWriteBuffer.writeString(playerName);
+	}
 
-    @Override
-    public void readPacketData(PacketReadBuffer packetReadBuffer) throws IOException {
-        playerName = packetReadBuffer.readString();
-    }
+	@Override
+	public void processPacketOnClient() {
+	}
 
-    @Override
-    public void writePacketData(PacketWriteBuffer packetWriteBuffer) throws IOException {
-        packetWriteBuffer.writeString(playerName);
-    }
-
-    @Override
-    public void processPacketOnClient() {
-
-    }
-
-    @Override
-    public void processPacketOnServer(PlayerState playerState) {
-        Objects.requireNonNull(DataUtils.getBuildSector(playerState.getName())).addPlayer(playerName);
-        EdenCore.getInstance().updateClientCacheData();
-    }
+	@Override
+	public void processPacketOnServer(PlayerState playerState) {
+		Objects.requireNonNull(DataUtils.getBuildSector(playerState.getName())).addPlayer(playerName);
+		EdenCore.getInstance().updateClientCacheData();
+	}
 }

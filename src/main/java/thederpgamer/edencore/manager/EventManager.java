@@ -23,7 +23,6 @@ import java.util.concurrent.ConcurrentHashMap;
  * @version 1.0 - [10/13/2021]
  */
 public class EventManager {
-
 	private static final long EVENT_UPDATE_INTERVAL = 60000; //1 minute
 	private static final ConcurrentHashMap<Integer, EventData> eventMap = new ConcurrentHashMap<>();
 
@@ -42,28 +41,26 @@ public class EventManager {
 		if(date.after(twelveAM) && date.before(oneAM)) {
 			{ //Daily
 				int eventCode = EventData.DAILY;
-				EventData[] events = new EventData[] {generateEvent(eventCode |  EventData.PVE), generateEvent(eventCode | EventData.PVP)};
+				EventData[] events = new EventData[] {generateEvent(eventCode | EventData.PVE), generateEvent(eventCode | EventData.PVP)};
 				eventMap.replace(eventCode | EventData.PVE, events[0]);
 				eventMap.replace(eventCode | EventData.PVP, events[1]);
 				announceEvent(eventCode | EventData.PVE, events[0]);
 				announceEvent(eventCode | EventData.PVP, events[1]);
 			}
-
 			{ //Weekly
 				if(DateUtils.getDayOfWeek(ms) == 1) {
 					int eventCode = EventData.WEEKLY;
-					EventData[] events = new EventData[] {generateEvent(eventCode |  EventData.PVE), generateEvent(eventCode | EventData.PVP)};
+					EventData[] events = new EventData[] {generateEvent(eventCode | EventData.PVE), generateEvent(eventCode | EventData.PVP)};
 					eventMap.replace(eventCode | EventData.PVE, events[0]);
 					eventMap.replace(eventCode | EventData.PVP, events[1]);
 					announceEvent(eventCode | EventData.PVE, events[0]);
 					announceEvent(eventCode | EventData.PVP, events[1]);
 				}
 			}
-
 			{ //Monthly
 				if(DateUtils.isFirstOfMonth(ms)) {
 					int eventCode = EventData.MONTHLY;
-					EventData[] events = new EventData[] {generateEvent(eventCode |  EventData.PVE), generateEvent(eventCode | EventData.PVP)};
+					EventData[] events = new EventData[] {generateEvent(eventCode | EventData.PVE), generateEvent(eventCode | EventData.PVP)};
 					eventMap.replace(eventCode | EventData.PVE, events[0]);
 					eventMap.replace(eventCode | EventData.PVP, events[1]);
 					announceEvent(eventCode | EventData.PVE, events[0]);
@@ -76,53 +73,28 @@ public class EventManager {
 	public static void forceGen() {
 		{ //Daily
 			int eventCode = EventData.DAILY;
-			EventData[] events = new EventData[] {generateEvent(eventCode |  EventData.PVE), generateEvent(eventCode | EventData.PVP)};
+			EventData[] events = new EventData[] {generateEvent(eventCode | EventData.PVE), generateEvent(eventCode | EventData.PVP)};
 			eventMap.replace(eventCode | EventData.PVE, events[0]);
 			eventMap.replace(eventCode | EventData.PVP, events[1]);
 			announceEvent(eventCode | EventData.PVE, events[0]);
 			announceEvent(eventCode | EventData.PVP, events[1]);
 		}
-
 		{ //Weekly
 			int eventCode = EventData.WEEKLY;
-			EventData[] events = new EventData[] {generateEvent(eventCode |  EventData.PVE), generateEvent(eventCode | EventData.PVP)};
+			EventData[] events = new EventData[] {generateEvent(eventCode | EventData.PVE), generateEvent(eventCode | EventData.PVP)};
 			eventMap.replace(eventCode | EventData.PVE, events[0]);
 			eventMap.replace(eventCode | EventData.PVP, events[1]);
 			announceEvent(eventCode | EventData.PVE, events[0]);
 			announceEvent(eventCode | EventData.PVP, events[1]);
 		}
-
 		{ //Monthly
 			int eventCode = EventData.MONTHLY;
-			EventData[] events = new EventData[] {generateEvent(eventCode |  EventData.PVE), generateEvent(eventCode | EventData.PVP)};
+			EventData[] events = new EventData[] {generateEvent(eventCode | EventData.PVE), generateEvent(eventCode | EventData.PVP)};
 			eventMap.replace(eventCode | EventData.PVE, events[0]);
 			eventMap.replace(eventCode | EventData.PVP, events[1]);
 			announceEvent(eventCode | EventData.PVE, events[0]);
 			announceEvent(eventCode | EventData.PVP, events[1]);
 		}
-	}
-
-	private static void startEventChecker() {
-		try {
-			new StarRunnable() {
-				@Override
-				public void run() {
-					for(EventData eventData : getAllEvents()) {
-						if(eventData.getSquadData().ready() && eventData.waitingTime <= 0) {
-							eventData.start();
-							announceEvent(eventData.getCode(), eventData);
-						} else eventData.waitingTime --;
-					}
-				}
-			}.runTimer(EdenCore.getInstance(), EVENT_UPDATE_INTERVAL);
-		} catch(Exception exception) {
-			exception.printStackTrace();
-			startEventChecker();
-		}
-	}
-
-	public static ArrayList<EventData> getAllEvents() {
-		return new ArrayList<>(eventMap.values());
 	}
 
 	public static EventData generateEvent(int eventCode) {
@@ -136,10 +108,6 @@ public class EventManager {
 			//else if((eventCode & EventData.MONTHLY) == EventData.MONTHLY) return new generateWeeklyPVP();
 		}
 		return null;
-	}
-
-	private static EventData generateDailyPVE() {
-		return EventData.createRandom(EventData.DAILY | EventData.PVE);
 	}
 
 	public static void announceEvent(int eventCode, EventData eventData) {
@@ -159,6 +127,29 @@ public class EventManager {
 		}
 	}
 
+	private static EventData generateDailyPVE() {
+		return EventData.createRandom(EventData.DAILY | EventData.PVE);
+	}
+
+	private static void startEventChecker() {
+		try {
+			new StarRunnable() {
+				@Override
+				public void run() {
+					for(EventData eventData : getAllEvents()) {
+						if(eventData.getSquadData().ready() && eventData.waitingTime <= 0) {
+							eventData.start();
+							announceEvent(eventData.getCode(), eventData);
+						} else eventData.waitingTime--;
+					}
+				}
+			}.runTimer(EdenCore.getInstance(), EVENT_UPDATE_INTERVAL);
+		} catch(Exception exception) {
+			exception.printStackTrace();
+			startEventChecker();
+		}
+	}
+
 	public static void startEventEditor(PlayerState sender, EventData eventData) {
 		//TODO
 	}
@@ -168,6 +159,10 @@ public class EventManager {
 			if(eventData.getName().equalsIgnoreCase(arg)) return eventData;
 		}
 		return null;
+	}
+
+	public static ArrayList<EventData> getAllEvents() {
+		return new ArrayList<>(eventMap.values());
 	}
 
 	public static EventData createEvent(String type, String combatType, String name) {

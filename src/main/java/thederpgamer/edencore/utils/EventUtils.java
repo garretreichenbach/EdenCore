@@ -17,7 +17,6 @@ import java.util.ArrayList;
  * @author TheDerpGamer (TheDerpGamer#0027)
  */
 public class EventUtils {
-
 	public static boolean isPlayerInEvent(PlayerState player, EventData eventData) {
 		for(SquadMemberData memberData : eventData.getSquadData().squadMembers) return player.getName().equals(memberData.playerName);
 		return false;

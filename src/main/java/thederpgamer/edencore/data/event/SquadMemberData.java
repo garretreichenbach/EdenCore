@@ -18,89 +18,87 @@ import java.io.IOException;
  * @version 1.0 - [10/26/2021]
  */
 public class SquadMemberData implements SerializableData {
+	public String playerName;
+	public String shipName;
+	public int factionId;
+	public double shipMass;
+	public boolean ready;
 
-    public String playerName;
-    public String shipName;
-    public int factionId;
-    public double shipMass;
-    public boolean ready;
+	public SquadMemberData(PlayerState playerState) {
+		this.playerName = playerState.getName();
+		this.shipName = null;
+		this.factionId = playerState.getFactionId();
+		this.shipMass = 0.0;
+		this.ready = false;
+	}
 
-    public SquadMemberData(PlayerState playerState) {
-        this.playerName = playerState.getName();
-        this.shipName = null;
-        this.factionId = playerState.getFactionId();
-        this.shipMass = 0.0;
-        this.ready = false;
-    }
+	public SquadMemberData(PacketReadBuffer readBuffer) throws IOException {
+		deserialize(readBuffer);
+	}
 
-    public SquadMemberData(PacketReadBuffer readBuffer) throws IOException {
-        deserialize(readBuffer);
-    }
+	@Override
+	public void deserialize(PacketReadBuffer readBuffer) throws IOException {
+		playerName = readBuffer.readString();
+		shipName = readBuffer.readString();
+		factionId = readBuffer.readInt();
+		shipMass = readBuffer.readDouble();
+		ready = readBuffer.readBoolean();
+	}
 
-    @Override
-    public void deserialize(PacketReadBuffer readBuffer) throws IOException {
-        playerName = readBuffer.readString();
-        shipName = readBuffer.readString();
-        factionId = readBuffer.readInt();
-        shipMass = readBuffer.readDouble();
-        ready = readBuffer.readBoolean();
-    }
+	@Override
+	public void serialize(PacketWriteBuffer writeBuffer) throws IOException {
+		writeBuffer.writeString(playerName);
+		writeBuffer.writeString(shipName);
+		writeBuffer.writeInt(factionId);
+		writeBuffer.writeDouble(shipMass);
+		writeBuffer.writeBoolean(ready);
+	}
 
-    @Override
-    public void serialize(PacketWriteBuffer writeBuffer) throws IOException {
-        writeBuffer.writeString(playerName);
-        writeBuffer.writeString(shipName);
-        writeBuffer.writeInt(factionId);
-        writeBuffer.writeDouble(shipMass);
-        writeBuffer.writeBoolean(ready);
-    }
+	@Override
+	public void updateClients() {
+	}
 
-    @Override
-    public void updateClients() {
+	public String getPlayerName() {
+		return playerName;
+	}
 
-    }
+	public String getShipName() {
+		return shipName;
+	}
 
-    public String getPlayerName() {
-        return playerName;
-    }
+	public int getFactionId() {
+		return factionId;
+	}
 
-    public boolean hasSelectedShip() {
-        return shipName != null && shipMass > 0.0;
-    }
+	public Faction getFaction() {
+		return GameCommon.getGameState().getFactionManager().getFaction(factionId);
+	}
 
-    public String getShipName() {
-        return shipName;
-    }
+	public double getShipMass() {
+		return shipMass;
+	}
 
-    public int getFactionId() {
-        return factionId;
-    }
+	public boolean isReady() {
+		return ready && hasSelectedShip();
+	}
 
-    public Faction getFaction() {
-        return GameCommon.getGameState().getFactionManager().getFaction(factionId);
-    }
+	public boolean hasSelectedShip() {
+		return shipName != null && shipMass > 0.0;
+	}
 
-    public double getShipMass() {
-        return shipMass;
-    }
+	public void setReady(boolean ready) {
+		if(hasSelectedShip()) this.ready = ready;
+		else this.ready = false;
+	}
 
-    public boolean isReady() {
-        return ready && hasSelectedShip();
-    }
-
-    public void setReady(boolean ready) {
-        if(hasSelectedShip()) this.ready = ready;
-        else this.ready = false;
-    }
-
-    public void setShip(String name) {
-        assert name != null && !name.isEmpty() : "Ship name cannot be empty!";
-        try {
-            BlueprintEntry entry = BluePrintController.active.getBlueprint(name);
-            shipName = entry.getName();
-            shipMass = entry.getMass();
-        } catch(Exception exception) {
-            exception.printStackTrace();
-        }
-    }
+	public void setShip(String name) {
+		assert name != null && !name.isEmpty() : "Ship name cannot be empty!";
+		try {
+			BlueprintEntry entry = BluePrintController.active.getBlueprint(name);
+			shipName = entry.getName();
+			shipMass = entry.getMass();
+		} catch(Exception exception) {
+			exception.printStackTrace();
+		}
+	}
 }

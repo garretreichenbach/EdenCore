@@ -14,18 +14,15 @@ import java.io.IOException;
  * @author TheDerpGamer (TheDerpGamer#0027)
  */
 public class ClientModifyEventPacket extends Packet {
-
 	public static final int JOIN_EVENT = 0;
 	public static final int LEAVE_EVENT = 1;
 	public static final int SET_READY = 2;
 	public static final int CHANGE_SHIP = 3;
-
 	private EventData eventData;
 	private int action;
 	private Object[] args;
 
 	public ClientModifyEventPacket() {
-
 	}
 
 	public ClientModifyEventPacket(EventData eventData, int action) {
@@ -39,7 +36,7 @@ public class ClientModifyEventPacket extends Packet {
 		eventData = EventData.fromPacket(packetReadBuffer);
 		action = packetReadBuffer.readInt();
 		args = new Object[packetReadBuffer.readInt()];
-		for(int i = 0; i < args.length; i ++) {
+		for(int i = 0; i < args.length; i++) {
 			try {
 				args[i] = packetReadBuffer.readObject(Class.forName(packetReadBuffer.readString()));
 			} catch(ClassNotFoundException exception) {
@@ -61,7 +58,6 @@ public class ClientModifyEventPacket extends Packet {
 
 	@Override
 	public void processPacketOnClient() {
-
 	}
 
 	@Override

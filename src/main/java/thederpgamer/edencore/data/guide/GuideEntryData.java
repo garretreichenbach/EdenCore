@@ -8,7 +8,6 @@ import org.schema.schine.graphicsengine.forms.gui.GUITextOverlay;
 import org.schema.schine.graphicsengine.forms.gui.newgui.GUIContentPane;
 import thederpgamer.edencore.utils.ImageUtils;
 
-import javax.validation.constraints.Null;
 import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
@@ -23,7 +22,6 @@ import java.util.regex.Pattern;
  * @version 1.0 - [03/19/2022]
  */
 public abstract class GuideEntryData {
-
 	public String name;
 	public GuideEntryCategory category;
 
@@ -31,8 +29,6 @@ public abstract class GuideEntryData {
 		this.name = name;
 		this.category = category;
 	}
-
-	public abstract void createEntryPane(GUIContentPane contentPane);
 
 	public static GuideEntryData loadFromFile(final File subFile, String name, GuideEntryCategory category) {
 		return new GuideEntryData(name, category) {
@@ -81,12 +77,12 @@ public abstract class GuideEntryData {
 								} catch(Exception exception) {
 									exception.printStackTrace();
 								}
-								for(int i = 0; i < breakHeight; i ++) builder.append("\n");
+								for(int i = 0; i < breakHeight; i++) builder.append("\n");
 								lineNumber += breakHeight;
 							}
 						}
 						if(!found) builder.append(line);
-						lineNumber ++;
+						lineNumber++;
 					}
 					//Todo: Handle blockBehaviorConfig.xml variables
 					overlay.setTextSimple(builder.toString());
@@ -97,4 +93,6 @@ public abstract class GuideEntryData {
 			}
 		};
 	}
+
+	public abstract void createEntryPane(GUIContentPane contentPane);
 }

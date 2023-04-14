@@ -13,15 +13,14 @@ import thederpgamer.edencore.utils.DataUtils;
  * @version 1.0 - [10/22/2021]
  */
 public class BuildSectorMenuControlManager extends GUIControlManager {
+	public BuildSectorMenuControlManager() {
+		super(GameClient.getClientState());
+		DataUtils.getBuildSector(GameClient.getClientPlayerState().getName());
+		PacketUtil.sendPacketToServer(new RequestClientCacheUpdatePacket());
+	}
 
-    public BuildSectorMenuControlManager() {
-        super(GameClient.getClientState());
-        DataUtils.getBuildSector(GameClient.getClientPlayerState().getName());
-        PacketUtil.sendPacketToServer(new RequestClientCacheUpdatePacket());
-    }
-
-    @Override
-    public BuildSectorMenuPanel createMenuPanel() {
-        return new BuildSectorMenuPanel(getState());
-    }
+	@Override
+	public BuildSectorMenuPanel createMenuPanel() {
+		return new BuildSectorMenuPanel(getState());
+	}
 }

@@ -17,38 +17,35 @@ import java.io.IOException;
  * @version 1.0 - [10/30/2021]
  */
 public class UpdateBuildSectorPermissionsPacket extends Packet {
+	private BuildSectorData sectorData;
+	private String targetName;
 
-    private BuildSectorData sectorData;
-    private String targetName;
+	public UpdateBuildSectorPermissionsPacket() {
+	}
 
-    public UpdateBuildSectorPermissionsPacket() {
+	public UpdateBuildSectorPermissionsPacket(BuildSectorData sectorData, String targetName) {
+		this.sectorData = sectorData;
+		this.targetName = targetName;
+	}
 
-    }
+	@Override
+	public void readPacketData(PacketReadBuffer packetReadBuffer) throws IOException {
+		sectorData = new BuildSectorData(packetReadBuffer);
+		targetName = packetReadBuffer.readString();
+	}
 
-    public UpdateBuildSectorPermissionsPacket(BuildSectorData sectorData, String targetName) {
-        this.sectorData = sectorData;
-        this.targetName = targetName;
-    }
+	@Override
+	public void writePacketData(PacketWriteBuffer packetWriteBuffer) throws IOException {
+		sectorData.serialize(packetWriteBuffer);
+		packetWriteBuffer.writeString(targetName);
+	}
 
-    @Override
-    public void readPacketData(PacketReadBuffer packetReadBuffer) throws IOException {
-        sectorData = new BuildSectorData(packetReadBuffer);
-        targetName = packetReadBuffer.readString();
-    }
+	@Override
+	public void processPacketOnClient() {
+	}
 
-    @Override
-    public void writePacketData(PacketWriteBuffer packetWriteBuffer) throws IOException {
-        sectorData.serialize(packetWriteBuffer);
-        packetWriteBuffer.writeString(targetName);
-    }
-
-    @Override
-    public void processPacketOnClient() {
-
-    }
-
-    @Override
-    public void processPacketOnServer(PlayerState playerState) {
-        if(playerState.getName().equals(sectorData.ownerName)) DataUtils.updateBuildSector(sectorData);
-    }
+	@Override
+	public void processPacketOnServer(PlayerState playerState) {
+		if(playerState.getName().equals(sectorData.ownerName)) DataUtils.updateBuildSector(sectorData);
+	}
 }

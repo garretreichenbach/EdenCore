@@ -1,10 +1,10 @@
 package thederpgamer.edencore.utils;
 
 import org.newdawn.slick.Color;
+
 import javax.vecmath.Vector4f;
 
 public class ColorUtils {
-
 	public static final char TRANSPARENT = '0';
 	public static final char WHITE = '1';
 	public static final char LIGHT_GREY = '2';

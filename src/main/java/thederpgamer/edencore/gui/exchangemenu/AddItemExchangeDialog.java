@@ -18,51 +18,40 @@ import thederpgamer.edencore.network.client.exchange.ExchangeItemCreatePacket;
  * @version 1.0 - [11/24/2021]
  */
 public class AddItemExchangeDialog extends GUIInputDialog {
+	@Override
+	public AddItemExchangePanel createPanel() {
+		return new AddItemExchangePanel(getState(), this);
+	}
 
-  @Override
-  public AddItemExchangePanel createPanel() {
-    return new AddItemExchangePanel(getState(), this);
-  }
+	@Override
+	public AddItemExchangePanel getInputPanel() {
+		return (AddItemExchangePanel) super.getInputPanel();
+	}
 
-  @Override
-  public AddItemExchangePanel getInputPanel() {
-    return (AddItemExchangePanel) super.getInputPanel();
-  }
+	@Override
+	public void callback(GUIElement callingElement, MouseEvent mouseEvent) {
+		if(!isOccluded() && mouseEvent.pressedLeftMouse()) {
+			switch((String) callingElement.getUserPointer()) {
+				case "X":
+				case "CANCEL":
+					deactivate();
+					break;
+				case "OK":
+					if(createItem() != null) {
+						deactivate();
+						EdenCore.getInstance().exchangeMenuControlManager.getMenuPanel().recreateTabs();
+					}
+					break;
+			}
+		}
+	}
 
-  @Override
-  public void callback(GUIElement callingElement, MouseEvent mouseEvent) {
-    if (!isOccluded() && mouseEvent.pressedLeftMouse()) {
-      switch ((String) callingElement.getUserPointer()) {
-        case "X":
-        case "CANCEL":
-          deactivate();
-          break;
-        case "OK":
-          if (createItem() != null) {
-            deactivate();
-            EdenCore.getInstance().exchangeMenuControlManager.getMenuPanel().recreateTabs();
-          }
-          break;
-      }
-    }
-  }
-
-  private ItemExchangeItem createItem() {
-    if (NumberUtils.isNumber(getInputPanel().currentBarText) && getInputPanel().barId > 0) {
-      ItemExchangeItem item =
-          new ItemExchangeItem(
-              getInputPanel().barId,
-              Math.abs(Integer.parseInt(getInputPanel().currentBarText)),
-              "x1 "
-                  + WordUtils.capitalize(
-                      getInputPanel().subType.name().toLowerCase().replace("_", " ") + " Weapon"),
-              "",
-              getInputPanel().itemId,
-              MetaObjectManager.MetaObjectType.WEAPON.type,
-              getInputPanel().subType.type);
-      PacketUtil.sendPacketToServer(new ExchangeItemCreatePacket(2, item));
-      return item;
-    }
-    return null;
-  }
+	private ItemExchangeItem createItem() {
+		if(NumberUtils.isNumber(getInputPanel().currentBarText) && getInputPanel().barId > 0) {
+			ItemExchangeItem item = new ItemExchangeItem(getInputPanel().barId, Math.abs(Integer.parseInt(getInputPanel().currentBarText)), "x1 " + WordUtils.capitalize(getInputPanel().subType.name().toLowerCase().replace("_", " ") + " Weapon"), "", getInputPanel().itemId, MetaObjectManager.MetaObjectType.WEAPON.type, getInputPanel().subType.type);
+			PacketUtil.sendPacketToServer(new ExchangeItemCreatePacket(2, item));
+			return item;
+		}
+		return null;
+	}
 }

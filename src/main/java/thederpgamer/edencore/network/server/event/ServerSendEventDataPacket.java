@@ -15,11 +15,9 @@ import java.io.IOException;
  * @author TheDerpGamer (TheDerpGamer#0027)
  */
 public class ServerSendEventDataPacket extends Packet {
-
 	private EventData eventData;
 
 	public ServerSendEventDataPacket() {
-
 	}
 
 	public ServerSendEventDataPacket(EventData eventData) {
@@ -43,6 +41,5 @@ public class ServerSendEventDataPacket extends Packet {
 
 	@Override
 	public void processPacketOnServer(PlayerState playerState) {
-
 	}
 }

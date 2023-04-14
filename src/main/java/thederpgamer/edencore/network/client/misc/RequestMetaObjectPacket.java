@@ -19,50 +19,47 @@ import java.io.IOException;
  * @version 1.0 - [11/24/2021]
  */
 public class RequestMetaObjectPacket extends Packet {
+	private short itemId;
+	private short metaId;
+	private short subType;
 
-  private short itemId;
-  private short metaId;
-  private short subType;
+	public RequestMetaObjectPacket() {
+	}
 
-  public RequestMetaObjectPacket() {}
+	public RequestMetaObjectPacket(short itemId, short metaId, short subType) {
+		this.itemId = itemId;
+		this.metaId = metaId;
+		this.subType = subType;
+	}
 
-  public RequestMetaObjectPacket(short itemId, short metaId, short subType) {
-    this.itemId = itemId;
-    this.metaId = metaId;
-    this.subType = subType;
-  }
+	@Override
+	public void readPacketData(PacketReadBuffer packetReadBuffer) throws IOException {
+		itemId = packetReadBuffer.readShort();
+		metaId = packetReadBuffer.readShort();
+		subType = packetReadBuffer.readShort();
+	}
 
-  @Override
-  public void readPacketData(PacketReadBuffer packetReadBuffer) throws IOException {
-    itemId = packetReadBuffer.readShort();
-    metaId = packetReadBuffer.readShort();
-    subType = packetReadBuffer.readShort();
-  }
+	@Override
+	public void writePacketData(PacketWriteBuffer packetWriteBuffer) throws IOException {
+		packetWriteBuffer.writeShort(itemId);
+		packetWriteBuffer.writeShort(metaId);
+		packetWriteBuffer.writeShort(subType);
+	}
 
-  @Override
-  public void writePacketData(PacketWriteBuffer packetWriteBuffer) throws IOException {
-    packetWriteBuffer.writeShort(itemId);
-    packetWriteBuffer.writeShort(metaId);
-    packetWriteBuffer.writeShort(subType);
-  }
+	@Override
+	public void processPacketOnClient() {
+	}
 
-  @Override
-  public void processPacketOnClient() {}
-
-  @Override
-  public void processPacketOnServer(PlayerState playerState) {
-    try {
-      MetaObject weapon =
-          MetaObjectManager.instantiate(
-              MetaObjectManager.MetaObjectType.WEAPON.type,
-              Weapon.WeaponSubType.getById(subType).type,
-              true);
-      if (weapon instanceof LaserWeapon) ((LaserWeapon) weapon).getColor().set(0, 1, 0, 1);
-      int slot = playerState.getInventory().getFreeSlot();
-      playerState.getInventory().put(slot, weapon);
-      playerState.getInventory().sendInventoryModification(slot);
-    } catch (NoSlotFreeException exception) {
-      exception.printStackTrace();
-    }
-  }
+	@Override
+	public void processPacketOnServer(PlayerState playerState) {
+		try {
+			MetaObject weapon = MetaObjectManager.instantiate(MetaObjectManager.MetaObjectType.WEAPON.type, Weapon.WeaponSubType.getById(subType).type, true);
+			if(weapon instanceof LaserWeapon) ((LaserWeapon) weapon).getColor().set(0, 1, 0, 1);
+			int slot = playerState.getInventory().getFreeSlot();
+			playerState.getInventory().put(slot, weapon);
+			playerState.getInventory().sendInventoryModification(slot);
+		} catch(NoSlotFreeException exception) {
+			exception.printStackTrace();
+		}
+	}
 }

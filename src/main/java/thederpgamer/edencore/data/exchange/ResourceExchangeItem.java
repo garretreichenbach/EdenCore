@@ -16,7 +16,6 @@ import java.io.IOException;
  * @version 1.0 - [09/17/2021]
  */
 public class ResourceExchangeItem extends ExchangeItem {
-
 	public short itemId;
 	public int itemCount;
 
@@ -28,6 +27,17 @@ public class ResourceExchangeItem extends ExchangeItem {
 		super(barType, price, name, description);
 		this.itemId = itemId;
 		this.itemCount = itemCount;
+	}
+
+	@Override
+	public void deserialize(PacketReadBuffer readBuffer) throws IOException {
+		barType = readBuffer.readShort();
+		price = readBuffer.readInt();
+		name = readBuffer.readString();
+		description = readBuffer.readString();
+		if(description.length() > 96) this.description = description.substring(0, 95) + " ...";
+		itemId = readBuffer.readShort();
+		itemCount = readBuffer.readInt();
 	}
 
 	@Override
@@ -44,17 +54,6 @@ public class ResourceExchangeItem extends ExchangeItem {
 		writeBuffer.writeString(description);
 		writeBuffer.writeShort(itemId);
 		writeBuffer.writeInt(itemCount);
-	}
-
-	@Override
-	public void deserialize(PacketReadBuffer readBuffer) throws IOException {
-		barType = readBuffer.readShort();
-		price = readBuffer.readInt();
-		name = readBuffer.readString();
-		description = readBuffer.readString();
-		if(description.length() > 96) this.description = description.substring(0, 95) + " ...";
-		itemId = readBuffer.readShort();
-		itemCount = readBuffer.readInt();
 	}
 
 	@Override

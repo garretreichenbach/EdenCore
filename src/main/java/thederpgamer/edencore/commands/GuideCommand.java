@@ -13,7 +13,6 @@ import javax.annotation.Nullable;
  * @author TheDerpGamer (TheDerpGamer#0027)
  */
 public class GuideCommand implements CommandInterface {
-
 	@Override
 	public String getCommand() {
 		return "guide";
@@ -21,9 +20,7 @@ public class GuideCommand implements CommandInterface {
 
 	@Override
 	public String[] getAliases() {
-		return new String[] {
-				"guide, glossar, glossary"
-		};
+		return new String[] {"guide, glossar, glossary"};
 	}
 
 	@Override
@@ -44,7 +41,6 @@ public class GuideCommand implements CommandInterface {
 
 	@Override
 	public void serverAction(@Nullable PlayerState playerState, String[] strings) {
-
 	}
 
 	@Override

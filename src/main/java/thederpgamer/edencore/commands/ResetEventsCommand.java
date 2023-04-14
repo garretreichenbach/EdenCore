@@ -25,8 +25,7 @@ public class ResetEventsCommand implements CommandInterface {
 
 	@Override
 	public String getDescription() {
-		return "Regenerates all server events.\n" +
-				"- /%COMMAND% : Regenerates all server events.";
+		return "Regenerates all server events.\n" + "- /%COMMAND% : Regenerates all server events.";
 	}
 
 	@Override
@@ -42,7 +41,6 @@ public class ResetEventsCommand implements CommandInterface {
 
 	@Override
 	public void serverAction(@Nullable PlayerState playerState, String[] strings) {
-
 	}
 
 	@Override

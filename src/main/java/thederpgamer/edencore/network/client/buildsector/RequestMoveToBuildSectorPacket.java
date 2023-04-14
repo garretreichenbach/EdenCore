@@ -20,39 +20,36 @@ import java.sql.SQLException;
  * @version 1.0 - [10/28/2021]
  */
 public class RequestMoveToBuildSectorPacket extends Packet {
+	private BuildSectorData sectorData;
 
-    private BuildSectorData sectorData;
+	public RequestMoveToBuildSectorPacket() {
+	}
 
-    public RequestMoveToBuildSectorPacket() {
+	public RequestMoveToBuildSectorPacket(BuildSectorData sectorData) {
+		this.sectorData = sectorData;
+	}
 
-    }
+	@Override
+	public void readPacketData(PacketReadBuffer packetReadBuffer) throws IOException {
+		sectorData = new BuildSectorData(packetReadBuffer);
+	}
 
-    public RequestMoveToBuildSectorPacket(BuildSectorData sectorData) {
-        this.sectorData = sectorData;
-    }
+	@Override
+	public void writePacketData(PacketWriteBuffer packetWriteBuffer) throws IOException {
+		sectorData.serialize(packetWriteBuffer);
+	}
 
-    @Override
-    public void readPacketData(PacketReadBuffer packetReadBuffer) throws IOException {
-        sectorData = new BuildSectorData(packetReadBuffer);
-    }
+	@Override
+	public void processPacketOnClient() {
+	}
 
-    @Override
-    public void writePacketData(PacketWriteBuffer packetWriteBuffer) throws IOException {
-        sectorData.serialize(packetWriteBuffer);
-    }
-
-    @Override
-    public void processPacketOnClient() {
-
-    }
-
-    @Override
-    public void processPacketOnServer(PlayerState playerState) {
-        try {
-            DataUtils.movePlayerToBuildSector(playerState, sectorData);
-        } catch(IOException | SQLException exception) {
-            LogManager.logException("Failed to move player \"" + playerState.getName() + "\" to a build sector!", exception);
-            PlayerUtils.sendMessage(playerState, "The server encountered an error while trying to teleport you. Please report this to an admin!");
-        }
-    }
+	@Override
+	public void processPacketOnServer(PlayerState playerState) {
+		try {
+			DataUtils.movePlayerToBuildSector(playerState, sectorData);
+		} catch(IOException | SQLException exception) {
+			LogManager.logException("Failed to move player \"" + playerState.getName() + "\" to a build sector!", exception);
+			PlayerUtils.sendMessage(playerState, "The server encountered an error while trying to teleport you. Please report this to an admin!");
+		}
+	}
 }

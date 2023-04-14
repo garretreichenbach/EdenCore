@@ -12,14 +12,13 @@ import thederpgamer.edencore.network.client.misc.RequestClientCacheUpdatePacket;
  * @version 1.0 - [11/08/2021]
  */
 public class EventsMenuControlManager extends GUIControlManager {
+	public EventsMenuControlManager() {
+		super(GameClient.getClientState());
+		PacketUtil.sendPacketToServer(new RequestClientCacheUpdatePacket());
+	}
 
-    public EventsMenuControlManager() {
-        super(GameClient.getClientState());
-        PacketUtil.sendPacketToServer(new RequestClientCacheUpdatePacket());
-    }
-
-    @Override
-    public EventsMenuPanel createMenuPanel() {
-        return new EventsMenuPanel(getState());
-    }
+	@Override
+	public EventsMenuPanel createMenuPanel() {
+		return new EventsMenuPanel(getState());
+	}
 }

@@ -16,7 +16,6 @@ import org.schema.schine.input.InputState;
  * @version 1.0 - [03/01/2022]
  */
 public class BuildSectorSpawnEntityPanel extends GUIInputDialogPanel {
-
 	private GUIContentPane contentPane;
 	private String currentNameText = "";
 	private boolean spawnAsOwnFaction = true;
@@ -33,100 +32,9 @@ public class BuildSectorSpawnEntityPanel extends GUIInputDialogPanel {
 	}
 
 	@Override
-	public void onInit() {
-		super.onInit();
-		contentPane = ((GUIDialogWindow) background).getMainContentPane();
-		contentPane.setTextBoxHeightLast((int) getHeight());
-
-		addTextBar(new TextBarResult() {
-
-			@Override
-			public TextBarCallback initCallback() {
-				return callback;
-			}
-
-			@Override
-			public String getToolTipText() {
-				return "Enter Name";
-			}
-
-			@Override
-			public String getName() {
-				return "Name";
-			}
-
-			@Override
-			public String onTextChanged(String text) {
-				String t = text.trim();
-				if(!t.equals(currentNameText)) currentNameText = t;
-				return text;
-			}
-		});
-
-		addCheckbox(new CheckboxResult() {
-			@Override
-			public boolean getCurrentValue() {
-				return spawnAsOwnFaction;
-			}
-
-			@Override
-			public void setCurrentValue(boolean b) {
-				spawnAsOwnFaction = b;
-			}
-
-			@Override
-			public boolean getDefault() {
-				return spawnAsOwnFaction;
-			}
-
-			@Override
-			public CheckboxCallback initCallback() {
-				return callback;
-			}
-
-			@Override
-			public String getName() {
-				return "Spawn as own faction";
-			}
-
-			@Override
-			public String getToolTipText() {
-				return "Spawn as own faction";
-			}
-		}, 0);
-
-		addCheckbox(new CheckboxResult() {
-			@Override
-			public boolean getCurrentValue() {
-				return spawnDocked;
-			}
-
-			@Override
-			public void setCurrentValue(boolean b) {
-				spawnDocked = b;
-			}
-
-			@Override
-			public boolean getDefault() {
-				return spawnDocked;
-			}
-
-			@Override
-			public CheckboxCallback initCallback() {
-				return callback;
-			}
-
-			@Override
-			public String getName() {
-				return "Spawn on rail dock";
-			}
-
-			@Override
-			public String getToolTipText() {
-				return "Spawn on rail dock";
-			}
-		}, 300);
-		active = true;
+	public void cleanUp() {
+		super.cleanUp();
+		active = false;
 	}
 
 	@Override
@@ -136,9 +44,96 @@ public class BuildSectorSpawnEntityPanel extends GUIInputDialogPanel {
 	}
 
 	@Override
-	public void cleanUp() {
-		super.cleanUp();
-		active = false;
+	public void onInit() {
+		super.onInit();
+		contentPane = ((GUIDialogWindow) background).getMainContentPane();
+		contentPane.setTextBoxHeightLast((int) getHeight());
+		addTextBar(new TextBarResult() {
+			@Override
+			public TextBarCallback initCallback() {
+				return callback;
+			}
+
+			@Override
+			public String getName() {
+				return "Name";
+			}
+
+			@Override
+			public String getToolTipText() {
+				return "Enter Name";
+			}
+
+			@Override
+			public String onTextChanged(String text) {
+				String t = text.trim();
+				if(!t.equals(currentNameText)) currentNameText = t;
+				return text;
+			}
+		});
+		addCheckbox(new CheckboxResult() {
+			@Override
+			public boolean getCurrentValue() {
+				return spawnAsOwnFaction;
+			}
+
+			@Override
+			public CheckboxCallback initCallback() {
+				return callback;
+			}			@Override
+			public void setCurrentValue(boolean b) {
+				spawnAsOwnFaction = b;
+			}
+
+			@Override
+			public String getName() {
+				return "Spawn as own faction";
+			}			@Override
+			public boolean getDefault() {
+				return spawnAsOwnFaction;
+			}
+
+			@Override
+			public String getToolTipText() {
+				return "Spawn as own faction";
+			}
+
+
+
+
+		}, 0);
+		addCheckbox(new CheckboxResult() {
+			@Override
+			public boolean getCurrentValue() {
+				return spawnDocked;
+			}
+
+			@Override
+			public CheckboxCallback initCallback() {
+				return callback;
+			}			@Override
+			public void setCurrentValue(boolean b) {
+				spawnDocked = b;
+			}
+
+			@Override
+			public String getName() {
+				return "Spawn on rail dock";
+			}			@Override
+			public boolean getDefault() {
+				return spawnDocked;
+			}
+
+			@Override
+			public String getToolTipText() {
+				return "Spawn on rail dock";
+			}
+
+
+
+
+		}, 300);
+		active = true;
 	}
 
 	private void addTextBar(TextBarResult textBarResult) {

@@ -21,56 +21,53 @@ import java.util.Objects;
  * @version 1.0 - [10/30/2021]
  */
 public class RequestBuildSectorBanPacket extends Packet {
+	private String ownerName;
+	private String playerName;
+	private String reason;
 
-    private String ownerName;
-    private String playerName;
-    private String reason;
+	public RequestBuildSectorBanPacket() {
+	}
 
-    public RequestBuildSectorBanPacket() {
+	public RequestBuildSectorBanPacket(String ownerName, String playerName, String reason) {
+		this.ownerName = ownerName;
+		this.playerName = playerName;
+		this.reason = reason;
+	}
 
-    }
+	@Override
+	public void readPacketData(PacketReadBuffer packetReadBuffer) throws IOException {
+		ownerName = packetReadBuffer.readString();
+		playerName = packetReadBuffer.readString();
+		reason = packetReadBuffer.readString();
+	}
 
-    public RequestBuildSectorBanPacket(String ownerName, String playerName, String reason) {
-        this.ownerName = ownerName;
-        this.playerName = playerName;
-        this.reason = reason;
-    }
+	@Override
+	public void writePacketData(PacketWriteBuffer packetWriteBuffer) throws IOException {
+		packetWriteBuffer.writeString(ownerName);
+		packetWriteBuffer.writeString(playerName);
+		packetWriteBuffer.writeString(reason);
+	}
 
-    @Override
-    public void readPacketData(PacketReadBuffer packetReadBuffer) throws IOException {
-        ownerName = packetReadBuffer.readString();
-        playerName = packetReadBuffer.readString();
-        reason = packetReadBuffer.readString();
-    }
+	@Override
+	public void processPacketOnClient() {
+	}
 
-    @Override
-    public void writePacketData(PacketWriteBuffer packetWriteBuffer) throws IOException {
-        packetWriteBuffer.writeString(ownerName);
-        packetWriteBuffer.writeString(playerName);
-        packetWriteBuffer.writeString(reason);
-    }
-
-    @Override
-    public void processPacketOnClient() {
-
-    }
-
-    @Override
-    public void processPacketOnServer(PlayerState playerState) {
-        PlayerState targetPlayer = ServerUtils.getPlayerByName(playerName);
-        try {
-            if(DataUtils.isPlayerInAnyBuildSector(targetPlayer) && Objects.requireNonNull(DataUtils.getPlayerCurrentBuildSector(targetPlayer)).ownerName.equals(ownerName)) {
-                if(targetPlayer.isOnServer()) {
-                    BuildSectorData sectorData = DataUtils.getPlayerCurrentBuildSector(targetPlayer);
-                    DataUtils.movePlayerFromBuildSector(targetPlayer);
-                    assert sectorData != null;
-                    sectorData.removePlayer(targetPlayer.getName());
-                    if(reason.isEmpty()) PlayerUtils.sendMessage(targetPlayer, "You were banned from " + ownerName + "'s build sector.");
-                    else PlayerUtils.sendMessage(targetPlayer, "You were banned from " + ownerName + "'s build sector for \"" + reason + "\".");
-                }
-            }
-        } catch(Exception exception) {
-            LogManager.logException("Encountered an exception while trying to ban player \"" + playerState + "\" from a build sector.", exception);
-        }
-    }
+	@Override
+	public void processPacketOnServer(PlayerState playerState) {
+		PlayerState targetPlayer = ServerUtils.getPlayerByName(playerName);
+		try {
+			if(DataUtils.isPlayerInAnyBuildSector(targetPlayer) && Objects.requireNonNull(DataUtils.getPlayerCurrentBuildSector(targetPlayer)).ownerName.equals(ownerName)) {
+				if(targetPlayer.isOnServer()) {
+					BuildSectorData sectorData = DataUtils.getPlayerCurrentBuildSector(targetPlayer);
+					DataUtils.movePlayerFromBuildSector(targetPlayer);
+					assert sectorData != null;
+					sectorData.removePlayer(targetPlayer.getName());
+					if(reason.isEmpty()) PlayerUtils.sendMessage(targetPlayer, "You were banned from " + ownerName + "'s build sector.");
+					else PlayerUtils.sendMessage(targetPlayer, "You were banned from " + ownerName + "'s build sector for \"" + reason + "\".");
+				}
+			}
+		} catch(Exception exception) {
+			LogManager.logException("Encountered an exception while trying to ban player \"" + playerState + "\" from a build sector.", exception);
+		}
+	}
 }

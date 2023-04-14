@@ -14,9 +14,8 @@ import java.util.ArrayList;
  * @author TheDerpGamer (MrGoose#0027)
  */
 public class PlayerSettingsData implements SerializableData {
-
-	private String playerName;
 	private final ArrayList<Integer> subscribedEvents = new ArrayList<>();
+	private String playerName;
 
 	public PlayerSettingsData(PlayerData playerData) {
 		this.playerName = playerData.playerName;
@@ -49,7 +48,6 @@ public class PlayerSettingsData implements SerializableData {
 
 	@Override
 	public void updateClients() {
-
 	}
 
 	public String getPlayerName() {

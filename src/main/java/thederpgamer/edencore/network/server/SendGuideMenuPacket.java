@@ -14,19 +14,15 @@ import java.io.IOException;
  * @author TheDerpGamer (TheDerpGamer#0027)
  */
 public class SendGuideMenuPacket extends Packet {
-
 	public SendGuideMenuPacket() {
-
 	}
 
 	@Override
 	public void readPacketData(PacketReadBuffer packetReadBuffer) throws IOException {
-
 	}
 
 	@Override
 	public void writePacketData(PacketWriteBuffer packetWriteBuffer) throws IOException {
-
 	}
 
 	@Override
@@ -36,6 +32,5 @@ public class SendGuideMenuPacket extends Packet {
 
 	@Override
 	public void processPacketOnServer(PlayerState playerState) {
-
 	}
 }

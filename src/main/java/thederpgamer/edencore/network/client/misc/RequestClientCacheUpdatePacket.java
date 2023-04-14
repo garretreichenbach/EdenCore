@@ -17,28 +17,25 @@ import java.io.IOException;
  * @version 1.0 - [10/28/2021]
  */
 public class RequestClientCacheUpdatePacket extends Packet {
+	public RequestClientCacheUpdatePacket() {
+	}
 
-    public RequestClientCacheUpdatePacket() {
+	@Override
+	public void readPacketData(PacketReadBuffer packetReadBuffer) throws IOException {
+		packetReadBuffer.readInt();
+	}
 
-    }
+	@Override
+	public void writePacketData(PacketWriteBuffer packetWriteBuffer) throws IOException {
+		packetWriteBuffer.writeInt(1);
+	}
 
-    @Override
-    public void readPacketData(PacketReadBuffer packetReadBuffer) throws IOException {
-        packetReadBuffer.readInt();
-    }
+	@Override
+	public void processPacketOnClient() {
+	}
 
-    @Override
-    public void writePacketData(PacketWriteBuffer packetWriteBuffer) throws IOException {
-        packetWriteBuffer.writeInt(1);
-    }
-
-    @Override
-    public void processPacketOnClient() {
-
-    }
-
-    @Override
-    public void processPacketOnServer(PlayerState playerState) {
-        PacketUtil.sendPacket(playerState, new SendCacheUpdatePacket(playerState));
-    }
+	@Override
+	public void processPacketOnServer(PlayerState playerState) {
+		PacketUtil.sendPacket(playerState, new SendCacheUpdatePacket(playerState));
+	}
 }

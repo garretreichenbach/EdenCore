@@ -25,15 +25,13 @@ import java.util.List;
  * @version 1.0 - [09/17/2021]
  */
 public class AddBlueprintExchangePanel extends GUIInputDialogPanel {
-
-	private GUIContentPane contentPane;
 	public short barId;
 	public String currentBarText = "";
 	public CatalogPermission catalogEntry;
+	public String currentIconText = "";
+	private GUIContentPane contentPane;
 	private boolean bpTextChanged;
 	private String currentBPText = "";
-
-	public String currentIconText = "";
 
 	public AddBlueprintExchangePanel(InputState inputState, GUICallback guiCallback) {
 		super(inputState, "blueprint_exchange_add_panel", "Add Exchange Entry", "", 650, 350, guiCallback);
@@ -45,148 +43,128 @@ public class AddBlueprintExchangePanel extends GUIInputDialogPanel {
 		barId = ElementManager.getItem("Bronze Bar").getId();
 		contentPane = ((GUIDialogWindow) background).getMainContentPane();
 		contentPane.setTextBoxHeightLast((int) getHeight());
+		addTextBar(new TextBarResult() {
+			@Override
+			public TextBarCallback initCallback() {
+				return super.callback;
+			}
 
-		addTextBar(
-				new TextBarResult() {
+			@Override
+			public String getName() {
+				return "Price";
+			}
 
+			@Override
+			public String getToolTipText() {
+				return "Enter price";
+			}
+
+			@Override
+			public String onTextChanged(String text) {
+				String t = text.trim();
+				if(!t.equals(currentBarText)) currentBarText = t;
+				return text;
+			}
+		}, 0, "ENTER PRICE");
+		addTextBar(new TextBarResult() {
+			@Override
+			public TextBarCallback initCallback() {
+				return super.callback;
+			}
+
+			@Override
+			public String getName() {
+				return "Search by name";
+			}
+
+			@Override
+			public String getToolTipText() {
+				return "Search for blueprint";
+			}
+
+			@Override
+			public String onTextChanged(String text) {
+				String t = text.trim();
+				if(!t.equals(currentBPText)) {
+					currentBPText = t;
+					bpTextChanged = true;
+				}
+				return text;
+			}
+		}, 30, "SEARCH");
+		addDropdown(new DropdownResult() {
+			private List<GUIElement> blueprints;
+
+			@Override
+			public DropdownCallback initCallback() {
+				return new DropdownCallback() {
 					@Override
-					public TextBarCallback initCallback() {
-						return callback;
+					public void onChanged(Object value) {
+						if(value instanceof CatalogPermission) catalogEntry = (CatalogPermission) value;
 					}
+				};
+			}
 
-					@Override
-					public String getToolTipText() {
-						return "Enter price";
-					}
+			@Override
+			public String getName() {
+				return "Blueprint";
+			}
 
-					@Override
-					public String getName() {
-						return "Price";
-					}
+			@Override
+			public String getToolTipText() {
+				return "Select blueprint";
+			}
 
-					@Override
-					public String onTextChanged(String text) {
-						String t = text.trim();
-						if (!t.equals(currentBarText)) currentBarText = t;
-						return text;
-					}
-				},
-				0, "ENTER PRICE");
+			@Override
+			public Object getDefault() {
+				if(catalogEntry != null && blueprints.size() > 0) return blueprints.get(0);
+				return null;
+			}
 
-		addTextBar(
-				new TextBarResult() {
+			@Override
+			public Collection<? extends GUIElement> getDropdownElements(GUIElement guiElement) {
+				blueprints = getBlueprints();
+				return blueprints;
+			}
 
-					@Override
-					public TextBarCallback initCallback() {
-						return callback;
-					}
+			@Override
+			public boolean needsListUpdate() {
+				return bpTextChanged;
+			}
 
-					@Override
-					public String getToolTipText() {
-						return "Search for blueprint";
-					}
+			@Override
+			public void flagListNeedsUpdate(boolean flag) {
+				bpTextChanged = flag;
+			}
 
-					@Override
-					public String getName() {
-						return "Search by name";
-					}
+			@Override
+			public int getDropdownHeight() {
+				return 26;
+			}
+		}, 60);
+		addTextBar(new TextBarResult() {
+			@Override
+			public TextBarCallback initCallback() {
+				return super.callback;
+			}
 
-					@Override
-					public String onTextChanged(String text) {
-						String t = text.trim();
-						if (!t.equals(currentBPText)) {
-							currentBPText = t;
-							bpTextChanged = true;
-						}
-						return text;
-					}
-				},
-				30, "SEARCH");
+			@Override
+			public String getName() {
+				return "Icon url";
+			}
 
-		addDropdown(
-				new DropdownResult() {
-					private List<GUIElement> blueprints;
+			@Override
+			public String getToolTipText() {
+				return "Enter icon url";
+			}
 
-					@Override
-					public DropdownCallback initCallback() {
-						return new DropdownCallback() {
-							@Override
-							public void onChanged(Object value) {
-								if (value instanceof CatalogPermission) catalogEntry = (CatalogPermission) value;
-							}
-						};
-					}
-
-					@Override
-					public String getToolTipText() {
-						return "Select blueprint";
-					}
-
-					@Override
-					public String getName() {
-						return "Blueprint";
-					}
-
-					@Override
-					public boolean needsListUpdate() {
-						return bpTextChanged;
-					}
-
-					@Override
-					public Collection<? extends GUIElement> getDropdownElements(GUIElement guiElement) {
-						blueprints = getBlueprints();
-						return blueprints;
-					}
-
-					@Override
-					public int getDropdownHeight() {
-						return 26;
-					}
-
-					@Override
-					public Object getDefault() {
-						if (catalogEntry != null && blueprints.size() > 0) return blueprints.get(0);
-						return null;
-					}
-
-					@Override
-					public void flagListNeedsUpdate(boolean flag) {
-						bpTextChanged = flag;
-					}
-				},
-				60);
-
-		addTextBar(
-				new TextBarResult() {
-
-					@Override
-					public TextBarCallback initCallback() {
-						return callback;
-					}
-
-					@Override
-					public String getToolTipText() {
-						return "Enter icon url";
-					}
-
-					@Override
-					public String getName() {
-						return "Icon url";
-					}
-
-					@Override
-					public String onTextChanged(String text) {
-						String t = text.trim();
-						if (!t.equals(currentIconText)) currentIconText = t;
-						return text;
-					}
-				}, 90, "ENTER ICON URL");
-	}
-
-	private void addDropdown(DropdownResult result, int y) {
-		GUIAdvDropdown dropDown = new GUIAdvDropdown(getState(), contentPane, result);
-		dropDown.setPos(0, y, 0);
-		contentPane.getContent(0).attach(dropDown);
+			@Override
+			public String onTextChanged(String text) {
+				String t = text.trim();
+				if(!t.equals(currentIconText)) currentIconText = t;
+				return text;
+			}
+		}, 90, "ENTER ICON URL");
 	}
 
 	private void addTextBar(TextBarResult textBarResult, int y, final String hintText) {
@@ -201,12 +179,17 @@ public class AddBlueprintExchangePanel extends GUIInputDialogPanel {
 		contentPane.getContent(0).attach(textBar);
 	}
 
+	private void addDropdown(DropdownResult result, int y) {
+		GUIAdvDropdown dropDown = new GUIAdvDropdown(getState(), contentPane, result);
+		dropDown.setPos(0, y, 0);
+		contentPane.getContent(0).attach(dropDown);
+	}
+
 	private ArrayList<GUIElement> getBlueprints() {
 		ArrayList<GUIElement> blueprintList = new ArrayList<>();
-		List<CatalogPermission> blueprints =
-				GameClient.getClientPlayerState().getCatalog().getAvailableCatalog();
-		for (CatalogPermission entry : blueprints) {
-			if (currentBPText.isEmpty() || entry.getUid().toLowerCase().contains(currentBPText.toLowerCase())) {
+		List<CatalogPermission> blueprints = GameClient.getClientPlayerState().getCatalog().getAvailableCatalog();
+		for(CatalogPermission entry : blueprints) {
+			if(currentBPText.isEmpty() || entry.getUid().toLowerCase().contains(currentBPText.toLowerCase())) {
 				GUIAncor anchor = new GUIAncor(GameClient.getClientState(), 300.0f, 26.0f);
 				GUITextOverlay textOverlay = new GUITextOverlay(100, 26, FontLibrary.getBoldArial12White(), GameClient.getClientState());
 				textOverlay.onInit();

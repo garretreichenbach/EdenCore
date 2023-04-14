@@ -19,106 +19,102 @@ import java.util.ArrayList;
  * @version 1.0 - [11/19/2021]
  */
 public class DefenseEvent extends EventData {
+	public DefenseEvent(String name, String description, EventTarget... targets) {
+		super(name, description, EventType.DEFENSE, targets);
+	}
 
-    public DefenseEvent(String name, String description, EventTarget... targets) {
-        super(name, description, EventType.DEFENSE, targets);
-    }
+	public DefenseEvent(PacketReadBuffer readBuffer) throws IOException {
+		super(readBuffer);
+	}
 
-    public DefenseEvent(PacketReadBuffer readBuffer) throws IOException {
-        super(readBuffer);
-    }
+	public static EventData getRandom() {
+		ArrayList<DefenseEvent> defenseEvents = new ArrayList<>();
+		for(Object obj : PersistentObjectUtil.getObjects(EdenCore.getInstance().getSkeleton(), DefenseEvent.class)) {
+			if(obj instanceof DefenseEvent) defenseEvents.add((DefenseEvent) obj);
+		}
+		if(defenseEvents.size() > 0) return defenseEvents.get((int) (Math.random() * defenseEvents.size()));
+		else return null;
+	}
+
+	public static DefenseEvent create(String combatType, String name) {
+		DefenseEvent defenseEvent = new DefenseEvent(name, "No description", genTargets());
+		defenseEvent.code = Integer.parseInt(combatType) | EventData.DAILY; //Todo: Add weekly and monthly events
+		PersistentObjectUtil.addObject(EdenCore.getInstance().getSkeleton(), defenseEvent);
+		PersistentObjectUtil.save(EdenCore.getInstance().getSkeleton());
+		return defenseEvent;
+	}
+
+	private static EventTarget[] genTargets() {
+		ArrayList<EventTarget> targets = new ArrayList<>();
+		targets.add(new DefenseTarget("DEFENSE_TARGET_0"));
+		return targets.toArray(new EventTarget[0]);
+	}
 
 	@Override
-    public void deserialize(PacketReadBuffer readBuffer) throws IOException {
-        name = readBuffer.readString();
-        description = readBuffer.readString();
-        eventType = EventType.DEFENSE;
-        int size = readBuffer.readInt();
-        if(size > 0) {
-            targets = new EventTarget[size];
-            for(int i = 0; i < size; i ++) targets[i] = new DefenseTarget(readBuffer);
-        }
-        squadData = new SquadData(readBuffer);
-    }
+	public int getStatus() {
+		return status;
+	}
 
-    @Override
-    public void serialize(PacketWriteBuffer writeBuffer) throws IOException {
-        writeBuffer.writeString(name);
-        writeBuffer.writeString(description);
-        writeBuffer.writeInt(targets.length);
-        if(targets.length > 0) for(EventTarget target : targets) target.serialize(writeBuffer);
-        squadData.serialize(writeBuffer);
-    }
+	@Override
+	public void deserialize(PacketReadBuffer readBuffer) throws IOException {
+		name = readBuffer.readString();
+		description = readBuffer.readString();
+		eventType = EventType.DEFENSE;
+		int size = readBuffer.readInt();
+		if(size > 0) {
+			targets = new EventTarget[size];
+			for(int i = 0; i < size; i++) targets[i] = new DefenseTarget(readBuffer);
+		}
+		squadData = new SquadData(readBuffer);
+	}
 
-    @Override
-    public void initializeEvent() {
-        squadData = new SquadData();
-        for(EventTarget target : targets) {
-            if(target instanceof DefenseTarget) {
-                DefenseTarget defenseTarget = (DefenseTarget) target;
-            }
-        }
-    }
+	@Override
+	public void serialize(PacketWriteBuffer writeBuffer) throws IOException {
+		writeBuffer.writeString(name);
+		writeBuffer.writeString(description);
+		writeBuffer.writeInt(targets.length);
+		if(targets.length > 0) for(EventTarget target : targets) target.serialize(writeBuffer);
+		squadData.serialize(writeBuffer);
+	}
 
-    @Override
-    public String getAnnouncement() {
-        return "A new Defense Event is starting [" + name + "]";
-    }
+	@Override
+	public void initializeEvent() {
+		squadData = new SquadData();
+		for(EventTarget target : targets) {
+			if(target instanceof DefenseTarget) {
+				DefenseTarget defenseTarget = (DefenseTarget) target;
+			}
+		}
+	}
 
-    @Override
-    public int getStatus() {
-        return status;
-    }
+	@Override
+	public String getAnnouncement() {
+		return "A new Defense Event is starting [" + name + "]";
+	}
 
-    @Override
-    public void start() {
-        if(squadData == null) {
-            squadData = new SquadData();
-            status = WAITING;
-        }
+	@Override
+	public void start() {
+		if(squadData == null) {
+			squadData = new SquadData();
+			status = WAITING;
+		}
+		switch(status) {
+			case NONE:
+				status = WAITING;
+				break;
+			case WAITING:
+				if(squadData.ready()) status = ACTIVE;
+				break;
+			case ACTIVE:
+				break;
+		}
+	}
 
-        switch(status) {
-            case NONE:
-                status = WAITING;
-                break;
-            case WAITING:
-                if(squadData.ready()) status = ACTIVE;
-                break;
-            case ACTIVE:
-                break;
-        }
-    }
+	@Override
+	public void update(float deltaTime) {
+	}
 
-    @Override
-    public void update(float deltaTime) {
-
-    }
-
-    @Override
-    public void end() {
-
-    }
-
-    public static EventData getRandom() {
-        ArrayList<DefenseEvent> defenseEvents = new ArrayList<>();
-        for(Object obj : PersistentObjectUtil.getObjects(EdenCore.getInstance().getSkeleton(), DefenseEvent.class)) {
-            if(obj instanceof DefenseEvent) defenseEvents.add((DefenseEvent) obj);
-        }
-        if(defenseEvents.size() > 0) return defenseEvents.get((int) (Math.random() * defenseEvents.size()));
-        else return null;
-    }
-
-    public static DefenseEvent create(String combatType, String name) {
-        DefenseEvent defenseEvent = new DefenseEvent(name, "No description", genTargets());
-        defenseEvent.code = Integer.parseInt(combatType) | EventData.DAILY; //Todo: Add weekly and monthly events
-        PersistentObjectUtil.addObject(EdenCore.getInstance().getSkeleton(), defenseEvent);
-        PersistentObjectUtil.save(EdenCore.getInstance().getSkeleton());
-        return defenseEvent;
-    }
-
-    private static EventTarget[] genTargets() {
-        ArrayList<EventTarget> targets = new ArrayList<>();
-        targets.add(new DefenseTarget("DEFENSE_TARGET_0"));
-        return targets.toArray(new EventTarget[0]);
-    }
+	@Override
+	public void end() {
+	}
 }

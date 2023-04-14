@@ -18,45 +18,44 @@ import thederpgamer.edencore.network.client.exchange.ExchangeItemCreatePacket;
  * @version 1.0 - [09/18/2021]
  */
 public class AddResourceExchangeDialog extends GUIInputDialog {
+	@Override
+	public AddResourceExchangePanel createPanel() {
+		return new AddResourceExchangePanel(getState(), this);
+	}
 
-    @Override
-    public AddResourceExchangePanel createPanel() {
-        return new AddResourceExchangePanel(getState(), this);
-    }
+	@Override
+	public AddResourceExchangePanel getInputPanel() {
+		return (AddResourceExchangePanel) super.getInputPanel();
+	}
 
-    @Override
-    public void callback(GUIElement callingElement, MouseEvent mouseEvent) {
-        if(!isOccluded() && mouseEvent.pressedLeftMouse()) {
-            switch((String) callingElement.getUserPointer()) {
-                case "X":
-                case "CANCEL":
-                    deactivate();
-                    break;
-                case "OK":
-                    if(createItem() != null) {
-                        deactivate();
-                        EdenCore.getInstance().exchangeMenuControlManager.getMenuPanel().recreateTabs();
-                    }
-                    break;
-            }
-        }
-    }
+	@Override
+	public void callback(GUIElement callingElement, MouseEvent mouseEvent) {
+		if(!isOccluded() && mouseEvent.pressedLeftMouse()) {
+			switch((String) callingElement.getUserPointer()) {
+				case "X":
+				case "CANCEL":
+					deactivate();
+					break;
+				case "OK":
+					if(createItem() != null) {
+						deactivate();
+						EdenCore.getInstance().exchangeMenuControlManager.getMenuPanel().recreateTabs();
+					}
+					break;
+			}
+		}
+	}
 
-    @Override
-    public AddResourceExchangePanel getInputPanel() {
-        return (AddResourceExchangePanel) super.getInputPanel();
-    }
-
-    private ResourceExchangeItem createItem() {
-        if(NumberUtils.isNumber(getInputPanel().currentBarText) && NumberUtils.isNumber(getInputPanel().currentItemAmountText) && getInputPanel().barId > 0 && getInputPanel().itemId > 0) {
-            ElementInformation itemInfo = ElementKeyMap.getInfo(getInputPanel().itemId);
-            if(itemInfo != null) {
-                int amount = Math.abs(Integer.parseInt(getInputPanel().currentItemAmountText));
-                ResourceExchangeItem item = new ResourceExchangeItem(getInputPanel().barId, Math.abs(Integer.parseInt(getInputPanel().currentBarText)), "x" + amount + " " + itemInfo.getName(), itemInfo.description, itemInfo.getId(), amount);
-                PacketUtil.sendPacketToServer(new ExchangeItemCreatePacket(1, item));
-                return item;
-            }
-        }
-        return null;
-    }
+	private ResourceExchangeItem createItem() {
+		if(NumberUtils.isNumber(getInputPanel().currentBarText) && NumberUtils.isNumber(getInputPanel().currentItemAmountText) && getInputPanel().barId > 0 && getInputPanel().itemId > 0) {
+			ElementInformation itemInfo = ElementKeyMap.getInfo(getInputPanel().itemId);
+			if(itemInfo != null) {
+				int amount = Math.abs(Integer.parseInt(getInputPanel().currentItemAmountText));
+				ResourceExchangeItem item = new ResourceExchangeItem(getInputPanel().barId, Math.abs(Integer.parseInt(getInputPanel().currentBarText)), "x" + amount + " " + itemInfo.getName(), itemInfo.description, itemInfo.getId(), amount);
+				PacketUtil.sendPacketToServer(new ExchangeItemCreatePacket(1, item));
+				return item;
+			}
+		}
+		return null;
+	}
 }

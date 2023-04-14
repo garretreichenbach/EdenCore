@@ -15,11 +15,9 @@ import java.io.IOException;
  * @author TheDerpGamer (TheDerpGamer#0027)
  */
 public class PlayerBuyBPPacket extends Packet {
-
 	private BlueprintExchangeItem item;
 
 	public PlayerBuyBPPacket() {
-
 	}
 
 	public PlayerBuyBPPacket(BlueprintExchangeItem item) {
@@ -38,7 +36,6 @@ public class PlayerBuyBPPacket extends Packet {
 
 	@Override
 	public void processPacketOnClient() {
-
 	}
 
 	@Override

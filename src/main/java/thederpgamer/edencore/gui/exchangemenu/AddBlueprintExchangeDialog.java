@@ -17,7 +17,6 @@ import thederpgamer.edencore.network.client.exchange.ExchangeItemCreatePacket;
  * @version 1.0 - [09/17/2021]
  */
 public class AddBlueprintExchangeDialog extends GUIInputDialog {
-
 	public boolean community = true;
 
 	@Override
@@ -26,15 +25,20 @@ public class AddBlueprintExchangeDialog extends GUIInputDialog {
 	}
 
 	@Override
+	public AddBlueprintExchangePanel getInputPanel() {
+		return (AddBlueprintExchangePanel) super.getInputPanel();
+	}
+
+	@Override
 	public void callback(GUIElement callingElement, MouseEvent mouseEvent) {
-		if (!isOccluded() && mouseEvent.pressedLeftMouse()) {
-			switch ((String) callingElement.getUserPointer()) {
+		if(!isOccluded() && mouseEvent.pressedLeftMouse()) {
+			switch((String) callingElement.getUserPointer()) {
 				case "X":
 				case "CANCEL":
 					deactivate();
 					break;
 				case "OK":
-					if (createItem() != null) {
+					if(createItem() != null) {
 						deactivate();
 						EdenCore.getInstance().exchangeMenuControlManager.getMenuPanel().recreateTabs();
 					}
@@ -43,30 +47,14 @@ public class AddBlueprintExchangeDialog extends GUIInputDialog {
 		}
 	}
 
-	@Override
-	public AddBlueprintExchangePanel getInputPanel() {
-		return (AddBlueprintExchangePanel) super.getInputPanel();
-	}
-
 	private BlueprintExchangeItem createItem() {
-		if (NumberUtils.isNumber(getInputPanel().currentBarText)
-				&& getInputPanel().catalogEntry != null
-				&& getInputPanel().barId > 0) {
+		if(NumberUtils.isNumber(getInputPanel().currentBarText) && getInputPanel().catalogEntry != null && getInputPanel().barId > 0) {
 			String iconPath = "";
 			String description = "";
 			CatalogPermission permission = getInputPanel().catalogEntry;
-			if (permission != null) description = permission.description;
-			if (getInputPanel().currentIconText != null
-					&& getInputPanel().currentIconText.startsWith("https://")
-					&& getInputPanel().currentIconText.endsWith(".png"))
-				iconPath = getInputPanel().currentIconText;
-			BlueprintExchangeItem item =
-					new BlueprintExchangeItem(
-							getInputPanel().catalogEntry,
-							getInputPanel().barId,
-							Math.abs(Integer.parseInt(getInputPanel().currentBarText)),
-							description,
-							iconPath);
+			if(permission != null) description = permission.description;
+			if(getInputPanel().currentIconText != null && getInputPanel().currentIconText.startsWith("https://") && getInputPanel().currentIconText.endsWith(".png")) iconPath = getInputPanel().currentIconText;
+			BlueprintExchangeItem item = new BlueprintExchangeItem(getInputPanel().catalogEntry, getInputPanel().barId, Math.abs(Integer.parseInt(getInputPanel().currentBarText)), description, iconPath);
 			item.community = community;
 			PacketUtil.sendPacketToServer(new ExchangeItemCreatePacket(0, item));
 			return item;

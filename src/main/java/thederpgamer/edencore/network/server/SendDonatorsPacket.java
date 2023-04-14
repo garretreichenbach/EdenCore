@@ -15,11 +15,9 @@ import java.io.IOException;
  * @author TheDerpGamer (TheDerpGamer#0027)
  */
 public class SendDonatorsPacket extends Packet {
-
 	private DonatorData[] donators;
 
 	public SendDonatorsPacket() {
-
 	}
 
 	public SendDonatorsPacket(DonatorData[] donators) {
@@ -30,7 +28,7 @@ public class SendDonatorsPacket extends Packet {
 	public void readPacketData(PacketReadBuffer packetReadBuffer) throws IOException {
 		int length = packetReadBuffer.readInt();
 		donators = new DonatorData[length];
-		for(int i = 0; i < length; i ++) {
+		for(int i = 0; i < length; i++) {
 			donators[i] = new DonatorData(packetReadBuffer.readString(), packetReadBuffer.readLong(), packetReadBuffer.readString());
 		}
 	}
@@ -52,6 +50,5 @@ public class SendDonatorsPacket extends Packet {
 
 	@Override
 	public void processPacketOnServer(PlayerState playerState) {
-
 	}
 }

@@ -15,7 +15,6 @@ import java.io.IOException;
  * @version 1.0 - [11/24/2021]
  */
 public class ItemExchangeItem extends ExchangeItem {
-
 	public short itemId;
 	public short metaId;
 	public short subType;
@@ -34,6 +33,18 @@ public class ItemExchangeItem extends ExchangeItem {
 
 	public void setTempOverlay(GUIElement element) {
 		parent = element;
+	}
+
+	@Override
+	public void deserialize(PacketReadBuffer readBuffer) throws IOException {
+		barType = readBuffer.readShort();
+		price = readBuffer.readInt();
+		name = readBuffer.readString();
+		description = readBuffer.readString();
+		if(description.length() > 96) this.description = description.substring(0, 95) + " ...";
+		itemId = readBuffer.readShort();
+		metaId = readBuffer.readShort();
+		subType = readBuffer.readShort();
 	}
 
 	@Override
@@ -56,18 +67,6 @@ public class ItemExchangeItem extends ExchangeItem {
 		writeBuffer.writeShort(itemId);
 		writeBuffer.writeShort(metaId);
 		writeBuffer.writeShort(subType);
-	}
-
-	@Override
-	public void deserialize(PacketReadBuffer readBuffer) throws IOException {
-		barType = readBuffer.readShort();
-		price = readBuffer.readInt();
-		name = readBuffer.readString();
-		description = readBuffer.readString();
-		if(description.length() > 96) this.description = description.substring(0, 95) + " ...";
-		itemId = readBuffer.readShort();
-		metaId = readBuffer.readShort();
-		subType = readBuffer.readShort();
 	}
 
 	@Override
