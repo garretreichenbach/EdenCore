@@ -3,7 +3,7 @@ package thederpgamer.edencore.data.other;
 import api.network.PacketReadBuffer;
 import api.network.PacketWriteBuffer;
 import org.schema.common.util.linAlg.Vector3i;
-import thederpgamer.edencore.manager.LogManager;
+import thederpgamer.edencore.EdenCore;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -83,13 +83,13 @@ public class BuildSectorData {
 								boolean value = readBuffer.readBoolean();
 								permMap.put(permission, value);
 							} catch(Exception exception) {
-								LogManager.logException("Failed to deserialize build sector permissions", exception);
+								EdenCore.getInstance().logException("Failed to deserialize build sector permissions", exception);
 							}
 						}
 						permissions.put(userName, permMap);
 					}
 				} catch(Exception exception) {
-					LogManager.logException("Failed to deserialize build sector permissions", exception);
+					EdenCore.getInstance().logException("Failed to deserialize build sector permissions", exception);
 				}
 			}
 		}

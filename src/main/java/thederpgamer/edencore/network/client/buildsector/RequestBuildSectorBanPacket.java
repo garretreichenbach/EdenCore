@@ -5,8 +5,8 @@ import api.network.PacketReadBuffer;
 import api.network.PacketWriteBuffer;
 import api.utils.game.PlayerUtils;
 import org.schema.game.common.data.player.PlayerState;
+import thederpgamer.edencore.EdenCore;
 import thederpgamer.edencore.data.other.BuildSectorData;
-import thederpgamer.edencore.manager.LogManager;
 import thederpgamer.edencore.utils.DataUtils;
 import thederpgamer.edencore.utils.ServerUtils;
 
@@ -67,7 +67,7 @@ public class RequestBuildSectorBanPacket extends Packet {
 				}
 			}
 		} catch(Exception exception) {
-			LogManager.logException("Encountered an exception while trying to ban player \"" + playerState + "\" from a build sector.", exception);
+			EdenCore.getInstance().logException("Encountered an exception while trying to ban player \"" + playerState + "\" from a build sector.", exception);
 		}
 	}
 }

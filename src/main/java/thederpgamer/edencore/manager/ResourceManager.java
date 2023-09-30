@@ -44,7 +44,7 @@ public class ResourceManager {
 				unicodeFont.loadGlyphs();
 				fontMap.put(fontName, unicodeFont);
 			} catch(Exception exception) {
-				LogManager.logException("Failed to load font \"" + fontName + "\"", exception);
+				EdenCore.getInstance().logException("Failed to load font \"" + fontName + "\"", exception);
 			}
 		}
 		StarLoaderTexture.runOnGraphicsThread(new Runnable() {
@@ -59,7 +59,7 @@ public class ResourceManager {
 							textureMap.put(textureName, StarLoaderTexture.newBlockTexture(ImageIO.read(Objects.requireNonNull(EdenCore.class.getResourceAsStream("/textures/" + textureName + ".png")))));
 						}
 					} catch(Exception exception) {
-						LogManager.logException("Failed to load texture \"" + textureName + "\"", exception);
+						EdenCore.getInstance().logException("Failed to load texture \"" + textureName + "\"", exception);
 					}
 				}
 				//Load Sprites
@@ -70,7 +70,7 @@ public class ResourceManager {
 						sprite.setName(spriteName);
 						spriteMap.put(spriteName, sprite);
 					} catch(Exception exception) {
-						LogManager.logException("Failed to load sprite \"" + spriteName + "\"", exception);
+						EdenCore.getInstance().logException("Failed to load sprite \"" + spriteName + "\"", exception);
 					}
 				}
 				//Load models
@@ -96,7 +96,7 @@ public class ResourceManager {
 							meshMap.put(modelName, mesh);
 						}
 					} catch(ResourceException | IOException exception) {
-						LogManager.logException("Failed to load model \"" + modelName + "\"", exception);
+						EdenCore.getInstance().logException("Failed to load model \"" + modelName + "\"", exception);
 					}
 				}
 			}

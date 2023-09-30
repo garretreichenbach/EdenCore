@@ -12,7 +12,6 @@ import org.schema.game.server.data.blueprintnw.BlueprintEntry;
 import org.schema.schine.network.objects.Sendable;
 import thederpgamer.edencore.EdenCore;
 import thederpgamer.edencore.data.other.BuildSectorData;
-import thederpgamer.edencore.manager.LogManager;
 import thederpgamer.edencore.utils.BuildSectorUtils;
 import thederpgamer.edencore.utils.DataUtils;
 import thederpgamer.edencore.utils.EntityUtils;
@@ -166,7 +165,7 @@ public class BuildSectorCommand implements CommandInterface {
 								if(sectorData.hasPermission(sender.getName(), "SPAWN")) {
 									BlueprintEntry entry = BuildSectorUtils.getEntry(sender, args[1]);
 									if(entry != null) {
-										BuildSectorUtils.spawnEntry(sender, entry, !sectorData.allAIDisabled);
+										BuildSectorUtils.spawnEntry(sender, entry, !sectorData.allAIDisabled, sectorData.sector);
 										PlayerUtils.sendMessage(sender, "Successfully spawned entity \"" + entry.getName() + "\".");
 									} else PlayerUtils.sendMessage(sender, "Either you don't have catalog access to \"" + args[1] + "\" or the entry doesn't exist!");
 								} else PlayerUtils.sendMessage(sender, "You don't have permission to do this.");
@@ -182,7 +181,7 @@ public class BuildSectorCommand implements CommandInterface {
 									BlueprintEntry entry = BuildSectorUtils.getEntry(sender, args[1]);
 									if(entry != null) {
 										BuildSectorUtils.setPeace(sectorData, false);
-										BuildSectorUtils.spawnEnemy(sender, entry, !sectorData.allAIDisabled);
+										BuildSectorUtils.spawnEnemy(sender, entry, !sectorData.allAIDisabled, sectorData.sector);
 										PlayerUtils.sendMessage(sender, "Successfully spawned entity \"" + entry.getName() + "\" as an enemy.");
 									} else PlayerUtils.sendMessage(sender, "Either you don't have catalog access to \"" + args[1] + "\" or the entry doesn't exist!");
 								} else PlayerUtils.sendMessage(sender, "You don't have permission to do this.");
@@ -273,7 +272,7 @@ public class BuildSectorCommand implements CommandInterface {
 						return true;
 				}
 			} catch(Exception exception) {
-				LogManager.logException("An exception occurred while trying to parse build_sector command", exception);
+				EdenCore.getInstance().logException("An exception occurred while trying to parse build_sector command", exception);
 			}
 		}
 		return false;

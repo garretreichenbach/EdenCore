@@ -4,7 +4,7 @@ import api.network.PacketReadBuffer;
 import api.network.PacketWriteBuffer;
 import org.schema.game.common.data.element.ElementKeyMap;
 import org.schema.schine.graphicsengine.forms.gui.GUIOverlay;
-import thederpgamer.edencore.manager.LogManager;
+import thederpgamer.edencore.EdenCore;
 
 import java.io.IOException;
 
@@ -24,7 +24,7 @@ public abstract class ExchangeItem {
 		try {
 			deserialize(readBuffer);
 		} catch(IOException exception) {
-			LogManager.logException("Encountered an exception while trying to deserialize exchange item data", exception);
+			EdenCore.getInstance().logException("Encountered an exception while trying to deserialize exchange item data", exception);
 		}
 	}
 

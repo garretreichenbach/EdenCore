@@ -5,8 +5,8 @@ import api.network.PacketReadBuffer;
 import api.network.PacketWriteBuffer;
 import api.utils.game.PlayerUtils;
 import org.schema.game.common.data.player.PlayerState;
+import thederpgamer.edencore.EdenCore;
 import thederpgamer.edencore.data.other.BuildSectorData;
-import thederpgamer.edencore.manager.LogManager;
 import thederpgamer.edencore.utils.DataUtils;
 
 import java.io.IOException;
@@ -48,7 +48,7 @@ public class RequestMoveToBuildSectorPacket extends Packet {
 		try {
 			DataUtils.movePlayerToBuildSector(playerState, sectorData);
 		} catch(IOException | SQLException exception) {
-			LogManager.logException("Failed to move player \"" + playerState.getName() + "\" to a build sector!", exception);
+			EdenCore.getInstance().logException("Failed to move player \"" + playerState.getName() + "\" to a build sector!", exception);
 			PlayerUtils.sendMessage(playerState, "The server encountered an error while trying to teleport you. Please report this to an admin!");
 		}
 	}

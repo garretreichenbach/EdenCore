@@ -10,9 +10,9 @@ import org.schema.schine.graphicsengine.core.MouseEvent;
 import org.schema.schine.graphicsengine.forms.gui.*;
 import org.schema.schine.graphicsengine.forms.gui.newgui.*;
 import org.schema.schine.input.InputState;
+import thederpgamer.edencore.EdenCore;
 import thederpgamer.edencore.data.other.BuildSectorData;
 import thederpgamer.edencore.manager.ClientCacheManager;
-import thederpgamer.edencore.manager.LogManager;
 import thederpgamer.edencore.network.client.misc.RequestClientCacheUpdatePacket;
 import thederpgamer.edencore.network.client.misc.RequestEntityDeletePacket;
 import thederpgamer.edencore.utils.BuildSectorUtils;
@@ -173,7 +173,7 @@ public class BuildSectorEntitiesScrollableList extends ScrollableTableList<Segme
 						guiElementList.addWithoutUpdate(listRow);
 					}
 				} catch(Exception exception) {
-					LogManager.logException("Encountered an exception while trying to updateClients build sector entities", exception);
+					EdenCore.getInstance().logException("Encountered an exception while trying to update build sector entities", exception);
 				}
 			}
 		}
@@ -193,7 +193,6 @@ public class BuildSectorEntitiesScrollableList extends ScrollableTableList<Segme
 							if(sectorData.hasPermission(GameClient.getClientPlayerState().getName(), "EDIT")) {
 								getState().getController().queueUIAudio("0022_menu_ui - select 1");
 								EntityUtils.warpPlayerIntoEntity(GameClient.getClientPlayerState(), segmentController);
-								//panel.refresh();
 							} else getState().getController().queueUIAudio("0022_menu_ui - error 1");
 						}
 					}
@@ -221,9 +220,8 @@ public class BuildSectorEntitiesScrollableList extends ScrollableTableList<Segme
 								if(sectorData.hasPermission(GameClient.getClientPlayerState().getName(), "DELETE")) {
 									PacketUtil.sendPacketToServer(new RequestEntityDeletePacket(segmentController, false));
 									getState().getController().queueUIAudio("0022_menu_ui - select 2");
-									panel.refresh();
 								} else getState().getController().queueUIAudio("0022_menu_ui - error 1");
-							} else panel.refresh();
+							}
 						}
 					}
 
@@ -250,9 +248,8 @@ public class BuildSectorEntitiesScrollableList extends ScrollableTableList<Segme
 								if(sectorData.hasPermission(GameClient.getClientPlayerState().getName(), "DELETE")) {
 									PacketUtil.sendPacketToServer(new RequestEntityDeletePacket(segmentController, true));
 									getState().getController().queueUIAudio("0022_menu_ui - select 2");
-									panel.refresh();
 								} else getState().getController().queueUIAudio("0022_menu_ui - error 1");
-							} else panel.refresh();
+							}
 						}
 					}
 
@@ -278,7 +275,6 @@ public class BuildSectorEntitiesScrollableList extends ScrollableTableList<Segme
 							if(sectorData.hasPermission(GameClient.getClientPlayerState().getName(), "TOGGLE_AI")) {
 								getState().getController().queueUIAudio("0022_menu_ui - select 3");
 								BuildSectorUtils.toggleAI(segmentController, !segmentController.isAIControlled());
-								panel.refresh();
 							} else getState().getController().queueUIAudio("0022_menu_ui - error 1");
 						}
 					}
@@ -300,7 +296,7 @@ public class BuildSectorEntitiesScrollableList extends ScrollableTableList<Segme
 				});
 			}
 		} catch(Exception exception) {
-			LogManager.logException("Failed to create build sector button pane due to an exception", exception);
+			EdenCore.getInstance().logException("Failed to create build sector button pane due to an exception", exception);
 		}
 		return buttonPane;
 	}

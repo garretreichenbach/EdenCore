@@ -5,7 +5,7 @@ import api.network.PacketReadBuffer;
 import api.network.PacketWriteBuffer;
 import api.utils.game.PlayerUtils;
 import org.schema.game.common.data.player.PlayerState;
-import thederpgamer.edencore.manager.LogManager;
+import thederpgamer.edencore.EdenCore;
 import thederpgamer.edencore.utils.DataUtils;
 import thederpgamer.edencore.utils.ServerUtils;
 
@@ -63,7 +63,7 @@ public class RequestBuildSectorKickPacket extends Packet {
 				}
 			}
 		} catch(Exception exception) {
-			LogManager.logException("Encountered an exception while trying to kick player \"" + playerState + "\" from a build sector.", exception);
+			EdenCore.getInstance().logException("Encountered an exception while trying to kick player \"" + playerState + "\" from a build sector.", exception);
 		}
 	}
 }

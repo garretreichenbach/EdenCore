@@ -14,7 +14,6 @@ import thederpgamer.edencore.data.exchange.ItemExchangeItem;
 import thederpgamer.edencore.data.exchange.ResourceExchangeItem;
 import thederpgamer.edencore.data.other.BuildSectorData;
 import thederpgamer.edencore.manager.ClientCacheManager;
-import thederpgamer.edencore.manager.LogManager;
 import thederpgamer.edencore.utils.DataUtils;
 
 import java.io.IOException;
@@ -52,13 +51,13 @@ public class SendCacheUpdatePacket extends Packet {
 		//Exchange
 		int bpSize = packetReadBuffer.readInt();
 		if(bpSize > 0) for(int i = 0; i < bpSize; i++) blueprintExchangeItems.add(new BlueprintExchangeItem(packetReadBuffer));
-		LogManager.logDebug("Received " + bpSize + " updated bp exchange items.");
+		EdenCore.getInstance().logInfo("Received " + bpSize + " updated bp exchange items.");
 		int resSize = packetReadBuffer.readInt();
 		if(resSize > 0) for(int i = 0; i < resSize; i++) resourceExchangeItems.add(new ResourceExchangeItem(packetReadBuffer));
-		LogManager.logDebug("Received " + resSize + " updated resource exchange items.");
+		EdenCore.getInstance().logInfo("Received " + resSize + " updated resource exchange items.");
 		int itemSize = packetReadBuffer.readInt();
 		if(itemSize > 0) for(int i = 0; i < itemSize; i++) itemExchangeItems.add(new ItemExchangeItem(packetReadBuffer));
-		LogManager.logDebug("Received " + resSize + " updated item exchange items.");
+		EdenCore.getInstance().logInfo("Received " + resSize + " updated item exchange items.");
 		//Events
         /* Todo: Finish events
         int eventSize = packetReadBuffer.readInt();
@@ -74,11 +73,11 @@ public class SendCacheUpdatePacket extends Packet {
 				try {
 					sectorData.add(new BuildSectorData(packetReadBuffer));
 				} catch(Exception exception) {
-					LogManager.logException("Encountered an exception while trying to deserialize Build Sector Data", exception);
+					EdenCore.getInstance().logException("Encountered an exception while trying to deserialize Build Sector Data", exception);
 				}
 			}
 		}
-		LogManager.logDebug("Received " + sectorSize + " updated build sector data.");
+		EdenCore.getInstance().logInfo("Received " + sectorSize + " updated build sector data.");
 
         /*
         int entitySize = packetReadBuffer.readInt();
@@ -93,11 +92,11 @@ public class SendCacheUpdatePacket extends Packet {
                     //Sendable sendable = packetReadBuffer.readSendable(); This throws an exception sometimes, and even with a catch it still crashes if thrown
                     //if(sendable instanceof SegmentController) sectorEntities.add((SegmentController) sendable);
                 } catch(Exception exception) {
-                    LogManager.logException("Encountered an exception while trying to deserialize SegmentController data", exception);
+                    EdenCore.getInstance().logException("Encountered an exception while trying to deserialize SegmentController data", exception);
                 }
             }
         }
-        LogManager.logDebug("Received " + entitySize + " updated sector entity data.");
+        EdenCore.getInstance().logDebug("Received " + entitySize + " updated sector entity data.");
 
          */
 	}
@@ -136,7 +135,7 @@ public class SendCacheUpdatePacket extends Packet {
 			ClientCacheManager.itemExchangeItems.addAll(itemExchangeItems);
 			//EdenCore.getInstance().exchangeMenuControlManager.getMenuPanel().recreateTabs();
 		} catch(Exception exception) {
-			LogManager.logException("Encountered an exception while trying to updateClients client cache", exception);
+			EdenCore.getInstance().logException("Encountered an exception while trying to updateClients client cache", exception);
 		}
 		//try { //Events
 		//ClientCacheManager.eventData.clear();
@@ -150,11 +149,8 @@ public class SendCacheUpdatePacket extends Packet {
 			for(BuildSectorData data : sectorData) {
 				if(data != null && GameClient.getClientState() != null && GameClient.getClientPlayerState() != null && data.hasPermission(GameClient.getClientPlayerState().getName(), "ENTER")) ClientCacheManager.accessibleSectors.add(data);
 			}
-			ClientCacheManager.sectorEntities.clear();
-			//if(DataUtils.isPlayerInAnyBuildSector(GameClient.getClientPlayerState())) ClientCacheManager.sectorEntities.addAll(sectorEntities);
-			//EdenCore.getInstance().buildSectorMenuControlManager.getMenuPanel().recreateTabs();
 		} catch(Exception exception) {
-			LogManager.logException("Encountered an exception while trying to updateClients client cache", exception);
+			EdenCore.getInstance().logException("Encountered an exception while trying to updateClients client cache", exception);
 		}
 	}
 

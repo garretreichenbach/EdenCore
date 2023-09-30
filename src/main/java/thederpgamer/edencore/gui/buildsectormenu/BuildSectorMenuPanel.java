@@ -38,9 +38,8 @@ public class BuildSectorMenuPanel extends GUIMenuPanel {
 	@Override
 	public void recreateTabs() {
 		DataUtils.getBuildSector(GameClient.getClientPlayerState().getName());
-		//PacketUtil.sendPacketToServer(new RequestClientCacheUpdatePacket());
 		int lastTab = guiWindow.getSelectedTab();
-		if(guiWindow.getTabs().size() > 0) guiWindow.clearTabs();
+		if(!guiWindow.getTabs().isEmpty()) guiWindow.clearTabs();
 		GUIContentPane managementTab = guiWindow.addTab("MANAGEMENT");
 		managementTab.setTextBoxHeightLast((int) (GLFrame.getHeight() / 1.5));
 		createManagementTab(managementTab);
@@ -71,7 +70,6 @@ public class BuildSectorMenuPanel extends GUIMenuPanel {
 							if(GameCommon.getPlayerFromName(s) != null && !DataUtils.getBuildSector(GameClient.getClientPlayerState().getName()).getAllowedPlayersByName().contains(s)) {
 								PacketUtil.sendPacketToServer(new RequestBuildSectorInvitePacket(s));
 								PacketUtil.sendPacketToServer(new RequestClientCacheUpdatePacket());
-								refresh();
 								return true;
 							} else return false;
 						}
@@ -107,7 +105,6 @@ public class BuildSectorMenuPanel extends GUIMenuPanel {
 							@Override
 							public void pressedOK() {
 								PacketUtil.sendPacketToServer(new RequestBuildSectorProtectPacket(false));
-								refresh();
 								deactivate();
 							}
 						}).activate();
@@ -142,7 +139,6 @@ public class BuildSectorMenuPanel extends GUIMenuPanel {
 							@Override
 							public void pressedOK() {
 								PacketUtil.sendPacketToServer(new RequestBuildSectorProtectPacket(true));
-								refresh();
 								deactivate();
 							}
 						}).activate();
@@ -176,8 +172,8 @@ public class BuildSectorMenuPanel extends GUIMenuPanel {
 		(new BuildSectorCatalogScrollableList(getState(), DataUtils.getBuildSector(GameClient.getClientPlayerState().getName()), contentPane.getContent(0), this)).onInit();
 	}
 
-	public void refresh() {
-		PacketUtil.sendPacketToServer(new RequestClientCacheUpdatePacket());
+	public void refresh(boolean updateCache) {
+		if(updateCache) PacketUtil.sendPacketToServer(new RequestClientCacheUpdatePacket());
 		new StarRunnable() {
 			@Override
 			public void run() {
