@@ -19,7 +19,7 @@ import org.schema.game.server.data.ServerConfig;
 import org.schema.schine.graphicsengine.core.GlUtil;
 import org.schema.schine.resource.FileExt;
 import org.schema.schine.resource.tag.Tag;
-import thederpgamer.edencore.manager.LogManager;
+import thederpgamer.edencore.EdenCore;
 
 import javax.vecmath.Vector3f;
 import java.io.*;
@@ -82,7 +82,7 @@ public class ServerUtils {
 					playerState.offlinePermssion[1] = Long.parseLong(fields[4].trim());
 				}
 			} catch(Exception exception) {
-				LogManager.logException("Encountered an exception while trying to fetch a player from database", exception);
+				EdenCore.getInstance().logException("Encountered an exception while trying to fetch a player from database", exception);
 			}
 		}
 		return playerState;
@@ -109,7 +109,7 @@ public class ServerUtils {
 					return entryMap;
 				}
 			} catch(Exception exception) {
-				LogManager.logException("Encountered an exception while trying to fetch server database entries", exception);
+				EdenCore.getInstance().logException("Encountered an exception while trying to fetch server database entries", exception);
 			}
 		}
 		return new HashMap<>();
@@ -181,7 +181,7 @@ public class ServerUtils {
 				if(!allPlayers.contains(playerState)) allPlayers.add(playerState);
 			}
 		} catch(Exception exception) {
-			LogManager.logException("Encountered an exception while trying to fetch players from database", exception);
+			EdenCore.getInstance().logException("Encountered an exception while trying to fetch players from database", exception);
 		}
 		return allPlayers;
 	}

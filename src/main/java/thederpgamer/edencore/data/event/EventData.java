@@ -7,9 +7,9 @@ import api.network.PacketWriteBuffer;
 import api.network.packets.PacketUtil;
 import api.utils.game.PlayerUtils;
 import org.schema.game.common.data.player.PlayerState;
+import thederpgamer.edencore.EdenCore;
 import thederpgamer.edencore.data.SerializableData;
 import thederpgamer.edencore.data.event.types.defense.DefenseEvent;
-import thederpgamer.edencore.manager.LogManager;
 import thederpgamer.edencore.network.server.event.ServerSendEventDataPacket;
 
 import java.io.IOException;
@@ -79,7 +79,7 @@ public abstract class EventData implements EventUpdater, SerializableData, Seria
 			}
 			throw new IllegalStateException("Invalid event type: " + type.name());
 		} catch(Exception exception) {
-			LogManager.logException("Failed to deserialize EventData", exception);
+			EdenCore.getInstance().logException("Failed to deserialize EventData", exception);
 		}
 		return null;
 	}
@@ -167,14 +167,14 @@ public abstract class EventData implements EventUpdater, SerializableData, Seria
 		if(status == WAITING) {
 			if(squadData.squadMembers.size() < maxPlayers) {
 				squadData.squadMembers.add(new SquadMemberData(playerState));
-				LogManager.logInfo("Player " + playerState.getName() + " joined event " + name + "!");
+				EdenCore.getInstance().logInfo("Player " + playerState.getName() + " joined event " + name + ".");
 				PlayerUtils.sendMessage(playerState, "Joined event: " + name);
 			} else {
-				LogManager.logInfo("Event " + name + " is full!");
+				EdenCore.getInstance().logInfo("Event " + name + " is full!");
 				PlayerUtils.sendMessage(playerState, "Cannot join event " + name + " - Event is full!");
 			}
 		} else {
-			LogManager.logInfo("Event " + name + " is already started!");
+			EdenCore.getInstance().logInfo("Event " + name + " is already started!");
 			PlayerUtils.sendMessage(playerState, "Cannot join event " + name + " - Event has already started!");
 		}
 		updateClients();
@@ -185,13 +185,13 @@ public abstract class EventData implements EventUpdater, SerializableData, Seria
 			for(SquadMemberData squadMemberData : squadData.squadMembers) {
 				if(squadMemberData.playerName.equals(playerState.getName())) {
 					squadData.squadMembers.remove(squadMemberData);
-					LogManager.logInfo("Player " + playerState.getName() + " left event " + name + "!");
+					EdenCore.getInstance().logInfo("Player " + playerState.getName() + " left event " + name + ".");
 					PlayerUtils.sendMessage(playerState, "Left event: " + name);
 					break;
 				}
 			}
 		} else {
-			LogManager.logInfo("Event " + name + " is already started!");
+			EdenCore.getInstance().logInfo("Event " + name + " is already started!");
 			PlayerUtils.sendMessage(playerState, "Cannot leave event " + name + " - Event has already started!");
 		}
 	}

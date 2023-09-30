@@ -4,11 +4,13 @@ import api.common.GameCommon;
 import api.network.Packet;
 import api.network.PacketReadBuffer;
 import api.network.PacketWriteBuffer;
+import api.network.packets.PacketUtil;
 import org.schema.common.util.linAlg.Vector3i;
 import org.schema.game.common.controller.SegmentController;
 import org.schema.game.common.data.element.ElementDocking;
 import org.schema.game.common.data.player.PlayerState;
 import org.schema.schine.network.objects.Sendable;
+import thederpgamer.edencore.network.server.RefreshBuildSectorGUIPacket;
 import thederpgamer.edencore.utils.DataUtils;
 
 import java.io.IOException;
@@ -64,6 +66,7 @@ public class RequestEntityDeletePacket extends Packet {
 					segmentController.setMarkedForDeleteVolatile(true);
 				}
 			}
+			PacketUtil.sendPacket(playerState, new RefreshBuildSectorGUIPacket());
 		}
 	}
 }

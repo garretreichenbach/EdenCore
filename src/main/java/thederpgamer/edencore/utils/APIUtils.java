@@ -12,4 +12,8 @@ public class APIUtils {
 	public static boolean isRRSInstalled() {
 		return StarLoader.getModFromName("Resources ReSourced") != null;
 	}
+
+	public static boolean isStarBridgeInstalled() {
+		return StarLoader.getModFromName("StarBridge") != null;
+	}
 }

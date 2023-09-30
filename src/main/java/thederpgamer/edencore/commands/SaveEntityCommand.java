@@ -8,7 +8,6 @@ import org.schema.game.common.data.element.ElementDocking;
 import org.schema.game.common.data.player.PlayerState;
 import thederpgamer.edencore.EdenCore;
 import thederpgamer.edencore.manager.ConfigManager;
-import thederpgamer.edencore.manager.LogManager;
 import thederpgamer.edencore.manager.TransferManager;
 import thederpgamer.edencore.utils.DataUtils;
 
@@ -58,7 +57,7 @@ public class SaveEntityCommand implements CommandInterface {
 						entity.markForPermanentDelete(true);
 						entity.setMarkedForDeleteVolatile(true);
 					} catch(Exception exception) {
-						LogManager.logException("Failed to save entity \"" + DataUtils.getEntityNameFormatted(entity) + "\" to world transfer folder", exception);
+						EdenCore.getInstance().logException("Failed to save entity \"" + DataUtils.getEntityNameFormatted(entity) + "\" to world transfer folder", exception);
 						PlayerUtils.sendMessage(playerState, "An exception occurred while trying to save \"" + DataUtils.getEntityNameFormatted(entity) + "\" to world transfer folder. Let an admin know if this continues to occur!");
 					}
 				} else PlayerUtils.sendMessage(playerState, "This entity was spawned by an admin or ai and therefore cannot be transferred.");

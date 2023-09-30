@@ -2,9 +2,9 @@ package thederpgamer.edencore.api.starbridge;
 
 import api.common.GameServer;
 import api.mod.StarLoader;
+import thederpgamer.edencore.EdenCore;
 import thederpgamer.edencore.data.player.DonatorData;
 import thederpgamer.edencore.data.player.PlayerData;
-import thederpgamer.edencore.manager.LogManager;
 import thederpgamer.edencore.utils.DataUtils;
 
 import java.io.File;
@@ -23,7 +23,7 @@ public class StarBridgeAPI {
 
 	public static void initialize() {
 		if(StarLoader.getModFromName("StarBridge") != null) {
-			LogManager.logInfo("StarBridge detected. Initializing API...");
+			EdenCore.getInstance().logInfo("StarBridge detected. Initializing API...");
 			try {
 				File donatorsFile = new File("donators.smdat");
 				if(donatorsFile.exists()) {
@@ -45,7 +45,7 @@ public class StarBridgeAPI {
 				}
 				initialized = true;
 			} catch(Exception exception) {
-				LogManager.logException("Failed to initialize StarBridge API!", exception);
+				EdenCore.getInstance().logException("StarBridge API initialization failed. Some features may not work properly.", exception);
 			}
 		}
 	}

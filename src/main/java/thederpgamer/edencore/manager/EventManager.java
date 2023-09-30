@@ -41,7 +41,7 @@ public class EventManager {
 		if(date.after(twelveAM) && date.before(oneAM)) {
 			{ //Daily
 				int eventCode = EventData.DAILY;
-				EventData[] events = new EventData[] {generateEvent(eventCode | EventData.PVE), generateEvent(eventCode | EventData.PVP)};
+				EventData[] events = {generateEvent(eventCode | EventData.PVE), generateEvent(eventCode | EventData.PVP)};
 				eventMap.replace(eventCode | EventData.PVE, events[0]);
 				eventMap.replace(eventCode | EventData.PVP, events[1]);
 				announceEvent(eventCode | EventData.PVE, events[0]);
@@ -50,7 +50,7 @@ public class EventManager {
 			{ //Weekly
 				if(DateUtils.getDayOfWeek(ms) == 1) {
 					int eventCode = EventData.WEEKLY;
-					EventData[] events = new EventData[] {generateEvent(eventCode | EventData.PVE), generateEvent(eventCode | EventData.PVP)};
+					EventData[] events = {generateEvent(eventCode | EventData.PVE), generateEvent(eventCode | EventData.PVP)};
 					eventMap.replace(eventCode | EventData.PVE, events[0]);
 					eventMap.replace(eventCode | EventData.PVP, events[1]);
 					announceEvent(eventCode | EventData.PVE, events[0]);
@@ -60,7 +60,7 @@ public class EventManager {
 			{ //Monthly
 				if(DateUtils.isFirstOfMonth(ms)) {
 					int eventCode = EventData.MONTHLY;
-					EventData[] events = new EventData[] {generateEvent(eventCode | EventData.PVE), generateEvent(eventCode | EventData.PVP)};
+					EventData[] events = {generateEvent(eventCode | EventData.PVE), generateEvent(eventCode | EventData.PVP)};
 					eventMap.replace(eventCode | EventData.PVE, events[0]);
 					eventMap.replace(eventCode | EventData.PVP, events[1]);
 					announceEvent(eventCode | EventData.PVE, events[0]);
@@ -73,7 +73,7 @@ public class EventManager {
 	public static void forceGen() {
 		{ //Daily
 			int eventCode = EventData.DAILY;
-			EventData[] events = new EventData[] {generateEvent(eventCode | EventData.PVE), generateEvent(eventCode | EventData.PVP)};
+			EventData[] events = {generateEvent(eventCode | EventData.PVE), generateEvent(eventCode | EventData.PVP)};
 			eventMap.replace(eventCode | EventData.PVE, events[0]);
 			eventMap.replace(eventCode | EventData.PVP, events[1]);
 			announceEvent(eventCode | EventData.PVE, events[0]);
@@ -81,7 +81,7 @@ public class EventManager {
 		}
 		{ //Weekly
 			int eventCode = EventData.WEEKLY;
-			EventData[] events = new EventData[] {generateEvent(eventCode | EventData.PVE), generateEvent(eventCode | EventData.PVP)};
+			EventData[] events = {generateEvent(eventCode | EventData.PVE), generateEvent(eventCode | EventData.PVP)};
 			eventMap.replace(eventCode | EventData.PVE, events[0]);
 			eventMap.replace(eventCode | EventData.PVP, events[1]);
 			announceEvent(eventCode | EventData.PVE, events[0]);
@@ -89,7 +89,7 @@ public class EventManager {
 		}
 		{ //Monthly
 			int eventCode = EventData.MONTHLY;
-			EventData[] events = new EventData[] {generateEvent(eventCode | EventData.PVE), generateEvent(eventCode | EventData.PVP)};
+			EventData[] events = {generateEvent(eventCode | EventData.PVE), generateEvent(eventCode | EventData.PVP)};
 			eventMap.replace(eventCode | EventData.PVE, events[0]);
 			eventMap.replace(eventCode | EventData.PVP, events[1]);
 			announceEvent(eventCode | EventData.PVE, events[0]);
@@ -166,7 +166,7 @@ public class EventManager {
 	}
 
 	public static EventData createEvent(String type, String combatType, String name) {
-		if("DEFENSE".equals(type.toUpperCase())) {
+		if("DEFENSE".equalsIgnoreCase(type)) {
 			return DefenseEvent.create(combatType, name);
 		}
 		return null;

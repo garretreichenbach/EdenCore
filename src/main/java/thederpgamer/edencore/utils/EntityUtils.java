@@ -69,7 +69,7 @@ public class EntityUtils {
 		return Math.abs(Vector3fTools.distance(entityTransform.origin.x, entityTransform.origin.y, entityTransform.origin.z, playerTransform.origin.x, playerTransform.origin.y, playerTransform.origin.z));
 	}
 
-	public static void spawnEntry(PlayerState owner, BlueprintEntry entry, String spawnName, int factionId) {
+	public static void spawnEntry(PlayerState owner, BlueprintEntry entry, String spawnName, int factionId, Vector3i buildSector) {
 		Transform transform = new Transform();
 		transform.setIdentity();
 		transform.origin.set(owner.getFirstControlledTransformableWOExc().getWorldTransform().origin);
@@ -85,6 +85,7 @@ public class EntityUtils {
 				public void onNoDocker() {
 				}
 			});
+			BuildSectorUtils.recordSpawn(entity, buildSector);
 			PlayerUtils.sendMessage(owner, "Successfully spawned entity \"" + entity.getName() + "\".");
 		} catch(EntityNotFountException | IOException | EntityAlreadyExistsException | StateParameterNotFoundException exception) {
 			exception.printStackTrace();
@@ -118,7 +119,7 @@ public class EntityUtils {
 		}
 	}
 
-	public static void spawnEnemy(PlayerState owner, BlueprintEntry entry, String spawnName) {
+	public static void spawnEnemy(PlayerState owner, BlueprintEntry entry, String spawnName, Vector3i sector) {
 		Transform transform = new Transform();
 		transform.setIdentity();
 		transform.origin.set(owner.getFirstControlledTransformableWOExc().getWorldTransform().origin);
@@ -134,6 +135,7 @@ public class EntityUtils {
 				public void onNoDocker() {
 				}
 			});
+			BuildSectorUtils.recordSpawn(entity, sector);
 			BuildSectorUtils.toggleAI(entity, true);
 			PlayerUtils.sendMessage(owner, "Successfully spawned entity \"" + entity.getName() + "\".");
 		} catch(EntityNotFountException | IOException | EntityAlreadyExistsException | StateParameterNotFoundException exception) {

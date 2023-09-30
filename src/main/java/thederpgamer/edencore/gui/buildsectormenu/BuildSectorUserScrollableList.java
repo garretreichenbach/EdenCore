@@ -9,7 +9,6 @@ import org.schema.schine.graphicsengine.forms.gui.newgui.*;
 import org.schema.schine.input.InputState;
 import thederpgamer.edencore.data.other.BuildSectorData;
 import thederpgamer.edencore.manager.ConfigManager;
-import thederpgamer.edencore.manager.LogManager;
 import thederpgamer.edencore.network.client.buildsector.RequestBuildSectorBanPacket;
 import thederpgamer.edencore.network.client.buildsector.RequestBuildSectorKickPacket;
 import thederpgamer.edencore.network.client.misc.RequestClientCacheUpdatePacket;
@@ -199,7 +198,6 @@ public class BuildSectorUserScrollableList extends ScrollableTableList<String> {
 				return (!playerName.equals(sectorData.ownerName) || ConfigManager.getMainConfig().getBoolean("debug-mode")) && getState().getController().getPlayerInputs().isEmpty();
 			}
 		});
-		LogManager.logDebug("" + buttonPane.getWidth());
 		return buttonPane;
 	}
 

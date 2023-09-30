@@ -11,7 +11,6 @@ import org.schema.game.common.data.player.PlayerState;
 import thederpgamer.edencore.EdenCore;
 import thederpgamer.edencore.element.ElementManager;
 import thederpgamer.edencore.element.items.Item;
-import thederpgamer.edencore.manager.LogManager;
 import thederpgamer.edencore.utils.ServerUtils;
 
 import javax.annotation.Nullable;
@@ -74,14 +73,11 @@ public class AwardBarsCommand implements CommandInterface {
 					String name = (amount > 1) ? bar.getItemInfo().getName() + "s" : bar.getItemInfo().getName();
 					if(playerState.isOnServer() && GameCommon.getPlayerFromName(playerState.getName()) != null) { //Player is online
 						PlayerUtils.sendMessage(playerState, "You have been awarded " + amount + " " + name + ".");
-						//PlayerUtils.sendMessage(sender, "Awarded " + amount + " " + name + " to player " + playerState.getName() + ".");
 					} else { //Player is offline
 						try {
 							GameServer.getServerState().getDatabaseIndex().getTableManager().getPlayerTable().updateOrInsertPlayer(playerState);
-							//PlayerUtils.sendMessage(sender, "Awarded " + amount + " " + name + " to player " + playerState.getName() + ".");
 						} catch(SQLException exception) {
-							LogManager.logException("Encountered an exception while trying to modify player data in Server Database", exception);
-							//PlayerUtils.sendMessage(sender, "Encountered an exception while trying to modify player data in Server Database.");
+							EdenCore.getInstance().logException("Encountered an exception while trying to modify player data in Server Database", exception);
 						}
 					}
 				}
@@ -121,7 +117,7 @@ public class AwardBarsCommand implements CommandInterface {
 							GameServer.getServerState().getDatabaseIndex().getTableManager().getPlayerTable().updateOrInsertPlayer(targetPlayer);
 							PlayerUtils.sendMessage(sender, "Awarded " + amount + " " + name + " to player " + targetPlayer.getName() + ".");
 						} catch(SQLException exception) {
-							LogManager.logException("Encountered an exception while trying to modify player data in Server Database", exception);
+							EdenCore.getInstance().logException("Encountered an exception while trying to modify player data in Server Database", exception);
 							PlayerUtils.sendMessage(sender, "Encountered an exception while trying to modify player data in Server Database.");
 						}
 					}

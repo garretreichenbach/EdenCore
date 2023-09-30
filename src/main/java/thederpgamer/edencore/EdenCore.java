@@ -11,6 +11,7 @@ import api.listener.events.block.SegmentPieceRemoveEvent;
 import api.listener.events.controller.ClientInitializeEvent;
 import api.listener.events.controller.ServerInitializeEvent;
 import api.listener.events.draw.RegisterWorldDrawersEvent;
+import api.listener.events.entity.SegmentControllerFullyLoadedEvent;
 import api.listener.events.entity.SegmentControllerInstantiateEvent;
 import api.listener.events.gui.GUITopBarCreateEvent;
 import api.listener.events.gui.MainWindowTabAddEvent;
@@ -36,6 +37,7 @@ import org.schema.common.util.linAlg.Vector3i;
 import org.schema.game.client.view.gui.newgui.GUITopBar;
 import org.schema.game.common.data.player.PlayerState;
 import org.schema.game.common.data.player.faction.FactionManager;
+import org.schema.game.server.data.PlayerNotFountException;
 import org.schema.schine.common.language.Lng;
 import org.schema.schine.graphicsengine.core.MouseEvent;
 import org.schema.schine.graphicsengine.forms.gui.GUIActivationHighlightCallback;
@@ -45,37 +47,34 @@ import org.schema.schine.input.InputState;
 import org.schema.schine.resource.ResourceLoader;
 import thederpgamer.edencore.api.starbridge.StarBridgeAPI;
 import thederpgamer.edencore.commands.*;
+import thederpgamer.edencore.commands.events.EventEditorCommand;
 import thederpgamer.edencore.data.other.BuildSectorData;
 import thederpgamer.edencore.data.player.PlayerData;
 import thederpgamer.edencore.element.ElementManager;
 import thederpgamer.edencore.element.items.PrizeBars;
 import thederpgamer.edencore.gui.buildsectormenu.BuildSectorMenuControlManager;
+import thederpgamer.edencore.gui.eventsmenu.EventsMenuControlManager;
 import thederpgamer.edencore.gui.exchangemenu.ExchangeMenuControlManager;
 import thederpgamer.edencore.manager.ConfigManager;
-import thederpgamer.edencore.manager.LogManager;
 import thederpgamer.edencore.manager.ResourceManager;
 import thederpgamer.edencore.manager.TransferManager;
-import thederpgamer.edencore.navigation.EdenMapDrawer;
-import thederpgamer.edencore.navigation.MapIcon;
-import thederpgamer.edencore.navigation.NavigationUtilManager;
 import thederpgamer.edencore.network.client.buildsector.*;
 import thederpgamer.edencore.network.client.event.ClientModifyEventPacket;
 import thederpgamer.edencore.network.client.exchange.ExchangeItemCreatePacket;
 import thederpgamer.edencore.network.client.exchange.ExchangeItemRemovePacket;
 import thederpgamer.edencore.network.client.exchange.PlayerBuyBPPacket;
 import thederpgamer.edencore.network.client.exchange.RequestSpawnEntryPacket;
-import thederpgamer.edencore.network.client.misc.NavigationMapPacket;
+import thederpgamer.edencore.network.client.misc.NavigationUpdateRequestPacket;
 import thederpgamer.edencore.network.client.misc.RequestClientCacheUpdatePacket;
 import thederpgamer.edencore.network.client.misc.RequestEntityDeletePacket;
 import thederpgamer.edencore.network.client.misc.RequestMetaObjectPacket;
-import thederpgamer.edencore.network.server.PlayerWarpIntoEntityPacket;
-import thederpgamer.edencore.network.server.SendCacheUpdatePacket;
-import thederpgamer.edencore.network.server.SendDonatorsPacket;
-import thederpgamer.edencore.network.server.SendGuideMenuPacket;
+import thederpgamer.edencore.network.server.*;
 import thederpgamer.edencore.network.server.event.ServerSendEventDataPacket;
+import thederpgamer.edencore.utils.APIUtils;
 import thederpgamer.edencore.utils.BuildSectorUtils;
 import thederpgamer.edencore.utils.DataUtils;
 import thederpgamer.edencore.utils.DateUtils;
+import thederpgamer.starbridge.StarBridge;
 
 import java.io.IOException;
 import java.nio.file.Files;
@@ -91,29 +90,33 @@ import java.util.zip.ZipInputStream;
  */
 public class EdenCore extends StarMod {
 	// Instance
-	private static EdenCore getInstance;
+	private static EdenCore instance;
 	// Overwrites
 	private final String[] overwriteClasses = {"PlayerState", "BlueprintEntry", "TorchBeam"};
 	// Disabled Blocks
 	private final short[] disabledBlocks = {347, // Shop Module
-		291, // Faction Module
-		667, // Shipyard Computer
-		683, // Race Gate Controller
-		542, // Warp Gate Computer
-		445, // Medical Supplies
-		446 // Medial Cabinet
+			291, // Faction Module
+			667, // Shipyard Computer
+			683, // Race Gate Controller
+			542, // Warp Gate Computer
+			445, // Medical Supplies
+			446 // Medial Cabinet
 	};
 	// Disabled Tabs
 	private final String[] disabledTabs = {"FLEETS", "SHOP", "REPAIRS", "TRADE", "SET PRICES"};
 	// GUI
 	public ExchangeMenuControlManager exchangeMenuControlManager;
 	public BuildSectorMenuControlManager buildSectorMenuControlManager;
-	//	public EventsMenuControlManager eventsMenuControlManager;
+	public EventsMenuControlManager eventsMenuControlManager;
 
 	public EdenCore() {
 	}
 
 	public static void main(String[] args) {
+	}
+
+	public static EdenCore getInstance() {
+		return instance;
 	}
 
 	@Override
@@ -127,9 +130,8 @@ public class EdenCore extends StarMod {
 	@Override
 	public void onEnable() {
 		super.onEnable();
-		getInstance = this;
+		instance = this;
 		ConfigManager.initialize(this);
-		LogManager.initialize();
 		TransferManager.initialize();
 		registerPackets();
 		registerListeners();
@@ -139,16 +141,14 @@ public class EdenCore extends StarMod {
 
 	@Override
 	public void onServerCreated(ServerInitializeEvent serverInitializeEvent) {
-		new NavigationUtilManager(); // util to have public saved coordinates\
 		super.onServerCreated(serverInitializeEvent);
-		//		EventManager.doRunners();
 		StarBridgeAPI.initialize();
+//		EventManager.doRunners();
 	}
 
 	@Override
 	public void onClientCreated(ClientInitializeEvent clientInitializeEvent) {
 		super.onClientCreated(clientInitializeEvent);
-		new EdenMapDrawer();
 		initGlossary();
 	}
 
@@ -157,12 +157,12 @@ public class EdenCore extends StarMod {
 		// Items
 		ElementManager.addItemGroup(new PrizeBars());
 		ElementManager.initialize();
+		logInfo("Initialized Blocks");
 	}
 
 	@Override
 	public void onResourceLoad(ResourceLoader resourceLoader) {
 		ResourceManager.loadResources(resourceLoader);
-		MapIcon.loadSprites();
 	}
 
 	private void initGlossary() {
@@ -178,6 +178,7 @@ public class EdenCore extends StarMod {
 		edenCore.addEntry(new GlossarEntry("Listing Blueprints in the Exchange", "Players are able to sell blueprints in the COMMUNITY tab of the blueprint exchange."));
 		edenCore.addEntry(new GlossarEntry("Donator Perks", "Donators can use chat colors and get free bars each day.\n" + "Chat colors:\n" + " - &0 = Transparent\n" + " - &1 = White\n" + " - &2 = Light Grey\n" + " - &3 = Grey\n" + " - &4 = Dark Grey\n" + " - &5 = Black\n" + " - &y = Yellow\n" + " - &o = Orange\n" + " - &r = Red\n" + " - &m = Magenta\n" + " - &p = Pink\n" + " - &b = Blue\n" + " - &c = Cyan\n" + " - &g = Green\n"));
 		GlossarInit.addCategory(edenCore);
+		logInfo("Initialized Glossary");
 	}
 
 	private void registerPackets() {
@@ -196,15 +197,44 @@ public class EdenCore extends StarMod {
 		PacketUtil.registerPacket(ExchangeItemRemovePacket.class);
 		PacketUtil.registerPacket(SendCacheUpdatePacket.class);
 		PacketUtil.registerPacket(PlayerWarpIntoEntityPacket.class);
-		PacketUtil.registerPacket(NavigationMapPacket.class);
+		PacketUtil.registerPacket(NavigationUpdateRequestPacket.class);
+		PacketUtil.registerPacket(NavigationUpdatePacket.class);
 		PacketUtil.registerPacket(PlayerBuyBPPacket.class);
 		PacketUtil.registerPacket(SendGuideMenuPacket.class);
 		PacketUtil.registerPacket(ClientModifyEventPacket.class);
 		PacketUtil.registerPacket(ServerSendEventDataPacket.class);
 		PacketUtil.registerPacket(SendDonatorsPacket.class);
+		logInfo("Registered Packets");
 	}
 
 	private void registerListeners() {
+		StarLoader.registerListener(SegmentControllerFullyLoadedEvent.class, new Listener<SegmentControllerFullyLoadedEvent>() {
+			@Override
+			public void onEvent(SegmentControllerFullyLoadedEvent event) {
+				if(!BuildSectorUtils.isLegal(event.getController())) {
+					String spawnerName = event.getController().getSpawner();
+					if(spawnerName != null) {
+						PlayerState spawner = null;
+						try {
+							spawner = GameServer.getServerState().getPlayerFromName(spawnerName);
+						} catch(PlayerNotFountException exception) {
+							exception.printStackTrace();
+						}
+						if(spawner != null) {
+							PlayerUtils.sendMessage(spawner, "Your ship \"" + event.getController().getName() + "\" was deleted because it was spawned in an illegal sector.");
+							PlayerUtils.sendMessage(spawner, "If you believe this was a mistake, please contact a staff member.");
+						}
+						if(APIUtils.isStarBridgeInstalled()) {
+							StarBridge.getBot().sendServerMessage("@Staff A ship spawned by " + spawnerName + " was deleted because it was spawned in an illegal sector.");
+							StarBridge.getBot().sendDiscordMessage("@Staff A ship spawned by " + spawnerName + " was deleted because it was spawned in an illegal sector.");
+						}
+					}
+					event.getController().setMarkedForDeleteVolatileIncludingDocks(true);
+					event.getController().setMarkedForDeletePermanentIncludingDocks(true);
+				}
+			}
+		}, this);
+
 		StarLoader.registerListener(KeyPressEvent.class, new Listener<KeyPressEvent>() {
 			@Override
 			public void onEvent(KeyPressEvent event) {
@@ -236,13 +266,13 @@ public class EdenCore extends StarMod {
 
 				/*
 				char eventsKey = ConfigManager.getKeyBinding("events-menu-key");
-				if (eventsKey != '\0' && event.getChar() == eventsKey && event.getKey() == Keyboard.KEY_DIVIDE) {
-					if (eventsMenuControlManager == null) {
+				if(eventsKey != '\0' && event.getChar() == eventsKey && event.getKey() == Keyboard.KEY_DIVIDE) {
+					if(eventsMenuControlManager == null) {
 						eventsMenuControlManager = new EventsMenuControlManager();
 						ModGUIHandler.registerNewControlManager(getSkeleton(), eventsMenuControlManager);
 					}
 
-					if (!GameClient.getClientState().getController().isChatActive() && GameClient.getClientState().getController().getPlayerInputs().isEmpty()) {
+					if(!GameClient.getClientState().getController().isChatActive() && GameClient.getClientState().getController().getPlayerInputs().isEmpty()) {
 						GameClient.getClientState().getController().queueUIAudio("0022_menu_ui - enter");
 						GameClient.getClientState().getGlobalGameControlManager().getIngameControlManager().getPlayerGameControlManager().deactivateAll();
 						eventsMenuControlManager.setActive(true);
@@ -438,7 +468,7 @@ public class EdenCore extends StarMod {
 								}
 							}
 						} catch(Exception exception) {
-							LogManager.logException("Encountered an exception while trying to check if a new SegmentController \"" + event.getController().getName() + "\" was in a build sector", exception);
+							EdenCore.getInstance().logException("Encountered an exception while trying to check if a new SegmentController \"" + event.getController().getName() + "\" was in a build sector", exception);
 						}
 					}
 				}.runLater(getInstance(), 3);
@@ -456,7 +486,8 @@ public class EdenCore extends StarMod {
 							event.setCanceled(true);
 						}
 					}
-				} catch(Exception ignored) {}
+				} catch(Exception ignored) {
+				}
 			}
 		}, this);
 		StarLoader.registerListener(SegmentPieceRemoveEvent.class, new Listener<SegmentPieceRemoveEvent>() {
@@ -471,7 +502,8 @@ public class EdenCore extends StarMod {
 							event.setCanceled(true);
 						}
 					}
-				} catch(Exception ignored) {}
+				} catch(Exception ignored) {
+				}
 			}
 		}, this);
 		StarLoader.registerListener(SegmentPieceActivateByPlayer.class, new Listener<SegmentPieceActivateByPlayer>() {
@@ -488,7 +520,8 @@ public class EdenCore extends StarMod {
 							event.setCanceled(true);
 						}
 					}
-				} catch(Exception ignored) {}
+				} catch(Exception ignored) {
+				}
 			}
 		}, this);
 		StarLoader.registerListener(PlayerPickupFreeItemEvent.class, new Listener<PlayerPickupFreeItemEvent>() {
@@ -503,7 +536,8 @@ public class EdenCore extends StarMod {
 							event.setCanceled(true);
 						}
 					}
-				} catch(Exception ignored) {}
+				} catch(Exception ignored) {
+				}
 			}
 		}, this);
 		StarLoader.registerListener(PlayerDeathEvent.class, new Listener<PlayerDeathEvent>() {
@@ -562,12 +596,12 @@ public class EdenCore extends StarMod {
 											}
 										}
 										playerData.lastLogin = System.currentTimeMillis();
-										PersistentObjectUtil.removeObject(getInstance.getSkeleton(), playerData);
-										PersistentObjectUtil.addObject(getInstance.getSkeleton(), playerData);
-										PersistentObjectUtil.save(getInstance.getSkeleton());
+										PersistentObjectUtil.removeObject(instance.getSkeleton(), playerData);
+										PersistentObjectUtil.addObject(instance.getSkeleton(), playerData);
+										PersistentObjectUtil.save(instance.getSkeleton());
 									}
 								} catch(Exception exception) {
-									LogManager.logException("Failed to get player data for " + event.getPlayerName(), exception);
+									logException("Failed to get player data for " + event.getPlayerState().getName(), exception);
 								}
 							}
 						}.runLater(getInstance(), 500);
@@ -604,9 +638,11 @@ public class EdenCore extends StarMod {
 				}
 			}
 		}, this);
+		logInfo("Registered Listeners");
 	}
 
 	private void registerCommands() {
+		StarLoader.registerCommand(new EventEditorCommand());
 		StarLoader.registerCommand(new SaveEntityCommand());
 		StarLoader.registerCommand(new LoadEntityCommand());
 		StarLoader.registerCommand(new ListEntityCommand());
@@ -620,7 +656,7 @@ public class EdenCore extends StarMod {
 		StarLoader.registerCommand(new ResetEventsCommand());
 		StarLoader.registerCommand(new EditEventCommand());
 		StarLoader.registerCommand(new SetDonatorCommand());
-		// StarLoader.registerCommand(new ResetPlayerCommand());
+		logInfo("Registered Commands");
 	}
 
 	private void startRunners() {
@@ -641,7 +677,7 @@ public class EdenCore extends StarMod {
 							PlayerUtils.sendMessage(playerState, "The guide can be accessed via the /guide command or via the GUIDE button under the PLAYER tab in the top right.");
 					}
 				}
-			}.runTimer(getInstance, 10L);
+			}.runTimer(instance, 10L);
 		}
 	}
 
@@ -660,13 +696,9 @@ public class EdenCore extends StarMod {
 					PacketUtil.sendPacket(playerState, new SendCacheUpdatePacket(playerState));
 				}
 			} catch(Exception exception) {
-				LogManager.logException("Encountered an exception while trying to updateClients client cache data", exception);
+				instance.logException("Encountered an exception while trying to updateClients client cache data", exception);
 			}
 		}
-	}
-
-	public static EdenCore getInstance() {
-		return getInstance;
 	}
 
 	private void queueSpawnSwitch(final PlayerState playerState) {
@@ -678,7 +710,7 @@ public class EdenCore extends StarMod {
 					try {
 						DataUtils.movePlayerFromBuildSector(playerState);
 					} catch(Exception exception) {
-						LogManager.logException("Encountered a severe exception while trying to move player \"" + playerState.getName() + "\" out of a build sector! Report this ASAP!", exception);
+						getInstance().logException("Encountered a severe exception while trying to move player \"" + playerState.getName() + "\" out of a build sector! Report this ASAP!", exception);
 						playerState.setUseCreativeMode(false);
 						if(!playerState.isAdmin()) playerState.setHasCreativeMode(false);
 						PlayerUtils.sendMessage(playerState, "The server encountered a severe exception while trying to load you in and your" + " player state may be corrupted as a result. Report this to an admin ASAP!");
@@ -699,8 +731,8 @@ public class EdenCore extends StarMod {
 				if(nextEntry.getName().endsWith(className + ".class")) bytes = IOUtils.toByteArray(file);
 			}
 			file.close();
-		} catch(IOException e) {
-			e.printStackTrace();
+		} catch(IOException exception) {
+			exception.printStackTrace();
 		}
 		if(bytes != null) return bytes;
 		else return byteCode;

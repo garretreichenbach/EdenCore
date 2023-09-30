@@ -2,6 +2,7 @@ package thederpgamer.edencore.utils;
 
 import api.common.GameCommon;
 import api.common.GameServer;
+import api.mod.config.PersistentObjectUtil;
 import api.utils.game.PlayerUtils;
 import com.bulletphysics.linearmath.Transform;
 import org.schema.common.util.linAlg.Vector3i;
@@ -23,8 +24,9 @@ import org.schema.game.server.data.blueprint.SegmentControllerSpawnCallbackDirec
 import org.schema.game.server.data.blueprintnw.BlueprintEntry;
 import org.schema.schine.graphicsengine.core.GlUtil;
 import org.schema.schine.graphicsengine.core.settings.StateParameterNotFoundException;
+import thederpgamer.edencore.EdenCore;
+import thederpgamer.edencore.data.entity.SegmentControllerRecord;
 import thederpgamer.edencore.data.other.BuildSectorData;
-import thederpgamer.edencore.manager.LogManager;
 
 import javax.vecmath.Vector3f;
 import java.io.IOException;
@@ -57,7 +59,7 @@ public class BuildSectorUtils {
 		return null;
 	}
 
-	public static void spawnEntry(PlayerState sender, BlueprintEntry entry, boolean aiEnabled) {
+	public static void spawnEntry(PlayerState sender, BlueprintEntry entry, boolean aiEnabled, Vector3i buildSector) {
 		SegmentPiece spawnOnBlock = null;
 		try {
 			spawnOnBlock = ServerUtils.getBlockLookingAt(GameServer.getServerState(), sender);
@@ -72,16 +74,39 @@ public class BuildSectorUtils {
 		forward.scaleAdd(1.15f, size);
 		transform.origin.set(forward);
 		try {
-			SegmentControllerOutline<?> outline = BluePrintController.active.loadBluePrint(GameServerState.instance, entry.getName(), entry.getName(), transform, -1, sender.getFactionId(), sender.getCurrentSector(), sender.getName(), PlayerState.buffer, spawnOnBlock, false, new ChildStats(false));
-			SegmentController entity = outline.spawn(sender.getCurrentSector(), false, new ChildStats(false), new SegmentControllerSpawnCallbackDirect(GameServer.getServerState(), sender.getCurrentSector()) {
+			SegmentControllerOutline<?> outline = BluePrintController.active.loadBluePrint(GameServerState.instance, entry.getName(), entry.getName(), transform, -1, sender.getFactionId(), buildSector, sender.getName(), PlayerState.buffer, spawnOnBlock, false, new ChildStats(false));
+			SegmentController entity = outline.spawn(sender.getCurrentSector(), false, new ChildStats(false), new SegmentControllerSpawnCallbackDirect(GameServer.getServerState(), buildSector) {
 				@Override
 				public void onNoDocker() {
 				}
 			});
+			recordSpawn(entity, buildSector);
 			toggleAI(entity, aiEnabled);
 		} catch(EntityNotFountException | IOException | EntityAlreadyExistsException | StateParameterNotFoundException exception) {
 			exception.printStackTrace();
 		}
+	}
+
+	/**
+	 * Security measure to record the spawn of a ship in a build sector that can be checked later to prevent exploits.
+	 * @param entity the entity that was spawned.
+	 */
+	public static void recordSpawn(SegmentController entity, Vector3i buildSector) {
+		PersistentObjectUtil.addObject(EdenCore.getInstance().getSkeleton(), new SegmentControllerRecord(entity, buildSector));
+		PersistentObjectUtil.save(EdenCore.getInstance().getSkeleton());
+	}
+
+	/**
+	 * Checks if a ship has been spawned in a build sector and if it has, checks if it's in the correct sector.
+	 * @param entity the entity to check.
+	 * @return whether or not the entity is legal.
+	 */
+	public static boolean isLegal(SegmentController entity) {
+		for(Object obj : PersistentObjectUtil.getObjects(EdenCore.getInstance().getSkeleton(), SegmentControllerRecord.class)) {
+			SegmentControllerRecord record = (SegmentControllerRecord) obj;
+			if(record.uniqueIdentifier.equals(entity.getUniqueIdentifier()) && !record.buildSector.equals(entity.getSector(new Vector3i()))) return false;
+		}
+		return true;
 	}
 
 	public static void toggleAI(SegmentController entity, boolean toggle) {
@@ -103,13 +128,13 @@ public class BuildSectorUtils {
 				sector.protect(protect);
 				sectorData.allAIDisabled = protect;
 			} catch(IOException exception) {
-				LogManager.logException("Failed to protect " + sectorData.ownerName + "'s build sector from enemy spawns due to an unexpected error", exception);
+				EdenCore.getInstance().logException("Failed to protect " + sectorData.ownerName + "'s build sector from enemy spawns due to an unexpected error", exception);
 				PlayerUtils.sendMessage(GameCommon.getPlayerFromName(sectorData.ownerName), "An unexpected error occurred while trying to protect your sector from pirate spawns." + " Let an admin know ASAP!");
 			}
 		}
 	}
 
-	public static void spawnEnemy(PlayerState sender, BlueprintEntry entry, boolean aiEnabled) {
+	public static void spawnEnemy(PlayerState sender, BlueprintEntry entry, boolean aiEnabled, Vector3i buildSector) {
 		Transform transform = new Transform();
 		transform.setIdentity();
 		transform.origin.set(sender.getFirstControlledTransformableWOExc().getWorldTransform().origin);
@@ -125,6 +150,7 @@ public class BuildSectorUtils {
 				public void onNoDocker() {
 				}
 			});
+			recordSpawn(entity, buildSector);
 			toggleAI(entity, aiEnabled);
 		} catch(EntityNotFountException | IOException | EntityAlreadyExistsException | StateParameterNotFoundException exception) {
 			exception.printStackTrace();

@@ -131,7 +131,7 @@ public class EventsScrollableList extends ScrollableTableList<EventData> {
 			GUIClippedRow statusRow = createRow(eventData.getStatusDisplay());
 			GUIClippedRow participantsRow = createRow(eventData.getCurrentPlayers() + "/" + eventData.getMaxPlayers());
 			EventsScrollableListRow listRow = new EventsScrollableListRow(getState(), eventData, nameRow, typeRow, difficultyRow, statusRow, participantsRow);
-			GUIAncor anchor = new GUIAncor(getState(), panel.getWidth(), 28.0F);
+			GUIAncor anchor = new GUIAncor(getState(), panel.getWidth() - 28.0f, 28.0F);
 			anchor.attach(createButtonPane(eventData, anchor));
 			listRow.expanded = new GUIElementList(getState());
 			listRow.expanded.add(new GUIListElement(anchor, getState()));

@@ -184,8 +184,7 @@ public class BuildSectorCatalogScrollableList extends ScrollableTableList<Catalo
 							@Override
 							public boolean onInput(String s) {
 								if(s == null || s.isEmpty()) s = catalogPermission.getUid();
-								PacketUtil.sendPacketToServer(new RequestSpawnEntryPacket(s, catalogPermission.getUid(), false, FactionManager.PIRATES_ID));
-								menuPanel.refresh();
+								PacketUtil.sendPacketToServer(new RequestSpawnEntryPacket(s, catalogPermission.getUid(), false, FactionManager.PIRATES_ID, sectorData.sector));
 								return true;
 							}
 						}).activate();

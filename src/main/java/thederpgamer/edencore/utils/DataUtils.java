@@ -26,7 +26,6 @@ import thederpgamer.edencore.data.other.BuildSectorData;
 import thederpgamer.edencore.data.player.PlayerData;
 import thederpgamer.edencore.manager.ClientCacheManager;
 import thederpgamer.edencore.manager.DataManager;
-import thederpgamer.edencore.manager.LogManager;
 import thederpgamer.edencore.network.client.misc.RequestClientCacheUpdatePacket;
 import thederpgamer.edencore.network.client.misc.RequestEntityDeletePacket;
 
@@ -182,7 +181,7 @@ public class DataUtils {
 			try {
 				if(sectorData != null && playerState.getCurrentSector().equals(sectorData.sector)) return sectorData;
 			} catch(Exception exception) {
-				LogManager.logException("Encountered an exception while trying to get " + playerState.getName() + "'s current build sector", exception);
+				EdenCore.getInstance().logException("Encountered an exception while trying to get " + playerState.getName() + "'s current build sector", exception);
 			}
 		}
 		return null;
@@ -265,7 +264,7 @@ public class DataUtils {
 				inventory.removeSlot(entry.getKey(), true);
 			}
 		}
-		if(invalid) LogManager.logWarning(builder.toString().trim(), null);
+		if(invalid) EdenCore.getInstance().logWarning(builder.toString().trim());
 	}
 
 	public static void deleteEnemies(final BuildSectorData sectorData, long delay) {

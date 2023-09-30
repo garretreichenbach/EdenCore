@@ -5,7 +5,7 @@ import api.network.PacketReadBuffer;
 import api.network.PacketWriteBuffer;
 import api.utils.game.PlayerUtils;
 import org.schema.game.common.data.player.PlayerState;
-import thederpgamer.edencore.manager.LogManager;
+import thederpgamer.edencore.EdenCore;
 import thederpgamer.edencore.utils.DataUtils;
 
 import java.io.IOException;
@@ -39,7 +39,7 @@ public class RequestMoveFromBuildSectorPacket extends Packet {
 		try {
 			DataUtils.movePlayerFromBuildSector(playerState);
 		} catch(IOException | SQLException exception) { //Ideally, this should never fail, because doing so would be a catastrophic problem
-			LogManager.logException("Failed to move player \"" + playerState.getName() + "\" from a build sector!", exception);
+			EdenCore.getInstance().logException("Failed to move player \"" + playerState.getName() + "\" from a build sector!", exception);
 			PlayerUtils.sendMessage(playerState, "The server encountered an error while trying to teleport you. Please report this to an admin!");
 		}
 	}
