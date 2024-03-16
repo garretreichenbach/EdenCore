@@ -10,6 +10,7 @@ import thederpgamer.edencore.data.exchange.BlueprintExchangeItem;
 import thederpgamer.edencore.data.exchange.ExchangeItem;
 import thederpgamer.edencore.data.exchange.ItemExchangeItem;
 import thederpgamer.edencore.data.exchange.ResourceExchangeItem;
+import thederpgamer.edencore.gui.exchangemenu.ExchangeMenu;
 
 import java.io.IOException;
 
@@ -35,9 +36,10 @@ public class ExchangeItemRemovePacket extends Packet {
 	@Override
 	public void readPacketData(PacketReadBuffer packetReadBuffer) throws IOException {
 		type = packetReadBuffer.readInt();
-		if(type == 0) item = new BlueprintExchangeItem(packetReadBuffer);
-		else if(type == 1) item = new ResourceExchangeItem(packetReadBuffer);
-		else item = new ItemExchangeItem(packetReadBuffer);
+		if(type == ExchangeMenu.BLUEPRINT) item = new BlueprintExchangeItem(packetReadBuffer);
+		else if(type == ExchangeMenu.RESOURCE) item = new ResourceExchangeItem(packetReadBuffer);
+		else if(type == ExchangeMenu.ITEM) item = new ItemExchangeItem(packetReadBuffer);
+		else throw new IOException("Invalid exchange item type");
 	}
 
 	@Override

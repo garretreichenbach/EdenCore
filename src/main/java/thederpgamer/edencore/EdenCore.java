@@ -54,7 +54,7 @@ import thederpgamer.edencore.element.ElementManager;
 import thederpgamer.edencore.element.items.PrizeBars;
 import thederpgamer.edencore.gui.buildsectormenu.BuildSectorMenuControlManager;
 import thederpgamer.edencore.gui.eventsmenu.EventsMenuControlManager;
-import thederpgamer.edencore.gui.exchangemenu.ExchangeMenuControlManager;
+import thederpgamer.edencore.gui.exchangemenu.ExchangeMenu;
 import thederpgamer.edencore.manager.ConfigManager;
 import thederpgamer.edencore.manager.ResourceManager;
 import thederpgamer.edencore.manager.TransferManager;
@@ -105,7 +105,7 @@ public class EdenCore extends StarMod {
 	// Disabled Tabs
 	private final String[] disabledTabs = {"FLEETS", "SHOP", "REPAIRS", "TRADE", "SET PRICES"};
 	// GUI
-	public ExchangeMenuControlManager exchangeMenuControlManager;
+	public ExchangeMenu exchangeMenuControlManager;
 	public BuildSectorMenuControlManager buildSectorMenuControlManager;
 	public EventsMenuControlManager eventsMenuControlManager;
 
@@ -225,8 +225,8 @@ public class EdenCore extends StarMod {
 							PlayerUtils.sendMessage(spawner, "If you believe this was a mistake, please contact a staff member.");
 						}
 						if(APIUtils.isStarBridgeInstalled()) {
-							StarBridge.getBot().sendServerMessage("@Staff A ship spawned by " + spawnerName + " was deleted because it was spawned in an illegal sector.");
-							StarBridge.getBot().sendDiscordMessage("@Staff A ship spawned by " + spawnerName + " was deleted because it was spawned in an illegal sector.");
+							StarBridge.getBot().sendServerMessage("A ship spawned by " + spawnerName + " was deleted because it was spawned in an illegal sector.");
+							StarBridge.getBot().sendDiscordMessage("A ship spawned by " + spawnerName + " was deleted because it was spawned in an illegal sector.");
 						}
 					}
 					event.getController().setMarkedForDeleteVolatileIncludingDocks(true);
@@ -253,7 +253,7 @@ public class EdenCore extends StarMod {
 				char exchangeKey = ConfigManager.getKeyBinding("exchange-menu-key");
 				if(exchangeKey != '\0' && event.getChar() == exchangeKey) {
 					if(exchangeMenuControlManager == null) {
-						exchangeMenuControlManager = new ExchangeMenuControlManager();
+						exchangeMenuControlManager = new ExchangeMenu();
 						ModGUIHandler.registerNewControlManager(getSkeleton(), exchangeMenuControlManager);
 					}
 					if(!GameClient.getClientState().getController().isChatActive() && GameClient.getClientState().getController().getPlayerInputs().isEmpty()) {
@@ -292,7 +292,7 @@ public class EdenCore extends StarMod {
 					ModGUIHandler.registerNewControlManager(getSkeleton(), buildSectorMenuControlManager);
 				}
 				if(exchangeMenuControlManager == null) {
-					exchangeMenuControlManager = new ExchangeMenuControlManager();
+					exchangeMenuControlManager = new ExchangeMenu();
 					ModGUIHandler.registerNewControlManager(getSkeleton(), exchangeMenuControlManager);
 				}
 

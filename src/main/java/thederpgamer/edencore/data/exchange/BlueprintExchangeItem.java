@@ -24,6 +24,7 @@ public class BlueprintExchangeItem extends ExchangeItem {
 	public String iconPath;
 	public boolean community;
 	public String seller = "server";
+	public String entityType = "SHIP";
 
 	public BlueprintExchangeItem(PacketReadBuffer readBuffer) {
 		super(readBuffer);
@@ -38,6 +39,7 @@ public class BlueprintExchangeItem extends ExchangeItem {
 		this.iconPath = iconPath;
 		this.description = StringTools.massFormat(blueprint.mass) + " mass\n" + description;
 		this.seller = "server";
+		this.entityType = blueprint.type.name();
 	}
 
 	@Override
@@ -50,8 +52,10 @@ public class BlueprintExchangeItem extends ExchangeItem {
 		community = readBuffer.readBoolean();
 		try {
 			seller = readBuffer.readString();
+			entityType = readBuffer.readString();
 		} catch(NullPointerException ignored) {
 			seller = "server";
+			entityType = "SHIP";
 		}
 	}
 
@@ -99,6 +103,8 @@ public class BlueprintExchangeItem extends ExchangeItem {
 		writeBuffer.writeBoolean(community);
 		if(seller == null) seller = "server";
 		writeBuffer.writeString(seller);
+		if(entityType == null) entityType = "SHIP";
+		writeBuffer.writeString(entityType);
     /* Todo: Somehow generate a preview of the entity that can be used as it's icon
     try {
         writeBuffer.writeSendable(createEntity());
@@ -110,7 +116,7 @@ public class BlueprintExchangeItem extends ExchangeItem {
 
 	@Override
 	public boolean equals(ExchangeItem exchangeItem) {
-		return exchangeItem instanceof BlueprintExchangeItem && exchangeItem.name.equals(name) && exchangeItem.barType == barType && exchangeItem.price == price;
+		return exchangeItem instanceof BlueprintExchangeItem && exchangeItem.name.equals(name) && exchangeItem.barType == barType && exchangeItem.price == price && ((BlueprintExchangeItem) exchangeItem).entityType.equals(entityType);
 	}
 
   /*
