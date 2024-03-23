@@ -5,6 +5,8 @@ import api.network.packets.PacketUtil;
 import org.schema.common.util.StringTools;
 import org.schema.common.util.linAlg.Vector3i;
 import org.schema.game.common.controller.SegmentController;
+import org.schema.game.common.controller.Ship;
+import org.schema.game.common.controller.SpaceStation;
 import org.schema.game.common.data.world.SimpleTransformableSendableObject;
 import org.schema.schine.graphicsengine.core.MouseEvent;
 import org.schema.schine.graphicsengine.forms.gui.*;
@@ -12,8 +14,6 @@ import org.schema.schine.graphicsengine.forms.gui.newgui.*;
 import org.schema.schine.input.InputState;
 import thederpgamer.edencore.EdenCore;
 import thederpgamer.edencore.data.other.BuildSectorData;
-import thederpgamer.edencore.manager.ClientCacheManager;
-import thederpgamer.edencore.network.client.misc.RequestClientCacheUpdatePacket;
 import thederpgamer.edencore.network.client.misc.RequestEntityDeletePacket;
 import thederpgamer.edencore.utils.BuildSectorUtils;
 import thederpgamer.edencore.utils.DataUtils;
@@ -88,13 +88,13 @@ public class BuildSectorEntitiesScrollableList extends ScrollableTableList<Segme
 			public boolean isOk(EntityType entityType, SegmentController segmentController) {
 				switch(entityType) {
 					case SHIP:
-						return segmentController.getType().equals(SimpleTransformableSendableObject.EntityType.SHIP) && segmentController.railController.isRoot();
+						return segmentController.getType() == SimpleTransformableSendableObject.EntityType.SHIP && segmentController.railController.isRoot();
 					case SPACE_STATION:
-						return segmentController.getType().equals(SimpleTransformableSendableObject.EntityType.SPACE_STATION);
+						return segmentController.getType() == SimpleTransformableSendableObject.EntityType.SPACE_STATION;
 					case DOCKED:
-						return segmentController.getType().equals(SimpleTransformableSendableObject.EntityType.SHIP) && segmentController.railController.isDocked();
+						return segmentController.getType() == SimpleTransformableSendableObject.EntityType.SHIP && segmentController.railController.isDocked();
 					case TURRET:
-						return segmentController.getType().equals(SimpleTransformableSendableObject.EntityType.SHIP) && segmentController.railController.isTurretDocked();
+						return segmentController.getType() == SimpleTransformableSendableObject.EntityType.SHIP && segmentController.railController.isTurretDocked();
 					case ALL:
 					default:
 						return true;
@@ -123,15 +123,13 @@ public class BuildSectorEntitiesScrollableList extends ScrollableTableList<Segme
 	@Override
 	protected Collection<SegmentController> getElementList() {
 		if(DataUtils.isPlayerInAnyBuildSector(GameClient.getClientPlayerState())) {
-			PacketUtil.sendPacketToServer(new RequestClientCacheUpdatePacket());
-			try {
-				for(SimpleTransformableSendableObject<?> object : GameClient.getClientState().getCurrentSectorEntities().values()) {
-					if(object instanceof SegmentController && !ClientCacheManager.sectorEntities.contains(object)) ClientCacheManager.sectorEntities.add((SegmentController) object);
+			ArrayList<SegmentController> segmentControllers = new ArrayList<>();
+			for(SimpleTransformableSendableObject<?> object : GameClient.getClientState().getCurrentSectorEntities().values()) {
+				if(object instanceof Ship || object instanceof SpaceStation) {
+					segmentControllers.add((SegmentController) object);
 				}
-			} catch(Exception exception) {
-				exception.printStackTrace();
 			}
-			return ClientCacheManager.sectorEntities;
+			return segmentControllers;
 		} else return new ArrayList<>();
 	}
 
@@ -144,25 +142,25 @@ public class BuildSectorEntitiesScrollableList extends ScrollableTableList<Segme
 				try {
 					if(segmentController != null && segmentController.railController != null) {
 						GUITextOverlayTable nameTextElement;
-						(nameTextElement = new GUITextOverlayTable(10, 10, this.getState())).setTextSimple(segmentController.getRealName());
+						(nameTextElement = new GUITextOverlayTable(10, 10, getState())).setTextSimple(segmentController.getRealName());
 						GUIClippedRow nameRowElement;
-						(nameRowElement = new GUIClippedRow(this.getState())).attach(nameTextElement);
+						(nameRowElement = new GUIClippedRow(getState())).attach(nameTextElement);
 						GUITextOverlayTable factionTextElement;
-						(factionTextElement = new GUITextOverlayTable(10, 10, this.getState())).setTextSimple((segmentController.getFactionId() == 0) ? "NO FACTION" : segmentController.getFaction().getName());
+						(factionTextElement = new GUITextOverlayTable(10, 10, getState())).setTextSimple((segmentController.getFactionId() == 0) ? "NO FACTION" : segmentController.getFaction().getName());
 						GUIClippedRow factionRowElement;
-						(factionRowElement = new GUIClippedRow(this.getState())).attach(factionTextElement);
+						(factionRowElement = new GUIClippedRow(getState())).attach(factionTextElement);
 						GUITextOverlayTable massTextElement;
-						(massTextElement = new GUITextOverlayTable(10, 10, this.getState())).setTextSimple(StringTools.massFormat(segmentController.getMassWithDocks()));
+						(massTextElement = new GUITextOverlayTable(10, 10, getState())).setTextSimple(StringTools.massFormat(segmentController.getMassWithDocks()));
 						GUIClippedRow massRowElement;
-						(massRowElement = new GUIClippedRow(this.getState())).attach(massTextElement);
+						(massRowElement = new GUIClippedRow(getState())).attach(massTextElement);
 						GUITextOverlayTable distanceTextElement;
-						(distanceTextElement = new GUITextOverlayTable(10, 10, this.getState())).setTextSimple(StringTools.formatDistance(EntityUtils.getDistanceFromPlayer(GameClient.getClientPlayerState(), segmentController)));
+						(distanceTextElement = new GUITextOverlayTable(10, 10, getState())).setTextSimple(StringTools.formatDistance(EntityUtils.getDistanceFromPlayer(GameClient.getClientPlayerState(), segmentController)));
 						GUIClippedRow distanceRowElement;
-						(distanceRowElement = new GUIClippedRow(this.getState())).attach(distanceTextElement);
+						(distanceRowElement = new GUIClippedRow(getState())).attach(distanceTextElement);
 						GUITextOverlayTable typeTextElement;
-						(typeTextElement = new GUITextOverlayTable(10, 10, this.getState())).setTextSimple(segmentController.getTypeString().toUpperCase());
+						(typeTextElement = new GUITextOverlayTable(10, 10, getState())).setTextSimple(segmentController.getTypeString().toUpperCase());
 						GUIClippedRow typeRowElement;
-						(typeRowElement = new GUIClippedRow(this.getState())).attach(typeTextElement);
+						(typeRowElement = new GUIClippedRow(getState())).attach(typeTextElement);
 						BuildSectorEntityListRow listRow = new BuildSectorEntityListRow(getState(), segmentController, nameRowElement, factionRowElement, massRowElement, distanceRowElement, typeRowElement);
 						GUIAncor anchor = new GUIAncor(getState(), p.getWidth() - 28.0f, 28.0f);
 						anchor.attach(redrawButtonPane(segmentController, anchor));
@@ -190,10 +188,8 @@ public class BuildSectorEntitiesScrollableList extends ScrollableTableList<Segme
 					@Override
 					public void callback(GUIElement guiElement, MouseEvent mouseEvent) {
 						if(mouseEvent.pressedLeftMouse() && segmentController.existsInState() && segmentController.getSector(new Vector3i()).equals(sectorData.sector)) {
-							if(sectorData.hasPermission(GameClient.getClientPlayerState().getName(), "EDIT")) {
-								getState().getController().queueUIAudio("0022_menu_ui - select 1");
-								EntityUtils.warpPlayerIntoEntity(GameClient.getClientPlayerState(), segmentController);
-							} else getState().getController().queueUIAudio("0022_menu_ui - error 1");
+							getState().getController().queueUIAudio("0022_menu_ui - select 1");
+							EntityUtils.warpPlayerIntoEntity(GameClient.getClientPlayerState(), segmentController);
 						}
 					}
 
@@ -308,9 +304,9 @@ public class BuildSectorEntitiesScrollableList extends ScrollableTableList<Segme
 	public class BuildSectorEntityListRow extends ScrollableTableList<SegmentController>.Row {
 		public BuildSectorEntityListRow(InputState state, SegmentController segmentController, GUIElement... elements) {
 			super(state, segmentController, elements);
-			this.highlightSelect = true;
-			this.highlightSelectSimple = true;
-			this.setAllwaysOneSelected(true);
+			highlightSelect = true;
+			highlightSelectSimple = true;
+			setAllwaysOneSelected(true);
 		}
 	}
 }

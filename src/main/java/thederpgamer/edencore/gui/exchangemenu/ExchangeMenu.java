@@ -148,7 +148,7 @@ public class ExchangeMenu extends GUIControlManager {
 				setIcon(item, tile);
 			}
 
-			if(isAdmin()) {
+//			if(isAdmin()) {
 				tab.addNewTextBox(0, 18);
 				GUIHorizontalButtonTablePane adminPane = new GUIHorizontalButtonTablePane(getState(), 2, 1, tab.getContent(1));
 				adminPane.onInit();
@@ -157,7 +157,7 @@ public class ExchangeMenu extends GUIControlManager {
 					public void callback(GUIElement guiElement, MouseEvent mouseEvent) {
 						if(mouseEvent.pressedLeftMouse()) {
 							AddBlueprintExchangeDialog dialog = new AddBlueprintExchangeDialog();
-							dialog.community = false;
+							dialog.community = true;
 							dialog.activate();
 							recreateTabs();
 						}
@@ -181,7 +181,7 @@ public class ExchangeMenu extends GUIControlManager {
 				adminPane.addButton(1, 0, "REMOVE", GUIHorizontalArea.HButtonColor.ORANGE, new GUICallback() {
 					@Override
 					public void callback(GUIElement guiElement, MouseEvent mouseEvent) {
-						if(mouseEvent.pressedLeftMouse() && lastClickedBP != null) {
+						if(mouseEvent.pressedLeftMouse() && lastClickedBP != null && lastClickedBP.seller != null && lastClickedBP.seller.equals(GameClient.getClientPlayerState().getName())) {
 							(new PlayerOkCancelInput("ConfirmExchangeRemovalPanel", getState(), "CONFIRM REMOVAL", "Are you sure you wish to remove this item?") {
 								@Override
 								public void onDeactivate() {
@@ -213,7 +213,7 @@ public class ExchangeMenu extends GUIControlManager {
 					}
 				});
 				tab.getContent(1).attach(adminPane);
-			}
+//			}
 		}
 
 		private List<BlueprintExchangeItem> getBlueprints(String entityType) {

@@ -20,6 +20,7 @@ import api.listener.events.player.PlayerDeathEvent;
 import api.listener.events.player.PlayerJoinWorldEvent;
 import api.listener.events.player.PlayerPickupFreeItemEvent;
 import api.listener.events.player.PlayerSpawnEvent;
+import api.listener.events.world.SimulationJobExecuteEvent;
 import api.mod.StarLoader;
 import api.mod.StarMod;
 import api.mod.config.PersistentObjectUtil;
@@ -281,6 +282,16 @@ public class EdenCore extends StarMod {
 				 */
 				char guideKey = ConfigManager.getKeyBinding("guide-menu-key");
 				if(guideKey != '\0' && event.getChar() == guideKey) activateGuideMenu();
+			}
+		}, this);
+
+		StarLoader.registerListener(SimulationJobExecuteEvent.class, new Listener<SimulationJobExecuteEvent>() {
+			@Override
+			public void onEvent(SimulationJobExecuteEvent event) {
+				if(DataUtils.isBuildSector(event.getStartLocation())) {
+					BuildSectorData sectorData = DataUtils.getSectorData(event.getStartLocation());
+					if(sectorData != null && sectorData.allAIDisabled) event.setCanceled(true);
+				}
 			}
 		}, this);
 		StarLoader.registerListener(GUITopBarCreateEvent.class, new Listener<GUITopBarCreateEvent>() {
