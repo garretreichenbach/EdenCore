@@ -1,5 +1,6 @@
 package thederpgamer.edencore.utils;
 
+import api.common.GameClient;
 import api.common.GameCommon;
 import api.common.GameServer;
 import api.mod.ModSkeleton;
@@ -11,6 +12,8 @@ import api.utils.game.SegmentControllerUtils;
 import it.unimi.dsi.fastutil.ints.IntOpenHashSet;
 import org.schema.common.util.linAlg.Vector3i;
 import org.schema.game.common.controller.SegmentController;
+import org.schema.game.common.controller.Ship;
+import org.schema.game.common.controller.SpaceStation;
 import org.schema.game.common.data.element.ElementDocking;
 import org.schema.game.common.data.element.ElementInformation;
 import org.schema.game.common.data.element.ElementKeyMap;
@@ -19,6 +22,7 @@ import org.schema.game.common.data.player.faction.FactionManager;
 import org.schema.game.common.data.player.inventory.Inventory;
 import org.schema.game.common.data.player.inventory.InventorySlot;
 import org.schema.game.common.data.world.Sector;
+import org.schema.game.common.data.world.SimpleTransformableSendableObject;
 import org.schema.game.server.controller.SectorSwitch;
 import org.schema.game.server.data.ServerConfig;
 import thederpgamer.edencore.EdenCore;
@@ -290,10 +294,14 @@ public class DataUtils {
 		ArrayList<SegmentController> entityList = new ArrayList<>();
 		if(GameCommon.isClientConnectedToServer()) {
 			PacketUtil.sendPacketToServer(new RequestClientCacheUpdatePacket());
-			entityList.addAll(ClientCacheManager.sectorEntities);
+			for(SimpleTransformableSendableObject<?> object : GameClient.getClientState().getCurrentSectorEntities().values()) {
+				if(object instanceof Ship || object instanceof SpaceStation) {
+					entityList.add((SegmentController) object);
+				}
+			}
 		} else if(GameCommon.isDedicatedServer() || GameCommon.isOnSinglePlayer()) {
 			try {
-				Set set = GameServer.getUniverse().getSector(sectorData.sector).getEntities();
+				Set<SimpleTransformableSendableObject<?>> set = GameServer.getUniverse().getSector(sectorData.sector).getEntities();
 				for(Object obj : set) if(obj instanceof SegmentController && !((SegmentController) obj).isVirtualBlueprint()) entityList.add((SegmentController) obj);
 			} catch(IOException exception) {
 				exception.printStackTrace();

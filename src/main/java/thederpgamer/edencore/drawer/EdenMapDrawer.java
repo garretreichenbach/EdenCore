@@ -32,14 +32,14 @@ public class EdenMapDrawer extends MapDrawer {
 	}
 
 	public void addMarkers(List<WaypointMarker> markers) {
-		clearMarkers();
-		for(WaypointMarker waypointMarker : markers) {
-			if(!waypointMarkers.containsKey(waypointMarker)) {
-				waypointMarkers.put(waypointMarker, new WaypointMarkerDrawData(getMarker(waypointMarker), waypointMarker.getName()));
-				addMarker(waypointMarkers.get(waypointMarker).marker);
-				drawText(waypointMarker.getSector(), waypointMarker.getName());
-			}
-		}
+//		clearMarkers();
+//		for(WaypointMarker waypointMarker : markers) {
+//			if(!waypointMarkers.containsKey(waypointMarker)) {
+//				waypointMarkers.put(waypointMarker, new WaypointMarkerDrawData(getMarker(waypointMarker), waypointMarker.getName()));
+//				addMarker(waypointMarkers.get(waypointMarker).marker);
+//				drawText(waypointMarker.getSector(), waypointMarker.getName());
+//			}
+//		}
 	}
 
 	private ClickableMapMarker getMarker(WaypointMarker markerData) {

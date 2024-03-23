@@ -11,13 +11,13 @@ import org.schema.game.common.controller.SegmentController;
 public class SegmentControllerRecord {
 
 	public String name;
-	public String uniqueIdentifier;
+	public long id;
 	public int type;
 	public final Vector3i buildSector = new Vector3i();
 
 	public SegmentControllerRecord(SegmentController entity, Vector3i buildSector) {
 		name = entity.getName();
-		uniqueIdentifier = entity.getUniqueIdentifier();
+		id = entity.getDbId();
 		type = entity.getType().dbTypeId;
 		this.buildSector.set(buildSector);
 	}

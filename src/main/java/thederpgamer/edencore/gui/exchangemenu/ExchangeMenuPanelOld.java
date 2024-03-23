@@ -36,7 +36,7 @@ import java.util.ArrayList;
  * @author TheDerpGamer
  * @version 1.0 - [09/17/2021]
  */
-public class ExchangeMenuPanel extends GUIMenuPanel {
+public class ExchangeMenuPanelOld extends GUIMenuPanel {
 	public static short BRONZE;
 	public static short SILVER;
 	public static short GOLD;
@@ -48,7 +48,7 @@ public class ExchangeMenuPanel extends GUIMenuPanel {
 	private int lastBPTab;
 	private int lastResourceTab;
 
-	public ExchangeMenuPanel(InputState inputState) {
+	public ExchangeMenuPanelOld(InputState inputState) {
 		super(inputState, "ServerExchange", (int) (GLFrame.getWidth() / 1.5), (int) (GLFrame.getHeight() / 1.5));
 		BRONZE = ElementManager.getItem("Bronze Bar").getId();
 		SILVER = ElementManager.getItem("Silver Bar").getId();

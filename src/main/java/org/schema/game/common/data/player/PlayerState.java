@@ -3931,7 +3931,7 @@ public class PlayerState extends AbstractOwnerState implements Sendable, DiskWri
 					} else {
 						this.giveMetaBlueprint = catalogName;
 						//INSERTED CODE @4437 [EDENCORE]
-						if(entitySpawnName.equals("EDENCORE_TEMP")) this.bypass = true;
+						if(entitySpawnName.contains("EDENCORE_TEMP")) bypass = true;
 						//
 					}
 				}

@@ -104,7 +104,7 @@ public class BuildSectorUtils {
 	public static boolean isLegal(SegmentController entity) {
 		for(Object obj : PersistentObjectUtil.getObjects(EdenCore.getInstance().getSkeleton(), SegmentControllerRecord.class)) {
 			SegmentControllerRecord record = (SegmentControllerRecord) obj;
-			if(record.uniqueIdentifier.equals(entity.getUniqueIdentifier()) && !record.buildSector.equals(entity.getSector(new Vector3i()))) return false;
+			if(record.id == entity.getDbId() && DataUtils.isBuildSector(record.buildSector) && !DataUtils.isBuildSector(entity.getSector(new Vector3i()))) return false;
 		}
 		return true;
 	}

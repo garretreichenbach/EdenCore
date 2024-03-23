@@ -1,6 +1,5 @@
 package thederpgamer.edencore.manager;
 
-import org.schema.game.common.controller.SegmentController;
 import thederpgamer.edencore.data.event.EventData;
 import thederpgamer.edencore.data.exchange.BlueprintExchangeItem;
 import thederpgamer.edencore.data.exchange.ItemExchangeItem;
@@ -21,7 +20,6 @@ public class ClientCacheManager {
 	public static final int ITEM_EXCHANGE = 2;
 	public static final int EVENT_DATA = 3;
 	public static final int BUILD_SECTOR_DATA = 4;
-	public static final int BUILD_SECTOR_ENTITIES = 5;
 	//Exchange
 	public static final ArrayList<BlueprintExchangeItem> blueprintExchangeItems = new ArrayList<>();
 	public static final ArrayList<ResourceExchangeItem> resourceExchangeItems = new ArrayList<>();
@@ -30,7 +28,6 @@ public class ClientCacheManager {
 	public static final ArrayList<EventData> eventData = new ArrayList<>();
 	//Build Sector
 	public static final ArrayList<BuildSectorData> accessibleSectors = new ArrayList<>();
-	public static final ArrayList<SegmentController> sectorEntities = new ArrayList<>();
 
 	public static void updateCache(int type, Object data) {
 		switch(type) {
@@ -53,10 +50,6 @@ public class ClientCacheManager {
 			case BUILD_SECTOR_DATA:
 				accessibleSectors.remove((BuildSectorData) data);
 				accessibleSectors.add((BuildSectorData) data);
-				break;
-			case BUILD_SECTOR_ENTITIES:
-				sectorEntities.remove((SegmentController) data);
-				sectorEntities.add((SegmentController) data);
 				break;
 			default:
 				throw new IllegalArgumentException("Invalid cache type: " + type);
