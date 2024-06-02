@@ -12,7 +12,7 @@ def starmadeDirectory = 'C:/Program Files (x86)/Steam/steamapps/common/StarMade/
 def jarName = 'EdenCore'
 mainClassName = 'thederpgamer.edencore.EdenCore'
 group 'thederpgamer.edencore'
-version '1.11.0'
+version '1.11.3'
 
 repositories {
     mavenCentral()
