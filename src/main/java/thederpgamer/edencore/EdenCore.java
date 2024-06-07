@@ -11,7 +11,6 @@ import api.listener.events.block.SegmentPieceRemoveEvent;
 import api.listener.events.controller.ClientInitializeEvent;
 import api.listener.events.controller.ServerInitializeEvent;
 import api.listener.events.draw.RegisterWorldDrawersEvent;
-import api.listener.events.entity.SegmentControllerFullyLoadedEvent;
 import api.listener.events.entity.SegmentControllerInstantiateEvent;
 import api.listener.events.gui.GUITopBarCreateEvent;
 import api.listener.events.gui.MainWindowTabAddEvent;
@@ -38,7 +37,6 @@ import org.schema.common.util.linAlg.Vector3i;
 import org.schema.game.client.view.gui.newgui.GUITopBar;
 import org.schema.game.common.data.player.PlayerState;
 import org.schema.game.common.data.player.faction.FactionManager;
-import org.schema.game.server.data.PlayerNotFountException;
 import org.schema.schine.common.language.Lng;
 import org.schema.schine.graphicsengine.core.MouseEvent;
 import org.schema.schine.graphicsengine.forms.gui.GUIActivationHighlightCallback;
@@ -71,11 +69,9 @@ import thederpgamer.edencore.network.client.misc.RequestEntityDeletePacket;
 import thederpgamer.edencore.network.client.misc.RequestMetaObjectPacket;
 import thederpgamer.edencore.network.server.*;
 import thederpgamer.edencore.network.server.event.ServerSendEventDataPacket;
-import thederpgamer.edencore.utils.APIUtils;
 import thederpgamer.edencore.utils.BuildSectorUtils;
 import thederpgamer.edencore.utils.DataUtils;
 import thederpgamer.edencore.utils.DateUtils;
-import thederpgamer.starbridge.StarBridge;
 
 import java.io.IOException;
 import java.nio.file.Files;
@@ -209,33 +205,6 @@ public class EdenCore extends StarMod {
 	}
 
 	private void registerListeners() {
-		StarLoader.registerListener(SegmentControllerFullyLoadedEvent.class, new Listener<SegmentControllerFullyLoadedEvent>() {
-			@Override
-			public void onEvent(SegmentControllerFullyLoadedEvent event) {
-				if(!BuildSectorUtils.isLegal(event.getController())) {
-					String spawnerName = event.getController().getSpawner();
-					if(spawnerName != null) {
-						PlayerState spawner = null;
-						try {
-							spawner = GameServer.getServerState().getPlayerFromName(spawnerName);
-						} catch(PlayerNotFountException exception) {
-							exception.printStackTrace();
-						}
-						if(spawner != null) {
-							PlayerUtils.sendMessage(spawner, "Your ship \"" + event.getController().getName() + "\" was deleted because it was spawned in an illegal sector.");
-							PlayerUtils.sendMessage(spawner, "If you believe this was a mistake, please contact a staff member.");
-						}
-						if(APIUtils.isStarBridgeInstalled()) {
-							StarBridge.getBot().sendServerMessage("A ship spawned by " + spawnerName + " was deleted because it was spawned in an illegal sector.");
-							StarBridge.getBot().sendDiscordMessage("A ship spawned by " + spawnerName + " was deleted because it was spawned in an illegal sector.");
-						}
-					}
-					event.getController().setMarkedForDeleteVolatileIncludingDocks(true);
-					event.getController().setMarkedForDeletePermanentIncludingDocks(true);
-				}
-			}
-		}, this);
-
 		StarLoader.registerListener(KeyPressEvent.class, new Listener<KeyPressEvent>() {
 			@Override
 			public void onEvent(KeyPressEvent event) {
@@ -288,10 +257,7 @@ public class EdenCore extends StarMod {
 		StarLoader.registerListener(SimulationJobExecuteEvent.class, new Listener<SimulationJobExecuteEvent>() {
 			@Override
 			public void onEvent(SimulationJobExecuteEvent event) {
-				if(DataUtils.isBuildSector(event.getStartLocation())) {
-					BuildSectorData sectorData = DataUtils.getSectorData(event.getStartLocation());
-					if(sectorData != null && sectorData.allAIDisabled) event.setCanceled(true);
-				}
+				if(DataUtils.isBuildSector(event.getStartLocation())) event.setCanceled(true);
 			}
 		}, this);
 		StarLoader.registerListener(GUITopBarCreateEvent.class, new Listener<GUITopBarCreateEvent>() {

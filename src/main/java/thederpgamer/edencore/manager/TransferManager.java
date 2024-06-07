@@ -1,29 +1,20 @@
 package thederpgamer.edencore.manager;
 
 import api.common.GameServer;
-import com.bulletphysics.linearmath.Transform;
 import org.apache.commons.io.IOUtils;
 import org.schema.game.common.controller.SegmentController;
 import org.schema.game.common.controller.Ship;
 import org.schema.game.common.controller.SpaceStation;
 import org.schema.game.common.data.player.PlayerState;
 import org.schema.game.common.data.world.SimpleTransformableSendableObject;
-import org.schema.game.server.controller.BluePrintController;
-import org.schema.game.server.data.GameServerState;
-import org.schema.game.server.data.blueprint.ChildStats;
-import org.schema.game.server.data.blueprint.SegmentControllerOutline;
-import org.schema.game.server.data.blueprint.SegmentControllerSpawnCallbackDirect;
 import org.schema.game.server.data.blueprintnw.BlueprintEntry;
-import org.schema.schine.graphicsengine.core.GlUtil;
 import org.schema.schine.resource.tag.Tag;
 import thederpgamer.edencore.data.other.EntityHeaderData;
 import thederpgamer.edencore.utils.DataUtils;
 
-import javax.vecmath.Vector3f;
 import java.io.*;
 import java.nio.file.Files;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Locale;
 import java.util.Objects;
 import java.util.zip.ZipEntry;
@@ -111,6 +102,7 @@ public class TransferManager {
 	}
 
 	public static void loadEntity(PlayerState playerState, String entityName) throws Exception {
+		/*
 		assert GameServer.getServerState() != null && !DataUtils.isPlayerInAnyBuildSector(playerState);
 		File transferFolder = getTransferFolder(playerState);
 		if(transferFolder != null && transferFolder.isDirectory()) {
@@ -174,6 +166,8 @@ public class TransferManager {
 				throw new NullPointerException("There is no entity by the name \"" + entityName + "\" saved in the world transfer folder.");
 			}
 		}
+
+		 */
 	}
 
 	public static String getSavedEntitiesList(PlayerState playerState) {

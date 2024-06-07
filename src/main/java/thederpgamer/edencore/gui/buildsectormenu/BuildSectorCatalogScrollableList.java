@@ -113,23 +113,29 @@ public class BuildSectorCatalogScrollableList extends ScrollableTableList<Catalo
 		if(DataUtils.isPlayerInAnyBuildSector(GameClient.getClientPlayerState())) {
 			for(CatalogPermission catalogPermission : set) {
 				GUITextOverlayTable nameTextElement;
-				(nameTextElement = new GUITextOverlayTable(10, 10, this.getState())).setTextSimple(catalogPermission.getUid());
+				(nameTextElement = new GUITextOverlayTable(10, 10, getState())).setTextSimple(catalogPermission.getUid());
 				GUIClippedRow nameRowElement;
-				(nameRowElement = new GUIClippedRow(this.getState())).attach(nameTextElement);
+				(nameRowElement = new GUIClippedRow(getState())).attach(nameTextElement);
 				GUITextOverlayTable typeTextElement;
-				(typeTextElement = new GUITextOverlayTable(10, 10, this.getState())).setTextSimple(catalogPermission.type.name().replaceAll("_", " "));
+				(typeTextElement = new GUITextOverlayTable(10, 10, getState())).setTextSimple(catalogPermission.type.name().replaceAll("_", " "));
 				GUIClippedRow typeRowElement;
-				(typeRowElement = new GUIClippedRow(this.getState())).attach(typeTextElement);
+				(typeRowElement = new GUIClippedRow(getState())).attach(typeTextElement);
 				GUITextOverlayTable classTextElement;
-				(classTextElement = new GUITextOverlayTable(10, 10, this.getState())).setTextSimple(catalogPermission.getClassification().getName());
+				(classTextElement = new GUITextOverlayTable(10, 10, getState())).setTextSimple(catalogPermission.getClassification().getName());
 				GUIClippedRow classRowElement;
-				(classRowElement = new GUIClippedRow(this.getState())).attach(classTextElement);
+				(classRowElement = new GUIClippedRow(getState())).attach(classTextElement);
 				GUITextOverlayTable massTextElement;
-				(massTextElement = new GUITextOverlayTable(10, 10, this.getState())).setTextSimple(StringTools.massFormat(catalogPermission.mass));
+				(massTextElement = new GUITextOverlayTable(10, 10, getState())).setTextSimple(StringTools.massFormat(catalogPermission.mass));
 				GUIClippedRow massRowElement;
-				(massRowElement = new GUIClippedRow(this.getState())).attach(massTextElement);
+				(massRowElement = new GUIClippedRow(getState())).attach(massTextElement);
 				BuildSectorCatalogListRow listRow = new BuildSectorCatalogListRow(getState(), catalogPermission, nameRowElement, typeRowElement, classRowElement, massRowElement);
-				GUIAncor anchor = new GUIAncor(getState(), p.getWidth() - 28.0f, 28.0f);
+				GUIAncor anchor = new GUIAncor(getState(), p.getWidth() - 28.0f, 28.0f) {
+					@Override
+					public void draw() {
+						setWidth(p.getWidth() - 28.0f);
+						super.draw();
+					}
+				};
 				anchor.attach(redrawButtonPane(catalogPermission, anchor));
 				listRow.expanded = new GUIElementList(getState());
 				listRow.expanded.add(new GUIListElement(anchor, getState()));
@@ -176,7 +182,7 @@ public class BuildSectorCatalogScrollableList extends ScrollableTableList<Catalo
 		});
 		buttonPane.addButton(1, 0, "SPAWN ENEMY", GUIHorizontalArea.HButtonColor.RED, new GUICallback() {
 			@Override
-			public void callback(GUIElement guiElement, final MouseEvent mouseEvent) {
+			public void callback(GUIElement guiElement, MouseEvent mouseEvent) {
 				if(mouseEvent.pressedLeftMouse()) {
 					if(hasPermission("SPAWN_ENEMIES")) {
 						getState().getController().queueUIAudio("0022_menu_ui - select 3");
@@ -223,15 +229,15 @@ public class BuildSectorCatalogScrollableList extends ScrollableTableList<Catalo
 	public class BuildSectorCatalogListRow extends ScrollableTableList<CatalogPermission>.Row {
 		public BuildSectorCatalogListRow(InputState state, CatalogPermission catalogPermission, GUIElement... elements) {
 			super(state, catalogPermission, elements);
-			this.highlightSelect = true;
-			this.highlightSelectSimple = true;
-			this.setAllwaysOneSelected(true);
+			highlightSelect = true;
+			highlightSelectSimple = true;
+			setAllwaysOneSelected(true);
 		}
 
 		@Override
 		public void extended() {
 			if(!isOccluded()) super.extended();
-			else super.unexpend();
+			else unexpend();
 		}
 
 		@Override
