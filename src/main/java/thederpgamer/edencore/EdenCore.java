@@ -257,10 +257,7 @@ public class EdenCore extends StarMod {
 		StarLoader.registerListener(SimulationJobExecuteEvent.class, new Listener<SimulationJobExecuteEvent>() {
 			@Override
 			public void onEvent(SimulationJobExecuteEvent event) {
-				if(DataUtils.isBuildSector(event.getStartLocation())) {
-					BuildSectorData sectorData = DataUtils.getSectorData(event.getStartLocation());
-					if(sectorData != null && sectorData.allAIDisabled) event.setCanceled(true);
-				}
+				if(DataUtils.isBuildSector(event.getStartLocation())) event.setCanceled(true);
 			}
 		}, this);
 		StarLoader.registerListener(GUITopBarCreateEvent.class, new Listener<GUITopBarCreateEvent>() {

@@ -65,6 +65,8 @@ public class ExchangeMenu extends GUIControlManager {
 
 		private GUITabbedContent bpTabbedContent;
 		private int lastBPTab;
+		private final int horizontalOffset = 107;
+		private final int verticalOffset = 139;
 
 		public ExchangeMenuPanel(InputState inputState) {
 			super(inputState, "EXCHANGE_MENU", 850, 650);
@@ -81,21 +83,28 @@ public class ExchangeMenu extends GUIControlManager {
 			if(!guiWindow.getTabs().isEmpty()) guiWindow.clearTabs();
 
 			GUIContentPane blueprintsTab = guiWindow.addTab("BLUEPRINTS");
-			blueprintsTab.setTextBoxHeightLast(600);
+			blueprintsTab.setTextBoxHeightLast((int) (guiWindow.getHeight() - verticalOffset));
 			createBlueprintsTab(blueprintsTab);
 
 			guiWindow.setSelectedTab(lastTab);
 		}
 
 		private void createBlueprintsTab(GUIContentPane tab) {
-			GUIAncor tabAnchor = new GUIAncor(getState(), guiWindow.getInnerWidth() - 20, guiWindow.getInnerHeigth() - 13);
+			GUIAncor tabAnchor = new GUIAncor(getState(), guiWindow.getWidth() - horizontalOffset, guiWindow.getHeight() - verticalOffset) {
+				@Override
+				public void draw() {
+					setWidth(guiWindow.getWidth() - horizontalOffset);
+					setHeight(guiWindow.getHeight() - verticalOffset);
+					super.draw();
+				}
+			};
 			if(bpTabbedContent == null) (bpTabbedContent = new GUITabbedContent(getState(), tabAnchor)).onInit();
 			else {
 				lastBPTab = bpTabbedContent.getSelectedTab();
 				bpTabbedContent.clearTabs();
 			}
 			GUIContentPane shipsTab = bpTabbedContent.addTab("SHIPS");
-			shipsTab.setTextBoxHeightLast(600);
+			shipsTab.setTextBoxHeightLast((int) (guiWindow.getHeight() - verticalOffset));
 			shipsTab.orientateInsideFrame();
 			GUIScrollablePanel scrollPanel = new GUIScrollablePanel(1, 1, shipsTab.getContent(0), getState());
 			scrollPanel.setScrollable(GUIScrollablePanel.SCROLLABLE_VERTICAL);

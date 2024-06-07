@@ -162,7 +162,13 @@ public class BuildSectorEntitiesScrollableList extends ScrollableTableList<Segme
 						GUIClippedRow typeRowElement;
 						(typeRowElement = new GUIClippedRow(getState())).attach(typeTextElement);
 						BuildSectorEntityListRow listRow = new BuildSectorEntityListRow(getState(), segmentController, nameRowElement, factionRowElement, massRowElement, distanceRowElement, typeRowElement);
-						GUIAncor anchor = new GUIAncor(getState(), p.getWidth() - 28.0f, 28.0f);
+						GUIAncor anchor = new GUIAncor(getState(), p.getWidth() - 28.0f, 28.0f) {
+							@Override
+							public void draw() {
+								setWidth(p.getWidth() - 28.0f);
+								super.draw();
+							}
+						};
 						anchor.attach(redrawButtonPane(segmentController, anchor));
 						listRow.expanded = new GUIElementList(getState());
 						listRow.expanded.add(new GUIListElement(anchor, getState()));

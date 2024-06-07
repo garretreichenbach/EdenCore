@@ -74,11 +74,17 @@ public class BuildSectorScrollableList extends ScrollableTableList<BuildSectorDa
 		for(BuildSectorData sectorData : set) {
 			if(sectorData != null && sectorData.hasPermission(GameClient.getClientPlayerState().getName(), "ENTER")) {
 				GUITextOverlayTable ownerTextElement;
-				(ownerTextElement = new GUITextOverlayTable(10, 10, this.getState())).setTextSimple(sectorData.ownerName + "'s Build Sector");
+				(ownerTextElement = new GUITextOverlayTable(10, 10, getState())).setTextSimple(sectorData.ownerName + "'s Build Sector");
 				GUIClippedRow ownerRowElement;
-				(ownerRowElement = new GUIClippedRow(this.getState())).attach(ownerTextElement);
+				(ownerRowElement = new GUIClippedRow(getState())).attach(ownerTextElement);
 				BuildSectorScrollableListRow listRow = new BuildSectorScrollableListRow(getState(), sectorData, ownerRowElement);
-				GUIAncor anchor = new GUIAncor(getState(), p.getWidth() - 28.0f, 28.0f);
+				GUIAncor anchor = new GUIAncor(getState(), p.getWidth() - 28.0f, 28.0f) {
+					@Override
+					public void draw() {
+						setWidth(p.getWidth() - 28.0f);
+						super.draw();
+					}
+				};
 				anchor.attach(redrawButtonPane(sectorData, anchor));
 				listRow.expanded = new GUIElementList(getState());
 				listRow.expanded.add(new GUIListElement(anchor, getState()));
@@ -153,15 +159,15 @@ public class BuildSectorScrollableList extends ScrollableTableList<BuildSectorDa
 	public class BuildSectorScrollableListRow extends ScrollableTableList<BuildSectorData>.Row {
 		public BuildSectorScrollableListRow(InputState state, BuildSectorData sectorData, GUIElement... elements) {
 			super(state, sectorData, elements);
-			this.highlightSelect = true;
-			this.highlightSelectSimple = true;
-			this.setAllwaysOneSelected(true);
+			highlightSelect = true;
+			highlightSelectSimple = true;
+			setAllwaysOneSelected(true);
 		}
 
 		@Override
 		public void extended() {
 			if(!isOccluded()) super.extended();
-			else super.unexpend();
+			else unexpend();
 		}
 
 		@Override

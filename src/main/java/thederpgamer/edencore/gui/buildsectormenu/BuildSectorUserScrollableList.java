@@ -34,7 +34,7 @@ public class BuildSectorUserScrollableList extends ScrollableTableList<String> {
 		super(state, 800, 500, p);
 		this.panel = panel;
 		this.p = p;
-		this.sectorData = DataUtils.getBuildSector(GameClient.getClientPlayerState().getName());
+		sectorData = DataUtils.getBuildSector(GameClient.getClientPlayerState().getName());
 		p.attach(this);
 	}
 
@@ -73,11 +73,17 @@ public class BuildSectorUserScrollableList extends ScrollableTableList<String> {
 			if(sectorData.hasPermission(playerName, "ENTER")) {
 				String name = (playerName.equals(sectorData.ownerName)) ? playerName + " (Owner)" : playerName;
 				GUITextOverlayTable nameTextElement;
-				(nameTextElement = new GUITextOverlayTable(10, 10, this.getState())).setTextSimple(name);
+				(nameTextElement = new GUITextOverlayTable(10, 10, getState())).setTextSimple(name);
 				GUIClippedRow nameRowElement;
-				(nameRowElement = new GUIClippedRow(this.getState())).attach(nameTextElement);
+				(nameRowElement = new GUIClippedRow(getState())).attach(nameTextElement);
 				BuildSectorUserScrollableListRow listRow = new BuildSectorUserScrollableListRow(getState(), playerName, nameRowElement);
-				GUIAncor anchor = new GUIAncor(getState(), p.getWidth() - 28.0f, 28.0f);
+				GUIAncor anchor = new GUIAncor(getState(), p.getWidth() - 28.0f, 28.0f) {
+					@Override
+					public void draw() {
+						setWidth(p.getWidth() - 28.0f);
+						super.draw();
+					}
+				};
 				anchor.attach(redrawButtonPane(playerName, anchor));
 				listRow.expanded = new GUIElementList(getState());
 				listRow.expanded.add(new GUIListElement(anchor, getState()));
@@ -204,15 +210,15 @@ public class BuildSectorUserScrollableList extends ScrollableTableList<String> {
 	public class BuildSectorUserScrollableListRow extends ScrollableTableList<String>.Row {
 		public BuildSectorUserScrollableListRow(InputState state, String playerName, GUIElement... elements) {
 			super(state, playerName, elements);
-			this.highlightSelect = true;
-			this.highlightSelectSimple = true;
-			this.setAllwaysOneSelected(true);
+			highlightSelect = true;
+			highlightSelectSimple = true;
+			setAllwaysOneSelected(true);
 		}
 
 		@Override
 		public void extended() {
 			if(!isOccluded()) super.extended();
-			else super.unexpend();
+			else unexpend();
 		}
 
 		@Override
