@@ -37,6 +37,7 @@ import org.schema.common.util.linAlg.Vector3i;
 import org.schema.game.client.view.gui.newgui.GUITopBar;
 import org.schema.game.common.data.player.PlayerState;
 import org.schema.game.common.data.player.faction.FactionManager;
+import org.schema.game.server.data.simulation.jobs.SpawnPiratePatrolPartyJob;
 import org.schema.schine.common.language.Lng;
 import org.schema.schine.graphicsengine.core.MouseEvent;
 import org.schema.schine.graphicsengine.forms.gui.GUIActivationHighlightCallback;
@@ -70,6 +71,7 @@ import thederpgamer.edencore.network.client.misc.RequestMetaObjectPacket;
 import thederpgamer.edencore.network.server.*;
 import thederpgamer.edencore.network.server.event.ServerSendEventDataPacket;
 import thederpgamer.edencore.utils.BuildSectorUtils;
+import thederpgamer.edencore.utils.ClassUtils;
 import thederpgamer.edencore.utils.DataUtils;
 import thederpgamer.edencore.utils.DateUtils;
 
@@ -257,7 +259,12 @@ public class EdenCore extends StarMod {
 		StarLoader.registerListener(SimulationJobExecuteEvent.class, new Listener<SimulationJobExecuteEvent>() {
 			@Override
 			public void onEvent(SimulationJobExecuteEvent event) {
-				if(DataUtils.isBuildSector(event.getStartLocation())) event.setCanceled(true);
+				if(event.getSimulationJob() instanceof SpawnPiratePatrolPartyJob) {
+					SpawnPiratePatrolPartyJob job = (SpawnPiratePatrolPartyJob) event.getSimulationJob();
+					Vector3i from = (Vector3i) ClassUtils.getField(job, "from");
+					Vector3i to = (Vector3i) ClassUtils.getField(job, "to");
+					if(DataUtils.isBuildSector(from) || DataUtils.isBuildSector(to)) event.setCanceled(true);
+				} else if(DataUtils.isBuildSector(event.getStartLocation())) event.setCanceled(true);
 			}
 		}, this);
 		StarLoader.registerListener(GUITopBarCreateEvent.class, new Listener<GUITopBarCreateEvent>() {
