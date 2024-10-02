@@ -6,6 +6,7 @@ import api.common.GameServer;
 import api.config.BlockConfig;
 import api.listener.Listener;
 import api.listener.events.block.SegmentPieceActivateByPlayer;
+import api.listener.events.block.SegmentPieceActivateEvent;
 import api.listener.events.block.SegmentPieceAddEvent;
 import api.listener.events.block.SegmentPieceRemoveEvent;
 import api.listener.events.controller.ClientInitializeEvent;
@@ -45,7 +46,6 @@ import org.schema.schine.graphicsengine.forms.gui.GUICallback;
 import org.schema.schine.graphicsengine.forms.gui.GUIElement;
 import org.schema.schine.input.InputState;
 import org.schema.schine.resource.ResourceLoader;
-import thederpgamer.edencore.api.starbridge.StarBridgeAPI;
 import thederpgamer.edencore.commands.*;
 import thederpgamer.edencore.commands.events.EventEditorCommand;
 import thederpgamer.edencore.data.other.BuildSectorData;
@@ -91,15 +91,14 @@ public class EdenCore extends StarMod {
 	// Instance
 	private static EdenCore instance;
 	// Overwrites
-	private final String[] overwriteClasses = {"PlayerState", "BlueprintEntry", "TorchBeam"};
+	private final String[] overwriteClasses = {"PlayerState", "BlueprintEntry", "TorchBeam", "MarkerBeam", "WarpgateUnit"};
 	// Disabled Blocks
-	private final short[] disabledBlocks = {347, // Shop Module
+	public static final short[] disabledBlocks = {
+			347, // Shop Module
 			291, // Faction Module
 			667, // Shipyard Computer
 			683, // Race Gate Controller
-			542, // Warp Gate Computer
-			445, // Medical Supplies
-			446 // Medial Cabinet
+			542 // Warp Gate Computer
 	};
 	// Disabled Tabs
 	private final String[] disabledTabs = {"FLEETS", "SHOP", "REPAIRS", "TRADE", "SET PRICES"};
@@ -141,7 +140,6 @@ public class EdenCore extends StarMod {
 	@Override
 	public void onServerCreated(ServerInitializeEvent serverInitializeEvent) {
 		super.onServerCreated(serverInitializeEvent);
-		StarBridgeAPI.initialize();
 //		EventManager.doRunners();
 	}
 
@@ -202,7 +200,6 @@ public class EdenCore extends StarMod {
 		PacketUtil.registerPacket(SendGuideMenuPacket.class);
 		PacketUtil.registerPacket(ClientModifyEventPacket.class);
 		PacketUtil.registerPacket(ServerSendEventDataPacket.class);
-		PacketUtil.registerPacket(SendDonatorsPacket.class);
 		logInfo("Registered Packets");
 	}
 
@@ -452,7 +449,7 @@ public class EdenCore extends StarMod {
 								}
 							}
 						} catch(Exception exception) {
-							EdenCore.getInstance().logException("Encountered an exception while trying to check if a new SegmentController \"" + event.getController().getName() + "\" was in a build sector", exception);
+							getInstance().logException("Encountered an exception while trying to check if a new SegmentController \"" + event.getController().getName() + "\" was in a build sector", exception);
 						}
 					}
 				}.runLater(getInstance(), 3);
@@ -490,13 +487,32 @@ public class EdenCore extends StarMod {
 				}
 			}
 		}, this);
+		StarLoader.registerListener(SegmentPieceActivateEvent.class, new Listener<SegmentPieceActivateEvent>() {
+			@Override
+			public void onEvent(SegmentPieceActivateEvent event) {
+				try {
+					if(DataUtils.isBuildSector(event.getSegmentPiece().getSegmentController().getSector(new Vector3i()))) {
+						for(short id : disabledBlocks) {
+							if(event.getSegmentPiece().getType() == id) {
+								event.setCanceled(true);
+								return;
+							}
+						}
+					}
+				} catch(Exception exception) {
+					exception.printStackTrace();
+				}
+			}
+		}, this);
 		StarLoader.registerListener(SegmentPieceActivateByPlayer.class, new Listener<SegmentPieceActivateByPlayer>() {
 			@Override
 			public void onEvent(SegmentPieceActivateByPlayer event) {
 				try {
 					if(DataUtils.isPlayerInAnyBuildSector(event.getPlayer())) {
 						for(short id : disabledBlocks) {
-							if(event.getSegmentPiece().getType() == id && !event.getPlayer().isAdmin()) event.setCanceled(true);
+							if(event.getSegmentPiece().getType() == id && !event.getPlayer().isAdmin()) {
+								event.setCanceled(true);
+							}
 						}
 						BuildSectorData sectorData = DataUtils.getPlayerCurrentBuildSector(event.getPlayer());
 						if(!sectorData.hasPermission(event.getPlayer().getName(), "EDIT")) {
@@ -504,7 +520,8 @@ public class EdenCore extends StarMod {
 							event.setCanceled(true);
 						}
 					}
-				} catch(Exception ignored) {
+				} catch(Exception exception) {
+					exception.printStackTrace();
 				}
 			}
 		}, this);
@@ -520,7 +537,8 @@ public class EdenCore extends StarMod {
 							event.setCanceled(true);
 						}
 					}
-				} catch(Exception ignored) {
+				} catch(Exception exception) {
+					exception.printStackTrace();
 				}
 			}
 		}, this);
@@ -550,46 +568,6 @@ public class EdenCore extends StarMod {
 			@Override
 			public void onEvent(final PlayerJoinWorldEvent event) {
 				if(GameCommon.isDedicatedServer() || GameCommon.isOnSinglePlayer()) {
-					StarBridgeAPI.initialize();
-					if(StarBridgeAPI.isDonator(event.getPlayerName())) {
-						new StarRunnable() {
-							@Override
-							public void run() {
-								try {
-									PlayerState playerState = GameServer.getServerState().getPlayerFromName(event.getPlayerName());
-									PlayerData playerData = DataUtils.getPlayerDataByName(event.getPlayerName());
-									assert playerData != null;
-									PacketUtil.sendPacket(playerState, new SendDonatorsPacket(StarBridgeAPI.getDonators()));
-									long lastLogin = playerData.lastLogin;
-									//If last login = 0 or last login is more than 1 day ago
-									Date date = new Date(playerData.lastDailyPrizeClaim);
-									if(lastLogin == 0 || DateUtils.getAgeDays(date) >= 1.0f && StarBridgeAPI.isDonator(event.getPlayerName())) {
-										playerState = GameServer.getServerState().getPlayerFromName(event.getPlayerName());
-										if(playerState != null) {
-											PlayerUtils.sendMessage(playerState, "Thank you for supporting Skies of Eden!");
-											String donatorType = StarBridgeAPI.getDonatorType(event.getPlayerName());
-											switch(donatorType) {
-												case "Explorer":
-													PlayerUtils.sendMessage(playerState, "You have been given 1 Silver Bar for your support!");
-													InventoryUtils.addItem(playerState.getInventory(), ElementManager.getItem("Silver Bar").getId(), 1);
-													break;
-												case "Captain":
-													PlayerUtils.sendMessage(playerState, "You have been given 1 Gold Bar for your support!");
-													InventoryUtils.addItem(playerState.getInventory(), ElementManager.getItem("Gold Bar").getId(), 1);
-													break;
-											}
-										}
-										playerData.lastLogin = System.currentTimeMillis();
-										PersistentObjectUtil.removeObject(instance.getSkeleton(), playerData);
-										PersistentObjectUtil.addObject(instance.getSkeleton(), playerData);
-										PersistentObjectUtil.save(instance.getSkeleton());
-									}
-								} catch(Exception exception) {
-									logException("Failed to get player data for " + event.getPlayerState().getName(), exception);
-								}
-							}
-						}.runLater(getInstance(), 500);
-					}
 					if(DataUtils.getBuildSector(event.getPlayerName()) == null) DataUtils.createNewBuildSector(event.getPlayerName());
 							/*
 							new StarRunnable() {
@@ -639,7 +617,6 @@ public class EdenCore extends StarMod {
 		StarLoader.registerCommand(new GuideCommand());
 		StarLoader.registerCommand(new ResetEventsCommand());
 		StarLoader.registerCommand(new EditEventCommand());
-		StarLoader.registerCommand(new SetDonatorCommand());
 		logInfo("Registered Commands");
 	}
 
