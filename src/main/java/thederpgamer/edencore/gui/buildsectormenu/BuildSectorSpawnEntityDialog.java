@@ -6,8 +6,8 @@ import org.schema.game.common.data.player.catalog.CatalogPermission;
 import org.schema.schine.graphicsengine.core.MouseEvent;
 import org.schema.schine.graphicsengine.forms.gui.GUIElement;
 import thederpgamer.edencore.data.other.BuildSectorData;
-import thederpgamer.edencore.network.client.exchange.RequestSpawnEntryPacket;
-import thederpgamer.edencore.network.client.misc.RequestClientCacheUpdatePacket;
+import thederpgamer.edencore.network.old.client.exchange.RequestSpawnEntryPacket;
+import thederpgamer.edencore.network.old.client.misc.RequestClientCacheUpdatePacket;
 
 /**
  * <Description>

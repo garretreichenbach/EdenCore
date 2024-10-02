@@ -29,7 +29,7 @@ import org.schema.game.server.data.blueprint.SegmentControllerSpawnCallbackDirec
 import org.schema.game.server.data.blueprintnw.BlueprintEntry;
 import org.schema.schine.graphicsengine.core.GlUtil;
 import org.schema.schine.graphicsengine.core.settings.StateParameterNotFoundException;
-import thederpgamer.edencore.network.server.PlayerWarpIntoEntityPacket;
+import thederpgamer.edencore.network.old.server.PlayerWarpIntoEntityPacket;
 
 import javax.vecmath.Vector3f;
 import java.io.IOException;

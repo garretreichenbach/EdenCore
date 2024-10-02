@@ -4,15 +4,18 @@ plugins {
     id 'com.github.johnrengelman.shadow' version '5.2.0'
 }
 
-apply plugin: 'java'
 sourceCompatibility = 1.7
 targetCompatibility = 1.7
 
-def starmadeDirectory = 'G:/SteamLibrary/steamapps/common/StarMade/StarMade/'
-def jarName = 'EdenCore'
-mainClassName = 'thederpgamer.edencore.EdenCore'
-group 'thederpgamer.edencore'
-version '1.11.7'
+def starmadeDirectory = project.property("starmade_root")
+def modName = project.property("mod_name")
+group = project.property('mod_org_id')
+version = project.property('mod_version')
+mainClassName = group + modName
+
+repositories {
+    mavenCentral()
+}
 
 repositories {
     mavenCentral()
@@ -24,25 +27,29 @@ dependencies {
     implementation(fileTree(dir: (starmadeDirectory + "lib"), include: "*.jar"))
     implementation(fileTree(dir: ("lib"), include: "*.jar", excludes: ["StarBridge.jar"]))
     compileOnly(files("lib/StarBridge.jar"))
-    implementation 'com.vdurmont:emoji-java:5.1.1'
 }
 
 compileJava.options.encoding = 'UTF-8'
 
-jar {
-    duplicatesStrategy(DuplicatesStrategy.EXCLUDE)
-    destinationDirectory.set(file(starmadeDirectory + "mods"))
-    archiveFileName = jarName + 'v' + version  + '.jar'
-    manifest.attributes('Main-Class': mainClassName)
-    from {
-        configurations.runtimeClasspath.collect {
-            if(!it.getPath().contains("StarMade") && it.getName().endsWith(".jar")) {
-                it.isDirectory() ? it : zipTree(it)
-            } else return null
-        }
+tasks.register("updateVersion") {
+    doLast {
+        def modJson = file('src/main/resources/mod.json')
+        def modJsonContent = modJson.getText()
+        modJsonContent = modJsonContent.replaceAll(/"version":\s*".*"/, "\"version\": \"" + version + "\"")
+        modJson.write(modJsonContent)
     }
 }
 
-test {
-    useJUnitPlatform()
+jar {
+    dependsOn("updateVersion")
+    duplicatesStrategy(DuplicatesStrategy.EXCLUDE)
+    destinationDirectory.set(file(starmadeDirectory + "mods"))
+    archiveFileName = modName + 'v' + getVersion() +  '.jar'
+    manifest.attributes('Main-Class': mainClassName)
+    from {
+        configurations.runtimeClasspath.collect {
+            if(!it.getPath().contains("StarMade") && it.getName().endsWith(".jar")) it.isDirectory() ? it : zipTree(it)
+            else return null;
+        }
+    }
 }

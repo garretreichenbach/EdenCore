@@ -7,7 +7,7 @@ import thederpgamer.edencore.data.event.EventData;
 import thederpgamer.edencore.data.event.SquadMemberData;
 import thederpgamer.edencore.manager.ClientCacheManager;
 import thederpgamer.edencore.manager.EventManager;
-import thederpgamer.edencore.network.client.event.ClientModifyEventPacket;
+import thederpgamer.edencore.network.old.client.event.ClientModifyEventPacket;
 
 import java.util.ArrayList;
 

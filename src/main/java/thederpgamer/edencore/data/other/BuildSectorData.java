@@ -4,11 +4,13 @@ import api.network.PacketReadBuffer;
 import api.network.PacketWriteBuffer;
 import org.schema.common.util.linAlg.Vector3i;
 import thederpgamer.edencore.EdenCore;
+import thederpgamer.edencore.data.SerializableData;
 
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.UUID;
 
 /**
  * Stores build sector information as persistent data.
@@ -16,24 +18,21 @@ import java.util.Map;
  * @author TheDerpGamer
  * @version 2.0 - [09/07/2021]
  */
-public class BuildSectorData {
-	public String ownerName;
-	public Vector3i sector;
-	public HashMap<String, HashMap<String, Boolean>> permissions;
-	public boolean allAIDisabled;
+public class BuildSectorData implements SerializableData {
+
+	private String uid;
+	private String ownerName;
+	private Vector3i sector;
+	private HashMap<String, HashMap<String, Boolean>> permissions;
+	private boolean allAIDisabled;
 
 	public BuildSectorData(String ownerName, Vector3i sector, HashMap<String, HashMap<String, Boolean>> permissions) {
+		uid = UUID.randomUUID().toString();
 		this.ownerName = ownerName;
 		this.sector = sector;
 		this.permissions = permissions;
-		this.allAIDisabled = true;
-		this.addPlayer(ownerName);
-	}
-
-	public void addPlayer(String player) {
-		permissions.remove(player);
-		if(player.equals(ownerName)) permissions.put(player, getOwnerPermissions());
-		else permissions.put(player, getDefaultPermissions());
+		allAIDisabled = true;
+		addPlayer(ownerName);
 	}
 
 	public static HashMap<String, Boolean> getOwnerPermissions() {
@@ -64,8 +63,10 @@ public class BuildSectorData {
 		deserialize(packetReadBuffer);
 	}
 
+	@Override
 	public void deserialize(PacketReadBuffer readBuffer) throws IOException {
 		if(permissions == null) permissions = new HashMap<>();
+		uid = readBuffer.readString();
 		ownerName = readBuffer.readString();
 		sector = readBuffer.readVector();
 		permissions = new HashMap<>();
@@ -97,11 +98,8 @@ public class BuildSectorData {
 	}
 
 	@Override
-	public boolean equals(Object object) {
-		return object instanceof BuildSectorData && ((BuildSectorData) object).ownerName.equalsIgnoreCase(ownerName) && ((BuildSectorData) object).sector.equals(sector);
-	}
-
 	public void serialize(PacketWriteBuffer writeBuffer) throws IOException {
+		writeBuffer.writeString(uid);
 		writeBuffer.writeString(ownerName);
 		writeBuffer.writeVector(sector);
 		writeBuffer.writeInt(permissions.keySet().size());
@@ -114,6 +112,17 @@ public class BuildSectorData {
 			}
 		}
 		writeBuffer.writeBoolean(allAIDisabled);
+	}
+
+	@Override
+	public boolean equals(Object object) {
+		return object instanceof BuildSectorData && ((BuildSectorData) object).uid.equals(uid);
+	}
+
+	public void addPlayer(String player) {
+		permissions.remove(player);
+		if(player.equals(ownerName)) permissions.put(player, getOwnerPermissions());
+		else permissions.put(player, getDefaultPermissions());
 	}
 
 	public void removePlayer(String player) {
@@ -160,5 +169,25 @@ public class BuildSectorData {
 			denyPermission(player, "ENTER");
 		}
 		return permissions.get(player);
+	}
+
+	public String getUID() {
+		return uid;
+	}
+
+	public String getOwnerName() {
+		return ownerName;
+	}
+
+	public Vector3i getSector() {
+		return sector;
+	}
+
+	public boolean isAllAIDisabled() {
+		return allAIDisabled;
+	}
+
+	public void setAllAIDisabled(boolean allAIDisabled) {
+		this.allAIDisabled = allAIDisabled;
 	}
 }

@@ -30,8 +30,8 @@ import thederpgamer.edencore.data.other.BuildSectorData;
 import thederpgamer.edencore.data.player.PlayerData;
 import thederpgamer.edencore.manager.ClientCacheManager;
 import thederpgamer.edencore.manager.DataManager;
-import thederpgamer.edencore.network.client.misc.RequestClientCacheUpdatePacket;
-import thederpgamer.edencore.network.client.misc.RequestEntityDeletePacket;
+import thederpgamer.edencore.network.old.client.misc.RequestClientCacheUpdatePacket;
+import thederpgamer.edencore.network.old.client.misc.RequestEntityDeletePacket;
 
 import javax.vecmath.Vector3f;
 import java.io.IOException;

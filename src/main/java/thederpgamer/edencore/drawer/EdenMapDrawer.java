@@ -6,7 +6,7 @@ import libpackage.markers.ClickableMapMarker;
 import thederpgamer.edencore.EdenCore;
 import thederpgamer.edencore.data.other.WaypointMarker;
 import thederpgamer.edencore.manager.ResourceManager;
-import thederpgamer.edencore.network.client.misc.NavigationUpdateRequestPacket;
+import thederpgamer.edencore.network.old.client.misc.NavigationUpdateRequestPacket;
 
 import java.util.HashMap;
 import java.util.List;

@@ -9,7 +9,7 @@ import org.schema.schine.graphicsengine.core.MouseEvent;
 import org.schema.schine.graphicsengine.forms.gui.GUIElement;
 import thederpgamer.edencore.EdenCore;
 import thederpgamer.edencore.data.exchange.ResourceExchangeItem;
-import thederpgamer.edencore.network.client.exchange.ExchangeItemCreatePacket;
+import thederpgamer.edencore.network.old.client.exchange.ExchangeItemCreatePacket;
 
 /**
  * <Description>

@@ -13,7 +13,7 @@ import org.schema.schine.graphicsengine.forms.gui.*;
 import org.schema.schine.graphicsengine.forms.gui.newgui.*;
 import org.schema.schine.input.InputState;
 import thederpgamer.edencore.data.other.BuildSectorData;
-import thederpgamer.edencore.network.client.exchange.RequestSpawnEntryPacket;
+import thederpgamer.edencore.network.old.client.exchange.RequestSpawnEntryPacket;
 import thederpgamer.edencore.utils.DataUtils;
 
 import java.util.Collection;

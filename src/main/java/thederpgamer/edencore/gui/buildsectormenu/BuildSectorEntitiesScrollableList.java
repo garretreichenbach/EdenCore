@@ -14,7 +14,7 @@ import org.schema.schine.graphicsengine.forms.gui.newgui.*;
 import org.schema.schine.input.InputState;
 import thederpgamer.edencore.EdenCore;
 import thederpgamer.edencore.data.other.BuildSectorData;
-import thederpgamer.edencore.network.client.misc.RequestEntityDeletePacket;
+import thederpgamer.edencore.network.old.client.misc.RequestEntityDeletePacket;
 import thederpgamer.edencore.utils.BuildSectorUtils;
 import thederpgamer.edencore.utils.DataUtils;
 import thederpgamer.edencore.utils.EntityUtils;

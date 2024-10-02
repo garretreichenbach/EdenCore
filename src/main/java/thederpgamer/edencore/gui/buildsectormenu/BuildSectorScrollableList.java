@@ -11,8 +11,8 @@ import org.schema.schine.graphicsengine.forms.gui.newgui.*;
 import org.schema.schine.input.InputState;
 import thederpgamer.edencore.data.other.BuildSectorData;
 import thederpgamer.edencore.manager.ClientCacheManager;
-import thederpgamer.edencore.network.client.buildsector.RequestMoveFromBuildSectorPacket;
-import thederpgamer.edencore.network.client.buildsector.RequestMoveToBuildSectorPacket;
+import thederpgamer.edencore.network.old.client.buildsector.RequestMoveFromBuildSectorPacket;
+import thederpgamer.edencore.network.old.client.buildsector.RequestMoveToBuildSectorPacket;
 import thederpgamer.edencore.utils.DataUtils;
 
 import java.util.Collection;

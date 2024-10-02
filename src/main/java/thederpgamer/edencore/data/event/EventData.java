@@ -10,7 +10,7 @@ import org.schema.game.common.data.player.PlayerState;
 import thederpgamer.edencore.EdenCore;
 import thederpgamer.edencore.data.SerializableData;
 import thederpgamer.edencore.data.event.types.defense.DefenseEvent;
-import thederpgamer.edencore.network.server.event.ServerSendEventDataPacket;
+import thederpgamer.edencore.network.old.server.event.ServerSendEventDataPacket;
 
 import java.io.IOException;
 import java.io.Serializable;

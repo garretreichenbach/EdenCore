@@ -1,12 +1,11 @@
 package thederpgamer.edencore.manager;
 
-import thederpgamer.edencore.data.event.EventData;
-import thederpgamer.edencore.data.exchange.BlueprintExchangeItem;
-import thederpgamer.edencore.data.exchange.ItemExchangeItem;
-import thederpgamer.edencore.data.exchange.ResourceExchangeItem;
+import thederpgamer.edencore.data.ExchangeItem;
 import thederpgamer.edencore.data.other.BuildSectorData;
 
-import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Set;
 
 /**
  * Stores client cache data for periodical updates from server.
@@ -15,44 +14,79 @@ import java.util.ArrayList;
  * @version 1.0 - [09/18/2021]
  */
 public class ClientCacheManager {
-	public static final int BLUEPRINT_EXCHANGE = 0;
-	public static final int RESOURCE_EXCHANGE = 1;
-	public static final int ITEM_EXCHANGE = 2;
-	public static final int EVENT_DATA = 3;
-	public static final int BUILD_SECTOR_DATA = 4;
-	//Exchange
-	public static final ArrayList<BlueprintExchangeItem> blueprintExchangeItems = new ArrayList<>();
-	public static final ArrayList<ResourceExchangeItem> resourceExchangeItems = new ArrayList<>();
-	public static final ArrayList<ItemExchangeItem> itemExchangeItems = new ArrayList<>();
-	//Events
-	public static final ArrayList<EventData> eventData = new ArrayList<>();
-	//Build Sector
-	public static final ArrayList<BuildSectorData> accessibleSectors = new ArrayList<>();
 
-	public static void updateCache(int type, Object data) {
+	public enum ClientActionType {
+		ADD,
+		REMOVE,
+		UPDATE
+	}
+
+	public static final int EXCHANGE_DATA = 0;
+	public static final int BUILD_SECTOR_DATA = 1;
+
+	private static final HashMap<String, ExchangeItem> exchangeItems = new HashMap<>();
+	private static final HashMap<String, BuildSectorData> buildSectors = new HashMap<>();
+
+	public static void processAction(ClientActionType actionType, String... args) {
+		switch(actionType) {
+			case ADD:
+				addItem(Integer.parseInt(args[0]), args[1]);
+				break;
+			case REMOVE:
+				removeItem(Integer.parseInt(args[0]), args[1]);
+				break;
+			case UPDATE:
+				updateItem(Integer.parseInt(args[0]), args[1]);
+				break;
+			default:
+				throw new IllegalArgumentException("Invalid action type: " + actionType);
+		}
+	}
+
+	private static void addItem(int type, Object data) {
 		switch(type) {
-			case BLUEPRINT_EXCHANGE:
-				blueprintExchangeItems.remove((BlueprintExchangeItem) data);
-				blueprintExchangeItems.add((BlueprintExchangeItem) data);
-				break;
-			case RESOURCE_EXCHANGE:
-				resourceExchangeItems.remove((ResourceExchangeItem) data);
-				resourceExchangeItems.add((ResourceExchangeItem) data);
-				break;
-			case ITEM_EXCHANGE:
-				itemExchangeItems.remove((ItemExchangeItem) data);
-				itemExchangeItems.add((ItemExchangeItem) data);
-				break;
-			case EVENT_DATA:
-				eventData.remove((EventData) data);
-				eventData.add((EventData) data);
+			case EXCHANGE_DATA:
+				exchangeItems.put(((ExchangeItem) data).getUID(), (ExchangeItem) data);
 				break;
 			case BUILD_SECTOR_DATA:
-				accessibleSectors.remove((BuildSectorData) data);
-				accessibleSectors.add((BuildSectorData) data);
+				buildSectors.put(((BuildSectorData) data).getUID(), (BuildSectorData) data);
 				break;
 			default:
 				throw new IllegalArgumentException("Invalid cache type: " + type);
 		}
+	}
+
+	private static void removeItem(int type, String itemUID) {
+		switch(type) {
+			case EXCHANGE_DATA:
+				exchangeItems.remove(itemUID);
+				break;
+			case BUILD_SECTOR_DATA:
+				buildSectors.remove(itemUID);
+				break;
+			default:
+				throw new IllegalArgumentException("Invalid cache type: " + type);
+		}
+	}
+
+	private static void updateItem(int type, Object data) {
+		switch(type) {
+			case EXCHANGE_DATA:
+				exchangeItems.put(((ExchangeItem) data).getUID(), (ExchangeItem) data);
+				break;
+			case BUILD_SECTOR_DATA:
+				buildSectors.put(((BuildSectorData) data).getUID(), (BuildSectorData) data);
+				break;
+			default:
+				throw new IllegalArgumentException("Invalid cache type: " + type);
+		}
+	}
+
+	public static Set<ExchangeItem> getExchangeItems() {
+		return new HashSet<>(exchangeItems.values());
+	}
+
+	public static Set<BuildSectorData> getBuildSectors() {
+		return new HashSet<>(buildSectors.values());
 	}
 }

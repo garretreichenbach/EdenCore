@@ -3,7 +3,7 @@ package thederpgamer.edencore.gui.eventsmenu;
 import api.common.GameClient;
 import api.network.packets.PacketUtil;
 import api.utils.gui.GUIControlManager;
-import thederpgamer.edencore.network.client.misc.RequestClientCacheUpdatePacket;
+import thederpgamer.edencore.network.old.client.misc.RequestClientCacheUpdatePacket;
 
 /**
  * <Description>
