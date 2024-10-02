@@ -2,7 +2,6 @@ package thederpgamer.edencore.commands;
 
 import api.mod.StarMod;
 import api.utils.game.chat.CommandInterface;
-import org.jetbrains.annotations.Nullable;
 import org.schema.game.common.data.player.PlayerState;
 import thederpgamer.edencore.EdenCore;
 import thederpgamer.edencore.data.event.EventData;
@@ -49,7 +48,7 @@ public class EditEventCommand implements CommandInterface {
 	}
 
 	@Override
-	public void serverAction(@Nullable PlayerState playerState, String[] strings) {
+	public void serverAction(PlayerState playerState, String[] strings) {
 	}
 
 	@Override
