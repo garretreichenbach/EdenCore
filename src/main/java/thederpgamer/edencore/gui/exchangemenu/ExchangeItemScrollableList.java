@@ -42,26 +42,11 @@ public class ExchangeItemScrollableList extends ScrollableTableList<ExchangeData
 			}
 		});
 
-		addColumn(Lng.str("Price"), 3.0f, new Comparator<ExchangeData>() {
-			@Override
-			public int compare(ExchangeData o1, ExchangeData o2) {
-				return Integer.compare(o1.getPrice(), o2.getPrice());
-			}
-		});
+		addColumn(Lng.str("Price"), 3.0f, Comparator.comparingInt(ExchangeData::getPrice));
 
-		addColumn(Lng.str("Category"), 10.0f, new Comparator<ExchangeData>() {
-			@Override
-			public int compare(ExchangeData o1, ExchangeData o2) {
-				return o1.getCategory().compareTo(o2.getCategory());
-			}
-		});
+		addColumn(Lng.str("Category"), 10.0f, Comparator.comparing(ExchangeData::getCategory));
 
-		addColumn(Lng.str("Mass"), 5.0f, new Comparator<ExchangeData>() {
-			@Override
-			public int compare(ExchangeData o1, ExchangeData o2) {
-				return Float.compare(o1.getMass(), o2.getMass());
-			}
-		});
+		addColumn(Lng.str("Mass"), 5.0f, (o1, o2) -> Float.compare(o1.getMass(), o2.getMass()));
 
 		addTextFilter(new GUIListFilterText<ExchangeData>() {
 			public boolean isOk(String s, ExchangeData item) {
@@ -135,36 +120,6 @@ public class ExchangeItemScrollableList extends ScrollableTableList<ExchangeData
 					}
 				}, ControllerElement.FilterRowStyle.RIGHT);
 				break;
-			case ExchangeDialog.TURRETS:
-				addDropdownFilter(new GUIListFilterDropdown<ExchangeData, ExchangeData.TurretType>(ExchangeData.TurretType.values()) {
-					public boolean isOk(ExchangeData.TurretType turretType, ExchangeData item) {
-						return item.getCategory().equals(turretType.name());
-					}
-
-				}, new CreateGUIElementInterface<ExchangeData.TurretType>() {
-					@Override
-					public GUIElement create(ExchangeData.TurretType turretType) {
-						GUIAncor anchor = new GUIAncor(getState(), 10.0F, 24.0F);
-						GUITextOverlayTableDropDown dropDown;
-						(dropDown = new GUITextOverlayTableDropDown(10, 10, getState())).setTextSimple(turretType.displayName);
-						dropDown.setPos(4.0F, 4.0F, 0.0F);
-						anchor.setUserPointer(turretType.name());
-						anchor.attach(dropDown);
-						return anchor;
-					}
-
-					@Override
-					public GUIElement createNeutral() {
-						GUIAncor anchor = new GUIAncor(getState(), 10.0F, 24.0F);
-						GUITextOverlayTableDropDown dropDown;
-						(dropDown = new GUITextOverlayTableDropDown(10, 10, getState())).setTextSimple(Lng.str("ALL"));
-						dropDown.setPos(4.0F, 4.0F, 0.0F);
-						anchor.setUserPointer("ALL");
-						anchor.attach(dropDown);
-						return anchor;
-					}
-				}, ControllerElement.FilterRowStyle.RIGHT);
-				break;
 		}
 
 		activeSortColumnIndex = 0;
@@ -177,8 +132,6 @@ public class ExchangeItemScrollableList extends ScrollableTableList<ExchangeData
 				return ExchangeDialog.getShipList();
 			case ExchangeDialog.STATIONS:
 				return ExchangeDialog.getStationList();
-			case ExchangeDialog.TURRETS:
-				return ExchangeDialog.getTurretList();
 			default:
 				return new ArrayList<>();
 		}

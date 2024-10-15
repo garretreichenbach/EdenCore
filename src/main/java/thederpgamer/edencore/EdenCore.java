@@ -18,7 +18,6 @@ import thederpgamer.edencore.element.items.PrizeBars;
 import thederpgamer.edencore.manager.ConfigManager;
 import thederpgamer.edencore.manager.EventManager;
 import thederpgamer.edencore.manager.ResourceManager;
-import thederpgamer.edencore.network.ClientCacheCommandPacket;
 import thederpgamer.edencore.network.ServerPlayerActionCommandPacket;
 
 import java.io.IOException;
@@ -129,7 +128,6 @@ public class EdenCore extends StarMod {
 
 	private void registerPackets() {
 		PacketUtil.registerPacket(ServerPlayerActionCommandPacket.class);
-		PacketUtil.registerPacket(ClientCacheCommandPacket.class);
 		logInfo("Registered Packets");
 	}
 

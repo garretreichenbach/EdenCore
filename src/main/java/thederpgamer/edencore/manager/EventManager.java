@@ -1,6 +1,17 @@
 package thederpgamer.edencore.manager;
 
+import api.common.GameClient;
+import api.listener.Listener;
+import api.listener.events.gui.MainWindowTabAddEvent;
+import api.mod.StarLoader;
+import api.utils.gui.ModGUIHandler;
+import org.schema.schine.common.language.Lng;
 import thederpgamer.edencore.EdenCore;
+import thederpgamer.edencore.data.buildsectordata.BuildSectorDataManager;
+import thederpgamer.edencore.data.misc.ControlBindingData;
+
+import java.util.Locale;
+import java.util.Set;
 
 /**
  * [Description]
@@ -10,6 +21,7 @@ import thederpgamer.edencore.EdenCore;
 public class EventManager {
 
 	public static final String[] disabledTabs = {"FLEETS", "SHOP", "REPAIRS", "TRADE", "SET PRICES"};
+	
 	public static final short[] disabledBlocks = {
 			347, // Shop Module
 			291, // Faction Module
@@ -18,7 +30,119 @@ public class EventManager {
 			542 // Warp Gate Computer
 	};
 
-	public static void initialize(final EdenCore instance) {
+	public static void initialize(EdenCore instance) {
+		StarLoader.registerListener(MainWindowTabAddEvent.class, new Listener<MainWindowTabAddEvent>() {
+			@Override
+			public void onEvent(MainWindowTabAddEvent event) {
+				if(event.getTitleAsString().toUpperCase(Locale.ENGLISH).equals(Lng.str("MOUSE"))) {
+					event.getPane().addNewTextBox(100);
+					
+				} else if(event.getTitleAsString().toUpperCase(Locale.ENGLISH).equals(Lng.str("KEYBOARD"))) {
+					event.getPane().setTabName(Lng.str("KEYBOARD")); //Fix for the tab name being lowercase for some reason
+					
+				} else if(event.getTitleAsString().toUpperCase(Locale.ENGLISH).equals(Lng.str("JOYSTICK/PAD"))) {
+					
+				}
+				
+				if(BuildSectorDataManager.getInstance().isPlayerInAnyBuildSector(GameClient.getClientPlayerState())) {
+					for(String disabledTab : disabledTabs) {
+						if(event.getTitleAsString().equals(Lng.str(disabledTab))) {
+							event.setCanceled(true);
+							event.getWindow().cleanUp();
+						}
+					}
+				}
+			}
+		}, instance);
+
+		StarLoader.registerListener(GUITopBarCreateEvent.class, new Listener<GUITopBarCreateEvent>() {
+			@Override
+			public void onEvent(GUITopBarCreateEvent event) {
+				GUITopBar.ExpandedButton dropDownButton = event.getDropdownButtons().get(event.getDropdownButtons().size() - 1);
+				dropDownButton.addExpandedButton("GUIDE", new GUICallback() {
+					@Override
+					public void callback(GUIElement guiElement, MouseEvent mouseEvent) {
+						if(mouseEvent.pressedLeftMouse()) {
+							GameClient.getClientState().getController().queueUIAudio("0022_menu_ui - enter");
+							GameClient.getClientState().getGlobalGameControlManager().getIngameControlManager().getPlayerGameControlManager().deactivateAll();
+							ModGUIHandler.getGUIControlManager("glossarPanel").setActive(true);
+						}
+					}
+
+					@Override
+					public boolean isOccluded() {
+						return false;
+					}
+				}, new GUIActivationHighlightCallback() {
+					@Override
+					public boolean isHighlighted(InputState inputState) {
+						return false;
+					}
+
+					@Override
+					public boolean isVisible(InputState inputState) {
+						return true;
+					}
+
+					@Override
+					public boolean isActive(InputState inputState) {
+						return true;
+					}
+				});
+				dropDownButton.addExpandedButton("BUILD SECTOR", new GUICallback() {
+					@Override
+					public void callback(GUIElement guiElement, MouseEvent mouseEvent) {
+						if(mouseEvent.pressedLeftMouse()) UIManager.openBuildSectorMenu();
+					}
+
+					@Override
+					public boolean isOccluded() {
+						return false;
+					}
+				}, new GUIActivationHighlightCallback() {
+					@Override
+					public boolean isHighlighted(InputState inputState) {
+						return false;
+					}
+
+					@Override
+					public boolean isVisible(InputState inputState) {
+						return true;
+					}
+
+					@Override
+					public boolean isActive(InputState inputState) {
+						return true;
+					}
+				});
+				dropDownButton.addExpandedButton("EXCHANGE", new GUICallback() {
+					@Override
+					public void callback(GUIElement guiElement, MouseEvent mouseEvent) {
+						if(mouseEvent.pressedLeftMouse()) (new ExchangeDialog()).activate();
+					}
+
+					@Override
+					public boolean isOccluded() {
+						return false;
+					}
+				}, new GUIActivationHighlightCallback() {
+					@Override
+					public boolean isHighlighted(InputState inputState) {
+						return false;
+					}
+
+					@Override
+					public boolean isVisible(InputState inputState) {
+						return true;
+					}
+
+					@Override
+					public boolean isActive(InputState inputState) {
+						return true;
+					}
+				});
+			}
+		}, instance);
 		/*
 		StarLoader.registerListener(KeyPressEvent.class, new Listener<KeyPressEvent>() {
 			@Override

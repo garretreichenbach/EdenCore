@@ -1,6 +1,5 @@
 package thederpgamer.edencore.manager;
 
-import api.common.GameClient;
 import api.common.GameCommon;
 import api.utils.gui.ModGUIHandler;
 import org.schema.game.common.controller.SegmentController;
@@ -25,7 +24,7 @@ public class PlayerActionManager {
 			case WARP_INTO_ENTITY:
 				int entityId = Integer.parseInt(args[0]);
 				Sendable sendable = GameCommon.getGameObject(entityId);
-				if(sendable instanceof SegmentController) EntityUtils.warpPlayerIntoEntity(GameClient.getClientPlayerState(), (SegmentController) sendable);
+				if(sendable instanceof SegmentController) EntityUtils.warpPlayerIntoEntity((SegmentController) sendable);
 				break;
 		}
 	}

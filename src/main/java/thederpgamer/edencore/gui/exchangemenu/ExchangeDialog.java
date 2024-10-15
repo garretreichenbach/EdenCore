@@ -12,6 +12,7 @@ import org.schema.schine.graphicsengine.forms.gui.newgui.GUIDialogWindow;
 import org.schema.schine.graphicsengine.forms.gui.newgui.GUITabbedContent;
 import org.schema.schine.input.InputState;
 import thederpgamer.edencore.data.exchangedata.ExchangeData;
+import thederpgamer.edencore.data.exchangedata.ExchangeDataManager;
 import thederpgamer.edencore.element.ElementManager;
 
 import java.util.Collections;
@@ -26,7 +27,6 @@ public class ExchangeDialog extends PlayerInput {
 
 	public static final int SHIPS = 0;
 	public static final int STATIONS = 1;
-	public static final int TURRETS = 2;
 
 	public static final short BRONZE = ElementManager.getItem("Bronze Bar").getId();
 	private final ExchangePanel panel;
@@ -52,14 +52,10 @@ public class ExchangeDialog extends PlayerInput {
 	}
 
 	public static List<ExchangeData> getShipList() {
-		return Collections.emptyList();
+		return ExchangeDataManager.getInstance().getCategory(ExchangeDataManager.Category.SHIP);
 	}
 
 	public static List<ExchangeData> getStationList() {
-		return Collections.emptyList();
-	}
-
-	public static List<ExchangeData> getTurretList() {
 		return Collections.emptyList();
 	}
 
@@ -92,12 +88,7 @@ public class ExchangeDialog extends PlayerInput {
 			ExchangeItemScrollableList stationsList = new ExchangeItemScrollableList(getState(), stationsTab.getContent(0), STATIONS);
 			stationsList.onInit();
 			stationsTab.getContent(0).attach(stationsList);
-
-			GUIContentPane turretsTab = tabbedContent.addTab(Lng.str("TURRETS"));
-			ExchangeItemScrollableList turretsList = new ExchangeItemScrollableList(getState(), turretsTab.getContent(0), TURRETS);
-			turretsList.onInit();
-			turretsTab.getContent(0).attach(turretsList);
-
+			
 			tabbedContent.setSelectedTab(lastTab);
 //			contentPane.setTextBoxHeight(0, (int) tabbedContent.getHeight());
 			contentPane.getContent(0).attach(tabbedContent);

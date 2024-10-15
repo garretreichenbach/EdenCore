@@ -1,14 +1,13 @@
 package thederpgamer.edencore.data.buildsectordata;
 
 import api.mod.config.PersistentObjectUtil;
+import org.schema.common.util.linAlg.Vector3i;
 import org.schema.game.common.data.player.PlayerState;
 import thederpgamer.edencore.EdenCore;
 import thederpgamer.edencore.data.DataManager;
+import thederpgamer.edencore.manager.ConfigManager;
 
-import java.util.Collections;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 
 /**
  * [Description]
@@ -58,9 +57,22 @@ public class BuildSectorDataManager extends DataManager<BuildSectorData> {
 	}
 
 	public boolean isPlayerInAnyBuildSector(PlayerState playerState) {
+		return getCurrentBuildSector(playerState) != null;
+	}
+	
+	public BuildSectorData getCurrentBuildSector(PlayerState playerState) {
 		for(BuildSectorData data : clientCache) {
-			if(data.isPlayerInBuildSector(playerState)) return true;
+			if(data.getSector().equals(playerState.getCurrentSector())) return data;
 		}
-		return false;
+		return null;
+	}
+	
+	public static Vector3i calculateRandomSector() {
+		int baseOffset = ConfigManager.getMainConfig().getInt("build_sector_distance_offset");
+		Random random = new Random();
+		int x = (int) (random.nextGaussian() * baseOffset) * (random.nextBoolean() ? 1 : -1);
+		int y = (int) (random.nextGaussian() * baseOffset) * (random.nextBoolean() ? 1 : -1);
+		int z = (int) (random.nextGaussian() * baseOffset) * (random.nextBoolean() ? 1 : -1);
+		return new Vector3i(x, y, z);
 	}
 }

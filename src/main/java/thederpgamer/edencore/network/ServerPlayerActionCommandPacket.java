@@ -19,7 +19,7 @@ public class ServerPlayerActionCommandPacket extends Packet {
 	private int type;
 	private String[] args;
 	
-	public ServerPlayerActionCommandPacket(int type, String[] args) {
+	public ServerPlayerActionCommandPacket(int type, String... args) {
 		this.type = type;
 		this.args = args;
 	}
