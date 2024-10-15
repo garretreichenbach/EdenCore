@@ -12,6 +12,7 @@ import glossar.GlossarInit;
 import org.apache.commons.io.IOUtils;
 import org.schema.schine.resource.ResourceLoader;
 import thederpgamer.edencore.commands.*;
+import thederpgamer.edencore.data.DataManager;
 import thederpgamer.edencore.element.ElementManager;
 import thederpgamer.edencore.element.items.PrizeBars;
 import thederpgamer.edencore.manager.ConfigManager;
@@ -34,7 +35,7 @@ import java.util.zip.ZipInputStream;
  */
 public class EdenCore extends StarMod {
 	private static EdenCore instance;
-	private final String[] overwriteClasses = {"PlayerState", "BlueprintEntry", "TorchBeam", "MarkerBeam", "WarpgateUnit"};
+	private final String[] overwriteClasses = {};
 	public EdenCore() {instance = this;}
 	public static void main(String[] args) {}
 	public static EdenCore getInstance() {
@@ -62,18 +63,18 @@ public class EdenCore extends StarMod {
 	@Override
 	public void onServerCreated(ServerInitializeEvent serverInitializeEvent) {
 		super.onServerCreated(serverInitializeEvent);
-//		EventManager.doRunners();
+		DataManager.initialize(false);
 	}
 
 	@Override
 	public void onClientCreated(ClientInitializeEvent clientInitializeEvent) {
 		super.onClientCreated(clientInitializeEvent);
+		DataManager.initialize(true);
 		initGlossary();
 	}
 
 	@Override
 	public void onBlockConfigLoad(BlockConfig blockConfig) {
-		// Items
 		ElementManager.addItemGroup(new PrizeBars());
 		ElementManager.initialize();
 		logInfo("Initialized Blocks");
@@ -86,26 +87,26 @@ public class EdenCore extends StarMod {
 
 	@Override
 	public void logInfo(String message) {
-		System.out.println("[EdencCore] [INFO]: " + message);
+		System.out.println("[INFO][EdenCore]: " + message);
 		super.logInfo(message);
 	}
 
 	@Override
 	public void logWarning(String message) {
-		System.out.println("[EdenCore] [WARNING]: " + message);
+		System.out.println("[WARNING][EdenCore]: " + message);
 		super.logWarning(message);
 	}
 
 	@Override
 	public void logException(String message, Exception exception) {
-		System.err.println("[EdenCore] [EXCEPTION]: " + message + "\n" + exception.getMessage() + "\n" + Arrays.toString(exception.getStackTrace()));
+		System.err.println("[EXCEPTION][EdenCore]: " + message + "\n" + exception.getMessage() + "\n" + Arrays.toString(exception.getStackTrace()));
 		exception.printStackTrace();
 		super.logException(message, exception);
 	}
 
 	@Override
 	public void logFatal(String message, Exception exception) {
-		System.err.println("[EdenCore] [FATAL]: " + message + "\n" + exception.getMessage() + "\n" + Arrays.toString(exception.getStackTrace()));
+		System.err.println("[FATAL][EdenCore]: " + message + "\n" + exception.getMessage() + "\n" + Arrays.toString(exception.getStackTrace()));
 		exception.printStackTrace();
 		super.logFatal(message, exception);
 	}
@@ -133,17 +134,7 @@ public class EdenCore extends StarMod {
 	}
 
 	private void registerCommands() {
-		StarLoader.registerCommand(new SaveEntityCommand());
-		StarLoader.registerCommand(new LoadEntityCommand());
-		StarLoader.registerCommand(new ListEntityCommand());
-		StarLoader.registerCommand(new BuildSectorCommand());
-		StarLoader.registerCommand(new AwardBarsCommand());
-		StarLoader.registerCommand(new BankingSendMoneyCommand());
-		StarLoader.registerCommand(new BankingListCommand());
-		StarLoader.registerCommand(new BankingAdminListCommand());
-		StarLoader.registerCommand(new CountdownCommand());
 		StarLoader.registerCommand(new GuideCommand());
-		StarLoader.registerCommand(new ResetEventsCommand());
 		logInfo("Registered Commands");
 	}
 

@@ -5,7 +5,7 @@ import api.mod.config.PersistentObjectUtil;
 import api.network.packets.PacketUtil;
 import org.schema.game.common.data.player.PlayerState;
 import thederpgamer.edencore.EdenCore;
-import thederpgamer.edencore.data.ExchangeItem;
+import thederpgamer.edencore.data.exchangedata.ExchangeData;
 import thederpgamer.edencore.data.other.BuildSectorData;
 import thederpgamer.edencore.network.ClientCacheCommandPacket;
 
@@ -19,9 +19,9 @@ public class ServerCacheManager {
 	public static void addItem(int type, String itemUID, Object item) {
 		switch(type) {
 			case ClientCacheManager.EXCHANGE_DATA:
-				if(item instanceof ExchangeItem) {
-					ExchangeItem exchangeItem = (ExchangeItem) item;
-					PersistentObjectUtil.addObject(EdenCore.getInstance().getSkeleton(), exchangeItem);
+				if(item instanceof ExchangeData) {
+					ExchangeData exchangeData = (ExchangeData) item;
+					PersistentObjectUtil.addObject(EdenCore.getInstance().getSkeleton(), exchangeData);
 					PersistentObjectUtil.save(EdenCore.getInstance().getSkeleton());
 					sendCommand(ClientCacheManager.ClientActionType.ADD, itemUID);
 				}
@@ -42,10 +42,10 @@ public class ServerCacheManager {
 	public static void removeItem(int type, String itemUID) {
 		switch(type) {
 			case ClientCacheManager.EXCHANGE_DATA:
-				for(Object obj : PersistentObjectUtil.getObjects(EdenCore.getInstance().getSkeleton(), ExchangeItem.class)) {
-					ExchangeItem exchangeItem = (ExchangeItem) obj;
-					if(exchangeItem.getUID().equals(itemUID)) {
-						PersistentObjectUtil.removeObject(EdenCore.getInstance().getSkeleton(), exchangeItem);
+				for(Object obj : PersistentObjectUtil.getObjects(EdenCore.getInstance().getSkeleton(), ExchangeData.class)) {
+					ExchangeData exchangeData = (ExchangeData) obj;
+					if(exchangeData.getUID().equals(itemUID)) {
+						PersistentObjectUtil.removeObject(EdenCore.getInstance().getSkeleton(), exchangeData);
 						PersistentObjectUtil.save(EdenCore.getInstance().getSkeleton());
 						sendCommand(ClientCacheManager.ClientActionType.REMOVE, itemUID);
 						break;
@@ -70,11 +70,11 @@ public class ServerCacheManager {
 	public static void updateItem(int type, String itemUID) {
 		switch(type) {
 			case ClientCacheManager.EXCHANGE_DATA:
-				for(Object obj : PersistentObjectUtil.getObjects(EdenCore.getInstance().getSkeleton(), ExchangeItem.class)) {
-					ExchangeItem exchangeItem = (ExchangeItem) obj;
-					if(exchangeItem.getUID().equals(itemUID)) {
-						PersistentObjectUtil.removeObject(EdenCore.getInstance().getSkeleton(), exchangeItem);
-						PersistentObjectUtil.addObject(EdenCore.getInstance().getSkeleton(), exchangeItem);
+				for(Object obj : PersistentObjectUtil.getObjects(EdenCore.getInstance().getSkeleton(), ExchangeData.class)) {
+					ExchangeData exchangeData = (ExchangeData) obj;
+					if(exchangeData.getUID().equals(itemUID)) {
+						PersistentObjectUtil.removeObject(EdenCore.getInstance().getSkeleton(), exchangeData);
+						PersistentObjectUtil.addObject(EdenCore.getInstance().getSkeleton(), exchangeData);
 						PersistentObjectUtil.save(EdenCore.getInstance().getSkeleton());
 						sendCommand(ClientCacheManager.ClientActionType.UPDATE, itemUID);
 						break;

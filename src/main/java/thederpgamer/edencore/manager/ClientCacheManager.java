@@ -1,6 +1,6 @@
 package thederpgamer.edencore.manager;
 
-import thederpgamer.edencore.data.ExchangeItem;
+import thederpgamer.edencore.data.exchangedata.ExchangeData;
 import thederpgamer.edencore.data.other.BuildSectorData;
 
 import java.util.HashMap;
@@ -24,7 +24,7 @@ public class ClientCacheManager {
 	public static final int EXCHANGE_DATA = 0;
 	public static final int BUILD_SECTOR_DATA = 1;
 
-	private static final HashMap<String, ExchangeItem> exchangeItems = new HashMap<>();
+	private static final HashMap<String, ExchangeData> exchangeItems = new HashMap<>();
 	private static final HashMap<String, BuildSectorData> buildSectors = new HashMap<>();
 
 	public static void processAction(ClientActionType actionType, String... args) {
@@ -46,7 +46,7 @@ public class ClientCacheManager {
 	private static void addItem(int type, Object data) {
 		switch(type) {
 			case EXCHANGE_DATA:
-				exchangeItems.put(((ExchangeItem) data).getUID(), (ExchangeItem) data);
+				exchangeItems.put(((ExchangeData) data).getUID(), (ExchangeData) data);
 				break;
 			case BUILD_SECTOR_DATA:
 				buildSectors.put(((BuildSectorData) data).getUID(), (BuildSectorData) data);
@@ -72,7 +72,7 @@ public class ClientCacheManager {
 	private static void updateItem(int type, Object data) {
 		switch(type) {
 			case EXCHANGE_DATA:
-				exchangeItems.put(((ExchangeItem) data).getUID(), (ExchangeItem) data);
+				exchangeItems.put(((ExchangeData) data).getUID(), (ExchangeData) data);
 				break;
 			case BUILD_SECTOR_DATA:
 				buildSectors.put(((BuildSectorData) data).getUID(), (BuildSectorData) data);
@@ -82,7 +82,7 @@ public class ClientCacheManager {
 		}
 	}
 
-	public static Set<ExchangeItem> getExchangeItems() {
+	public static Set<ExchangeData> getExchangeItems() {
 		return new HashSet<>(exchangeItems.values());
 	}
 

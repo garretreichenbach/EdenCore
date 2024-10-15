@@ -1,7 +1,6 @@
 package thederpgamer.edencore.gui.exchangemenu;
 
 import api.common.GameClient;
-import api.network.packets.PacketUtil;
 import org.schema.game.client.controller.PlayerInput;
 import org.schema.game.client.view.gui.GUIInputPanel;
 import org.schema.schine.common.language.Lng;
@@ -12,9 +11,8 @@ import org.schema.schine.graphicsengine.forms.gui.newgui.GUIContentPane;
 import org.schema.schine.graphicsengine.forms.gui.newgui.GUIDialogWindow;
 import org.schema.schine.graphicsengine.forms.gui.newgui.GUITabbedContent;
 import org.schema.schine.input.InputState;
-import thederpgamer.edencore.data.ExchangeItem;
+import thederpgamer.edencore.data.exchangedata.ExchangeData;
 import thederpgamer.edencore.element.ElementManager;
-import thederpgamer.edencore.network.old.client.misc.RequestClientCacheUpdatePacket;
 
 import java.util.Collections;
 import java.util.List;
@@ -53,15 +51,15 @@ public class ExchangeDialog extends PlayerInput {
 		return panel;
 	}
 
-	public static List<ExchangeItem> getShipList() {
+	public static List<ExchangeData> getShipList() {
 		return Collections.emptyList();
 	}
 
-	public static List<ExchangeItem> getStationList() {
+	public static List<ExchangeData> getStationList() {
 		return Collections.emptyList();
 	}
 
-	public static List<ExchangeItem> getTurretList() {
+	public static List<ExchangeData> getTurretList() {
 		return Collections.emptyList();
 	}
 
@@ -76,7 +74,6 @@ public class ExchangeDialog extends PlayerInput {
 		@Override
 		public void onInit() {
 			super.onInit();
-			PacketUtil.sendPacketToServer(new RequestClientCacheUpdatePacket());
 			GUIContentPane contentPane = ((GUIDialogWindow) background).getMainContentPane();
 			int lastTab = 0;
 			if(tabbedContent != null) {

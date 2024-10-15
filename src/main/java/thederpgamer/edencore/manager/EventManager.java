@@ -1,52 +1,6 @@
 package thederpgamer.edencore.manager;
 
-import api.common.GameClient;
-import api.common.GameCommon;
-import api.listener.Listener;
-import api.listener.events.block.SegmentPieceActivateByPlayer;
-import api.listener.events.block.SegmentPieceActivateEvent;
-import api.listener.events.block.SegmentPieceAddEvent;
-import api.listener.events.block.SegmentPieceRemoveEvent;
-import api.listener.events.draw.RegisterWorldDrawersEvent;
-import api.listener.events.entity.SegmentControllerInstantiateEvent;
-import api.listener.events.gui.GUITopBarCreateEvent;
-import api.listener.events.gui.MainWindowTabAddEvent;
-import api.listener.events.input.KeyPressEvent;
-import api.listener.events.player.PlayerDeathEvent;
-import api.listener.events.player.PlayerJoinWorldEvent;
-import api.listener.events.player.PlayerPickupFreeItemEvent;
-import api.listener.events.player.PlayerSpawnEvent;
-import api.listener.events.world.SimulationJobExecuteEvent;
-import api.mod.StarLoader;
-import api.mod.config.PersistentObjectUtil;
-import api.network.packets.PacketUtil;
-import api.utils.StarRunnable;
-import api.utils.game.PlayerUtils;
-import api.utils.game.SegmentControllerUtils;
-import api.utils.game.inventory.InventoryUtils;
-import org.schema.common.util.linAlg.Vector3i;
-import org.schema.game.client.view.gui.newgui.GUITopBar;
-import org.schema.game.common.data.player.PlayerState;
-import org.schema.game.common.data.player.faction.FactionManager;
-import org.schema.game.server.data.simulation.jobs.SpawnPiratePatrolPartyJob;
-import org.schema.schine.common.language.Lng;
-import org.schema.schine.graphicsengine.core.MouseEvent;
-import org.schema.schine.graphicsengine.forms.gui.GUIActivationHighlightCallback;
-import org.schema.schine.graphicsengine.forms.gui.GUICallback;
-import org.schema.schine.graphicsengine.forms.gui.GUIElement;
-import org.schema.schine.input.InputState;
 import thederpgamer.edencore.EdenCore;
-import thederpgamer.edencore.data.other.BuildSectorData;
-import thederpgamer.edencore.data.player.PlayerData;
-import thederpgamer.edencore.element.ElementManager;
-import thederpgamer.edencore.gui.exchangemenu.ExchangeDialog;
-import thederpgamer.edencore.network.old.client.misc.RequestClientCacheUpdatePacket;
-import thederpgamer.edencore.utils.BuildSectorUtils;
-import thederpgamer.edencore.utils.ClassUtils;
-import thederpgamer.edencore.utils.DataUtils;
-import thederpgamer.edencore.utils.DateUtils;
-
-import java.sql.Date;
 
 /**
  * [Description]
@@ -65,6 +19,7 @@ public class EventManager {
 	};
 
 	public static void initialize(final EdenCore instance) {
+		/*
 		StarLoader.registerListener(KeyPressEvent.class, new Listener<KeyPressEvent>() {
 			@Override
 			public void onEvent(KeyPressEvent event) {
@@ -383,37 +338,7 @@ public class EventManager {
 			}
 		}, instance);
 		startRunners();
-	}
-
-	private static void startRunners() {
-		if(GameCommon.isOnSinglePlayer() || GameCommon.isDedicatedServer()) {
-			(new StarRunnable() {
-				@Override
-				public void run() {
-					ClientCacheManager.updateClientCacheData();
-				}
-			}).runTimer(EdenCore.getInstance(), 10000);
-			//Todo: Replace auto updates with ones that only fire when actually needed to cut down on packet spam
-		}
-	}
-
-	private static void queueSpawnSwitch(final PlayerState playerState) {
-		new StarRunnable() {
-			@Override
-			public void run() {
-				if(!DataUtils.isPlayerInAnyBuildSector(playerState)) cancel();
-				if(!playerState.hasSpawnWait) { // Wait until player has spawned, then warp them
-					try {
-						DataUtils.movePlayerFromBuildSector(playerState);
-					} catch(Exception exception) {
-						EdenCore.getInstance().logException("Encountered a severe exception while trying to move player \"" + playerState.getName() + "\" out of a build sector! Report this ASAP!", exception);
-						playerState.setUseCreativeMode(false);
-						if(!playerState.isAdmin()) playerState.setHasCreativeMode(false);
-						PlayerUtils.sendMessage(playerState, "The server encountered a severe exception while trying to load you in and your" + " player state may be corrupted as a result. Report this to an admin ASAP!");
-					}
-					cancel();
-				}
-			}
-		}.runTimer(EdenCore.getInstance(), 300);
+		
+		 */
 	}
 }
