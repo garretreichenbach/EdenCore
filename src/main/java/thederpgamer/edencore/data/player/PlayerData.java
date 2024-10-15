@@ -20,9 +20,6 @@ import java.util.Locale;
  */
 public class PlayerData {
 	public static final int NONE = 0;
-	public static final int STAFF = 1;
-	public static final int EXPLORER = 2;
-	public static final int CAPTAIN = 3;
 	//collection of banking transactions that player has sent or received.
 	private final List<BankingTransactionLog> transactions = new ArrayList<>();
 	public String playerName;
@@ -32,7 +29,6 @@ public class PlayerData {
 	public Vector3f lastBuildSectorPos;
 	public long lastDailyPrizeClaim;
 	public long lastLogin;
-	public PlayerSettingsData settings;
 	public int donatorType;
 
 	public PlayerData(PlayerState playerState) {

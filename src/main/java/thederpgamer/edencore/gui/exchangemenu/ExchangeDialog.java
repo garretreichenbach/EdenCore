@@ -16,6 +16,7 @@ import thederpgamer.edencore.data.ExchangeItem;
 import thederpgamer.edencore.element.ElementManager;
 import thederpgamer.edencore.network.old.client.misc.RequestClientCacheUpdatePacket;
 
+import java.util.Collections;
 import java.util.List;
 
 /**
@@ -53,12 +54,15 @@ public class ExchangeDialog extends PlayerInput {
 	}
 
 	public static List<ExchangeItem> getShipList() {
+		return Collections.emptyList();
 	}
 
 	public static List<ExchangeItem> getStationList() {
+		return Collections.emptyList();
 	}
 
 	public static List<ExchangeItem> getTurretList() {
+		return Collections.emptyList();
 	}
 
 	public static class ExchangePanel extends GUIInputPanel {

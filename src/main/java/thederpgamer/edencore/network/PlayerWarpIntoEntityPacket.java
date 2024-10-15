@@ -1,4 +1,4 @@
-package thederpgamer.edencore.network.old.server;
+package thederpgamer.edencore.network;
 
 import api.common.GameClient;
 import api.common.GameCommon;
@@ -40,9 +40,7 @@ public class PlayerWarpIntoEntityPacket extends Packet {
 
 	@Override
 	public void processPacketOnClient() {
-		Sendable sendable = GameCommon.getGameObject(entityId);
-		if(sendable instanceof SegmentController) EntityUtils.warpPlayerIntoEntity(GameClient.getClientPlayerState(), (SegmentController) sendable);
-	}
+		}
 
 	@Override
 	public void processPacketOnServer(PlayerState playerState) {

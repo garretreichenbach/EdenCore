@@ -4,7 +4,6 @@ import api.network.Packet;
 import api.network.PacketReadBuffer;
 import api.network.PacketWriteBuffer;
 import org.schema.game.common.data.player.PlayerState;
-import thederpgamer.edencore.data.event.EventData;
 
 import java.io.IOException;
 
@@ -18,7 +17,6 @@ public class ClientModifyEventPacket extends Packet {
 	public static final int LEAVE_EVENT = 1;
 	public static final int SET_READY = 2;
 	public static final int CHANGE_SHIP = 3;
-	private EventData eventData;
 	private int action;
 	private Object[] args;
 

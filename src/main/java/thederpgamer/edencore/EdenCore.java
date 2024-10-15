@@ -10,30 +10,15 @@ import glossar.GlossarCategory;
 import glossar.GlossarEntry;
 import glossar.GlossarInit;
 import org.apache.commons.io.IOUtils;
-import org.schema.game.common.data.player.PlayerState;
 import org.schema.schine.resource.ResourceLoader;
 import thederpgamer.edencore.commands.*;
-import thederpgamer.edencore.commands.events.EventEditorCommand;
 import thederpgamer.edencore.element.ElementManager;
 import thederpgamer.edencore.element.items.PrizeBars;
 import thederpgamer.edencore.manager.ConfigManager;
-import thederpgamer.edencore.manager.ListenerManager;
+import thederpgamer.edencore.manager.EventManager;
 import thederpgamer.edencore.manager.ResourceManager;
-import thederpgamer.edencore.network.old.client.buildsector.*;
-import thederpgamer.edencore.network.old.client.event.ClientModifyEventPacket;
-import thederpgamer.edencore.network.old.client.exchange.ExchangeItemCreatePacket;
-import thederpgamer.edencore.network.old.client.exchange.ExchangeItemRemovePacket;
-import thederpgamer.edencore.network.old.client.exchange.PlayerBuyBPPacket;
-import thederpgamer.edencore.network.old.client.exchange.RequestSpawnEntryPacket;
-import thederpgamer.edencore.network.old.client.misc.NavigationUpdateRequestPacket;
-import thederpgamer.edencore.network.old.client.misc.RequestClientCacheUpdatePacket;
-import thederpgamer.edencore.network.old.client.misc.RequestEntityDeletePacket;
-import thederpgamer.edencore.network.old.client.misc.RequestMetaObjectPacket;
-import thederpgamer.edencore.network.old.server.NavigationUpdatePacket;
-import thederpgamer.edencore.network.old.server.PlayerWarpIntoEntityPacket;
-import thederpgamer.edencore.network.old.server.SendCacheUpdatePacket;
-import thederpgamer.edencore.network.old.server.SendGuideMenuPacket;
-import thederpgamer.edencore.network.old.server.event.ServerSendEventDataPacket;
+import thederpgamer.edencore.network.ClientCacheCommandPacket;
+import thederpgamer.edencore.network.ServerPlayerActionCommandPacket;
 
 import java.io.IOException;
 import java.nio.file.Files;
@@ -69,7 +54,7 @@ public class EdenCore extends StarMod {
 		super.onEnable();
 		instance = this;
 		ConfigManager.initialize(this);
-		ListenerManager.initialize(this);
+		EventManager.initialize(this);
 		registerPackets();
 		registerCommands();
 	}
@@ -142,32 +127,12 @@ public class EdenCore extends StarMod {
 	}
 
 	private void registerPackets() {
-		PacketUtil.registerPacket(RequestClientCacheUpdatePacket.class);
-		PacketUtil.registerPacket(RequestMetaObjectPacket.class);
-		PacketUtil.registerPacket(RequestMoveToBuildSectorPacket.class);
-		PacketUtil.registerPacket(RequestMoveFromBuildSectorPacket.class);
-		PacketUtil.registerPacket(RequestBuildSectorProtectPacket.class);
-		PacketUtil.registerPacket(RequestBuildSectorInvitePacket.class);
-		PacketUtil.registerPacket(RequestBuildSectorKickPacket.class);
-		PacketUtil.registerPacket(RequestBuildSectorBanPacket.class);
-		PacketUtil.registerPacket(RequestSpawnEntryPacket.class);
-		PacketUtil.registerPacket(RequestEntityDeletePacket.class);
-		PacketUtil.registerPacket(UpdateBuildSectorPermissionsPacket.class);
-		PacketUtil.registerPacket(ExchangeItemCreatePacket.class);
-		PacketUtil.registerPacket(ExchangeItemRemovePacket.class);
-		PacketUtil.registerPacket(SendCacheUpdatePacket.class);
-		PacketUtil.registerPacket(PlayerWarpIntoEntityPacket.class);
-		PacketUtil.registerPacket(NavigationUpdateRequestPacket.class);
-		PacketUtil.registerPacket(NavigationUpdatePacket.class);
-		PacketUtil.registerPacket(PlayerBuyBPPacket.class);
-		PacketUtil.registerPacket(SendGuideMenuPacket.class);
-		PacketUtil.registerPacket(ClientModifyEventPacket.class);
-		PacketUtil.registerPacket(ServerSendEventDataPacket.class);
+		PacketUtil.registerPacket(ServerPlayerActionCommandPacket.class);
+		PacketUtil.registerPacket(ClientCacheCommandPacket.class);
 		logInfo("Registered Packets");
 	}
 
 	private void registerCommands() {
-		StarLoader.registerCommand(new EventEditorCommand());
 		StarLoader.registerCommand(new SaveEntityCommand());
 		StarLoader.registerCommand(new LoadEntityCommand());
 		StarLoader.registerCommand(new ListEntityCommand());
@@ -179,7 +144,6 @@ public class EdenCore extends StarMod {
 		StarLoader.registerCommand(new CountdownCommand());
 		StarLoader.registerCommand(new GuideCommand());
 		StarLoader.registerCommand(new ResetEventsCommand());
-		StarLoader.registerCommand(new EditEventCommand());
 		logInfo("Registered Commands");
 	}
 
@@ -198,9 +162,5 @@ public class EdenCore extends StarMod {
 		}
 		if(bytes != null) return bytes;
 		else return byteCode;
-	}
-
-	public void activateGuideMenuForPlayer(PlayerState playerState) {
-		PacketUtil.sendPacket(playerState, new SendGuideMenuPacket());
 	}
 }
