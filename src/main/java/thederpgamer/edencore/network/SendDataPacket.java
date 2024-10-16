@@ -7,6 +7,7 @@ import org.schema.game.common.data.player.PlayerState;
 import thederpgamer.edencore.EdenCore;
 import thederpgamer.edencore.data.SerializableData;
 import thederpgamer.edencore.data.buildsectordata.BuildSectorDataManager;
+import thederpgamer.edencore.data.exchangedata.ExchangeDataManager;
 import thederpgamer.edencore.data.playerdata.PlayerDataManager;
 
 import java.io.IOException;
@@ -52,6 +53,9 @@ public class SendDataPacket extends Packet {
 			case PLAYER_DATA:
 				PlayerDataManager.getInstance().handlePacket(data, type, false);
 				break;
+			case EXCHANGE_DATA:
+				ExchangeDataManager.getInstance().handlePacket(data, type, false);
+				break;
 			case BUILD_SECTOR_DATA:
 				BuildSectorDataManager.getInstance().handlePacket(data, type, false);
 				break;
@@ -65,6 +69,9 @@ public class SendDataPacket extends Packet {
 		switch(dataType) {
 			case PLAYER_DATA:
 				PlayerDataManager.getInstance().handlePacket(data, type, true);
+				break;
+			case EXCHANGE_DATA:
+				ExchangeDataManager.getInstance().handlePacket(data, type, true);
 				break;
 			case BUILD_SECTOR_DATA:
 				BuildSectorDataManager.getInstance().handlePacket(data, type, true);

@@ -23,6 +23,7 @@ public abstract class DataManager<E extends SerializableData> {
 	public static final int ADD_DATA = 0;
 	public static final int REMOVE_DATA = 1;
 	public static final int UPDATE_DATA = 2;
+	public static final int BUY = 3;
 
 	public static void initialize(boolean client) {
 		PlayerDataManager.initialize(client);

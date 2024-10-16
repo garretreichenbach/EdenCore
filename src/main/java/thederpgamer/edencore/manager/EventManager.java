@@ -2,13 +2,22 @@ package thederpgamer.edencore.manager;
 
 import api.common.GameClient;
 import api.listener.Listener;
+import api.listener.events.gui.GUITopBarCreateEvent;
 import api.listener.events.gui.MainWindowTabAddEvent;
 import api.mod.StarLoader;
 import api.utils.gui.ModGUIHandler;
+import org.schema.game.client.view.gui.newgui.GUITopBar;
 import org.schema.schine.common.language.Lng;
+import org.schema.schine.graphicsengine.core.MouseEvent;
+import org.schema.schine.graphicsengine.forms.gui.GUIActivationHighlightCallback;
+import org.schema.schine.graphicsengine.forms.gui.GUICallback;
+import org.schema.schine.graphicsengine.forms.gui.GUIElement;
+import org.schema.schine.input.InputState;
 import thederpgamer.edencore.EdenCore;
 import thederpgamer.edencore.data.buildsectordata.BuildSectorDataManager;
 import thederpgamer.edencore.data.misc.ControlBindingData;
+import thederpgamer.edencore.gui.controls.ControlBindingsScrollableList;
+import thederpgamer.edencore.gui.exchangemenu.ExchangeDialog;
 
 import java.util.Locale;
 import java.util.Set;
@@ -35,13 +44,21 @@ public class EventManager {
 			@Override
 			public void onEvent(MainWindowTabAddEvent event) {
 				if(event.getTitleAsString().toUpperCase(Locale.ENGLISH).equals(Lng.str("MOUSE"))) {
-					event.getPane().addNewTextBox(100);
-					
+					event.getPane().addNewTextBox(300);
+					ControlBindingsScrollableList list = new ControlBindingsScrollableList(event.getPane().getState(), event.getPane().getContent(1), ControlBindingData.ControlType.MOUSE);
+					list.onInit();
+					event.getPane().getContent(1).attach(list);
 				} else if(event.getTitleAsString().toUpperCase(Locale.ENGLISH).equals(Lng.str("KEYBOARD"))) {
 					event.getPane().setTabName(Lng.str("KEYBOARD")); //Fix for the tab name being lowercase for some reason
-					
+					event.getPane().addNewTextBox(300);
+					ControlBindingsScrollableList list = new ControlBindingsScrollableList(event.getPane().getState(), event.getPane().getContent(1), ControlBindingData.ControlType.KEYBOARD);
+					list.onInit();
+					event.getPane().getContent(1).attach(list);
 				} else if(event.getTitleAsString().toUpperCase(Locale.ENGLISH).equals(Lng.str("JOYSTICK/PAD"))) {
-					
+					event.getPane().addNewTextBox(300);
+					ControlBindingsScrollableList list = new ControlBindingsScrollableList(event.getPane().getState(), event.getPane().getContent(1), ControlBindingData.ControlType.JOYSTICK_PAD);
+					list.onInit();
+					event.getPane().getContent(1).attach(list);
 				}
 				
 				if(BuildSectorDataManager.getInstance().isPlayerInAnyBuildSector(GameClient.getClientPlayerState())) {
@@ -92,7 +109,9 @@ public class EventManager {
 				dropDownButton.addExpandedButton("BUILD SECTOR", new GUICallback() {
 					@Override
 					public void callback(GUIElement guiElement, MouseEvent mouseEvent) {
-						if(mouseEvent.pressedLeftMouse()) UIManager.openBuildSectorMenu();
+						if(mouseEvent.pressedLeftMouse()) {
+							//Todo
+						}
 					}
 
 					@Override

@@ -3,11 +3,9 @@ package thederpgamer.edencore.data.exchangedata;
 import api.mod.config.PersistentObjectUtil;
 import thederpgamer.edencore.EdenCore;
 import thederpgamer.edencore.data.DataManager;
+import thederpgamer.edencore.data.SerializableData;
 
-import java.util.Collections;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 
 /**
  * [Description]
@@ -18,6 +16,7 @@ public class ExchangeDataManager extends DataManager<ExchangeData> {
 
 	private final Set<ExchangeData> clientCache = new HashSet<>();
 	private static ExchangeDataManager instance;
+
 	public static ExchangeDataManager getInstance() {
 		return instance;
 	}
@@ -26,7 +25,7 @@ public class ExchangeDataManager extends DataManager<ExchangeData> {
 		instance = new ExchangeDataManager();
 		if(client) instance.requestFromServer();
 	}
-	
+
 	@Override
 	public Set<ExchangeData> getServerCache() {
 		List<Object> objects = PersistentObjectUtil.getObjects(EdenCore.getInstance().getSkeleton(), ExchangeData.class);
@@ -54,5 +53,27 @@ public class ExchangeDataManager extends DataManager<ExchangeData> {
 	public void updateClientCache(ExchangeData data) {
 		clientCache.remove(data);
 		clientCache.add(data);
+	}
+
+	@Override
+	public void handlePacket(SerializableData data, int type, boolean server) {
+		if(type == BUY) {
+
+		} else super.handlePacket(data, type, server);
+	}
+
+	public static Set<ExchangeData> getCategory(ExchangeData.ExchangeDataCategory category) {
+		Set<ExchangeData> data = new HashSet<>();
+		for(ExchangeData exchangeData : instance.clientCache) {
+			if(exchangeData.getCategory() == category) data.add(exchangeData);
+		}
+		return data;
+	}
+
+	public boolean existsName(String uid) {
+		for(ExchangeData data : clientCache) {
+			if(data.getName().toLowerCase(Locale.ENGLISH).trim().equals(uid.toLowerCase(Locale.ENGLISH).trim())) return true;
+		}
+		return false;
 	}
 }

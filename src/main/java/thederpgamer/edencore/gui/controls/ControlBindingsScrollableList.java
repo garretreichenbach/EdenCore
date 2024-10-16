@@ -54,13 +54,12 @@ public class ControlBindingsScrollableList extends ScrollableTableList<ControlBi
 		guiElementList.addObserver(this);
 		for(ControlBindingData binding : set) {
 			GUITextOverlayTable nameText = new GUITextOverlayTable(10, 10, getState());
-			GUIHorizontalButton settingBtn = new GUIHorizontalButton(getState(), GUIHorizontalArea.HButtonType.BUTTON_RED_MEDIUM,
-					new Object() {
-						@Override
-						public String toString() {
-							return binding.getName();
-						}
-					}, new GUICallback() {
+			GUIHorizontalButton settingBtn = new GUIHorizontalButton(getState(), GUIHorizontalArea.HButtonType.BUTTON_RED_MEDIUM, new Object() {
+				@Override
+				public String toString() {
+					return binding.getName();
+				}
+			}, new GUICallback() {
 				@Override
 				public void callback(GUIElement callingGuiElement, MouseEvent event) {
 					if(event.pressedLeftMouse()) {
@@ -73,7 +72,6 @@ public class ControlBindingsScrollableList extends ScrollableTableList<ControlBi
 				public boolean isOccluded() {
 					return !isActive();
 				}
-
 			}, this, new GUIActivationCallback() {
 				@Override
 				public boolean isVisible(InputState state) {
@@ -106,9 +104,9 @@ public class ControlBindingsScrollableList extends ScrollableTableList<ControlBi
 		}
 		guiElementList.updateDim();
 	}
-	
+
 	public class ControlBindingSettingsRow extends ScrollableTableList<ControlBindingData>.Row {
-		
+
 		public ControlBindingSettingsRow(InputState state, ControlBindingData binding, GUIElement... elements) {
 			super(state, binding, elements);
 			highlightSelect = true;

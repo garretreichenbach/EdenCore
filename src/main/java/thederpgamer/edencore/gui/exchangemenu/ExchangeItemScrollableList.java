@@ -1,10 +1,11 @@
 package thederpgamer.edencore.gui.exchangemenu;
 
+import api.common.GameClient;
+import org.schema.common.util.StringTools;
 import org.schema.game.server.data.blueprintnw.BlueprintClassification;
 import org.schema.schine.common.language.Lng;
-import org.schema.schine.graphicsengine.forms.gui.GUIAncor;
-import org.schema.schine.graphicsengine.forms.gui.GUIElement;
-import org.schema.schine.graphicsengine.forms.gui.GUIElementList;
+import org.schema.schine.graphicsengine.core.MouseEvent;
+import org.schema.schine.graphicsengine.forms.gui.*;
 import org.schema.schine.graphicsengine.forms.gui.newgui.*;
 import org.schema.schine.input.InputState;
 import thederpgamer.edencore.data.exchangedata.ExchangeData;
@@ -16,44 +17,30 @@ import java.util.*;
  *
  * @author TheDerpGamer
  */
-public class ExchangeItemScrollableList extends ScrollableTableList<ExchangeData> {
+public class ExchangeItemScrollableList extends ScrollableTableList<ExchangeData> implements GUIActiveInterface {
 
-	private final GUIAncor anchor;
+	private final GUIAncor pane;
 	private final int type;
 
-	public ExchangeItemScrollableList(InputState state, GUIAncor anchor, int type) {
-		super(state, 10, 10, anchor);
-		this.anchor = anchor;
+	public ExchangeItemScrollableList(InputState state, GUIAncor pane, int type) {
+		super(state, 10, 10, pane);
+		this.pane = pane;
 		this.type = type;
 	}
 
 	@Override
 	public void initColumns() {
-		addColumn(Lng.str("Name"), 15.0F, new Comparator<ExchangeData>() {
-			public int compare(ExchangeData o1, ExchangeData o2) {
-				return o1.getName().compareTo(o2.getName());
-			}
-		});
-
-		addColumn(Lng.str("Producer"), 10.0f, new Comparator<ExchangeData>() {
-			@Override
-			public int compare(ExchangeData o1, ExchangeData o2) {
-				return o1.getProducer().compareTo(o2.getProducer());
-			}
-		});
-
+		addColumn(Lng.str("Name"), 15.0F, Comparator.comparing(ExchangeData::getName));
+		addColumn(Lng.str("Producer"), 10.0f, Comparator.comparing(ExchangeData::getProducer));
 		addColumn(Lng.str("Price"), 3.0f, Comparator.comparingInt(ExchangeData::getPrice));
-
 		addColumn(Lng.str("Category"), 10.0f, Comparator.comparing(ExchangeData::getCategory));
-
 		addColumn(Lng.str("Mass"), 5.0f, (o1, o2) -> Float.compare(o1.getMass(), o2.getMass()));
-
+		
 		addTextFilter(new GUIListFilterText<ExchangeData>() {
 			public boolean isOk(String s, ExchangeData item) {
 				return item.getName().toLowerCase().contains(s.toLowerCase());
 			}
 		}, ControllerElement.FilterRowStyle.FULL);
-
 		addTextFilter(new GUIListFilterText<ExchangeData>() {
 			public boolean isOk(String s, ExchangeData item) {
 				return item.getProducer().toLowerCase().contains(s.toLowerCase());
@@ -63,7 +50,7 @@ public class ExchangeItemScrollableList extends ScrollableTableList<ExchangeData
 			case ExchangeDialog.SHIPS:
 				addDropdownFilter(new GUIListFilterDropdown<ExchangeData, BlueprintClassification>(getShipClassifications()) {
 					public boolean isOk(BlueprintClassification classification, ExchangeData item) {
-						return item.getCategory().equals(classification.name());
+						return item.getClassification() == classification;
 					}
 
 				}, new CreateGUIElementInterface<BlueprintClassification>() {
@@ -93,7 +80,7 @@ public class ExchangeItemScrollableList extends ScrollableTableList<ExchangeData
 			case ExchangeDialog.STATIONS:
 				addDropdownFilter(new GUIListFilterDropdown<ExchangeData, BlueprintClassification>(BlueprintClassification.stationValues().toArray(getStationClassifications())) {
 					public boolean isOk(BlueprintClassification classification, ExchangeData item) {
-						return item.getCategory().equals(classification.name());
+						return item.getClassification() == classification;
 					}
 
 				}, new CreateGUIElementInterface<BlueprintClassification>() {
@@ -121,7 +108,6 @@ public class ExchangeItemScrollableList extends ScrollableTableList<ExchangeData
 				}, ControllerElement.FilterRowStyle.RIGHT);
 				break;
 		}
-
 		activeSortColumnIndex = 0;
 	}
 
@@ -133,13 +119,120 @@ public class ExchangeItemScrollableList extends ScrollableTableList<ExchangeData
 			case ExchangeDialog.STATIONS:
 				return ExchangeDialog.getStationList();
 			default:
-				return new ArrayList<>();
+				return Collections.emptyList();
 		}
 	}
 
 	@Override
 	public void updateListEntries(GUIElementList guiElementList, Set<ExchangeData> set) {
+		guiElementList.deleteObservers();
+		guiElementList.addObserver(this);
+		for(ExchangeData data : set) {
+			GUIClippedRow nameRow = getSimpleRow(data.getName(), this);
+			GUIClippedRow producerRow = getSimpleRow(data.getProducer(), this);
+			GUIClippedRow priceRow = getSimpleRow(String.valueOf(data.getPrice()), this);
+			GUIClippedRow categoryRow = getSimpleRow(data.getCategory(), this);
+			GUIClippedRow massRow = getSimpleRow(StringTools.massFormat(data.getMass()), this);
+			ExchangeItemScrollableListRow entryListRow = new ExchangeItemScrollableListRow(getState(), data, nameRow, producerRow, priceRow, categoryRow, massRow);
+			GUIAncor anchor = new GUIAncor(getState(), pane.getWidth() - 107.0f, 28.0f) {
+				@Override
+				public void draw() {
+					setWidth(pane.getWidth() - 107.0f);
+					super.draw();
+				}
+			};
+			GUIHorizontalButtonTablePane buttonTablePane = redrawButtonPane(data, anchor);
+			anchor.attach(buttonTablePane);
+			entryListRow.expanded = new GUIElementList(getState());
+			GUITextOverlayTableInnerDescription description = new GUITextOverlayTableInnerDescription(10, 10, getState());
+			description.onInit();
+			description.setTextSimple(data.getDescription());
+			entryListRow.expanded.add(new GUIListElement(description, getState()));
+			entryListRow.expanded.add(new GUIListElement(anchor, getState()));
+//			entryListRow.expanded.attach(anchor);
+			entryListRow.onInit();
+			guiElementList.add(entryListRow);
+		}
+		guiElementList.updateDim();
+	}
 
+	private GUIHorizontalButtonTablePane redrawButtonPane(ExchangeData data, GUIAncor anchor) {
+		boolean isOwner = GameClient.getClientPlayerState().getFactionName().equals(data.getProducer());
+		GUIHorizontalButtonTablePane buttonPane = new GUIHorizontalButtonTablePane(getState(), (isOwner ? 2 : 1), 1, anchor);
+		buttonPane.onInit();
+		if(isOwner) {
+			buttonPane.addButton(0, 0, Lng.str("EDIT"), GUIHorizontalArea.HButtonColor.YELLOW, new GUICallback() {
+				@Override
+				public void callback(GUIElement guiElement, MouseEvent mouseEvent) {
+					if(mouseEvent.pressedLeftMouse()) {
+						(new ExchangeDataDialog(data, ExchangeDataDialog.EDIT)).activate();
+					}
+				}
+
+				@Override
+				public boolean isOccluded() {
+					return false;
+				}
+			}, new GUIActivationCallback() {
+				@Override
+				public boolean isVisible(InputState inputState) {
+					return true;
+				}
+
+				@Override
+				public boolean isActive(InputState inputState) {
+					return true;
+				}
+			});
+			buttonPane.addButton(1, 0, Lng.str("REMOVE"), GUIHorizontalArea.HButtonColor.RED, new GUICallback() {
+				@Override
+				public void callback(GUIElement guiElement, MouseEvent mouseEvent) {
+					if(mouseEvent.pressedLeftMouse()) {
+						(new ExchangeDataDialog(data, ExchangeDataDialog.REMOVE)).activate();
+					}
+				}
+
+				@Override
+				public boolean isOccluded() {
+					return false;
+				}
+			}, new GUIActivationCallback() {
+				@Override
+				public boolean isVisible(InputState inputState) {
+					return true;
+				}
+
+				@Override
+				public boolean isActive(InputState inputState) {
+					return true;
+				}
+			});
+		} else {
+			buttonPane.addButton(0, 0, Lng.str("BUY"), GUIHorizontalArea.HButtonColor.GREEN, new GUICallback() {
+				@Override
+				public void callback(GUIElement guiElement, MouseEvent mouseEvent) {
+					if(mouseEvent.pressedLeftMouse()) {
+						(new ExchangeDataDialog(data, ExchangeDataDialog.BUY)).activate();
+					}
+				}
+
+				@Override
+				public boolean isOccluded() {
+					return false;
+				}
+			}, new GUIActivationCallback() {
+				@Override
+				public boolean isVisible(InputState inputState) {
+					return true;
+				}
+
+				@Override
+				public boolean isActive(InputState inputState) {
+					return true;
+				}
+			});
+		}
+		return buttonPane;
 	}
 
 	private BlueprintClassification[] getShipClassifications() {
@@ -156,5 +249,15 @@ public class ExchangeItemScrollableList extends ScrollableTableList<ExchangeData
 			if(classification != BlueprintClassification.NONE && classification != BlueprintClassification.NONE_STATION) classifications.add(classification);
 		}
 		return classifications.toArray(new BlueprintClassification[0]);
+	}
+
+	public class ExchangeItemScrollableListRow extends ScrollableTableList<ExchangeData>.Row {
+
+		public ExchangeItemScrollableListRow(InputState state, ExchangeData data, GUIElement... elements) {
+			super(state, data, elements);
+			highlightSelect = true;
+			highlightSelectSimple = true;
+			setAllwaysOneSelected(true);
+		}
 	}
 }
