@@ -1,12 +1,14 @@
 package thederpgamer.edencore.data.playerdata;
 
+import api.common.GameCommon;
 import api.network.PacketReadBuffer;
 import api.network.PacketWriteBuffer;
 import org.json.JSONObject;
+import org.schema.game.common.data.player.PlayerState;
+import org.schema.game.common.data.player.faction.Faction;
 import thederpgamer.edencore.data.SerializableData;
 
 import java.io.IOException;
-import java.util.UUID;
 
 /**
  * [Description]
@@ -15,8 +17,17 @@ import java.util.UUID;
  */
 public class PlayerData extends SerializableData {
 	
-	public PlayerData() {
-		super(DataType.PLAYER_DATA, UUID.randomUUID().toString());
+	private String name;
+	private int factionId;
+	
+	public PlayerData(String name, int factionId) {
+		super(DataType.PLAYER_DATA);
+		this.name = name;
+		this.factionId = factionId;
+	}
+	
+	public PlayerData(PlayerState playerState) {
+		this(playerState.getName(), playerState.getFactionId());
 	}
 
 	public PlayerData(PacketReadBuffer readBuffer) throws IOException {
@@ -29,21 +40,56 @@ public class PlayerData extends SerializableData {
 
 	@Override
 	public JSONObject serialize() {
-		return null;
+		JSONObject data = new JSONObject();
+		data.put("uuid", getUUID());
+		data.put("name", name);
+		data.put("factionId", factionId);
+		return data;
 	}
 
 	@Override
 	public void deserialize(JSONObject data) {
-
+		dataUUID = data.getString("uuid");
+		name = data.getString("name");
+		factionId = data.getInt("factionId");
 	}
 
 	@Override
 	public void serializeNetwork(PacketWriteBuffer writeBuffer) throws IOException {
-
+		writeBuffer.writeString(dataUUID);
+		writeBuffer.writeString(name);
+		writeBuffer.writeInt(factionId);
 	}
 
 	@Override
 	public void deserializeNetwork(PacketReadBuffer readBuffer) throws IOException {
+		dataUUID = readBuffer.readString();
+		name = readBuffer.readString();
+		factionId = readBuffer.readInt();
+	}
+	
+	public String getName() {
+		return name;
+	}
+	
+	public int getFactionId() {
+		PlayerState playerState = getPlayerState();
+		if(playerState != null && factionId != playerState.getFactionId()) {
+			factionId = playerState.getFactionId();
+			PlayerDataManager.getInstance().updateData(this, playerState.isOnServer());
+		}
+		return factionId;
+	}
 
+	public PlayerState getPlayerState() {
+		return GameCommon.getPlayerFromName(name);
+	}
+	
+	public Faction getFaction() {
+		return GameCommon.getGameState().getFactionManager().getFaction(getFactionId());
+	}
+	
+	public String getFactionName() {
+		return getPlayerState().getFactionName();
 	}
 }

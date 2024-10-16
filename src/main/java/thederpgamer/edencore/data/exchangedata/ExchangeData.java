@@ -31,7 +31,7 @@ public class ExchangeData extends SerializableData {
 	private float mass;
 	
 	public ExchangeData(String name, String catalogName, String description, String producer, int price, ExchangeDataCategory category, BlueprintClassification classification, float mass) {
-		super(DataType.EXCHANGE_DATA, UUID.randomUUID().toString());
+		super(DataType.EXCHANGE_DATA);
 		this.name = name;
 		this.catalogName = catalogName;
 		this.description = description;

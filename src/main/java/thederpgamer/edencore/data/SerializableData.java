@@ -8,6 +8,7 @@ import thederpgamer.edencore.data.exchangedata.ExchangeData;
 import thederpgamer.edencore.data.playerdata.PlayerData;
 
 import java.io.IOException;
+import java.util.UUID;
 
 /**
  * [Description]
@@ -19,6 +20,8 @@ public abstract class SerializableData {
 	public enum DataType {
 		PLAYER_DATA(PlayerData.class),
 		BUILD_SECTOR_DATA(BuildSectorData.class),
+		BUILD_SECTOR_ENTITY_DATA(BuildSectorData.BuildSectorEntityData.class),
+		BUILD_SECTOR_PERMISSION_DATA(BuildSectorData.BuildSectorPermissionData.class),
 		EXCHANGE_DATA(ExchangeData.class);
 
 		private final Class<? extends SerializableData> dataClass;
@@ -35,9 +38,9 @@ public abstract class SerializableData {
 	protected String dataUUID;
 	protected DataType dataType;
 
-	protected SerializableData(DataType dataType, String dataUUID) {
+	protected SerializableData(DataType dataType) {
 		this.dataType = dataType;
-		this.dataUUID = dataUUID;
+		dataUUID = UUID.randomUUID().toString();
 	}
 
 	protected SerializableData(PacketReadBuffer readBuffer) throws IOException {
