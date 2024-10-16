@@ -31,17 +31,15 @@ import java.util.ArrayList;
  * @author TheDerpGamer
  */
 public class ExchangeDataDialog extends PlayerOkCancelInput {
-	
+
 	public static final int ADD = 0;
-	public static final int REMOVE = 1;
-	public static final int EDIT = 2;
-	public static final int BUY = 3;
-	
+	public static final int EDIT = 1;
+
 	private static final double width = GLFrame.getWidth() / 3.0;
 	private static final double height = GLFrame.getHeight() / 2.5;
-	
+
 	private final ExchangeDataPanel panel;
-	
+
 	public ExchangeDataDialog(ExchangeData data, int mode, String title) {
 		super("ExchangeDataDialog", GameClient.getClientState(), (int) width, (int) height, title, "");
 		(panel = new ExchangeDataPanel(getState(), this, data, mode)).onInit();
@@ -49,7 +47,7 @@ public class ExchangeDataDialog extends PlayerOkCancelInput {
 
 	@Override
 	public void onDeactivate() {
-		
+
 	}
 
 	@Override
@@ -64,14 +62,8 @@ public class ExchangeDataDialog extends PlayerOkCancelInput {
 			case ADD:
 				ExchangeDataManager.getInstance().sendPacket(data, DataManager.ADD_DATA, true);
 				break;
-			case REMOVE:
-				ExchangeDataManager.getInstance().sendPacket(data, DataManager.REMOVE_DATA, true);
-				break;
 			case EDIT:
 				ExchangeDataManager.getInstance().sendPacket(data, DataManager.UPDATE_DATA, true);
-				break;
-			case BUY:
-				ExchangeDataManager.getInstance().sendPacket(data, DataManager.BUY, true);
 				break;
 		}
 	}
@@ -80,7 +72,7 @@ public class ExchangeDataDialog extends PlayerOkCancelInput {
 	public ExchangeDataPanel getInputPanel() {
 		return panel;
 	}
-	
+
 	public static class ExchangeDataPanel extends GUIInputPanel {
 
 		private final ExchangeData data;
@@ -96,163 +88,154 @@ public class ExchangeDataDialog extends PlayerOkCancelInput {
 			this.data = data;
 			this.mode = mode;
 		}
-		
+
 		@Override
 		public void onInit() {
 			super.onInit();
 			GUIContentPane contentPane = ((GUIDialogWindow) background).getMainContentPane();
 			contentPane.setTextBoxHeightLast((int) (getHeight() - 50));
-			switch(mode) {
-				case ADD:
-					nameInput = new GUILabeledTextInput(10, 10, getState(), Lng.str("Name"), GUILabeledTextInput.LEFT);
-					nameInput.setTextBox(true);
-					nameInput.setTextInput(new TextAreaInput(64, 1, new TextCallback() {
-						@Override
-						public String[] getCommandPrefixes() {
-							return new String[0];
+			nameInput = new GUILabeledTextInput(10, 10, getState(), Lng.str("Name"), GUILabeledTextInput.LEFT);
+			nameInput.setTextBox(true);
+			nameInput.setTextInput(new TextAreaInput(64, 1, new TextCallback() {
+				@Override
+				public String[] getCommandPrefixes() {
+					return new String[0];
+				}
+
+				@Override
+				public String handleAutoComplete(String s, TextCallback textCallback, String s1) {
+					return "";
+				}
+
+				@Override
+				public void onFailedTextCheck(String s) {
+
+				}
+
+				@Override
+				public void onTextEnter(String s, boolean b, boolean b1) {
+
+				}
+
+				@Override
+				public void newLine() {
+
+				}
+			}));
+			nameInput.onInit();
+			nameInput.setText(data.getName());
+			contentPane.getContent(0).attach(nameInput);
+
+			descriptionInput = new GUILabeledTextInput(10, 10, getState(), Lng.str("Description"), GUILabeledTextInput.LEFT);
+			descriptionInput.setTextBox(true);
+			descriptionInput.setTextInput(new TextAreaInput(512, 5, new TextCallback() {
+				@Override
+				public String[] getCommandPrefixes() {
+					return new String[0];
+				}
+
+				@Override
+				public String handleAutoComplete(String s, TextCallback textCallback, String s1) {
+					return "";
+				}
+
+				@Override
+				public void onFailedTextCheck(String s) {
+
+				}
+
+				@Override
+				public void onTextEnter(String s, boolean b, boolean b1) {
+
+				}
+
+				@Override
+				public void newLine() {
+
+				}
+			}));
+			descriptionInput.onInit();
+			descriptionInput.setText(data.getDescription());
+			contentPane.getContent(0).attach(descriptionInput);
+			descriptionInput.getPos().y += nameInput.getHeight() + 4;
+
+			priceInput = new GUILabeledTextInput(10, 10, getState(), Lng.str("Price"), GUILabeledTextInput.LEFT);
+			priceInput.setTextBox(true);
+			priceInput.setTextInput(new TextAreaInput(2, 1, new TextCallback() {
+				@Override
+				public String[] getCommandPrefixes() {
+					return new String[0];
+				}
+
+				@Override
+				public String handleAutoComplete(String s, TextCallback textCallback, String s1) {
+					return "";
+				}
+
+				@Override
+				public void onFailedTextCheck(String s) {
+
+				}
+
+				@Override
+				public void onTextEnter(String s, boolean b, boolean b1) {
+					if(s.trim().matches("[0-9]+")) {
+						try {
+							int price = Math.max(1, Integer.parseInt(s.trim()));
+							priceInput.setText(String.valueOf(price));
+							data.setPrice(price);
+						} catch(NumberFormatException ignored) {
+							priceInput.setText("1");
+							data.setPrice(1);
 						}
-
-						@Override
-						public String handleAutoComplete(String s, TextCallback textCallback, String s1) {
-							return "";
-						}
-
-						@Override
-						public void onFailedTextCheck(String s) {
-
-						}
-
-						@Override
-						public void onTextEnter(String s, boolean b, boolean b1) {
-
-						}
-
-						@Override
-						public void newLine() {
-
-						}
-					}));
-					nameInput.onInit();
-					nameInput.setText(data.getName());
-					contentPane.getContent(0).attach(nameInput);
-					
-					descriptionInput = new GUILabeledTextInput(10, 10, getState(), Lng.str("Description"), GUILabeledTextInput.LEFT);
-					descriptionInput.setTextBox(true);
-					descriptionInput.setTextInput(new TextAreaInput(512, 5, new TextCallback() {
-						@Override
-						public String[] getCommandPrefixes() {
-							return new String[0];
-						}
-
-						@Override
-						public String handleAutoComplete(String s, TextCallback textCallback, String s1) {
-							return "";
-						}
-
-						@Override
-						public void onFailedTextCheck(String s) {
-
-						}
-
-						@Override
-						public void onTextEnter(String s, boolean b, boolean b1) {
-
-						}
-
-						@Override
-						public void newLine() {
-
-						}
-					}));
-					descriptionInput.onInit();
-					descriptionInput.setText(data.getDescription());
-					contentPane.getContent(0).attach(descriptionInput);
-					descriptionInput.getPos().y += nameInput.getHeight() + 4;
-					
-					priceInput = new GUILabeledTextInput(10, 10, getState(), Lng.str("Price"), GUILabeledTextInput.LEFT);
-					priceInput.setTextBox(true);
-					priceInput.setTextInput(new TextAreaInput(2, 1, new TextCallback() {
-						@Override
-						public String[] getCommandPrefixes() {
-							return new String[0];
-						}
-
-						@Override
-						public String handleAutoComplete(String s, TextCallback textCallback, String s1) {
-							return "";
-						}
-
-						@Override
-						public void onFailedTextCheck(String s) {
-
-						}
-
-						@Override
-						public void onTextEnter(String s, boolean b, boolean b1) {
-							if(s.trim().matches("[0-9]+")) {
-								try {
-									int price = Math.max(1, Integer.parseInt(s.trim()));
-									priceInput.setText(String.valueOf(price));
-									data.setPrice(price);
-								} catch(NumberFormatException ignored) {
-									priceInput.setText("1");
-									data.setPrice(1);
-								}
-							} else {
-								priceInput.setText("1");
-								data.setPrice(1);
-							}
-						}
-
-						@Override
-						public void newLine() {
-
-						}
-					}));
-					priceInput.onInit();
-					priceInput.setText(String.valueOf(data.getPrice()));
-					contentPane.getContent(0).attach(priceInput);
-					priceInput.getPos().y += nameInput.getHeight() + descriptionInput.getHeight() + 8;
-					
-					ArrayList<CatalogPermission> catalogPermissions = new ArrayList<>();
-					for(CatalogPermission permission : ((GameClientState) getState()).getCatalog().getAvailableCatalog()) {
-						if(!ExchangeDataManager.getInstance().existsName(permission.getUid())) catalogPermissions.add(permission);
+					} else {
+						priceInput.setText("1");
+						data.setPrice(1);
 					}
-					GUIAncor[] elements = new GUIAncor[catalogPermissions.size()];
-					for(int i = 0; i < elements.length; i++) {
-						elements[i] = new GUIAncor(getState(), 300, 24);
-						elements[i].setUserPointer(catalogPermissions.get(i));
-						GUITextOverlay overlay = new GUITextOverlay(300, 24, FontLibrary.FontSize.MEDIUM.getFont(), getState());
-						overlay.setTextSimple(catalogPermissions.get(i).getUid());
-						overlay.setPos(4, 4, 0);
-						elements[i].attach(overlay);
-					}
-					dropDownList = new GUIDropDownList(getState(), 420, 180, 200, guiListElement -> {
-						selectedPermission = (CatalogPermission) guiListElement.getUserPointer();
-						setData(selectedPermission);
-					}, elements);
-					dropDownList.onInit();
-					contentPane.getContent(0).attach(dropDownList);
-					dropDownList.getPos().y += 30;
-					break;
-				case REMOVE:
-					break;
-				case EDIT:
-					break;
-				case BUY:
-					break;
+				}
+
+				@Override
+				public void newLine() {
+
+				}
+			}));
+			priceInput.onInit();
+			priceInput.setText(String.valueOf(data.getPrice()));
+			contentPane.getContent(0).attach(priceInput);
+			priceInput.getPos().y += nameInput.getHeight() + descriptionInput.getHeight() + 8;
+
+			ArrayList<CatalogPermission> catalogPermissions = new ArrayList<>();
+			for(CatalogPermission permission : ((GameClientState) getState()).getCatalog().getAvailableCatalog()) {
+				if(!ExchangeDataManager.getInstance().existsName(permission.getUid())) catalogPermissions.add(permission);
 			}
+			GUIAncor[] elements = new GUIAncor[catalogPermissions.size()];
+			for(int i = 0; i < elements.length; i++) {
+				elements[i] = new GUIAncor(getState(), 300, 24);
+				elements[i].setUserPointer(catalogPermissions.get(i));
+				GUITextOverlay overlay = new GUITextOverlay(300, 24, FontLibrary.FontSize.MEDIUM.getFont(), getState());
+				overlay.setTextSimple(catalogPermissions.get(i).getUid());
+				overlay.setPos(4, 4, 0);
+				elements[i].attach(overlay);
+			}
+			dropDownList = new GUIDropDownList(getState(), 420, 180, 200, guiListElement -> {
+				selectedPermission = (CatalogPermission) guiListElement.getUserPointer();
+				setData(selectedPermission);
+			}, elements);
+			dropDownList.onInit();
+			contentPane.getContent(0).attach(dropDownList);
+			dropDownList.getPos().y += 30;
 		}
 
 		private void setData(CatalogPermission selectedPermission) {
 			data.setName(selectedPermission.getUid());
 			nameInput.setText(selectedPermission.getUid());
+			data.setCatalogName(selectedPermission.getUid());
 			data.setDescription(selectedPermission.description);
 			descriptionInput.setText(selectedPermission.description);
 			data.setMass(selectedPermission.mass);
 			data.setClassification(selectedPermission.getClassification());
 		}
-		
+
 		public ExchangeData getData() {
 			return data;
 		}

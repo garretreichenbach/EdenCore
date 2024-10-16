@@ -1,14 +1,24 @@
 package thederpgamer.edencore.gui.exchangemenu;
 
 import api.common.GameClient;
+import api.utils.game.inventory.InventoryUtils;
 import org.schema.common.util.StringTools;
+import org.schema.game.client.controller.PlayerOkCancelInput;
+import org.schema.game.client.data.GameClientState;
+import org.schema.game.common.data.player.BlueprintPlayerHandleRequest;
+import org.schema.game.common.data.player.catalog.CatalogPermission;
+import org.schema.game.common.data.player.inventory.Inventory;
+import org.schema.game.network.objects.remote.RemoteBlueprintPlayerRequest;
 import org.schema.game.server.data.blueprintnw.BlueprintClassification;
 import org.schema.schine.common.language.Lng;
 import org.schema.schine.graphicsengine.core.MouseEvent;
 import org.schema.schine.graphicsengine.forms.gui.*;
 import org.schema.schine.graphicsengine.forms.gui.newgui.*;
 import org.schema.schine.input.InputState;
+import thederpgamer.edencore.data.DataManager;
 import thederpgamer.edencore.data.exchangedata.ExchangeData;
+import thederpgamer.edencore.data.exchangedata.ExchangeDataManager;
+import thederpgamer.edencore.element.ElementManager;
 
 import java.util.*;
 
@@ -35,7 +45,7 @@ public class ExchangeItemScrollableList extends ScrollableTableList<ExchangeData
 		addColumn(Lng.str("Price"), 3.0f, Comparator.comparingInt(ExchangeData::getPrice));
 		addColumn(Lng.str("Category"), 10.0f, Comparator.comparing(ExchangeData::getCategory));
 		addColumn(Lng.str("Mass"), 5.0f, (o1, o2) -> Float.compare(o1.getMass(), o2.getMass()));
-		
+
 		addTextFilter(new GUIListFilterText<ExchangeData>() {
 			public boolean isOk(String s, ExchangeData item) {
 				return item.getName().toLowerCase().contains(s.toLowerCase());
@@ -165,7 +175,7 @@ public class ExchangeItemScrollableList extends ScrollableTableList<ExchangeData
 				@Override
 				public void callback(GUIElement guiElement, MouseEvent mouseEvent) {
 					if(mouseEvent.pressedLeftMouse()) {
-						(new ExchangeDataDialog(data, ExchangeDataDialog.EDIT)).activate();
+						(new ExchangeDataDialog(data, ExchangeDataDialog.EDIT, Lng.str("Edit Listing"))).activate();
 					}
 				}
 
@@ -188,7 +198,17 @@ public class ExchangeItemScrollableList extends ScrollableTableList<ExchangeData
 				@Override
 				public void callback(GUIElement guiElement, MouseEvent mouseEvent) {
 					if(mouseEvent.pressedLeftMouse()) {
-						(new ExchangeDataDialog(data, ExchangeDataDialog.REMOVE)).activate();
+						(new PlayerOkCancelInput("Confirm", getState(), Lng.str("Confirm"), Lng.str("Do you want to remove this Blueprint?")) {
+							@Override
+							public void onDeactivate() {
+
+							}
+
+							@Override
+							public void pressedOK() {
+								ExchangeDataManager.getInstance().sendPacket(data, DataManager.REMOVE_DATA, true);
+							}
+						}).activate();
 					}
 				}
 
@@ -212,7 +232,19 @@ public class ExchangeItemScrollableList extends ScrollableTableList<ExchangeData
 				@Override
 				public void callback(GUIElement guiElement, MouseEvent mouseEvent) {
 					if(mouseEvent.pressedLeftMouse()) {
-						(new ExchangeDataDialog(data, ExchangeDataDialog.BUY)).activate();
+						(new PlayerOkCancelInput("Confirm", getState(), Lng.str("Confirm"), Lng.str("Do you want to buy this Blueprint?")) {
+							@Override
+							public void onDeactivate() {
+
+							}
+
+							@Override
+							public void pressedOK() {
+								String error = canBuy(data);
+								if(error != null) ((GameClientState) getState()).getPlayer().sendServerMessagePlayerError(new Object[]{error});
+								else buyBlueprint(data);
+							}
+						}).activate();
 					}
 				}
 
@@ -233,6 +265,35 @@ public class ExchangeItemScrollableList extends ScrollableTableList<ExchangeData
 			});
 		}
 		return buttonPane;
+	}
+
+	public String canBuy(ExchangeData data) {
+		GameClientState state = (GameClientState) getState();
+		if(!hasPermission(data)) return "Selected blueprint is not available or you don't have access to it!";
+		else {
+			Inventory playerInventory = state.getPlayer().getInventory();
+			int amount = InventoryUtils.getItemAmount(playerInventory, ElementManager.getItem("Bronze Bar").getId());
+			if(amount < data.getPrice()) return "You don't have enough Bronze Bars to buy this blueprint!";
+		}
+		return null;
+	}
+
+	private boolean hasPermission(ExchangeData data) {
+		for(CatalogPermission permission : ((GameClientState) getState()).getCatalog().getAvailableCatalog()) {
+			if(permission.getUid().equals(data.getCatalogName())) return true;
+		}
+		return false;
+	}
+
+	private void buyBlueprint(ExchangeData data) {
+		BlueprintPlayerHandleRequest req = new BlueprintPlayerHandleRequest();
+		req.catalogName = data.getCatalogName();
+		req.entitySpawnName = "";
+		req.save = false;
+		req.toSaveShip = -1;
+		req.directBuy = true;
+		((GameClientState) getState()).getPlayer().getNetworkObject().catalogPlayerHandleBuffer.add(new RemoteBlueprintPlayerRequest(req, false));
+		InventoryUtils.consumeItems(((GameClientState) getState()).getPlayer().getInventory(), ElementManager.getItem("Bronze Bar").getId(), data.getPrice());
 	}
 
 	private BlueprintClassification[] getShipClassifications() {

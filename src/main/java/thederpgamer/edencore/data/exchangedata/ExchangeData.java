@@ -22,6 +22,7 @@ public class ExchangeData extends SerializableData {
 	}
 	
 	private String name;
+	private String catalogName;
 	private String description;
 	private String producer;
 	private int price;
@@ -29,9 +30,10 @@ public class ExchangeData extends SerializableData {
 	private BlueprintClassification classification;
 	private float mass;
 	
-	public ExchangeData(String name, String description, String producer, int price, ExchangeDataCategory category, BlueprintClassification classification, float mass) {
+	public ExchangeData(String name, String catalogName, String description, String producer, int price, ExchangeDataCategory category, BlueprintClassification classification, float mass) {
 		super(DataType.EXCHANGE_DATA, UUID.randomUUID().toString());
 		this.name = name;
+		this.catalogName = catalogName;
 		this.description = description;
 		this.producer = producer;
 		this.price = price;
@@ -53,6 +55,7 @@ public class ExchangeData extends SerializableData {
 		JSONObject data = new JSONObject();
 		data.put("uuid", getUUID());
 		data.put("name", name);
+		data.put("catalogName", catalogName);
 		data.put("description", description);
 		data.put("producer", producer);
 		data.put("price", price);
@@ -66,6 +69,7 @@ public class ExchangeData extends SerializableData {
 	public void deserialize(JSONObject data) {
 		dataUUID = data.getString("uuid");
 		name = data.getString("name");
+		catalogName = data.getString("catalogName");
 		description = data.getString("description");
 		producer = data.getString("producer");
 		price = data.getInt("price");
@@ -78,6 +82,7 @@ public class ExchangeData extends SerializableData {
 	public void serializeNetwork(PacketWriteBuffer writeBuffer) throws IOException {
 		writeBuffer.writeString(dataUUID);
 		writeBuffer.writeString(name);
+		writeBuffer.writeString(catalogName);
 		writeBuffer.writeString(description);
 		writeBuffer.writeString(producer);
 		writeBuffer.writeInt(price);
@@ -90,6 +95,7 @@ public class ExchangeData extends SerializableData {
 	public void deserializeNetwork(PacketReadBuffer readBuffer) throws IOException {
 		dataUUID = readBuffer.readString();
 		name = readBuffer.readString();
+		catalogName = readBuffer.readString();
 		description = readBuffer.readString();
 		producer = readBuffer.readString();
 		price = readBuffer.readInt();
@@ -104,6 +110,14 @@ public class ExchangeData extends SerializableData {
 	
 	public void setName(String name) {
 		this.name = name;
+	}
+	
+	public String getCatalogName() {
+		return catalogName;
+	}
+	
+	public void setCatalogName(String catalogName) {
+		this.catalogName = catalogName;
 	}
 	
 	public String getDescription() {

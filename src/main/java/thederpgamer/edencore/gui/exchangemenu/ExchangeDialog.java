@@ -95,7 +95,7 @@ public class ExchangeDialog extends PlayerInput {
 				@Override
 				public void callback(GUIElement guiElement, MouseEvent mouseEvent) {
 					if(mouseEvent.pressedLeftMouse()) {
-						(new ExchangeDataDialog(new ExchangeData("New Ship", "No description provided.", playerState.getFactionName(), 1, ExchangeData.ExchangeDataCategory.SHIP, BlueprintClassification.NONE, 0.0f), ExchangeDataDialog.ADD)).activate();
+						(new ExchangeDataDialog(new ExchangeData("New Ship", "N/A", "No description provided.", playerState.getFactionName(), 1, ExchangeData.ExchangeDataCategory.SHIP, BlueprintClassification.NONE, 0.0f), ExchangeDataDialog.ADD, Lng.str("Add Ship"))).activate();
 					}
 				}
 
@@ -127,7 +127,7 @@ public class ExchangeDialog extends PlayerInput {
 				@Override
 				public void callback(GUIElement guiElement, MouseEvent mouseEvent) {
 					if(mouseEvent.pressedLeftMouse()) {
-						(new ExchangeDataDialog(new ExchangeData("New Station", "No description provided.", playerState.getFactionName(), 1, ExchangeData.ExchangeDataCategory.STATION, BlueprintClassification.NONE_STATION, 0.0f), ExchangeDataDialog.ADD)).activate();
+						(new ExchangeDataDialog(new ExchangeData("New Station", "N/A", "No description provided.", playerState.getFactionName(), 1, ExchangeData.ExchangeDataCategory.STATION, BlueprintClassification.NONE_STATION, 0.0f), ExchangeDataDialog.ADD, Lng.str("Add Station"))).activate();
 					}
 				}
 

@@ -3,7 +3,6 @@ package thederpgamer.edencore.data.exchangedata;
 import api.mod.config.PersistentObjectUtil;
 import thederpgamer.edencore.EdenCore;
 import thederpgamer.edencore.data.DataManager;
-import thederpgamer.edencore.data.SerializableData;
 
 import java.util.*;
 
@@ -54,14 +53,7 @@ public class ExchangeDataManager extends DataManager<ExchangeData> {
 		clientCache.remove(data);
 		clientCache.add(data);
 	}
-
-	@Override
-	public void handlePacket(SerializableData data, int type, boolean server) {
-		if(type == BUY) {
-
-		} else super.handlePacket(data, type, server);
-	}
-
+	
 	public static Set<ExchangeData> getCategory(ExchangeData.ExchangeDataCategory category) {
 		Set<ExchangeData> data = new HashSet<>();
 		for(ExchangeData exchangeData : instance.clientCache) {
