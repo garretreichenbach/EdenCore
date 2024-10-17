@@ -8,12 +8,17 @@ import org.json.JSONArray;
 import org.json.JSONObject;
 import org.schema.common.util.linAlg.Vector3i;
 import org.schema.game.common.controller.SegmentController;
+import org.schema.game.common.data.SegmentPiece;
 import org.schema.game.common.data.player.PlayerState;
-import org.schema.game.common.data.player.catalog.CatalogPermission;
+import org.schema.game.common.data.player.faction.FactionManager;
 import org.schema.game.common.data.world.SimpleTransformableSendableObject;
+import org.schema.game.server.data.blueprintnw.BlueprintEntry;
+import thederpgamer.edencore.EdenCore;
 import thederpgamer.edencore.data.SerializableData;
 import thederpgamer.edencore.data.playerdata.PlayerData;
 import thederpgamer.edencore.data.playerdata.PlayerDataManager;
+import thederpgamer.edencore.utils.EntityUtils;
+import thederpgamer.edencore.utils.PlayerUtils;
 
 import java.io.IOException;
 import java.util.HashSet;
@@ -175,10 +180,26 @@ public class BuildSectorData extends SerializableData {
 		}
 	}
 	
-	public void spawnEntity(CatalogPermission catalogPermission, PlayerState spawner, boolean onDock) {
-		
+	public void spawnEntity(BlueprintEntry blueprint, PlayerState spawner, boolean onDock, String name) {
+		spawnEntity(blueprint, spawner, onDock, name, spawner.getFactionId());
 	}
 	
+	public void spawnEntity(BlueprintEntry blueprint, PlayerState spawner, boolean onDock, String name, int factionId) {
+		assert spawner.isOnServer() : "Cannot spawn entity on client";
+		try {
+			SegmentPiece dockPiece = onDock ? PlayerUtils.getBlockLookingAt(spawner) : null;
+			SegmentController entity = EntityUtils.spawnEntryOnDock(spawner, blueprint, name, factionId, dockPiece);
+			addEntity(entity, true);
+			if(factionId == FactionManager.PIRATES_ID) toggleEntityAI(entity, false);
+		} catch(Exception exception) {
+			EdenCore.getInstance().logException("An error occurred while spawning entity", exception);
+		}
+	}
+	
+	public void toggleEntityAI(SegmentController entity, boolean value) {
+		EntityUtils.toggleAI(entity, value);
+	}
+
 	public void setEntityPermission(SegmentController entity, PermissionTypes type, Object value, boolean server) {
 		BuildSectorEntityData entityData = getEntity(entity);
 		BuildSectorPermissionData permission = entityData.permissions.get(owner).stream().filter(p -> p.getType() == type).findFirst().orElse(null);

@@ -2,16 +2,33 @@ package thederpgamer.edencore.utils;
 
 import api.common.GameClient;
 import api.common.GameCommon;
+import api.common.GameServer;
+import com.bulletphysics.linearmath.Transform;
 import org.schema.common.util.linAlg.Vector3i;
 import org.schema.game.client.data.PlayerControllable;
 import org.schema.game.common.controller.SegmentController;
 import org.schema.game.common.controller.Ship;
 import org.schema.game.common.controller.SpaceStation;
+import org.schema.game.common.controller.ai.Types;
 import org.schema.game.common.controller.elements.ManagerContainer;
+import org.schema.game.common.controller.rails.RailRelation;
 import org.schema.game.common.data.SegmentPiece;
+import org.schema.game.common.data.player.PlayerState;
 import org.schema.game.common.data.world.SimpleTransformableSendableObject;
+import org.schema.game.server.controller.BluePrintController;
+import org.schema.game.server.controller.EntityAlreadyExistsException;
+import org.schema.game.server.controller.EntityNotFountException;
+import org.schema.game.server.data.GameServerState;
+import org.schema.game.server.data.blueprint.ChildStats;
+import org.schema.game.server.data.blueprint.SegmentControllerOutline;
+import org.schema.game.server.data.blueprint.SegmentControllerSpawnCallbackDirect;
+import org.schema.game.server.data.blueprintnw.BlueprintEntry;
+import org.schema.schine.graphicsengine.core.GlUtil;
+import org.schema.schine.graphicsengine.core.settings.StateParameterNotFoundException;
+import thederpgamer.edencore.EdenCore;
 
 import javax.vecmath.Vector3f;
+import java.io.IOException;
 
 /**
  * <Description>
@@ -20,6 +37,7 @@ import javax.vecmath.Vector3f;
  * @version 1.0 - [09/20/2021]
  */
 public class EntityUtils {
+
 	public static void warpPlayerIntoEntity(SegmentController entity) {
 		SegmentPiece toEnter = null;
 		if(entity.getType() == SimpleTransformableSendableObject.EntityType.SHIP) toEnter = entity.getSegmentBuffer().getPointUnsave(Ship.core);
@@ -44,37 +62,12 @@ public class EntityUtils {
 	public static float distance(Vector3f vectorA, Vector3f vectorB) {
 		return (new Vector3f(Math.abs(vectorA.x - vectorB.x), Math.abs(vectorA.y - vectorB.y), Math.abs(vectorA.z - vectorB.z))).length();
 	}
-	
-	/*
-	public static void spawnEntry(PlayerState owner, BlueprintEntry entry, String spawnName, int factionId, Vector3i buildSector) {
-		Transform transform = new Transform();
-		transform.setIdentity();
-		transform.origin.set(owner.getFirstControlledTransformableWOExc().getWorldTransform().origin);
-		Vector3f forward = GlUtil.getForwardVector(new Vector3f(), transform);
-		Vector3f size = entry.getBb().calculateHalfSize(new Vector3f());
-		size.scale(0.5f);
-		forward.scaleAdd(1.15f, size);
-		transform.origin.set(forward);
-		try {
-			SegmentControllerOutline<?> outline = BluePrintController.active.loadBluePrint(GameServerState.instance, entry.getName(), spawnName, transform, -1, factionId, owner.getCurrentSector(), owner.getName(), PlayerState.buffer, null, false, new ChildStats(false));
-			SegmentController entity = outline.spawn(owner.getCurrentSector(), false, new ChildStats(false), new SegmentControllerSpawnCallbackDirect(GameServer.getServerState(), owner.getCurrentSector()) {
-				@Override
-				public void onNoDocker() {
-				}
-			});
-			BuildSectorUtils.recordSpawn(entity, buildSector);
-			PlayerUtils.sendMessage(owner, "Successfully spawned entity \"" + entity.getName() + "\".");
-		} catch(EntityNotFountException | IOException | EntityAlreadyExistsException | StateParameterNotFoundException exception) {
-			exception.printStackTrace();
-		}
+
+	public static SegmentController spawnEntry(PlayerState owner, BlueprintEntry entry, String spawnName, int factionId) {
+		return spawnEntryOnDock(owner, entry, spawnName, factionId, null);
 	}
 
-	public static void spawnEntryOnDock(PlayerState owner, BlueprintEntry entry, String spawnName, int factionId) {
-		SegmentPiece spawnOnBlock = null;
-		try {
-			spawnOnBlock = ServerUtils.getBlockLookingAt(GameServer.getServerState(), owner);
-		} catch(PlayerNotFountException | PlayerControlledTransformableNotFound | IOException ignored) {
-		}
+	public static SegmentController spawnEntryOnDock(PlayerState owner, BlueprintEntry entry, String spawnName, int factionId, SegmentPiece spawnOnBlock) {
 		Transform transform = new Transform();
 		transform.setIdentity();
 		transform.origin.set(owner.getFirstControlledTransformableWOExc().getWorldTransform().origin);
@@ -85,40 +78,39 @@ public class EntityUtils {
 		transform.origin.set(forward);
 		try {
 			SegmentControllerOutline<?> outline = BluePrintController.active.loadBluePrint(GameServerState.instance, entry.getName(), spawnName, transform, -1, factionId, owner.getCurrentSector(), owner.getName(), PlayerState.buffer, spawnOnBlock, false, new ChildStats(false));
-			SegmentController entity = outline.spawn(owner.getCurrentSector(), false, new ChildStats(false), new SegmentControllerSpawnCallbackDirect(GameServer.getServerState(), owner.getCurrentSector()) {
+			return outline.spawn(owner.getCurrentSector(), false, new ChildStats(false), new SegmentControllerSpawnCallbackDirect(GameServer.getServerState(), owner.getCurrentSector()) {
 				@Override
 				public void onNoDocker() {
 				}
 			});
-			PlayerUtils.sendMessage(owner, "Successfully spawned entity \"" + entity.getName() + "\".");
 		} catch(EntityNotFountException | IOException | EntityAlreadyExistsException | StateParameterNotFoundException exception) {
-			exception.printStackTrace();
+			EdenCore.getInstance().logException("Failed to spawn entity from blueprint entry", exception);
 		}
+		return null;
 	}
 
-	public static void spawnEnemy(PlayerState owner, BlueprintEntry entry, String spawnName, Vector3i sector) {
-		Transform transform = new Transform();
-		transform.setIdentity();
-		transform.origin.set(owner.getFirstControlledTransformableWOExc().getWorldTransform().origin);
-		Vector3f forward = GlUtil.getForwardVector(new Vector3f(), transform);
-		Vector3f size = entry.getBb().calculateHalfSize(new Vector3f());
-		size.scale(0.5f);
-		forward.scaleAdd(1.15f, size);
-		transform.origin.set(forward);
+	public static ManagerContainer<?> getManagerContainer(SegmentController entity) {
+		if(entity.getType() == SimpleTransformableSendableObject.EntityType.SHIP) return ((Ship) entity).getManagerContainer();
+		else if(entity.getType() == SimpleTransformableSendableObject.EntityType.SPACE_STATION) return ((SpaceStation) entity).getManagerContainer();
+		return null;
+	}
+
+	public static void toggleAI(SegmentController entity, boolean toggle) {
 		try {
-			SegmentControllerOutline<?> outline = BluePrintController.active.loadBluePrint(GameServerState.instance, entry.getName(), spawnName, transform, -1, FactionManager.PIRATES_ID, owner.getCurrentSector(), owner.getName(), PlayerState.buffer, null, false, new ChildStats(false));
-			SegmentController entity = outline.spawn(owner.getCurrentSector(), false, new ChildStats(false), new SegmentControllerSpawnCallbackDirect(GameServer.getServerState(), owner.getCurrentSector()) {
-				@Override
-				public void onNoDocker() {
-				}
-			});
-			BuildSectorUtils.recordSpawn(entity, sector);
-			BuildSectorUtils.toggleAI(entity, true);
-			PlayerUtils.sendMessage(owner, "Successfully spawned entity \"" + entity.getName() + "\".");
-		} catch(EntityNotFountException | IOException | EntityAlreadyExistsException | StateParameterNotFoundException exception) {
-			exception.printStackTrace();
+			SegmentController root = entity.railController.getRoot();
+			if(root != null) toggleAIRecursively(root, toggle);
+		} catch(Exception exception) {
+			EdenCore.getInstance().logException("Failed to toggle AI on entity", exception);
 		}
 	}
-
-	 */
+	
+	private static void toggleAIRecursively(SegmentController entity, boolean toggle) {
+		try {
+			if(entity.getType() == SimpleTransformableSendableObject.EntityType.SHIP) ((Ship) entity).getAiConfiguration().get(Types.ACTIVE).switchSetting(String.valueOf(toggle), true);
+			else if(entity.getType() == SimpleTransformableSendableObject.EntityType.SPACE_STATION) ((SpaceStation) entity).getAiConfiguration().get(Types.ACTIVE).switchSetting(String.valueOf(toggle), true);
+		} catch(Exception exception) {
+			EdenCore.getInstance().logException("Failed to toggle AI on entity", exception);
+		}
+		for(RailRelation relation : entity.railController.next) toggleAIRecursively(relation.docked.getSegmentController(), toggle);
+	}
 }

@@ -67,6 +67,13 @@ public class BuildSectorDataManager extends DataManager<BuildSectorData> {
 		return null;
 	}
 	
+	public boolean isBuildSector(Vector3i sector) {
+		for(BuildSectorData data : clientCache) {
+			if(data.getSector().equals(sector)) return true;
+		}
+		return false;
+	}
+	
 	public static Vector3i calculateRandomSector() {
 		int baseOffset = ConfigManager.getMainConfig().getInt("build_sector_distance_offset");
 		Random random = new Random();

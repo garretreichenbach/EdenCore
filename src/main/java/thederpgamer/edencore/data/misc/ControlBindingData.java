@@ -172,6 +172,7 @@ public class ControlBindingData {
 		try {
 			Set<ControlBindingData> dataSet = new HashSet<>(); //Todo: Figure out numpad key ids
 			dataSet.add(new ControlBindingData("Guide Menu", "Opens the Guide Menu.", ControlType.KEYBOARD, 0));
+			dataSet.add(new ControlBindingData("Banking Menu", "Opens the Banking Menu.", ControlType.KEYBOARD, 0));
 			dataSet.add(new ControlBindingData("Exchange Menu", "Opens the Exchange Menu.", ControlType.KEYBOARD, 0));
 			dataSet.add(new ControlBindingData("Build Sector Menu", "Opens the Build Sector Menu.", ControlType.KEYBOARD, 0));
 			JSONObject data = new JSONObject();
