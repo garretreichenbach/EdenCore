@@ -7,7 +7,6 @@ import org.schema.game.server.data.blueprintnw.BlueprintClassification;
 import thederpgamer.edencore.data.SerializableData;
 
 import java.io.IOException;
-import java.util.UUID;
 
 /**
  * [Description]
@@ -20,6 +19,8 @@ public class ExchangeData extends SerializableData {
 		SHIP,
 		STATION
 	}
+
+	private static final byte VERSION = 0;
 	
 	private String name;
 	private String catalogName;
@@ -53,6 +54,7 @@ public class ExchangeData extends SerializableData {
 	@Override
 	public JSONObject serialize() {
 		JSONObject data = new JSONObject();
+		data.put("version", VERSION);
 		data.put("uuid", getUUID());
 		data.put("name", name);
 		data.put("catalogName", catalogName);
@@ -67,6 +69,7 @@ public class ExchangeData extends SerializableData {
 
 	@Override
 	public void deserialize(JSONObject data) {
+		byte version = (byte) data.getInt("version");
 		dataUUID = data.getString("uuid");
 		name = data.getString("name");
 		catalogName = data.getString("catalogName");
@@ -80,6 +83,7 @@ public class ExchangeData extends SerializableData {
 
 	@Override
 	public void serializeNetwork(PacketWriteBuffer writeBuffer) throws IOException {
+		writeBuffer.writeByte(VERSION);
 		writeBuffer.writeString(dataUUID);
 		writeBuffer.writeString(name);
 		writeBuffer.writeString(catalogName);
@@ -93,6 +97,7 @@ public class ExchangeData extends SerializableData {
 
 	@Override
 	public void deserializeNetwork(PacketReadBuffer readBuffer) throws IOException {
+		byte version = readBuffer.readByte();
 		dataUUID = readBuffer.readString();
 		name = readBuffer.readString();
 		catalogName = readBuffer.readString();

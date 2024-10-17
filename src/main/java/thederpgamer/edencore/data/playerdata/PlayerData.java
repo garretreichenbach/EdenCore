@@ -16,7 +16,9 @@ import java.io.IOException;
  * @author TheDerpGamer
  */
 public class PlayerData extends SerializableData {
-	
+
+	private static final byte VERSION = 0;
+
 	private String name;
 	private int factionId;
 	
@@ -41,6 +43,7 @@ public class PlayerData extends SerializableData {
 	@Override
 	public JSONObject serialize() {
 		JSONObject data = new JSONObject();
+		data.put("version", VERSION);
 		data.put("uuid", getUUID());
 		data.put("name", name);
 		data.put("factionId", factionId);
@@ -49,6 +52,7 @@ public class PlayerData extends SerializableData {
 
 	@Override
 	public void deserialize(JSONObject data) {
+		byte version = (byte) data.getInt("version");
 		dataUUID = data.getString("uuid");
 		name = data.getString("name");
 		factionId = data.getInt("factionId");
@@ -56,6 +60,7 @@ public class PlayerData extends SerializableData {
 
 	@Override
 	public void serializeNetwork(PacketWriteBuffer writeBuffer) throws IOException {
+		writeBuffer.writeByte(VERSION);
 		writeBuffer.writeString(dataUUID);
 		writeBuffer.writeString(name);
 		writeBuffer.writeInt(factionId);
@@ -63,6 +68,7 @@ public class PlayerData extends SerializableData {
 
 	@Override
 	public void deserializeNetwork(PacketReadBuffer readBuffer) throws IOException {
+		byte version = readBuffer.readByte();
 		dataUUID = readBuffer.readString();
 		name = readBuffer.readString();
 		factionId = readBuffer.readInt();

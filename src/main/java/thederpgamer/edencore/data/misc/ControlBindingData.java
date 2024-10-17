@@ -19,6 +19,7 @@ import java.util.Set;
 public class ControlBindingData {
 	
 	private static final Set<ControlBindingData> bindings = new HashSet<>();
+	private static final byte VERSION = 0;
 
 	public enum ControlType {
 		MOUSE("MOUSE"),
@@ -75,6 +76,7 @@ public class ControlBindingData {
 	
 	private JSONObject serialize() {
 		JSONObject data = new JSONObject();
+		data.put("version", VERSION);
 		data.put("name", name);
 		data.put("description", description);
 		data.put("controlType", controlType.name());
@@ -83,6 +85,7 @@ public class ControlBindingData {
 	}
 
 	private void deserialize(JSONObject data) {
+		byte version = (byte) data.getInt("version");
 		name = data.getString("name");
 		description = data.getString("description");
 		controlType = ControlType.valueOf(data.getString("controlType"));

@@ -23,7 +23,8 @@ public class BuildSectorData extends SerializableData {
 	public static final int OWNER = 0;
 	public static final int FRIEND = 1;
 	public static final int OTHER = 2;
-
+	private static final byte VERSION = 0;
+	
 	private String owner;
 	private Vector3i sector;
 	private final Set<BuildSectorEntityData> entities = new HashSet<>();
@@ -47,6 +48,7 @@ public class BuildSectorData extends SerializableData {
 	@Override
 	public JSONObject serialize() {
 		JSONObject data = new JSONObject();
+		data.put("version", VERSION);
 		data.put("uuid", getUUID());
 		data.put("owner", owner);
 		data.put("sector", sector.toString());
@@ -55,6 +57,7 @@ public class BuildSectorData extends SerializableData {
 
 	@Override
 	public void deserialize(JSONObject data) {
+		byte version = (byte) data.getInt("version");
 		dataUUID = data.getString("uuid");
 		owner = data.getString("owner");
 		sector = new Vector3i(Vector3i.parseVector3i(data.getString("sector")));
@@ -63,6 +66,7 @@ public class BuildSectorData extends SerializableData {
 
 	@Override
 	public void serializeNetwork(PacketWriteBuffer writeBuffer) throws IOException {
+		writeBuffer.writeByte(VERSION);
 		writeBuffer.writeString(dataUUID);
 		writeBuffer.writeString(owner);
 		writeBuffer.writeString(sector.toStringPure());
@@ -70,6 +74,7 @@ public class BuildSectorData extends SerializableData {
 
 	@Override
 	public void deserializeNetwork(PacketReadBuffer readBuffer) throws IOException {
+		byte version = readBuffer.readByte();
 		dataUUID = readBuffer.readString();
 		owner = readBuffer.readString();
 		sector = new Vector3i(Vector3i.parseVector3i(readBuffer.readString()));
