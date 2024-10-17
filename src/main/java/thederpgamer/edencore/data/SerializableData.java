@@ -19,6 +19,7 @@ public abstract class SerializableData {
 
 	public enum DataType {
 		PLAYER_DATA(PlayerData.class),
+		PLAYER_BANKING_TRANSACTION_DATA(PlayerData.PlayerBankTransactionData.class),
 		BUILD_SECTOR_DATA(BuildSectorData.class),
 		BUILD_SECTOR_ENTITY_DATA(BuildSectorData.BuildSectorEntityData.class),
 		BUILD_SECTOR_PERMISSION_DATA(BuildSectorData.BuildSectorPermissionData.class),

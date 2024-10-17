@@ -17,14 +17,22 @@ public class DateUtils {
 	public static float getAgeDays(Date date) {
 		Date current = new Date(System.currentTimeMillis());
 		long difference = Math.abs(current.getTime() - date.getTime());
-		return ((float) (difference / (1000 * 60 * 60 * 24)));
+		return ((float) difference / (1000 * 60 * 60 * 24));
+	}
+	
+	public static String getTimeFormatted(long time) {
+		return getTimeFormatted(time, "MM/dd/yyyy '-' hh:mm:ss z");
+	}
+	
+	public static String getTimeFormatted(long time, String format) {
+		return new SimpleDateFormat(format).format(new Date(time));
 	}
 
-	public static String getTimeFormatted() {
-		return getTimeFormatted("MM/dd/yyyy '-' hh:mm:ss z");
+	public static String getCurrentTimeFormatted() {
+		return getCurrentTimeFormatted("MM/dd/yyyy '-' hh:mm:ss z");
 	}
 
-	public static String getTimeFormatted(String format) {
-		return (new SimpleDateFormat(format)).format(new Date());
+	public static String getCurrentTimeFormatted(String format) {
+		return new SimpleDateFormat(format).format(new Date(System.currentTimeMillis()));
 	}
 }

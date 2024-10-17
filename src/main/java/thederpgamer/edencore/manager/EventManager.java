@@ -16,11 +16,11 @@ import org.schema.schine.input.InputState;
 import thederpgamer.edencore.EdenCore;
 import thederpgamer.edencore.data.buildsectordata.BuildSectorDataManager;
 import thederpgamer.edencore.data.misc.ControlBindingData;
+import thederpgamer.edencore.data.playerdata.PlayerDataManager;
 import thederpgamer.edencore.gui.controls.ControlBindingsScrollableList;
 import thederpgamer.edencore.gui.exchangemenu.ExchangeDialog;
 
 import java.util.Locale;
-import java.util.Set;
 
 /**
  * [Description]
@@ -76,6 +76,34 @@ public class EventManager {
 			@Override
 			public void onEvent(GUITopBarCreateEvent event) {
 				GUITopBar.ExpandedButton dropDownButton = event.getDropdownButtons().get(event.getDropdownButtons().size() - 1);
+				dropDownButton.addExpandedButton("BANKING", new GUICallback() {
+					@Override
+					public void callback(GUIElement guiElement, MouseEvent mouseEvent) {
+						if(mouseEvent.pressedLeftMouse()) {
+							
+						}
+					}
+
+					@Override
+					public boolean isOccluded() {
+						return false;
+					}
+				}, new GUIActivationHighlightCallback() {
+					@Override
+					public boolean isHighlighted(InputState inputState) {
+						return PlayerDataManager.getInstance().getFromName(GameClient.getClientPlayerState().getName()).get;
+					}
+
+					@Override
+					public boolean isVisible(InputState inputState) {
+						return true;
+					}
+
+					@Override
+					public boolean isActive(InputState inputState) {
+						return true;
+					}
+				});
 				dropDownButton.addExpandedButton("GUIDE", new GUICallback() {
 					@Override
 					public void callback(GUIElement guiElement, MouseEvent mouseEvent) {

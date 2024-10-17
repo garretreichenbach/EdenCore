@@ -1,10 +1,16 @@
 package thederpgamer.edencore.data.buildsectordata;
 
+import api.common.GameCommon;
 import api.network.PacketReadBuffer;
 import api.network.PacketWriteBuffer;
 import api.utils.other.HashList;
+import org.json.JSONArray;
 import org.json.JSONObject;
 import org.schema.common.util.linAlg.Vector3i;
+import org.schema.game.common.controller.SegmentController;
+import org.schema.game.common.data.player.PlayerState;
+import org.schema.game.common.data.player.catalog.CatalogPermission;
+import org.schema.game.common.data.world.SimpleTransformableSendableObject;
 import thederpgamer.edencore.data.SerializableData;
 import thederpgamer.edencore.data.playerdata.PlayerData;
 import thederpgamer.edencore.data.playerdata.PlayerDataManager;
@@ -52,6 +58,16 @@ public class BuildSectorData extends SerializableData {
 		data.put("uuid", getUUID());
 		data.put("owner", owner);
 		data.put("sector", sector.toString());
+		JSONArray entitiesArray = new JSONArray();
+		for(BuildSectorEntityData entity : entities) entitiesArray.put(entity.serialize());
+		data.put("entities", entitiesArray);
+		JSONArray permissionsArray = new JSONArray();
+		for(String name : permissions.keySet()) {
+			for(BuildSectorPermissionData permission : permissions.get(name)) {
+				permissionsArray.put(permission.serialize());
+			}
+		}
+		data.put("permissions", permissionsArray);
 		return data;
 	}
 
@@ -61,7 +77,10 @@ public class BuildSectorData extends SerializableData {
 		dataUUID = data.getString("uuid");
 		owner = data.getString("owner");
 		sector = new Vector3i(Vector3i.parseVector3i(data.getString("sector")));
-
+		JSONArray entitiesArray = data.getJSONArray("entities");
+		for(int i = 0; i < entitiesArray.length(); i ++) entities.add(new BuildSectorEntityData(entitiesArray.getJSONObject(i)));
+		JSONArray permissionsArray = data.getJSONArray("permissions");
+		for(int i = 0; i < permissionsArray.length(); i ++) permissions.add(owner, new BuildSectorPermissionData(permissionsArray.getJSONObject(i)));
 	}
 
 	@Override
@@ -70,6 +89,12 @@ public class BuildSectorData extends SerializableData {
 		writeBuffer.writeString(dataUUID);
 		writeBuffer.writeString(owner);
 		writeBuffer.writeString(sector.toStringPure());
+		writeBuffer.writeInt(entities.size());
+		for(BuildSectorEntityData entity : entities) entity.serializeNetwork(writeBuffer);
+		writeBuffer.writeInt(permissions.size());
+		for(String name : permissions.keySet()) {
+			for(BuildSectorPermissionData permission : permissions.get(name)) permission.serializeNetwork(writeBuffer);
+		}
 	}
 
 	@Override
@@ -78,6 +103,10 @@ public class BuildSectorData extends SerializableData {
 		dataUUID = readBuffer.readString();
 		owner = readBuffer.readString();
 		sector = new Vector3i(Vector3i.parseVector3i(readBuffer.readString()));
+		int entityCount = readBuffer.readInt();
+		for(int i = 0; i < entityCount; i ++) entities.add(new BuildSectorEntityData(readBuffer));
+		int permissionCount = readBuffer.readInt();
+		for(int i = 0; i < permissionCount; i ++) permissions.add(owner, new BuildSectorPermissionData(readBuffer));
 	}
 
 	public Vector3i getSector() {
@@ -117,6 +146,49 @@ public class BuildSectorData extends SerializableData {
 			if(permission.getType() == type) return permission;
 		}
 		return null;
+	}
+	
+	public BuildSectorEntityData getEntity(SegmentController entity) {
+		for(BuildSectorEntityData entityData : entities) {
+			if(entityData.getEntity().equals(entity)) return entityData;
+		}
+		return null;
+	}
+	
+	public void addEntity(SegmentController entity, boolean server) {
+		entities.add(new BuildSectorEntityData(entity));
+		BuildSectorDataManager.getInstance().updateData(this, server);
+	}
+	
+	public void removeEntity(SegmentController entity, boolean server) {
+		entities.removeIf(entityData -> entityData.getEntity().equals(entity));
+		BuildSectorDataManager.getInstance().updateData(this, server);
+	}
+	
+	public void updateEntity(SegmentController entity, boolean server) {
+		BuildSectorEntityData entityData = getEntity(entity);
+		if(entityData == null) addEntity(entity, server);
+		else {
+			entityData.entityID = entity.getId();
+			entityData.entityType = entity.getType();
+			BuildSectorDataManager.getInstance().updateData(this, server);
+		}
+	}
+	
+	public void spawnEntity(CatalogPermission catalogPermission, PlayerState spawner, boolean onDock) {
+		
+	}
+	
+	public void setEntityPermission(SegmentController entity, PermissionTypes type, Object value, boolean server) {
+		BuildSectorEntityData entityData = getEntity(entity);
+		BuildSectorPermissionData permission = entityData.permissions.get(owner).stream().filter(p -> p.getType() == type).findFirst().orElse(null);
+		if(permission != null) permission.value = value;
+		BuildSectorDataManager.getInstance().updateData(this, server);
+	}
+	
+	public BuildSectorPermissionData getEntityPermission(SegmentController entity, PermissionTypes type) {
+		BuildSectorEntityData entityData = getEntity(entity);
+		return entityData.permissions.get(owner).stream().filter(p -> p.getType() == type).findFirst().orElse(null);
 	}
 
 	private void setDefaultPerms(String name, int type) {
@@ -180,8 +252,17 @@ public class BuildSectorData extends SerializableData {
 
 	public static class BuildSectorEntityData extends SerializableData {
 
-		public BuildSectorEntityData() {
+		private static final byte VERSION = 0;
+		
+		private int entityID;
+		private SimpleTransformableSendableObject.EntityType entityType;
+		private final HashList<String, BuildSectorPermissionData> permissions = new HashList<>();
+		
+		public BuildSectorEntityData(SegmentController entity) {
 			super(DataType.BUILD_SECTOR_ENTITY_DATA);
+			entityID = entity.getId();
+			entityType = entity.getType();
+			setDefaultPerms(entity);
 		}
 
 		public BuildSectorEntityData(PacketReadBuffer readBuffer) throws IOException {
@@ -191,30 +272,63 @@ public class BuildSectorData extends SerializableData {
 		public BuildSectorEntityData(JSONObject data) {
 			super(data);
 		}
+		
+		private void setDefaultPerms(SegmentController entity) {
+			String owner = entity.getSpawner();
+			permissions.add(owner, new BuildSectorPermissionData(PermissionTypes.EDIT_SPECIFIC, new Object[] {true, entity.getId()}));
+			permissions.add(owner, new BuildSectorPermissionData(PermissionTypes.DELETE_SPECIFIC, new Object[] {true, entity.getId()}));
+			permissions.add(owner, new BuildSectorPermissionData(PermissionTypes.TOGGLE_AI_SPECIFIC, new Object[] {true, entity.getId()}));
+			permissions.add(owner, new BuildSectorPermissionData(PermissionTypes.TOGGLE_DAMAGE_SPECIFIC, new Object[] {true, entity.getId()}));
+			permissions.add(owner, new BuildSectorPermissionData(PermissionTypes.EDIT_ENTITY_PERMISSIONS, new Object[] {true, entity.getId()}));
+		}
 
 		@Override
 		public JSONObject serialize() {
-			return null;
+			JSONObject data = new JSONObject();
+			data.put("version", VERSION);
+			data.put("uuid", getUUID());
+			data.put("entityID", entityID);
+			data.put("entityType", entityType.name());
+			return data;
 		}
 
 		@Override
 		public void deserialize(JSONObject data) {
-
+			byte version = (byte) data.getInt("version");
+			dataUUID = data.getString("uuid");
+			entityID = data.getInt("entityID");
+			entityType = SimpleTransformableSendableObject.EntityType.valueOf(data.getString("entityType"));
 		}
 
 		@Override
 		public void serializeNetwork(PacketWriteBuffer writeBuffer) throws IOException {
-
+			writeBuffer.writeByte(VERSION);
+			writeBuffer.writeString(dataUUID);
+			writeBuffer.writeInt(entityID);
+			writeBuffer.writeString(entityType.name());
 		}
 
 		@Override
 		public void deserializeNetwork(PacketReadBuffer readBuffer) throws IOException {
-
+			byte version = readBuffer.readByte();
+			dataUUID = readBuffer.readString();
+			entityID = readBuffer.readInt();
+			entityType = SimpleTransformableSendableObject.EntityType.valueOf(readBuffer.readString());
+		}
+		
+		public SegmentController getEntity() {
+			return (SegmentController) GameCommon.getGameObject(entityID);
+		}
+		
+		public SimpleTransformableSendableObject.EntityType getEntityType() {
+			return entityType;
 		}
 	}
 
 	public static class BuildSectorPermissionData extends SerializableData {
 
+		private static final byte VERSION = 0;
+		
 		private PermissionTypes type;
 		private Object value;
 
@@ -235,6 +349,7 @@ public class BuildSectorData extends SerializableData {
 		@Override
 		public JSONObject serialize() {
 			JSONObject data = new JSONObject();
+			data.put("version", VERSION);
 			data.put("uuid", getUUID());
 			data.put("type", type.ordinal());
 			data.put("value", value);
@@ -243,6 +358,7 @@ public class BuildSectorData extends SerializableData {
 
 		@Override
 		public void deserialize(JSONObject data) {
+			byte version = (byte) data.getInt("version");
 			dataUUID = data.getString("uuid");
 			type = PermissionTypes.values()[data.getInt("type")];
 			value = data.get("value");
@@ -250,6 +366,7 @@ public class BuildSectorData extends SerializableData {
 
 		@Override
 		public void serializeNetwork(PacketWriteBuffer writeBuffer) throws IOException {
+			writeBuffer.writeByte(VERSION);
 			writeBuffer.writeString(dataUUID);
 			writeBuffer.writeInt(type.ordinal());
 			writeBuffer.writeString(value.toString());
@@ -257,6 +374,7 @@ public class BuildSectorData extends SerializableData {
 
 		@Override
 		public void deserializeNetwork(PacketReadBuffer readBuffer) throws IOException {
+			byte version = readBuffer.readByte();
 			dataUUID = readBuffer.readString();
 			type = PermissionTypes.values()[readBuffer.readInt()];
 			value = readBuffer.readString();
@@ -272,23 +390,27 @@ public class BuildSectorData extends SerializableData {
 	}
 
 	public enum PermissionTypes {
+		EDIT_SPECIFIC("edit_specific", "Edit Specific Ship", "Whether the player can edit a specific ship."),
 		EDIT_OWN("edit_own", "Edit Own Ships", "Whether the player can edit their own ships."),
 		EDIT_ANY("edit_any", "Edit Other Ships", "Whether the player can edit ships owned by other players."),
 		SPAWN("spawn", "Spawn Ships", "Whether the player can spawn ships from their catalog."),
 		SPAWN_ENEMIES("spawn_enemies", "Spawn Enemies", "Whether the player can spawn enemy ships."),
+		DELETE_SPECIFIC("delete_specific", "Delete Specific Ship", "Whether the player can delete a specific ship."),
 		DELETE_OWN("delete_own", "Delete Own Ships", "Whether the player can delete their own ships."),
 		DELETE_ANY("delete_any", "Delete Other Ships", "Whether the player can delete ships owned by other players."),
 		DELETE_ALL("delete_all", "Delete All Ships", "Whether the player can delete all ships in the sector."),
+		TOGGLE_AI_SPECIFIC("toggle_ai_specific", "Toggle Specific AI", "Whether the player can toggle AI on a specific ship."),
 		TOGGLE_AI_OWN("toggle_ai_own", "Toggle Own AI", "Whether the player can toggle AI on their own ships."),
 		TOGGLE_AI_ANY("toggle_ai_any", "Toggle Other AI", "Whether the player can toggle AI on ships owned by other players."),
 		TOGGLE_AI_ALL("toggle_ai_all", "Toggle All AI", "Whether the player can toggle AI on all ships in the sector."),
+		TOGGLE_DAMAGE_SPECIFIC("toggle_damage_specific", "Toggle Specific Damage", "Whether the player can toggle damage on a specific ship."),
 		TOGGLE_DAMAGE_OWN("toggle_damage_own", "Toggle Own Damage", "Whether the player can toggle damage on their own ships."),
 		TOGGLE_DAMAGE_ANY("toggle_damage_any", "Toggle Other Damage", "Whether the player can toggle damage on ships owned by other players."),
 		TOGGLE_DAMAGE_ALL("toggle_damage_all", "Toggle All Damage", "Whether the player can toggle damage on all ships in the sector."),
 		INVITE("invite", "Invite Players", "Whether the player can invite other players to the sector."),
 		KICK("kick", "Kick Players", "Whether the player can kick other players from the sector."),
 		EDIT_PERMISSIONS("edit_permissions", "Edit Permissions", "Whether the player can edit permissions for other players."),
-		;
+		EDIT_ENTITY_PERMISSIONS("edit_entity_permissions", "Edit Entity Permissions", "Whether the player can edit permissions for specific entities.");
 
 		private final String key;
 		private final String name;
@@ -310,6 +432,37 @@ public class BuildSectorData extends SerializableData {
 
 		public String getDescription() {
 			return description;
+		}
+		
+		public static Set<PermissionTypes> getListValues() {
+			Set<PermissionTypes> values = new HashSet<>();
+			values.add(EDIT_OWN);
+			values.add(EDIT_ANY);
+			values.add(SPAWN);
+			values.add(SPAWN_ENEMIES);
+			values.add(DELETE_OWN);
+			values.add(DELETE_ANY);
+			values.add(DELETE_ALL);
+			values.add(TOGGLE_AI_OWN);
+			values.add(TOGGLE_AI_ANY);
+			values.add(TOGGLE_AI_ALL);
+			values.add(TOGGLE_DAMAGE_OWN);
+			values.add(TOGGLE_DAMAGE_ANY);
+			values.add(TOGGLE_DAMAGE_ALL);
+			values.add(INVITE);
+			values.add(KICK);
+			values.add(EDIT_PERMISSIONS);
+			return values;
+		}
+		
+		public static Set<PermissionTypes> getEntitySpecificValues() {
+			Set<PermissionTypes> values = new HashSet<>();
+			values.add(EDIT_SPECIFIC);
+			values.add(DELETE_SPECIFIC);
+			values.add(TOGGLE_AI_SPECIFIC);
+			values.add(TOGGLE_DAMAGE_SPECIFIC);
+			values.add(EDIT_ENTITY_PERMISSIONS);
+			return values;
 		}
 	}
 }
