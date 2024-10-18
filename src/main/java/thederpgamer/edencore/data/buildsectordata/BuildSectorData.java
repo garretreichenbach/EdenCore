@@ -153,6 +153,10 @@ public class BuildSectorData extends SerializableData {
 		return null;
 	}
 	
+	public Set<BuildSectorEntityData> getEntities() {
+		return new HashSet<>(entities);
+	}
+	
 	public BuildSectorEntityData getEntity(SegmentController entity) {
 		for(BuildSectorEntityData entityData : entities) {
 			if(entityData.getEntity().equals(entity)) return entityData;
@@ -269,6 +273,10 @@ public class BuildSectorData extends SerializableData {
 				permissions.add(name, new BuildSectorPermissionData(PermissionTypes.EDIT_PERMISSIONS, false));
 				break;
 		}
+	}
+
+	public Set<String> getAllUsers() {
+		return new HashSet<>(permissions.keySet());
 	}
 
 	public static class BuildSectorEntityData extends SerializableData {

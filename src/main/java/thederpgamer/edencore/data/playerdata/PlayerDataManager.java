@@ -60,9 +60,9 @@ public class PlayerDataManager extends DataManager<PlayerData> {
 		clientCache.add(data);
 	}
 
-	public PlayerData getFromName(String owner, boolean server) {
+	public PlayerData getFromName(String name, boolean server) {
 		for(PlayerData data : (server ? getServerCache() : getClientCache())) {
-			if(data.getName().equals(owner)) return data;
+			if(data.getName().equals(name)) return data;
 		}
 		return null;
 	}
