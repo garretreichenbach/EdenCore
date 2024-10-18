@@ -1,7 +1,6 @@
 package thederpgamer.edencore.manager;
 
 import api.common.GameClient;
-import api.common.GameCommon;
 import api.listener.Listener;
 import api.listener.events.block.SegmentPieceActivateByPlayer;
 import api.listener.events.block.SegmentPieceActivateEvent;
@@ -9,7 +8,6 @@ import api.listener.events.draw.RegisterWorldDrawersEvent;
 import api.listener.events.gui.GUITopBarCreateEvent;
 import api.listener.events.gui.MainWindowTabAddEvent;
 import api.listener.events.input.KeyPressEvent;
-import api.listener.events.player.PlayerJoinWorldEvent;
 import api.listener.events.world.SimulationJobExecuteEvent;
 import api.mod.StarLoader;
 import api.utils.gui.ModGUIHandler;
@@ -26,6 +24,7 @@ import thederpgamer.edencore.EdenCore;
 import thederpgamer.edencore.data.buildsectordata.BuildSectorDataManager;
 import thederpgamer.edencore.data.misc.ControlBindingData;
 import thederpgamer.edencore.drawer.BuildSectorHudDrawer;
+import thederpgamer.edencore.gui.bankingmenu.BankingDialog;
 import thederpgamer.edencore.gui.buildsectormenu.BuildSectorDialog;
 import thederpgamer.edencore.gui.controls.ControlBindingsScrollableList;
 import thederpgamer.edencore.gui.exchangemenu.ExchangeDialog;
@@ -88,6 +87,7 @@ public class EventManager {
 			@Override
 			public void onEvent(GUITopBarCreateEvent event) {
 				GUITopBar.ExpandedButton dropDownButton = event.getDropdownButtons().get(event.getDropdownButtons().size() - 1);
+				/* Todo: Finish Banking Menu
 				dropDownButton.addExpandedButton("BANKING", new GUICallback() {
 					@Override
 					public void callback(GUIElement guiElement, MouseEvent mouseEvent) {
@@ -116,6 +116,7 @@ public class EventManager {
 						return true;
 					}
 				});
+				 */
 				dropDownButton.addExpandedButton("GUIDE", new GUICallback() {
 					@Override
 					public void callback(GUIElement guiElement, MouseEvent mouseEvent) {
@@ -221,11 +222,11 @@ public class EventManager {
 								GameClient.getClientState().getGlobalGameControlManager().getIngameControlManager().getPlayerGameControlManager().deactivateAll();
 								ModGUIHandler.getGUIControlManager("glossarPanel").setActive(true);
 								return;
-							case "Banking Menu":
-								GameClient.getClientState().getController().queueUIAudio("0022_menu_ui - enter");
-								GameClient.getClientState().getGlobalGameControlManager().getIngameControlManager().getPlayerGameControlManager().deactivateAll();
-								(new BankingDialog()).activate();
-								return;
+//							case "Banking Menu": Todo: Finish Banking Menu
+//								GameClient.getClientState().getController().queueUIAudio("0022_menu_ui - enter");
+//								GameClient.getClientState().getGlobalGameControlManager().getIngameControlManager().getPlayerGameControlManager().deactivateAll();
+//								(new BankingDialog()).activate();
+//								return;
 							case "Exchange Menu":
 								GameClient.getClientState().getController().queueUIAudio("0022_menu_ui - enter");
 								GameClient.getClientState().getGlobalGameControlManager().getIngameControlManager().getPlayerGameControlManager().deactivateAll();

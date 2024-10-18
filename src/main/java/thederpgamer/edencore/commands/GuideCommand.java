@@ -6,7 +6,7 @@ import api.utils.game.chat.CommandInterface;
 import org.schema.game.common.data.player.PlayerState;
 import thederpgamer.edencore.EdenCore;
 import thederpgamer.edencore.manager.PlayerActionManager;
-import thederpgamer.edencore.network.ServerPlayerActionCommandPacket;
+import thederpgamer.edencore.network.PlayerActionCommandPacket;
 
 import javax.annotation.Nullable;
 
@@ -38,7 +38,7 @@ public class GuideCommand implements CommandInterface {
 
 	@Override
 	public boolean onCommand(PlayerState playerState, String[] strings) {
-		PacketUtil.sendPacket(playerState, new ServerPlayerActionCommandPacket(PlayerActionManager.OPEN_GUIDE));
+		PacketUtil.sendPacket(playerState, new PlayerActionCommandPacket(PlayerActionManager.OPEN_GUIDE));
 		return true;
 	}
 

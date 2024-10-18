@@ -1,14 +1,16 @@
 package thederpgamer.edencore.data.playerdata;
 
+import api.common.GameClient;
 import api.mod.config.PersistentObjectUtil;
+import api.network.packets.PacketUtil;
+import org.schema.game.common.data.player.PlayerState;
 import org.schema.game.common.data.player.faction.Faction;
 import thederpgamer.edencore.EdenCore;
 import thederpgamer.edencore.data.DataManager;
+import thederpgamer.edencore.manager.PlayerActionManager;
+import thederpgamer.edencore.network.PlayerActionCommandPacket;
 
-import java.util.Collections;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 
 /**
  * [Description]
@@ -19,6 +21,7 @@ public class PlayerDataManager extends DataManager<PlayerData> {
 
 	private final Set<PlayerData> clientCache = new HashSet<>();
 	private static PlayerDataManager instance;
+
 	public static PlayerDataManager getInstance() {
 		return instance;
 	}
@@ -27,7 +30,7 @@ public class PlayerDataManager extends DataManager<PlayerData> {
 		instance = new PlayerDataManager();
 		if(client) instance.requestFromServer();
 	}
-	
+
 	@Override
 	public Set<PlayerData> getServerCache() {
 		List<Object> objects = PersistentObjectUtil.getObjects(EdenCore.getInstance().getSkeleton(), PlayerData.class);
@@ -63,16 +66,25 @@ public class PlayerDataManager extends DataManager<PlayerData> {
 		}
 		return null;
 	}
-	
+
 	public Set<PlayerData> getFactionMembers(Faction faction) {
 		return getFactionMembers(faction.getIdFaction());
 	}
-	
+
 	public Set<PlayerData> getFactionMembers(int factionId) {
 		Set<PlayerData> members = new HashSet<>();
 		for(PlayerData data : getServerCache()) {
 			if(data.getFactionId() == factionId) members.add(data);
 		}
 		return members;
+	}
+
+	public PlayerData getClientOwnData() {
+		return getFromName(GameClient.getClientPlayerState().getName(), false);
+	}
+
+	public void setPlayerCredits(PlayerState playerState, long credits) {
+		if(playerState.isOnServer()) playerState.setCredits(credits);
+		else PacketUtil.sendPacketToServer(new PlayerActionCommandPacket(PlayerActionManager.SET_CREDITS, playerState.getName(), String.valueOf(credits)));
 	}
 }

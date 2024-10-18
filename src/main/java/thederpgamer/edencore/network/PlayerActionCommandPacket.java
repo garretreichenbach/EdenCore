@@ -14,17 +14,17 @@ import java.util.Arrays;
  *
  * @author TheDerpGamer
  */
-public class ServerPlayerActionCommandPacket extends Packet {
+public class PlayerActionCommandPacket extends Packet {
 	
 	private int type;
 	private String[] args;
 	
-	public ServerPlayerActionCommandPacket(int type, String... args) {
+	public PlayerActionCommandPacket(int type, String... args) {
 		this.type = type;
 		this.args = args;
 	}
 	
-	public ServerPlayerActionCommandPacket() {}
+	public PlayerActionCommandPacket() {}
 	
 	@Override
 	public void readPacketData(PacketReadBuffer packetReadBuffer) throws IOException {
@@ -45,6 +45,6 @@ public class ServerPlayerActionCommandPacket extends Packet {
 
 	@Override
 	public void processPacketOnServer(PlayerState playerState) {
-
+		PlayerActionManager.processAction(type, args);
 	}
 }

@@ -61,7 +61,6 @@ public class BuildSectorDialog extends PlayerInput {
 			tabbedContent = new GUITabbedContent(getState(), contentPane.getContent(0));
 			tabbedContent.onInit();
 			
-			
 
 			tabbedContent.setSelectedTab(lastTab);
 			contentPane.getContent(0).attach(tabbedContent);
