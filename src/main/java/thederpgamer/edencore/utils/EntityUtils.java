@@ -113,4 +113,26 @@ public class EntityUtils {
 		}
 		for(RailRelation relation : entity.railController.next) toggleAIRecursively(relation.docked.getSegmentController(), toggle);
 	}
+	
+	public static void delete(SegmentController segmentController) {
+		try {
+			segmentController.setMarkedForDeletePermanentIncludingDocks(true);
+			segmentController.setMarkedForDeleteVolatileIncludingDocks(true);
+			segmentController.markForPermanentDelete(true);
+			for(RailRelation relation : segmentController.railController.next) deleteRecursively(relation.docked.getSegmentController());
+		} catch(Exception exception) {
+			EdenCore.getInstance().logException("Failed to delete entity", exception);
+		}
+	}
+	
+	private static void deleteRecursively(SegmentController entity) {
+		try {
+			entity.setMarkedForDeletePermanentIncludingDocks(true);
+			entity.setMarkedForDeleteVolatileIncludingDocks(true);
+			entity.markForPermanentDelete(true);
+			for(RailRelation relation : entity.railController.next) deleteRecursively(relation.docked.getSegmentController());
+		} catch(Exception exception) {
+			EdenCore.getInstance().logException("Failed to delete entity", exception);
+		}
+	}
 }

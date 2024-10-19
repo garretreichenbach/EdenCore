@@ -3,11 +3,14 @@ package thederpgamer.edencore.data.buildsectordata;
 import api.common.GameCommon;
 import api.network.PacketReadBuffer;
 import api.network.PacketWriteBuffer;
-import api.utils.other.HashList;
 import org.json.JSONArray;
 import org.json.JSONObject;
 import org.schema.common.util.linAlg.Vector3i;
 import org.schema.game.common.controller.SegmentController;
+import org.schema.game.common.controller.Ship;
+import org.schema.game.common.controller.SpaceStation;
+import org.schema.game.common.controller.ai.Types;
+import org.schema.game.common.controller.rails.RailRelation;
 import org.schema.game.common.data.SegmentPiece;
 import org.schema.game.common.data.player.PlayerState;
 import org.schema.game.common.data.player.faction.FactionManager;
@@ -21,7 +24,9 @@ import thederpgamer.edencore.utils.EntityUtils;
 import thederpgamer.edencore.utils.PlayerUtils;
 
 import java.io.IOException;
+import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Map;
 import java.util.Set;
 
 /**
@@ -35,11 +40,11 @@ public class BuildSectorData extends SerializableData {
 	public static final int FRIEND = 1;
 	public static final int OTHER = 2;
 	private static final byte VERSION = 0;
-	
-	private String owner;
-	private Vector3i sector;
-	private final Set<BuildSectorEntityData> entities = new HashSet<>();
-	private final HashList<String, BuildSectorPermissionData> permissions = new HashList<>();
+
+	protected String owner;
+	protected Vector3i sector;
+	protected final Set<BuildSectorEntityData> entities = new HashSet<>();
+	protected final HashMap<String, HashMap<PermissionTypes, Boolean>> permissions = new HashMap<>();
 
 	public BuildSectorData(String owner) {
 		super(DataType.BUILD_SECTOR_DATA);
@@ -68,8 +73,11 @@ public class BuildSectorData extends SerializableData {
 		data.put("entities", entitiesArray);
 		JSONArray permissionsArray = new JSONArray();
 		for(String name : permissions.keySet()) {
-			for(BuildSectorPermissionData permission : permissions.get(name)) {
-				permissionsArray.put(permission.serialize());
+			for(Map.Entry<PermissionTypes, Boolean> permission : permissions.get(name).entrySet()) {
+				JSONObject permissionData = new JSONObject();
+				permissionData.put("name", name);
+				permissionData.put(permission.getKey().getKey(), permission.getValue());
+				permissionsArray.put(permissionData);
 			}
 		}
 		data.put("permissions", permissionsArray);
@@ -83,9 +91,20 @@ public class BuildSectorData extends SerializableData {
 		owner = data.getString("owner");
 		sector = new Vector3i(Vector3i.parseVector3i(data.getString("sector")));
 		JSONArray entitiesArray = data.getJSONArray("entities");
-		for(int i = 0; i < entitiesArray.length(); i ++) entities.add(new BuildSectorEntityData(entitiesArray.getJSONObject(i)));
+		for(int i = 0; i < entitiesArray.length(); i++) entities.add(new BuildSectorEntityData(entitiesArray.getJSONObject(i)));
 		JSONArray permissionsArray = data.getJSONArray("permissions");
-		for(int i = 0; i < permissionsArray.length(); i ++) permissions.add(owner, new BuildSectorPermissionData(permissionsArray.getJSONObject(i)));
+		for(int i = 0; i < permissionsArray.length(); i++) {
+			JSONObject permissionData = permissionsArray.getJSONObject(i);
+			String name = permissionData.getString("name");
+			for(PermissionTypes type : PermissionTypes.values()) {
+				if(permissionData.has(type.getKey())) {
+					boolean value = permissionData.getBoolean(type.getKey());
+					HashMap<PermissionTypes, Boolean> permission = new HashMap<>();
+					permission.put(type, value);
+					permissions.put(name, permission);
+				}
+			}
+		}
 	}
 
 	@Override
@@ -98,7 +117,11 @@ public class BuildSectorData extends SerializableData {
 		for(BuildSectorEntityData entity : entities) entity.serializeNetwork(writeBuffer);
 		writeBuffer.writeInt(permissions.size());
 		for(String name : permissions.keySet()) {
-			for(BuildSectorPermissionData permission : permissions.get(name)) permission.serializeNetwork(writeBuffer);
+			for(Map.Entry<PermissionTypes, Boolean> permission : permissions.get(name).entrySet()) {
+				writeBuffer.writeString(name);
+				writeBuffer.writeString(permission.getKey().getKey());
+				writeBuffer.writeBoolean(permission.getValue());
+			}
 		}
 	}
 
@@ -109,9 +132,16 @@ public class BuildSectorData extends SerializableData {
 		owner = readBuffer.readString();
 		sector = new Vector3i(Vector3i.parseVector3i(readBuffer.readString()));
 		int entityCount = readBuffer.readInt();
-		for(int i = 0; i < entityCount; i ++) entities.add(new BuildSectorEntityData(readBuffer));
+		for(int i = 0; i < entityCount; i++) entities.add(new BuildSectorEntityData(readBuffer));
 		int permissionCount = readBuffer.readInt();
-		for(int i = 0; i < permissionCount; i ++) permissions.add(owner, new BuildSectorPermissionData(readBuffer));
+		for(int i = 0; i < permissionCount; i++) {
+			String name = readBuffer.readString();
+			PermissionTypes type = PermissionTypes.valueOf(readBuffer.readString());
+			boolean value = readBuffer.readBoolean();
+			HashMap<PermissionTypes, Boolean> permission = new HashMap<>();
+			permission.put(type, value);
+			permissions.put(name, permission);
+		}
 	}
 
 	public Vector3i getSector() {
@@ -126,10 +156,6 @@ public class BuildSectorData extends SerializableData {
 		return PlayerDataManager.getInstance().getFromName(owner, server);
 	}
 
-	public Set<BuildSectorPermissionData> getPermissionsFor(String name) {
-		return new HashSet<>(permissions.get(name));
-	}
-
 	public void addPlayer(String name, int type, boolean server) {
 		setDefaultPerms(name, type);
 		BuildSectorDataManager.getInstance().updateData(this, server);
@@ -140,54 +166,89 @@ public class BuildSectorData extends SerializableData {
 		BuildSectorDataManager.getInstance().updateData(this, server);
 	}
 
-	public void setPermission(String name, PermissionTypes type, Object value, boolean server) {
-		BuildSectorPermissionData permission = getPermission(name, type);
-		permission.value = value;
+	public boolean getPermission(String user, PermissionTypes type) {
+		HashMap<PermissionTypes, Boolean> permissionMap = permissions.get(user);
+		if(permissionMap != null) {
+			Boolean value = permissionMap.get(type);
+			if(value != null) return value;
+			else return false;
+		} else return false;
+	}
+
+	public void setPermission(String user, PermissionTypes type, boolean value, boolean server) {
+		HashMap<PermissionTypes, Boolean> permissionMap = permissions.get(user);
+		if(permissionMap != null) permissionMap.put(type, value);
+		else {
+			HashMap<PermissionTypes, Boolean> newPermissionMap = new HashMap<>();
+			newPermissionMap.put(type, value);
+			permissions.put(user, newPermissionMap);
+		}
 		BuildSectorDataManager.getInstance().updateData(this, server);
 	}
 
-	public BuildSectorPermissionData getPermission(String name, PermissionTypes type) {
-		for(BuildSectorPermissionData permission : permissions.get(name)) {
-			if(permission.getType() == type) return permission;
+	public boolean getPermissionForEntity(String user, int entityId, PermissionTypes... types) {
+		BuildSectorEntityData entityData = getEntity((SegmentController) GameCommon.getGameObject(entityId));
+		if(entityData != null) {
+			for(PermissionTypes type : types) {
+				if(entityData.getPermission(user, type)) return true;
+			}
 		}
-		return null;
+		return false;
 	}
-	
+
+	public boolean getPermissionForEntityOrGlobal(String user, int entityId, PermissionTypes type) {
+		SegmentController entity = (SegmentController) GameCommon.getGameObject(entityId);
+		switch(type) {
+			case EDIT_SPECIFIC:
+				return getPermissionForEntity(user, entityId, PermissionTypes.EDIT_SPECIFIC, PermissionTypes.EDIT_ANY) || (getPermission(user, PermissionTypes.EDIT_OWN) && entity.getSpawner().equals(user));
+			case DELETE_SPECIFIC:
+				return getPermissionForEntity(user, entityId, PermissionTypes.DELETE_SPECIFIC, PermissionTypes.DELETE_ANY) || (getPermission(user, PermissionTypes.DELETE_OWN) && entity.getSpawner().equals(user));
+			case TOGGLE_AI_SPECIFIC:
+				return getPermissionForEntity(user, entityId, PermissionTypes.TOGGLE_AI_SPECIFIC, PermissionTypes.TOGGLE_AI_ANY) || (getPermission(user, PermissionTypes.TOGGLE_AI_OWN) && entity.getSpawner().equals(user));
+			case TOGGLE_DAMAGE_SPECIFIC:
+				return getPermissionForEntity(user, entityId, PermissionTypes.TOGGLE_DAMAGE_SPECIFIC, PermissionTypes.TOGGLE_DAMAGE_ANY) || (getPermission(user, PermissionTypes.TOGGLE_DAMAGE_OWN) && entity.getSpawner().equals(user));
+			case EDIT_ENTITY_PERMISSIONS:
+				return getPermissionForEntity(user, entityId, PermissionTypes.EDIT_ENTITY_PERMISSIONS) || getPermission(user, PermissionTypes.EDIT_PERMISSIONS);
+			default:
+				return getPermissionForEntity(user, entityId, type);
+		}
+	}
+
 	public Set<BuildSectorEntityData> getEntities() {
 		return new HashSet<>(entities);
 	}
-	
+
 	public BuildSectorEntityData getEntity(SegmentController entity) {
 		for(BuildSectorEntityData entityData : entities) {
 			if(entityData.getEntity().equals(entity)) return entityData;
 		}
 		return null;
 	}
-	
+
 	public void addEntity(SegmentController entity, boolean server) {
 		entities.add(new BuildSectorEntityData(entity));
 		BuildSectorDataManager.getInstance().updateData(this, server);
 	}
-	
+
 	public void removeEntity(SegmentController entity, boolean server) {
 		entities.removeIf(entityData -> entityData.getEntity().equals(entity));
 		BuildSectorDataManager.getInstance().updateData(this, server);
 	}
-	
+
 	public void updateEntity(SegmentController entity, boolean server) {
 		BuildSectorEntityData entityData = getEntity(entity);
 		if(entityData == null) addEntity(entity, server);
 		else {
 			entityData.entityID = entity.getId();
-			entityData.entityType = entity.getType();
+			entityData.entityType = EntityType.fromEntity(entity);
 			BuildSectorDataManager.getInstance().updateData(this, server);
 		}
 	}
-	
+
 	public void spawnEntity(BlueprintEntry blueprint, PlayerState spawner, boolean onDock, String name) {
 		spawnEntity(blueprint, spawner, onDock, name, spawner.getFactionId());
 	}
-	
+
 	public void spawnEntity(BlueprintEntry blueprint, PlayerState spawner, boolean onDock, String name, int factionId) {
 		assert spawner.isOnServer() : "Cannot spawn entity on client";
 		try {
@@ -199,78 +260,72 @@ public class BuildSectorData extends SerializableData {
 			EdenCore.getInstance().logException("An error occurred while spawning entity", exception);
 		}
 	}
-	
+
 	public void toggleEntityAI(SegmentController entity, boolean value) {
 		EntityUtils.toggleAI(entity, value);
 	}
 
-	public void setEntityPermission(SegmentController entity, PermissionTypes type, Object value, boolean server) {
-		BuildSectorEntityData entityData = getEntity(entity);
-		BuildSectorPermissionData permission = entityData.permissions.get(owner).stream().filter(p -> p.getType() == type).findFirst().orElse(null);
-		if(permission != null) permission.value = value;
-		BuildSectorDataManager.getInstance().updateData(this, server);
-	}
-	
-	public BuildSectorPermissionData getEntityPermission(SegmentController entity, PermissionTypes type) {
-		BuildSectorEntityData entityData = getEntity(entity);
-		return entityData.permissions.get(owner).stream().filter(p -> p.getType() == type).findFirst().orElse(null);
-	}
-
-	private void setDefaultPerms(String name, int type) {
+	private void setDefaultPerms(String user, int type) {
 		switch(type) {
 			case OWNER:
-				permissions.add(name, new BuildSectorPermissionData(PermissionTypes.EDIT_OWN, true));
-				permissions.add(name, new BuildSectorPermissionData(PermissionTypes.EDIT_ANY, true));
-				permissions.add(name, new BuildSectorPermissionData(PermissionTypes.SPAWN, true));
-				permissions.add(name, new BuildSectorPermissionData(PermissionTypes.SPAWN_ENEMIES, true));
-				permissions.add(name, new BuildSectorPermissionData(PermissionTypes.DELETE_OWN, true));
-				permissions.add(name, new BuildSectorPermissionData(PermissionTypes.DELETE_ANY, true));
-				permissions.add(name, new BuildSectorPermissionData(PermissionTypes.DELETE_ALL, true));
-				permissions.add(name, new BuildSectorPermissionData(PermissionTypes.TOGGLE_AI_OWN, true));
-				permissions.add(name, new BuildSectorPermissionData(PermissionTypes.TOGGLE_AI_ANY, true));
-				permissions.add(name, new BuildSectorPermissionData(PermissionTypes.TOGGLE_AI_ALL, true));
-				permissions.add(name, new BuildSectorPermissionData(PermissionTypes.TOGGLE_DAMAGE_OWN, true));
-				permissions.add(name, new BuildSectorPermissionData(PermissionTypes.TOGGLE_DAMAGE_ANY, true));
-				permissions.add(name, new BuildSectorPermissionData(PermissionTypes.TOGGLE_DAMAGE_ALL, true));
-				permissions.add(name, new BuildSectorPermissionData(PermissionTypes.INVITE, true));
-				permissions.add(name, new BuildSectorPermissionData(PermissionTypes.KICK, true));
-				permissions.add(name, new BuildSectorPermissionData(PermissionTypes.EDIT_PERMISSIONS, true));
+				permissions.put(user, new HashMap<PermissionTypes, Boolean>() {{
+					put(PermissionTypes.EDIT_OWN, true);
+					put(PermissionTypes.EDIT_ANY, true);
+					put(PermissionTypes.SPAWN, true);
+					put(PermissionTypes.SPAWN_ENEMIES, true);
+					put(PermissionTypes.DELETE_OWN, true);
+					put(PermissionTypes.DELETE_ANY, true);
+					put(PermissionTypes.DELETE_ALL, true);
+					put(PermissionTypes.TOGGLE_AI_OWN, true);
+					put(PermissionTypes.TOGGLE_AI_ANY, true);
+					put(PermissionTypes.TOGGLE_AI_ALL, true);
+					put(PermissionTypes.TOGGLE_DAMAGE_OWN, true);
+					put(PermissionTypes.TOGGLE_DAMAGE_ANY, true);
+					put(PermissionTypes.TOGGLE_DAMAGE_ALL, true);
+					put(PermissionTypes.INVITE, true);
+					put(PermissionTypes.KICK, true);
+					put(PermissionTypes.EDIT_PERMISSIONS, true);
+				}});
 				break;
 			case FRIEND:
-				permissions.add(name, new BuildSectorPermissionData(PermissionTypes.EDIT_OWN, true));
-				permissions.add(name, new BuildSectorPermissionData(PermissionTypes.EDIT_ANY, true));
-				permissions.add(name, new BuildSectorPermissionData(PermissionTypes.SPAWN, true));
-				permissions.add(name, new BuildSectorPermissionData(PermissionTypes.SPAWN_ENEMIES, false));
-				permissions.add(name, new BuildSectorPermissionData(PermissionTypes.DELETE_OWN, true));
-				permissions.add(name, new BuildSectorPermissionData(PermissionTypes.DELETE_ANY, false));
-				permissions.add(name, new BuildSectorPermissionData(PermissionTypes.DELETE_ALL, false));
-				permissions.add(name, new BuildSectorPermissionData(PermissionTypes.TOGGLE_AI_OWN, true));
-				permissions.add(name, new BuildSectorPermissionData(PermissionTypes.TOGGLE_AI_ANY, false));
-				permissions.add(name, new BuildSectorPermissionData(PermissionTypes.TOGGLE_AI_ALL, false));
-				permissions.add(name, new BuildSectorPermissionData(PermissionTypes.TOGGLE_DAMAGE_OWN, true));
-				permissions.add(name, new BuildSectorPermissionData(PermissionTypes.TOGGLE_DAMAGE_ANY, false));
-				permissions.add(name, new BuildSectorPermissionData(PermissionTypes.TOGGLE_DAMAGE_ALL, false));
-				permissions.add(name, new BuildSectorPermissionData(PermissionTypes.INVITE, true));
-				permissions.add(name, new BuildSectorPermissionData(PermissionTypes.KICK, false));
-				permissions.add(name, new BuildSectorPermissionData(PermissionTypes.EDIT_PERMISSIONS, false));
+				permissions.put(user, new HashMap<PermissionTypes, Boolean>() {{
+					put(PermissionTypes.EDIT_OWN, true);
+					put(PermissionTypes.EDIT_ANY, true);
+					put(PermissionTypes.SPAWN, true);
+					put(PermissionTypes.SPAWN_ENEMIES, false);
+					put(PermissionTypes.DELETE_OWN, true);
+					put(PermissionTypes.DELETE_ANY, false);
+					put(PermissionTypes.DELETE_ALL, false);
+					put(PermissionTypes.TOGGLE_AI_OWN, true);
+					put(PermissionTypes.TOGGLE_AI_ANY, false);
+					put(PermissionTypes.TOGGLE_AI_ALL, false);
+					put(PermissionTypes.TOGGLE_DAMAGE_OWN, true);
+					put(PermissionTypes.TOGGLE_DAMAGE_ANY, false);
+					put(PermissionTypes.TOGGLE_DAMAGE_ALL, false);
+					put(PermissionTypes.INVITE, true);
+					put(PermissionTypes.KICK, false);
+					put(PermissionTypes.EDIT_PERMISSIONS, false);
+				}});
 				break;
 			case OTHER:
-				permissions.add(name, new BuildSectorPermissionData(PermissionTypes.EDIT_OWN, true));
-				permissions.add(name, new BuildSectorPermissionData(PermissionTypes.EDIT_ANY, false));
-				permissions.add(name, new BuildSectorPermissionData(PermissionTypes.SPAWN, true));
-				permissions.add(name, new BuildSectorPermissionData(PermissionTypes.SPAWN_ENEMIES, false));
-				permissions.add(name, new BuildSectorPermissionData(PermissionTypes.DELETE_OWN, true));
-				permissions.add(name, new BuildSectorPermissionData(PermissionTypes.DELETE_ANY, false));
-				permissions.add(name, new BuildSectorPermissionData(PermissionTypes.DELETE_ALL, false));
-				permissions.add(name, new BuildSectorPermissionData(PermissionTypes.TOGGLE_AI_OWN, true));
-				permissions.add(name, new BuildSectorPermissionData(PermissionTypes.TOGGLE_AI_ANY, false));
-				permissions.add(name, new BuildSectorPermissionData(PermissionTypes.TOGGLE_AI_ALL, false));
-				permissions.add(name, new BuildSectorPermissionData(PermissionTypes.TOGGLE_DAMAGE_OWN, false));
-				permissions.add(name, new BuildSectorPermissionData(PermissionTypes.TOGGLE_DAMAGE_ANY, false));
-				permissions.add(name, new BuildSectorPermissionData(PermissionTypes.TOGGLE_DAMAGE_ALL, false));
-				permissions.add(name, new BuildSectorPermissionData(PermissionTypes.INVITE, false));
-				permissions.add(name, new BuildSectorPermissionData(PermissionTypes.KICK, false));
-				permissions.add(name, new BuildSectorPermissionData(PermissionTypes.EDIT_PERMISSIONS, false));
+				permissions.put(user, new HashMap<PermissionTypes, Boolean>() {{
+					put(PermissionTypes.EDIT_OWN, true);
+					put(PermissionTypes.EDIT_ANY, false);
+					put(PermissionTypes.SPAWN, true);
+					put(PermissionTypes.SPAWN_ENEMIES, false);
+					put(PermissionTypes.DELETE_OWN, false);
+					put(PermissionTypes.DELETE_ANY, false);
+					put(PermissionTypes.DELETE_ALL, false);
+					put(PermissionTypes.TOGGLE_AI_OWN, false);
+					put(PermissionTypes.TOGGLE_AI_ANY, false);
+					put(PermissionTypes.TOGGLE_AI_ALL, false);
+					put(PermissionTypes.TOGGLE_DAMAGE_OWN, false);
+					put(PermissionTypes.TOGGLE_DAMAGE_ANY, false);
+					put(PermissionTypes.TOGGLE_DAMAGE_ALL, false);
+					put(PermissionTypes.INVITE, false);
+					put(PermissionTypes.KICK, false);
+					put(PermissionTypes.EDIT_PERMISSIONS, false);
+				}});
 				break;
 		}
 	}
@@ -279,19 +334,56 @@ public class BuildSectorData extends SerializableData {
 		return new HashSet<>(permissions.keySet());
 	}
 
-	public static class BuildSectorEntityData extends SerializableData {
+	public HashMap<PermissionTypes, Boolean> getPermissionsForEntity(int entityID, String username) {
+		BuildSectorEntityData entityData = getEntity((SegmentController) GameCommon.getGameObject(entityID));
+		if(entityData != null) return entityData.permissions.get(username);
+		else return null;
+	}
+
+	public HashMap<PermissionTypes, Boolean> getPermissionsForUser(String username) {
+		return permissions.get(username);
+	}
+
+	public void setPermissionForEntity(int entityID, String username, PermissionTypes type, boolean value, boolean server) {
+		BuildSectorEntityData entityData = getEntity((SegmentController) GameCommon.getGameObject(entityID));
+		if(entityData != null) entityData.setPermission(username, type, value, server);
+	}
+
+	public BuildSectorEntityData getEntityByID(int id) {
+		for(BuildSectorEntityData entityData : entities) {
+			if(entityData.getEntityID() == id) return entityData;
+		}
+		return null;
+	}
+
+	public enum EntityType {
+		SHIP,
+		STATION,
+		DOCKED,
+		TURRET;
+
+		public static EntityType fromEntity(SegmentController entity) {
+			if(entity.getType() == SimpleTransformableSendableObject.EntityType.SHIP) {
+				if(entity.railController.isTurretDocked()) return TURRET;
+				else if(entity.isDocked()) return DOCKED;
+				else return SHIP;
+			} else return STATION;
+		}
+	}
+
+	public class BuildSectorEntityData extends SerializableData {
 
 		private static final byte VERSION = 0;
-		
+
 		private int entityID;
-		private SimpleTransformableSendableObject.EntityType entityType;
-		private final HashList<String, BuildSectorPermissionData> permissions = new HashList<>();
-		
+		private EntityType entityType;
+		protected final HashMap<String, HashMap<PermissionTypes, Boolean>> permissions = new HashMap<>();
+
 		public BuildSectorEntityData(SegmentController entity) {
 			super(DataType.BUILD_SECTOR_ENTITY_DATA);
 			entityID = entity.getId();
-			entityType = entity.getType();
-			setDefaultPerms(entity);
+			entityType = EntityType.fromEntity(entity);
+			setDefaultEntityPerms(entity.getSpawner(), OWNER);
 		}
 
 		public BuildSectorEntityData(PacketReadBuffer readBuffer) throws IOException {
@@ -301,15 +393,6 @@ public class BuildSectorData extends SerializableData {
 		public BuildSectorEntityData(JSONObject data) {
 			super(data);
 		}
-		
-		private void setDefaultPerms(SegmentController entity) {
-			String owner = entity.getSpawner();
-			permissions.add(owner, new BuildSectorPermissionData(PermissionTypes.EDIT_SPECIFIC, new Object[] {true, entity.getId()}));
-			permissions.add(owner, new BuildSectorPermissionData(PermissionTypes.DELETE_SPECIFIC, new Object[] {true, entity.getId()}));
-			permissions.add(owner, new BuildSectorPermissionData(PermissionTypes.TOGGLE_AI_SPECIFIC, new Object[] {true, entity.getId()}));
-			permissions.add(owner, new BuildSectorPermissionData(PermissionTypes.TOGGLE_DAMAGE_SPECIFIC, new Object[] {true, entity.getId()}));
-			permissions.add(owner, new BuildSectorPermissionData(PermissionTypes.EDIT_ENTITY_PERMISSIONS, new Object[] {true, entity.getId()}));
-		}
 
 		@Override
 		public JSONObject serialize() {
@@ -318,6 +401,16 @@ public class BuildSectorData extends SerializableData {
 			data.put("uuid", getUUID());
 			data.put("entityID", entityID);
 			data.put("entityType", entityType.name());
+			JSONArray permissionsArray = new JSONArray();
+			for(String name : permissions.keySet()) {
+				for(Map.Entry<PermissionTypes, Boolean> permission : permissions.get(name).entrySet()) {
+					JSONObject permissionData = new JSONObject();
+					permissionData.put("name", name);
+					permissionData.put(permission.getKey().getKey(), permission.getValue());
+					permissionsArray.put(permissionData);
+				}
+			}
+			data.put("permissions", permissionsArray);
 			return data;
 		}
 
@@ -326,7 +419,20 @@ public class BuildSectorData extends SerializableData {
 			byte version = (byte) data.getInt("version");
 			dataUUID = data.getString("uuid");
 			entityID = data.getInt("entityID");
-			entityType = SimpleTransformableSendableObject.EntityType.valueOf(data.getString("entityType"));
+			entityType = EntityType.valueOf(data.getString("entityType"));
+			JSONArray permissionsArray = data.getJSONArray("permissions");
+			for(int i = 0; i < permissionsArray.length(); i++) {
+				JSONObject permissionData = permissionsArray.getJSONObject(i);
+				String name = permissionData.getString("name");
+				for(PermissionTypes type : PermissionTypes.values()) {
+					if(permissionData.has(type.getKey())) {
+						boolean value = permissionData.getBoolean(type.getKey());
+						HashMap<PermissionTypes, Boolean> permission = new HashMap<>();
+						permission.put(type, value);
+						permissions.put(name, permission);
+					}
+				}
+			}
 		}
 
 		@Override
@@ -335,6 +441,14 @@ public class BuildSectorData extends SerializableData {
 			writeBuffer.writeString(dataUUID);
 			writeBuffer.writeInt(entityID);
 			writeBuffer.writeString(entityType.name());
+			writeBuffer.writeInt(permissions.size());
+			for(String name : permissions.keySet()) {
+				for(Map.Entry<PermissionTypes, Boolean> permission : permissions.get(name).entrySet()) {
+					writeBuffer.writeString(name);
+					writeBuffer.writeString(permission.getKey().getKey());
+					writeBuffer.writeBoolean(permission.getValue());
+				}
+			}
 		}
 
 		@Override
@@ -342,79 +456,137 @@ public class BuildSectorData extends SerializableData {
 			byte version = readBuffer.readByte();
 			dataUUID = readBuffer.readString();
 			entityID = readBuffer.readInt();
-			entityType = SimpleTransformableSendableObject.EntityType.valueOf(readBuffer.readString());
+			entityType = EntityType.valueOf(readBuffer.readString());
+			int permissionCount = readBuffer.readInt();
+			for(int i = 0; i < permissionCount; i++) {
+				String name = readBuffer.readString();
+				PermissionTypes type = PermissionTypes.valueOf(readBuffer.readString());
+				boolean value = readBuffer.readBoolean();
+				HashMap<PermissionTypes, Boolean> permission = new HashMap<>();
+				permission.put(type, value);
+				permissions.put(name, permission);
+			}
 		}
-		
+
+		private void setDefaultEntityPerms(String user, int type) {
+			//These permissions are specific to an entity and are stored in the entity object itself rather than the sector object
+			//If set, these will override "global" build sector permissions
+			switch(type) {
+				case OWNER:
+					permissions.put(user, new HashMap<PermissionTypes, Boolean>() {{
+						put(PermissionTypes.EDIT_SPECIFIC, true);
+						put(PermissionTypes.DELETE_SPECIFIC, true);
+						put(PermissionTypes.TOGGLE_AI_SPECIFIC, true);
+						put(PermissionTypes.TOGGLE_DAMAGE_SPECIFIC, true);
+						put(PermissionTypes.EDIT_ENTITY_PERMISSIONS, true);
+					}});
+					break;
+				case FRIEND:
+					permissions.put(user, new HashMap<PermissionTypes, Boolean>() {{
+						put(PermissionTypes.EDIT_SPECIFIC, true);
+						put(PermissionTypes.DELETE_SPECIFIC, true);
+						put(PermissionTypes.TOGGLE_AI_SPECIFIC, true);
+						put(PermissionTypes.TOGGLE_DAMAGE_SPECIFIC, true);
+						put(PermissionTypes.EDIT_ENTITY_PERMISSIONS, false);
+					}});
+					break;
+				case OTHER:
+					permissions.put(user, new HashMap<PermissionTypes, Boolean>() {{
+						put(PermissionTypes.EDIT_SPECIFIC, false);
+						put(PermissionTypes.DELETE_SPECIFIC, false);
+						put(PermissionTypes.TOGGLE_AI_SPECIFIC, false);
+						put(PermissionTypes.TOGGLE_DAMAGE_SPECIFIC, false);
+						put(PermissionTypes.EDIT_ENTITY_PERMISSIONS, false);
+					}});
+					break;
+			}
+		}
+
+		public int getEntityID() {
+			return entityID;
+		}
+
 		public SegmentController getEntity() {
 			return (SegmentController) GameCommon.getGameObject(entityID);
 		}
-		
-		public SimpleTransformableSendableObject.EntityType getEntityType() {
+
+		public EntityType getEntityType() {
 			return entityType;
 		}
-	}
 
-	public static class BuildSectorPermissionData extends SerializableData {
-
-		private static final byte VERSION = 0;
-		
-		private PermissionTypes type;
-		private Object value;
-
-		public BuildSectorPermissionData(PermissionTypes type, Object value) {
-			super(DataType.BUILD_SECTOR_PERMISSION_DATA);
-			this.type = type;
-			this.value = value;
+		public String getSpawner() {
+			return getEntity().getSpawner();
 		}
 
-		public BuildSectorPermissionData(PacketReadBuffer readBuffer) throws IOException {
-			super(readBuffer);
+		public boolean getPermission(String user, PermissionTypes type) {
+			HashMap<PermissionTypes, Boolean> permissionMap = permissions.get(user);
+			if(permissionMap != null) {
+				Boolean value = permissionMap.get(type);
+				if(value != null) return value;
+				else return false;
+			} else return false;
 		}
 
-		public BuildSectorPermissionData(JSONObject data) {
-			super(data);
+		public void setPermission(String user, PermissionTypes type, boolean value, boolean server) {
+			HashMap<PermissionTypes, Boolean> permissionMap = permissions.get(user);
+			if(permissionMap != null) permissionMap.put(type, value);
+			else {
+				HashMap<PermissionTypes, Boolean> newPermissionMap = new HashMap<>();
+				newPermissionMap.put(type, value);
+				permissions.put(user, newPermissionMap);
+			}
+			BuildSectorDataManager.getInstance().updateData(BuildSectorData.this, server);
 		}
 
-		@Override
-		public JSONObject serialize() {
-			JSONObject data = new JSONObject();
-			data.put("version", VERSION);
-			data.put("uuid", getUUID());
-			data.put("type", type.ordinal());
-			data.put("value", value);
-			return data;
+		public boolean isAIActive() {
+			if(getEntity() instanceof Ship) {
+				Ship ship = (Ship) getEntity();
+				return ship.getAiConfiguration().get(Types.ACTIVE).isOn();
+			} else if(getEntity() instanceof SpaceStation) {
+				SpaceStation station = (SpaceStation) getEntity();
+				return station.getAiConfiguration().get(Types.ACTIVE).isOn();
+			} else return false;
 		}
 
-		@Override
-		public void deserialize(JSONObject data) {
-			byte version = (byte) data.getInt("version");
-			dataUUID = data.getString("uuid");
-			type = PermissionTypes.values()[data.getInt("type")];
-			value = data.get("value");
+		public void setAIActive(boolean value) {
+			try {
+				if(getEntity() instanceof Ship) {
+					Ship ship = (Ship) getEntity();
+					ship.getAiConfiguration().get(Types.ACTIVE).switchSetting(String.valueOf(value), true);
+					for(RailRelation docked : ship.railController.next) {
+						if(docked.docked.getSegmentController() instanceof Ship) setAiRecursive((Ship) docked.docked.getSegmentController(), value);
+					}
+				} else if(getEntity() instanceof SpaceStation) {
+					SpaceStation station = (SpaceStation) getEntity();
+					station.getAiConfiguration().get(Types.ACTIVE).switchSetting(String.valueOf(value), true);
+					for(RailRelation docked : station.railController.next) {
+						if(docked.docked.getSegmentController() instanceof Ship) setAiRecursive((Ship) docked.docked.getSegmentController(), value);
+					}
+				}
+			} catch(Exception exception) {
+				EdenCore.getInstance().logException("An error occurred while setting AI for entity", exception);
+			}
 		}
 
-		@Override
-		public void serializeNetwork(PacketWriteBuffer writeBuffer) throws IOException {
-			writeBuffer.writeByte(VERSION);
-			writeBuffer.writeString(dataUUID);
-			writeBuffer.writeInt(type.ordinal());
-			writeBuffer.writeString(value.toString());
+		private void setAiRecursive(Ship ship, boolean value) {
+			try {
+				ship.getAiConfiguration().get(Types.ACTIVE).switchSetting(String.valueOf(value), true);
+				for(RailRelation docked : ship.railController.next) {
+					if(docked.docked.getSegmentController() instanceof Ship) setAiRecursive((Ship) docked.docked.getSegmentController(), value);
+				}
+			} catch(Exception exception) {
+				EdenCore.getInstance().logException("An error occurred while setting AI for entity", exception);
+			}
 		}
 
-		@Override
-		public void deserializeNetwork(PacketReadBuffer readBuffer) throws IOException {
-			byte version = readBuffer.readByte();
-			dataUUID = readBuffer.readString();
-			type = PermissionTypes.values()[readBuffer.readInt()];
-			value = readBuffer.readString();
+		public void delete() {
+			EntityUtils.delete(getEntity());
 		}
 
-		public PermissionTypes getType() {
-			return type;
-		}
-
-		public Object getValue() {
-			return value;
+		public void deleteTurrets() {
+			for(RailRelation docked : getEntity().railController.next) {
+				if(docked.docked.getSegmentController() instanceof Ship) EntityUtils.delete(docked.docked.getSegmentController());
+			}
 		}
 	}
 
@@ -462,7 +634,7 @@ public class BuildSectorData extends SerializableData {
 		public String getDescription() {
 			return description;
 		}
-		
+
 		public static Set<PermissionTypes> getListValues() {
 			Set<PermissionTypes> values = new HashSet<>();
 			values.add(EDIT_OWN);
@@ -483,7 +655,7 @@ public class BuildSectorData extends SerializableData {
 			values.add(EDIT_PERMISSIONS);
 			return values;
 		}
-		
+
 		public static Set<PermissionTypes> getEntitySpecificValues() {
 			Set<PermissionTypes> values = new HashSet<>();
 			values.add(EDIT_SPECIFIC);

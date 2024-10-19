@@ -44,7 +44,7 @@ public abstract class DataManager<E extends SerializableData> {
 	}
 
 	public void requestFromServer() {
-		PacketUtil.sendPacketToServer(new SyncRequestPacket());
+		PacketUtil.sendPacketToServer(new SyncRequestPacket(getDataType()));
 	}
 
 	public void sendPacket(SerializableData data, int type, boolean toServer) {
@@ -111,6 +111,8 @@ public abstract class DataManager<E extends SerializableData> {
 		PersistentObjectUtil.save(EdenCore.getInstance().getSkeleton());
 		sendDataToAllPlayers(data, UPDATE_DATA);
 	}
+	
+	public abstract SerializableData.DataType getDataType();
 
 	public abstract Set<E> getClientCache();
 
