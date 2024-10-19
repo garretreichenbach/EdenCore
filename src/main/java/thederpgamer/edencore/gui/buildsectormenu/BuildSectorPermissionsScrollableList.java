@@ -1,9 +1,9 @@
 package thederpgamer.edencore.gui.buildsectormenu;
 
-import javafx.util.Pair;
 import org.schema.schine.graphicsengine.core.MouseEvent;
 import org.schema.schine.graphicsengine.forms.gui.*;
 import org.schema.schine.graphicsengine.forms.gui.newgui.*;
+import org.schema.schine.graphicsengine.movie.craterstudio.data.tuples.Pair;
 import org.schema.schine.input.InputState;
 import thederpgamer.edencore.data.buildsectordata.BuildSectorData;
 
@@ -35,18 +35,18 @@ public class BuildSectorPermissionsScrollableList extends ScrollableTableList<Pa
 
 	@Override
 	public void initColumns() {
-		addColumn("Permission", 5.0f, (Comparator.comparing(o -> o.getKey().getName())));
-		addColumn("Value", 5.0f, (Comparator.comparing(o -> o.getValue().toString())));
+		addColumn("Permission", 5.0f, (Comparator.comparing(o -> o.first().getName())));
+		addColumn("Value", 5.0f, (Comparator.comparing(o -> o.second().toString())));
 		addTextFilter(new GUIListFilterText<Pair<BuildSectorData.PermissionTypes, Boolean>>() {
 			@Override
 			public boolean isOk(String s, Pair<BuildSectorData.PermissionTypes, Boolean> permissionTypesBooleanPair) {
-				return permissionTypesBooleanPair.getKey().getName().toLowerCase().contains(s.toLowerCase());
+				return permissionTypesBooleanPair.first().getName().toLowerCase().contains(s.toLowerCase());
 			}
 		}, ControllerElement.FilterRowStyle.LEFT);
 		addDropdownFilter(new GUIListFilterDropdown<Pair<BuildSectorData.PermissionTypes, Boolean>, String>("TRUE", "FALSE") {
 			@Override
 			public boolean isOk(String o, Pair<BuildSectorData.PermissionTypes, Boolean> permissionTypesBooleanPair) {
-				return o == null || o.isEmpty() || o.equals("ANY") || o.equals(permissionTypesBooleanPair.getValue().toString().toUpperCase());
+				return o == null || o.isEmpty() || o.equals("ANY") || o.equals(permissionTypesBooleanPair.second().toString().toUpperCase());
 			}
 		}, new CreateGUIElementInterface<String>() {
 			@Override
@@ -94,8 +94,8 @@ public class BuildSectorPermissionsScrollableList extends ScrollableTableList<Pa
 		guiElementList.deleteObservers();
 		guiElementList.addObserver(this);
 		for(Pair<BuildSectorData.PermissionTypes, Boolean> permission : set) {
-			GUIClippedRow permissionRow = getSimpleRow(permission.getKey().getName(), this);
-			GUIClippedRow valueRow = getSimpleRow(permission.getValue().toString(), this);
+			GUIClippedRow permissionRow = getSimpleRow(permission.first().getName(), this);
+			GUIClippedRow valueRow = getSimpleRow(permission.second().toString(), this);
 			BuildSectorPermissionsScrollableListRow entryListRow = new BuildSectorPermissionsScrollableListRow(getState(), permission, permissionRow, valueRow);
 			guiElementList.add(entryListRow);
 			GUIAncor anchor = new GUIAncor(getState(), parent.getWidth() - 107.0f, 28.0f) {
@@ -111,8 +111,8 @@ public class BuildSectorPermissionsScrollableList extends ScrollableTableList<Pa
 				@Override
 				public void callback(GUIElement guiElement, MouseEvent mouseEvent) {
 					if(mouseEvent.pressedLeftMouse()) {
-						if(entityID != -1) buildSectorData.setPermissionForEntity(entityID, username, permission.getKey(), true, false);
-						else buildSectorData.setPermission(username, permission.getKey(), true, false);
+						if(entityID != -1) buildSectorData.setPermissionForEntity(entityID, username, permission.first(), true, false);
+						else buildSectorData.setPermission(username, permission.first(), true, false);
 						flagDirty();
 					}
 				}
@@ -138,8 +138,8 @@ public class BuildSectorPermissionsScrollableList extends ScrollableTableList<Pa
 				@Override
 				public void callback(GUIElement guiElement, MouseEvent mouseEvent) {
 					if(mouseEvent.pressedLeftMouse()) {
-						if(entityID != -1) buildSectorData.setPermissionForEntity(entityID, username, permission.getKey(), false, false);
-						else buildSectorData.setPermission(username, permission.getKey(), false, false);
+						if(entityID != -1) buildSectorData.setPermissionForEntity(entityID, username, permission.first(), false, false);
+						else buildSectorData.setPermission(username, permission.first(), false, false);
 						flagDirty();
 					}
 				}
