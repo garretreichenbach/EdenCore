@@ -30,6 +30,13 @@ public abstract class DataManager<E extends SerializableData> {
 		ExchangeDataManager.initialize(client);
 	}
 
+	public static DataManager<?> getDataManager(Class<? extends DataManager<?>> dataManagerClass) {
+		if(dataManagerClass.equals(PlayerDataManager.class)) return PlayerDataManager.getInstance();
+		else if(dataManagerClass.equals(BuildSectorDataManager.class)) return BuildSectorDataManager.getInstance();
+		else if(dataManagerClass.equals(ExchangeDataManager.class)) return ExchangeDataManager.getInstance();
+		return null;
+	}
+
 	public void sendDataToAllPlayers(SerializableData data, int type) {
 		for(PlayerState player : GameServer.getServerState().getPlayerStatesByName().values()) sendDataToPlayer(player, data, type);
 	}

@@ -7,10 +7,14 @@ import org.schema.game.common.data.player.PlayerState;
 import org.schema.game.common.data.player.faction.Faction;
 import thederpgamer.edencore.EdenCore;
 import thederpgamer.edencore.data.DataManager;
+import thederpgamer.edencore.data.SerializableData;
 import thederpgamer.edencore.manager.PlayerActionManager;
 import thederpgamer.edencore.network.PlayerActionCommandPacket;
 
-import java.util.*;
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
 
 /**
  * [Description]
@@ -37,6 +41,11 @@ public class PlayerDataManager extends DataManager<PlayerData> {
 		Set<PlayerData> data = new HashSet<>();
 		for(Object object : objects) data.add((PlayerData) object);
 		return data;
+	}
+
+	@Override
+	public SerializableData.DataType getDataType() {
+		return SerializableData.DataType.PLAYER_DATA;
 	}
 
 	@Override
