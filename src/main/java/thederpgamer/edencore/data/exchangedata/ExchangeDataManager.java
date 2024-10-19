@@ -3,6 +3,7 @@ package thederpgamer.edencore.data.exchangedata;
 import api.mod.config.PersistentObjectUtil;
 import thederpgamer.edencore.EdenCore;
 import thederpgamer.edencore.data.DataManager;
+import thederpgamer.edencore.data.SerializableData;
 
 import java.util.*;
 
@@ -31,6 +32,11 @@ public class ExchangeDataManager extends DataManager<ExchangeData> {
 		Set<ExchangeData> data = new HashSet<>();
 		for(Object object : objects) data.add((ExchangeData) object);
 		return data;
+	}
+
+	@Override
+	public SerializableData.DataType getDataType() {
+		return SerializableData.DataType.EXCHANGE_DATA;
 	}
 
 	@Override

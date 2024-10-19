@@ -5,6 +5,7 @@ import org.schema.common.util.linAlg.Vector3i;
 import org.schema.game.common.data.player.PlayerState;
 import thederpgamer.edencore.EdenCore;
 import thederpgamer.edencore.data.DataManager;
+import thederpgamer.edencore.data.SerializableData;
 import thederpgamer.edencore.manager.ConfigManager;
 
 import java.util.*;
@@ -33,6 +34,11 @@ public class BuildSectorDataManager extends DataManager<BuildSectorData> {
 		Set<BuildSectorData> data = new HashSet<>();
 		for(Object object : objects) data.add((BuildSectorData) object);
 		return data;
+	}
+
+	@Override
+	public SerializableData.DataType getDataType() {
+		return SerializableData.DataType.BUILD_SECTOR_DATA;
 	}
 
 	@Override
