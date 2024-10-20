@@ -5,6 +5,7 @@ import api.listener.Listener;
 import api.listener.events.block.SegmentPieceActivateByPlayer;
 import api.listener.events.block.SegmentPieceActivateEvent;
 import api.listener.events.draw.RegisterWorldDrawersEvent;
+import api.listener.events.gui.GUIElementInstansiateEvent;
 import api.listener.events.gui.GUITopBarCreateEvent;
 import api.listener.events.gui.MainWindowTabAddEvent;
 import api.listener.events.input.KeyPressEvent;
@@ -12,6 +13,10 @@ import api.listener.events.world.SimulationJobExecuteEvent;
 import api.mod.StarLoader;
 import api.utils.gui.ModGUIHandler;
 import org.schema.common.util.linAlg.Vector3i;
+import org.schema.game.client.view.gui.PlayerPanel;
+import org.schema.game.client.view.gui.catalog.newcatalog.CatalogOptionsButtonPanel;
+import org.schema.game.client.view.gui.catalog.newcatalog.CatalogPanelNew;
+import org.schema.game.client.view.gui.catalog.newcatalog.CatalogScrollableListNew;
 import org.schema.game.client.view.gui.newgui.GUITopBar;
 import org.schema.game.server.data.simulation.jobs.SpawnPiratePatrolPartyJob;
 import org.schema.schine.common.language.Lng;
@@ -19,17 +24,19 @@ import org.schema.schine.graphicsengine.core.MouseEvent;
 import org.schema.schine.graphicsengine.forms.gui.GUIActivationHighlightCallback;
 import org.schema.schine.graphicsengine.forms.gui.GUICallback;
 import org.schema.schine.graphicsengine.forms.gui.GUIElement;
+import org.schema.schine.graphicsengine.forms.gui.newgui.GUIContentPane;
 import org.schema.schine.input.InputState;
 import thederpgamer.edencore.EdenCore;
 import thederpgamer.edencore.data.buildsectordata.BuildSectorDataManager;
 import thederpgamer.edencore.data.misc.ControlBindingData;
 import thederpgamer.edencore.drawer.BuildSectorHudDrawer;
-import thederpgamer.edencore.gui.bankingmenu.BankingDialog;
 import thederpgamer.edencore.gui.buildsectormenu.BuildSectorDialog;
 import thederpgamer.edencore.gui.controls.ControlBindingsScrollableList;
+import thederpgamer.edencore.gui.elements.ECCatalogScrollableListNew;
 import thederpgamer.edencore.gui.exchangemenu.ExchangeDialog;
 import thederpgamer.edencore.utils.ClassUtils;
 
+import java.lang.reflect.Field;
 import java.util.Locale;
 import java.util.Set;
 
@@ -238,6 +245,74 @@ public class EventManager {
 								(new BuildSectorDialog()).activate();
 								return;
 						}
+					}
+				}
+			}
+		}, instance);
+		
+		StarLoader.registerListener(GUIElementInstansiateEvent.class, new Listener<GUIElementInstansiateEvent>() {
+			@Override
+			public void onEvent(GUIElementInstansiateEvent event) {
+				if(event.getGUIElement() instanceof CatalogPanelNew) {
+					try {
+						PlayerPanel panel = GameClient.getClientState().getWorldDrawer().getGuiDrawer().getPlayerPanel();
+						Field catalogField = panel.getClass().getDeclaredField("catalogPanelNew");
+						catalogField.setAccessible(true);
+						CatalogPanelNew catalogPanel = (CatalogPanelNew) catalogField.get(panel);
+						if(catalogPanel != null) {
+							catalogPanel.cleanUp();
+							catalogPanel = new CatalogPanelNew(event.getInputState()) {
+								@Override
+								public void createAvailableCatalogPane() {
+									try {
+										Field availListField = CatalogPanelNew.class.getDeclaredField("availList");
+										Field availableTabField = CatalogPanelNew.class.getDeclaredField("availableTab");
+										
+										availListField.setAccessible(true);
+										availableTabField.setAccessible(true);
+										
+										CatalogScrollableListNew availList = (CatalogScrollableListNew) availListField.get(this);
+										
+										Field modeField = availList.getClass().getDeclaredField("mode");
+										modeField.setAccessible(true);
+										int mode = modeField.getInt(availList);
+										
+										Field showPriceField = availList.getClass().getDeclaredField("showPrice");
+										showPriceField.setAccessible(true);
+										boolean showPrice = showPriceField.getBoolean(availList);
+										
+										Field selectSingleField = availList.getClass().getDeclaredField("selectSingle");
+										selectSingleField.setAccessible(true);
+										boolean selectSingle = selectSingleField.getBoolean(availList);
+										
+										if(!(availList instanceof ECCatalogScrollableListNew)) {
+											GUIContentPane availableTab = (GUIContentPane) availableTabField.get(this);
+											if(availList != null) availList.cleanUp();
+											CatalogOptionsButtonPanel c = new CatalogOptionsButtonPanel(getState(), this);
+											c.onInit();
+											availableTab.setContent(0, c);
+											if(!CatalogOptionsButtonPanel.areMultiplayerButtonVisible()) {
+												availableTab.setTextBoxHeightLast(58);
+												availableTab.addNewTextBox(10);
+											} else {
+												availableTab.setTextBoxHeightLast(82);
+												availableTab.addNewTextBox(10);
+											}
+											
+											availList = new ECCatalogScrollableListNew(getState(), availableTab.getContent(1), mode, showPrice, selectSingle);
+											availList.onInit();
+											availableTab.getContent(1).attach(availList);
+										}
+									} catch(Exception exception) {
+										instance.logException("Failed to create Available Catalog Pane", exception);
+									}
+								}
+							};
+							catalogPanel.onInit();
+							catalogField.set(panel, catalogPanel);
+						}
+					} catch(Exception exception) {
+						instance.logException("Failed to replace Catalog Panel", exception);
 					}
 				}
 			}

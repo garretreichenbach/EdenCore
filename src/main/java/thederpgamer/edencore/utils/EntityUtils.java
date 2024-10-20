@@ -13,7 +13,9 @@ import org.schema.game.common.controller.ai.Types;
 import org.schema.game.common.controller.elements.ManagerContainer;
 import org.schema.game.common.controller.rails.RailRelation;
 import org.schema.game.common.data.SegmentPiece;
+import org.schema.game.common.data.element.meta.BlueprintMetaItem;
 import org.schema.game.common.data.player.PlayerState;
+import org.schema.game.common.data.player.catalog.CatalogPermission;
 import org.schema.game.common.data.world.SimpleTransformableSendableObject;
 import org.schema.game.server.controller.BluePrintController;
 import org.schema.game.server.controller.EntityAlreadyExistsException;
@@ -22,6 +24,7 @@ import org.schema.game.server.data.GameServerState;
 import org.schema.game.server.data.blueprint.ChildStats;
 import org.schema.game.server.data.blueprint.SegmentControllerOutline;
 import org.schema.game.server.data.blueprint.SegmentControllerSpawnCallbackDirect;
+import org.schema.game.server.data.blueprintnw.Blueprint;
 import org.schema.game.server.data.blueprintnw.BlueprintEntry;
 import org.schema.schine.graphicsengine.core.GlUtil;
 import org.schema.schine.graphicsengine.core.settings.StateParameterNotFoundException;
@@ -29,6 +32,7 @@ import thederpgamer.edencore.EdenCore;
 
 import javax.vecmath.Vector3f;
 import java.io.IOException;
+import java.util.ArrayList;
 
 /**
  * <Description>
@@ -134,5 +138,13 @@ public class EntityUtils {
 		} catch(Exception exception) {
 			EdenCore.getInstance().logException("Failed to delete entity", exception);
 		}
+	}
+	
+	public static BlueprintEntry getFromCatalog(CatalogPermission permission) {
+		ArrayList<BlueprintEntry> entries = new ArrayList<>(BluePrintController.active.readBluePrints());
+		for(BlueprintEntry entry : entries) {
+			if(entry.getName().equals(permission.getUid())) return entry;
+		}
+		return null;
 	}
 }
