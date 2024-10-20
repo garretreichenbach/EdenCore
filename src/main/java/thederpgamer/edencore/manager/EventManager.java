@@ -31,13 +31,11 @@ import thederpgamer.edencore.data.buildsectordata.BuildSectorDataManager;
 import thederpgamer.edencore.data.misc.ControlBindingData;
 import thederpgamer.edencore.drawer.BuildSectorHudDrawer;
 import thederpgamer.edencore.gui.buildsectormenu.BuildSectorDialog;
-import thederpgamer.edencore.gui.controls.ControlBindingsScrollableList;
 import thederpgamer.edencore.gui.elements.ECCatalogScrollableListNew;
 import thederpgamer.edencore.gui.exchangemenu.ExchangeDialog;
 import thederpgamer.edencore.utils.ClassUtils;
 
 import java.lang.reflect.Field;
-import java.util.Locale;
 import java.util.Set;
 
 /**
@@ -61,6 +59,7 @@ public class EventManager {
 		StarLoader.registerListener(MainWindowTabAddEvent.class, new Listener<MainWindowTabAddEvent>() {
 			@Override
 			public void onEvent(MainWindowTabAddEvent event) {
+				/*
 				if(event.getTitleAsString().toUpperCase(Locale.ENGLISH).equals(Lng.str("MOUSE"))) {
 					event.getPane().addNewTextBox(300);
 					ControlBindingsScrollableList list = new ControlBindingsScrollableList(event.getPane().getState(), event.getPane().getContent(1), ControlBindingData.ControlType.MOUSE);
@@ -78,6 +77,7 @@ public class EventManager {
 					list.onInit();
 					event.getPane().getContent(1).attach(list);
 				}
+				 */
 
 				if(BuildSectorDataManager.getInstance().isPlayerInAnyBuildSector(GameClient.getClientPlayerState())) {
 					for(String disabledTab : disabledTabs) {
