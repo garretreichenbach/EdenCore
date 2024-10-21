@@ -11,13 +11,14 @@ import glossar.GlossarEntry;
 import glossar.GlossarInit;
 import org.apache.commons.io.IOUtils;
 import org.schema.schine.resource.ResourceLoader;
-import thederpgamer.edencore.commands.*;
+import thederpgamer.edencore.commands.GuideCommand;
 import thederpgamer.edencore.data.DataManager;
 import thederpgamer.edencore.element.ElementManager;
 import thederpgamer.edencore.element.items.PrizeBars;
 import thederpgamer.edencore.manager.ConfigManager;
 import thederpgamer.edencore.manager.EventManager;
 import thederpgamer.edencore.manager.ResourceManager;
+import thederpgamer.edencore.manager.ThreadManager;
 import thederpgamer.edencore.network.PlayerActionCommandPacket;
 import thederpgamer.edencore.network.SendDataPacket;
 import thederpgamer.edencore.network.SyncRequestPacket;
@@ -65,6 +66,7 @@ public class EdenCore extends StarMod {
 	public void onServerCreated(ServerInitializeEvent serverInitializeEvent) {
 		super.onServerCreated(serverInitializeEvent);
 		DataManager.initialize(false);
+		ThreadManager.initialize(this);
 	}
 
 	@Override

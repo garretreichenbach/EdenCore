@@ -9,6 +9,7 @@ import api.listener.events.gui.GUIElementInstansiateEvent;
 import api.listener.events.gui.GUITopBarCreateEvent;
 import api.listener.events.gui.MainWindowTabAddEvent;
 import api.listener.events.input.KeyPressEvent;
+import api.listener.events.player.PlayerJoinWorldEvent;
 import api.listener.events.world.SimulationJobExecuteEvent;
 import api.mod.StarLoader;
 import api.utils.gui.ModGUIHandler;
@@ -87,7 +88,14 @@ public class EventManager {
 				}
 			}
 		}, instance);
-
+		
+		StarLoader.registerListener(PlayerJoinWorldEvent.class, new Listener<PlayerJoinWorldEvent>() {
+			@Override
+			public void onEvent(PlayerJoinWorldEvent event) {
+				ThreadManager.addLoginTimer(event.getPlayerState().getName());
+			}
+		}, instance);
+		
 		StarLoader.registerListener(GUITopBarCreateEvent.class, new Listener<GUITopBarCreateEvent>() {
 			@Override
 			public void onEvent(GUITopBarCreateEvent event) {

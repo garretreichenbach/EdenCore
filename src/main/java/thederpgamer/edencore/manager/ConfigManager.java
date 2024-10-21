@@ -15,7 +15,8 @@ public class ConfigManager {
 
 	private static final String[] defaultMainConfig = {
 			"build_sector_distance_offset: 100000",
-			"tip_interval: 600000",
+			"player_login_reward_timer: 900000",
+			"tip_interval: 600000"
 	};
 	private static final String[] defaultTipsConfig = {
 			"Tip: You can access the in-game Guide by pressing the GUIDE button underneath the PLAYER dropdown in the top right corner of the screen or by using the /guide command.",
@@ -38,7 +39,7 @@ public class ConfigManager {
 			"Tip: Don't be afraid to experiment with different designs and tactics. You never know what might work until you try it!",
 			"Tip: Defeat is a far better teacher than victory. Learn from your mistakes and use them to improve your skills.",
 	};
-	
+
 	private static FileConfiguration mainConfig;
 	private static FileConfiguration tipsConfig;
 
@@ -56,7 +57,7 @@ public class ConfigManager {
 		return mainConfig;
 	}
 	
-	public static FileConfiguration getTipsConfig() {
-		return tipsConfig;
+	public static String getRandomTip() {
+		return tipsConfig.getList("tips").get((int) (Math.random() * tipsConfig.getList("tips").size()));
 	}
 }
