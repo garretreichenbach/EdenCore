@@ -19,6 +19,8 @@ import thederpgamer.edencore.manager.ConfigManager;
 import thederpgamer.edencore.manager.EventManager;
 import thederpgamer.edencore.manager.ResourceManager;
 import thederpgamer.edencore.network.PlayerActionCommandPacket;
+import thederpgamer.edencore.network.SendDataPacket;
+import thederpgamer.edencore.network.SyncRequestPacket;
 
 import java.io.IOException;
 import java.nio.file.Files;
@@ -117,17 +119,15 @@ public class EdenCore extends StarMod {
 		rules.addEntry(new GlossarEntry("Rules", "1) Be polite and respectful in chat.\n" + "2) Do not spam chat or advertise links to other servers.\n" + "3) Do not use any cheats, glitches, exploits, etc. that give you an unfair advantage over other players. If you find a bug, please report it to a staff member.\n" + "4) Keep politics at an absolute minimum. This is a starmade server, not a political forum.\n" + "5) Hate speech and hate symbols are not tolerated. This includes racism, sexism, homophobia, etc.\n" + "6) Do not intentionally create server lag. If your entity is lagging the server, it may be deleted by staff without compensation.\n" + "7) Do not create home-bases on planets.\n" + "8) Do not attempt to attack or capture public infrastructure such as warpgates.\n" + "9) Use common sense. If you are unsure about something, ask a staff member.\n" + "10) Repeated or serious violations of any of the server rules can result in bans of the offenders, deletion of ships/stations, and penalties to anyone involved or associated."));
 		GlossarInit.addCategory(rules);
 		GlossarCategory edenCore = new GlossarCategory("Eden Core");
-		edenCore.addEntry(new GlossarEntry("Build Sectors", "Build Sectors are special sectors unique to each player where you can build freely in creative mode. They are protected from other players and hostiles.\n" + "You can invite other players to your build sector, set permissions, spawn entities, and more using the build sector menu.\nTo access the build sector menu, use the - key on your keypad or look in the top right menu bar under PLAYER.\n" + "If you prefer to use commands, you can use /help build_sector to view usable commands."));
-		edenCore.addEntry(new GlossarEntry("Banking", "Banking is a feature that allows you to send money to other players.\n" + "To send money, use /bank_send <player_name> <amount> [optional_message].\n" + "To view the last 10 transactions, use /bank_list."));
-		edenCore.addEntry(new GlossarEntry("Server Exchange", "Every day you log in, you will receive 2 Bronze Bars. You can only receive this reward once per day.\n" + "You can use these bars in the Server Exchange menu, which can be opened with the * key on your keypad, or by looking in the top right menu bar under PLAYER.\n" + "You can use the Server Exchange to buy items from the server shop, such as resources, items, and blueprints. Please note that some of these features are work in progress and may not always be available.\n" + "Some items in the Server Exchange require silver or gold bars instead of bronze. To upgrade your bronze bars into silver or gold, see the EXCHANGE tab in the Server Exchange menu."));
-		edenCore.addEntry(new GlossarEntry("Listing Blueprints in the Exchange", "Players are able to sell blueprints in the COMMUNITY tab of the blueprint exchange."));
-		edenCore.addEntry(new GlossarEntry("Donator Perks", "Donators can use chat colors and get free bars each day.\n" + "Chat colors:\n" + " - &0 = Transparent\n" + " - &1 = White\n" + " - &2 = Light Grey\n" + " - &3 = Grey\n" + " - &4 = Dark Grey\n" + " - &5 = Black\n" + " - &y = Yellow\n" + " - &o = Orange\n" + " - &r = Red\n" + " - &m = Magenta\n" + " - &p = Pink\n" + " - &b = Blue\n" + " - &c = Cyan\n" + " - &g = Green\n"));
+		edenCore.addEntry(new GlossarEntry("Build Sectors", "Build Sectors are special sectors unique to each player where you can build freely in creative mode. They are protected from other players and hostiles.\n" + "You can invite other players to your Build Sector, set permissions, spawn entities, and more using the Build Sector menu.\nTo access the Build Sector menu, look in the top right menu bar under PLAYER.\n"));
 		GlossarInit.addCategory(edenCore);
 		logInfo("Initialized Glossary");
 	}
 
 	private void registerPackets() {
 		PacketUtil.registerPacket(PlayerActionCommandPacket.class);
+		PacketUtil.registerPacket(SendDataPacket.class);
+		PacketUtil.registerPacket(SyncRequestPacket.class);
 		logInfo("Registered Packets");
 	}
 
