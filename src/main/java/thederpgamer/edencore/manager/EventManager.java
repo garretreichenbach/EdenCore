@@ -25,12 +25,15 @@ import org.schema.schine.graphicsengine.forms.gui.GUIActivationHighlightCallback
 import org.schema.schine.graphicsengine.forms.gui.GUICallback;
 import org.schema.schine.graphicsengine.forms.gui.GUIElement;
 import org.schema.schine.graphicsengine.forms.gui.newgui.GUIContentPane;
+import org.schema.schine.graphicsengine.forms.gui.newgui.GUIResizableGrabbableWindow;
+import org.schema.schine.graphicsengine.forms.gui.newgui.GUITabbedContent;
 import org.schema.schine.input.InputState;
 import thederpgamer.edencore.EdenCore;
 import thederpgamer.edencore.data.buildsectordata.BuildSectorDataManager;
 import thederpgamer.edencore.data.misc.ControlBindingData;
 import thederpgamer.edencore.drawer.BuildSectorHudDrawer;
 import thederpgamer.edencore.gui.buildsectormenu.BuildSectorDialog;
+import thederpgamer.edencore.gui.controls.ControlBindingsScrollableList;
 import thederpgamer.edencore.gui.elements.ECCatalogScrollableListNew;
 import thederpgamer.edencore.gui.exchangemenu.ExchangeDialog;
 import thederpgamer.edencore.utils.ClassUtils;
@@ -46,38 +49,33 @@ import java.util.Set;
 public class EventManager {
 
 	public static final String[] disabledTabs = {"FLEETS", "SHOP", "REPAIRS", "TRADE", "SET PRICES"};
-
+	public static final String[] disabledWindows = {"Fleet", "ShopPanelNew", "FactionPanelNew"};
 	public static final short[] disabledBlocks = {
-			347, // Shop Module
-			291, // Faction Module
-			667, // Shipyard Computer
-			683, // Race Gate Controller
-			542 // Warp Gate Computer
+			347, //Shop Module
+			291, //Faction Module
+			667, //Shipyard Computer
+			683, //Race Gate Controller
+			542 //Warp Gate Computer
 	};
 
 	public static void initialize(EdenCore instance) {
 		StarLoader.registerListener(MainWindowTabAddEvent.class, new Listener<MainWindowTabAddEvent>() {
 			@Override
 			public void onEvent(MainWindowTabAddEvent event) {
-				/*
-				if(event.getTitleAsString().toUpperCase(Locale.ENGLISH).equals(Lng.str("MOUSE"))) {
-					event.getPane().addNewTextBox(300);
-					ControlBindingsScrollableList list = new ControlBindingsScrollableList(event.getPane().getState(), event.getPane().getContent(1), ControlBindingData.ControlType.MOUSE);
+				if(event.getTitleAsString().equals(Lng.str("Keyboard"))) event.getPane().setTabName(Lng.str("KEYBOARD")); //Fix for the tab name being lowercase for some reason
+				else if(event.getTitleAsString().equals(Lng.str("CONTROLS")) && event.getWindow().getTabs().size() == 2) { //Make sure we aren't adding a duplicate tab
+					GUIContentPane modControlsPane = event.getWindow().addTab(Lng.str("MOD CONTROLS")); //Todo: StarLoader will support mod controls and settings in these menus next update, so we can remove this later
+					GUITabbedContent tabbedContent = new GUITabbedContent(modControlsPane.getState(), modControlsPane.getContent(0));
+					tabbedContent.activationInterface = event.getWindow().activeInterface;
+					tabbedContent.onInit();
+					tabbedContent.setPos(0, 2, 0);
+					modControlsPane.getContent(0).attach(tabbedContent);
+
+					GUIContentPane edenCorePane = tabbedContent.addTab("EDENCORE");
+					ControlBindingsScrollableList list = new ControlBindingsScrollableList(edenCorePane.getState(), edenCorePane.getContent(0), ControlBindingData.ControlType.KEYBOARD);
 					list.onInit();
-					event.getPane().getContent(1).attach(list);
-				} else if(event.getTitleAsString().toUpperCase(Locale.ENGLISH).equals(Lng.str("KEYBOARD"))) {
-					event.getPane().setTabName(Lng.str("KEYBOARD")); //Fix for the tab name being lowercase for some reason
-					event.getPane().addNewTextBox(300);
-					ControlBindingsScrollableList list = new ControlBindingsScrollableList(event.getPane().getState(), event.getPane().getContent(1), ControlBindingData.ControlType.KEYBOARD);
-					list.onInit();
-					event.getPane().getContent(1).attach(list);
-				} else if(event.getTitleAsString().toUpperCase(Locale.ENGLISH).equals(Lng.str("JOYSTICK/PAD"))) {
-					event.getPane().addNewTextBox(300);
-					ControlBindingsScrollableList list = new ControlBindingsScrollableList(event.getPane().getState(), event.getPane().getContent(1), ControlBindingData.ControlType.JOYSTICK_PAD);
-					list.onInit();
-					event.getPane().getContent(1).attach(list);
+					edenCorePane.getContent(0).attach(list);
 				}
-				 */
 
 				if(BuildSectorDataManager.getInstance().isPlayerInAnyBuildSector(GameClient.getClientPlayerState())) {
 					for(String disabledTab : disabledTabs) {
@@ -249,7 +247,7 @@ public class EventManager {
 				}
 			}
 		}, instance);
-		
+
 		StarLoader.registerListener(GUIElementInstansiateEvent.class, new Listener<GUIElementInstansiateEvent>() {
 			@Override
 			public void onEvent(GUIElementInstansiateEvent event) {
@@ -267,24 +265,24 @@ public class EventManager {
 									try {
 										Field availListField = CatalogPanelNew.class.getDeclaredField("availList");
 										Field availableTabField = CatalogPanelNew.class.getDeclaredField("availableTab");
-										
+
 										availListField.setAccessible(true);
 										availableTabField.setAccessible(true);
-										
+
 										CatalogScrollableListNew availList = (CatalogScrollableListNew) availListField.get(this);
-										
+
 										Field modeField = availList.getClass().getDeclaredField("mode");
 										modeField.setAccessible(true);
 										int mode = modeField.getInt(availList);
-										
+
 										Field showPriceField = availList.getClass().getDeclaredField("showPrice");
 										showPriceField.setAccessible(true);
 										boolean showPrice = showPriceField.getBoolean(availList);
-										
+
 										Field selectSingleField = availList.getClass().getDeclaredField("selectSingle");
 										selectSingleField.setAccessible(true);
 										boolean selectSingle = selectSingleField.getBoolean(availList);
-										
+
 										if(!(availList instanceof ECCatalogScrollableListNew)) {
 											GUIContentPane availableTab = (GUIContentPane) availableTabField.get(this);
 											if(availList != null) availList.cleanUp();
@@ -298,7 +296,7 @@ public class EventManager {
 												availableTab.setTextBoxHeightLast(82);
 												availableTab.addNewTextBox(10);
 											}
-											
+
 											availList = new ECCatalogScrollableListNew(getState(), availableTab.getContent(1), mode, showPrice, selectSingle);
 											availList.onInit();
 											availableTab.getContent(1).attach(availList);
@@ -313,6 +311,16 @@ public class EventManager {
 						}
 					} catch(Exception exception) {
 						instance.logException("Failed to replace Catalog Panel", exception);
+					}
+				} else if(event.getGUIElement() instanceof GUIResizableGrabbableWindow) {
+					GUIResizableGrabbableWindow window = (GUIResizableGrabbableWindow) event.getGUIElement();
+					if(BuildSectorDataManager.getInstance().isPlayerInAnyBuildSector(GameClient.getClientPlayerState())) {
+						for(String windowID : disabledWindows) {
+							if(window.getWindowId().equals(windowID) || window.getWindowId().equals(Lng.str(windowID))) {
+								window.cleanUp();
+								event.setCanceled(true);
+							}
+						}
 					}
 				}
 			}
@@ -343,14 +351,14 @@ public class EventManager {
 				}
 			}
 		}, instance);
-		
+
 		StarLoader.registerListener(RegisterWorldDrawersEvent.class, new Listener<RegisterWorldDrawersEvent>() {
 			@Override
 			public void onEvent(RegisterWorldDrawersEvent event) {
 				event.getModDrawables().add(new BuildSectorHudDrawer());
 			}
 		}, instance);
-		
+
 		StarLoader.registerListener(SegmentPieceActivateEvent.class, new Listener<SegmentPieceActivateEvent>() {
 			@Override
 			public void onEvent(SegmentPieceActivateEvent event) {
@@ -368,7 +376,7 @@ public class EventManager {
 				}
 			}
 		}, instance);
-		
+
 		StarLoader.registerListener(SegmentPieceActivateByPlayer.class, new Listener<SegmentPieceActivateByPlayer>() {
 			@Override
 			public void onEvent(SegmentPieceActivateByPlayer event) {
