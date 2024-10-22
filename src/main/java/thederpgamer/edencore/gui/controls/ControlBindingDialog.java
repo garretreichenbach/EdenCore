@@ -45,13 +45,9 @@ public class ControlBindingDialog extends DialogInput {
 	@Override
 	public void handleKeyEvent(KeyEventInterface e) {
 		if(KeyboardMappings.getEventKeyState(e, getState())) {
-			if(KeyboardMappings.getEventKeyRaw(e) == GLFW.GLFW_KEY_ESCAPE) {
-				System.out.println("OPTIONS: Cancel");
-				cancel();
-			} else {
-				mapping.setBinding(KeyboardMappings.getEventKeyRaw(e));
-				deactivate();
-			}
+			if(KeyboardMappings.getEventKeyRaw(e) == GLFW.GLFW_KEY_ESCAPE) mapping.setBinding(0);
+			else mapping.setBinding(KeyboardMappings.getEventKeyRaw(e));
+			deactivate();
 		}
 	}
 

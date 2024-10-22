@@ -12,6 +12,7 @@ import api.listener.events.input.KeyPressEvent;
 import api.listener.events.player.PlayerJoinWorldEvent;
 import api.listener.events.world.SimulationJobExecuteEvent;
 import api.mod.StarLoader;
+import api.mod.StarMod;
 import api.utils.gui.ModGUIHandler;
 import org.schema.common.util.linAlg.Vector3i;
 import org.schema.game.client.view.gui.PlayerPanel;
@@ -30,9 +31,14 @@ import org.schema.schine.graphicsengine.forms.gui.newgui.GUIResizableGrabbableWi
 import org.schema.schine.graphicsengine.forms.gui.newgui.GUITabbedContent;
 import org.schema.schine.input.InputState;
 import thederpgamer.edencore.EdenCore;
+import thederpgamer.edencore.data.DataManager;
+import thederpgamer.edencore.data.buildsectordata.BuildSectorData;
 import thederpgamer.edencore.data.buildsectordata.BuildSectorDataManager;
 import thederpgamer.edencore.data.misc.ControlBindingData;
+import thederpgamer.edencore.data.playerdata.PlayerData;
+import thederpgamer.edencore.data.playerdata.PlayerDataManager;
 import thederpgamer.edencore.drawer.BuildSectorHudDrawer;
+import thederpgamer.edencore.gui.bankingmenu.BankingDialog;
 import thederpgamer.edencore.gui.buildsectormenu.BuildSectorDialog;
 import thederpgamer.edencore.gui.controls.ControlBindingsScrollableList;
 import thederpgamer.edencore.gui.elements.ECCatalogScrollableListNew;
@@ -40,7 +46,8 @@ import thederpgamer.edencore.gui.exchangemenu.ExchangeDialog;
 import thederpgamer.edencore.utils.ClassUtils;
 
 import java.lang.reflect.Field;
-import java.util.Set;
+import java.util.ArrayList;
+import java.util.Locale;
 
 /**
  * [Description]
@@ -63,8 +70,10 @@ public class EventManager {
 		StarLoader.registerListener(MainWindowTabAddEvent.class, new Listener<MainWindowTabAddEvent>() {
 			@Override
 			public void onEvent(MainWindowTabAddEvent event) {
-				if(event.getTitleAsString().equals(Lng.str("Keyboard"))) event.getPane().setTabName(Lng.str("KEYBOARD")); //Fix for the tab name being lowercase for some reason
-				else if(event.getTitleAsString().equals(Lng.str("CONTROLS")) && event.getWindow().getTabs().size() == 2) { //Make sure we aren't adding a duplicate tab
+				if(event.getTitleAsString().equals(Lng.str("Keyboard"))) { //Fix for the tab name being lowercase for some reason
+					event.getPane().getTabNameText().setTextSimple(Lng.str("KEYBOARD"));
+					event.getPane().getTabNameText().onInit();
+				} else if(event.getTitleAsString().equals(Lng.str("CONTROLS")) && event.getWindow().getTabs().size() == 2) { //Make sure we aren't adding a duplicate tab
 					GUIContentPane modControlsPane = event.getWindow().addTab(Lng.str("MOD CONTROLS")); //Todo: StarLoader will support mod controls and settings in these menus next update, so we can remove this later
 					GUITabbedContent tabbedContent = new GUITabbedContent(modControlsPane.getState(), modControlsPane.getContent(0));
 					tabbedContent.activationInterface = event.getWindow().activeInterface;
@@ -72,10 +81,15 @@ public class EventManager {
 					tabbedContent.setPos(0, 2, 0);
 					modControlsPane.getContent(0).attach(tabbedContent);
 
-					GUIContentPane edenCorePane = tabbedContent.addTab("EDENCORE");
-					ControlBindingsScrollableList list = new ControlBindingsScrollableList(edenCorePane.getState(), edenCorePane.getContent(0), ControlBindingData.ControlType.KEYBOARD);
-					list.onInit();
-					edenCorePane.getContent(0).attach(list);
+					for(StarMod mod : ControlBindingData.getBindings().keySet()) {
+						ArrayList<ControlBindingData> modBindings = ControlBindingData.getBindings().get(mod);
+						if(!modBindings.isEmpty()) {
+							GUIContentPane modTab = tabbedContent.addTab(mod.getName().toUpperCase(Locale.ENGLISH));
+							ControlBindingsScrollableList scrollableList = new ControlBindingsScrollableList(modTab.getState(), modTab.getContent(0), mod);
+							scrollableList.onInit();
+							modTab.getContent(0).attach(scrollableList);
+						}
+					}
 				}
 
 				if(BuildSectorDataManager.getInstance().isPlayerInAnyBuildSector(GameClient.getClientPlayerState())) {
@@ -88,25 +102,27 @@ public class EventManager {
 				}
 			}
 		}, instance);
-		
+
 		StarLoader.registerListener(PlayerJoinWorldEvent.class, new Listener<PlayerJoinWorldEvent>() {
 			@Override
 			public void onEvent(PlayerJoinWorldEvent event) {
-				ThreadManager.addLoginTimer(event.getPlayerState().getName());
+				if(!event.isServer()) DataManager.initialize(true);
+				else {
+					ThreadManager.addLoginTimer(event.getPlayerState().getName());
+					if(PlayerDataManager.getInstance().getFromName(event.getPlayerState().getName(), true) == null) PlayerDataManager.getInstance().addData(new PlayerData(event.getPlayerState()), true);
+					if(BuildSectorDataManager.getInstance().getFromPlayer(event.getPlayerState()) == null) BuildSectorDataManager.getInstance().addData(new BuildSectorData(event.getPlayerState().getName()), true);
+				}
 			}
 		}, instance);
-		
+
 		StarLoader.registerListener(GUITopBarCreateEvent.class, new Listener<GUITopBarCreateEvent>() {
 			@Override
 			public void onEvent(GUITopBarCreateEvent event) {
 				GUITopBar.ExpandedButton dropDownButton = event.getDropdownButtons().get(event.getDropdownButtons().size() - 1);
-				/* Todo: Finish Banking Menu
 				dropDownButton.addExpandedButton("BANKING", new GUICallback() {
 					@Override
 					public void callback(GUIElement guiElement, MouseEvent mouseEvent) {
-						if(mouseEvent.pressedLeftMouse()) {
-
-						}
+						if(mouseEvent.pressedLeftMouse()) (new BankingDialog()).activate();
 					}
 
 					@Override
@@ -129,7 +145,6 @@ public class EventManager {
 						return true;
 					}
 				});
-				 */
 				dropDownButton.addExpandedButton("GUIDE", new GUICallback() {
 					@Override
 					public void callback(GUIElement guiElement, MouseEvent mouseEvent) {
@@ -226,30 +241,31 @@ public class EventManager {
 		StarLoader.registerListener(KeyPressEvent.class, new Listener<KeyPressEvent>() {
 			@Override
 			public void onEvent(KeyPressEvent event) {
-				Set<ControlBindingData> bindings = ControlBindingData.getBindings();
-				for(ControlBindingData binding : bindings) {
-					if(event.getKey() == binding.getBinding()) {
-						switch(binding.getName()) {
-							case "Guide Menu":
-								GameClient.getClientState().getController().queueUIAudio("0022_menu_ui - enter");
-								GameClient.getClientState().getGlobalGameControlManager().getIngameControlManager().getPlayerGameControlManager().deactivateAll();
-								ModGUIHandler.getGUIControlManager("glossarPanel").setActive(true);
-								return;
-//							case "Banking Menu": Todo: Finish Banking Menu
-//								GameClient.getClientState().getController().queueUIAudio("0022_menu_ui - enter");
-//								GameClient.getClientState().getGlobalGameControlManager().getIngameControlManager().getPlayerGameControlManager().deactivateAll();
-//								(new BankingDialog()).activate();
-//								return;
-							case "Exchange Menu":
-								GameClient.getClientState().getController().queueUIAudio("0022_menu_ui - enter");
-								GameClient.getClientState().getGlobalGameControlManager().getIngameControlManager().getPlayerGameControlManager().deactivateAll();
-								(new ExchangeDialog()).activate();
-								return;
-							case "Build Sector Menu":
-								GameClient.getClientState().getController().queueUIAudio("0022_menu_ui - enter");
-								GameClient.getClientState().getGlobalGameControlManager().getIngameControlManager().getPlayerGameControlManager().deactivateAll();
-								(new BuildSectorDialog()).activate();
-								return;
+				if(event.getKey() != 0 && event.isKeyDown()) {
+					for(ControlBindingData bindingData : ControlBindingData.getModBindings(instance)) {
+						if(event.getKey() == bindingData.getBinding()) {
+							switch(bindingData.getName()) {
+								case "Open Guide":
+									GameClient.getClientState().getController().queueUIAudio("0022_menu_ui - enter");
+									GameClient.getClientState().getGlobalGameControlManager().getIngameControlManager().getPlayerGameControlManager().deactivateAll();
+									ModGUIHandler.getGUIControlManager("glossarPanel").setActive(true);
+									return;
+								case "Open Banking Menu":
+									GameClient.getClientState().getController().queueUIAudio("0022_menu_ui - enter");
+									GameClient.getClientState().getGlobalGameControlManager().getIngameControlManager().getPlayerGameControlManager().deactivateAll();
+									(new BankingDialog()).activate();
+									return;
+								case "Open Exchange Menu":
+									GameClient.getClientState().getController().queueUIAudio("0022_menu_ui - enter");
+									GameClient.getClientState().getGlobalGameControlManager().getIngameControlManager().getPlayerGameControlManager().deactivateAll();
+									(new ExchangeDialog()).activate();
+									return;
+								case "Open Build Sector Menu":
+									GameClient.getClientState().getController().queueUIAudio("0022_menu_ui - enter");
+									GameClient.getClientState().getGlobalGameControlManager().getIngameControlManager().getPlayerGameControlManager().deactivateAll();
+									(new BuildSectorDialog()).activate();
+									return;
+							}
 						}
 					}
 				}

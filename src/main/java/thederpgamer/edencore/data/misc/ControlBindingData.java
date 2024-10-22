@@ -1,15 +1,16 @@
 package thederpgamer.edencore.data.misc;
 
-import org.apache.commons.io.FileUtils;
+import api.mod.StarLoader;
+import api.mod.StarMod;
+import api.utils.other.HashList;
 import org.json.JSONArray;
 import org.json.JSONObject;
-import org.schema.schine.common.language.Lng;
 import thederpgamer.edencore.EdenCore;
 
 import java.io.File;
-import java.util.Collections;
-import java.util.HashSet;
-import java.util.Set;
+import java.io.FileReader;
+import java.io.FileWriter;
+import java.util.ArrayList;
 
 /**
  * [Description]
@@ -17,69 +18,49 @@ import java.util.Set;
  * @author TheDerpGamer
  */
 public class ControlBindingData {
-	
-	private static final Set<ControlBindingData> bindings = new HashSet<>();
+
+	private static final HashList<StarMod, ControlBindingData> bindings = new HashList<>();
 	private static final byte VERSION = 0;
 
-	public enum ControlType {
-		MOUSE("MOUSE"),
-		KEYBOARD("KEYBOARD"),
-		JOYSTICK_PAD("JOYSTICK/PAD");
-		
-		private final String name;
-		
-		ControlType(String name) {
-			this.name = name;
-		}
-		
-		public String getName() {
-			return Lng.str(name);
-		}
-	}
-	
 	private String name;
 	private String description;
-	private ControlType controlType;
+	private StarMod mod;
 	private int binding;
 
-	private ControlBindingData(String name, String description, ControlType controlType, int binding) {
+	private ControlBindingData(String name, String description, int binding, StarMod mod) {
 		this.name = name;
 		this.description = description;
-		this.controlType = controlType;
 		this.binding = binding;
+		this.mod = mod;
 	}
-	
+
 	private ControlBindingData(JSONObject data) {
 		deserialize(data);
 	}
-	
+
 	public String getName() {
 		return name;
 	}
-	
+
 	public String getDescription() {
 		return description;
 	}
-	
-	public ControlType getControlType() {
-		return controlType;
-	}
-	
+
 	public int getBinding() {
 		return binding;
 	}
-	
+
 	public void setBinding(int binding) {
 		this.binding = binding;
-		save();
+		save(mod);
 	}
-	
+
 	private JSONObject serialize() {
 		JSONObject data = new JSONObject();
 		data.put("version", VERSION);
+		data.put("mod", mod.getName());
 		data.put("name", name);
 		data.put("description", description);
-		data.put("controlType", controlType.name());
 		data.put("binding", binding);
 		return data;
 	}
@@ -87,99 +68,86 @@ public class ControlBindingData {
 	private void deserialize(JSONObject data) {
 		byte version = (byte) data.getInt("version");
 		name = data.getString("name");
+		mod = StarLoader.getModFromName(data.getString("mod")).getRealMod();
 		description = data.getString("description");
-		controlType = ControlType.valueOf(data.getString("controlType"));
 		binding = data.getInt("binding");
 	}
-	
-	public static Set<ControlBindingData> getBindingsCategory(ControlType controlType) {
-		Set<ControlBindingData> categoryBindings = new HashSet<>();
-		for(ControlBindingData binding : bindings) {
-			if(binding.controlType == controlType) categoryBindings.add(binding);
-		}
-		return categoryBindings;
-	}
-	
-	public static Set<ControlBindingData> getBindings() {
-		if(bindings.isEmpty()) load();
-		return Collections.unmodifiableSet(bindings);
-	}
-	
-	public static ControlBindingData getBinding(String name) {
-		if(bindings.isEmpty()) load();
-		for(ControlBindingData binding : bindings) {
-			if(binding.name.equals(name)) return binding;
-		}
-		return null;
-	}
-	
-	public static ControlBindingData getBinding(int binding) {
-		if(bindings.isEmpty()) load();
-		for(ControlBindingData controlBinding : bindings) {
-			if(controlBinding.binding == binding) return controlBinding;
-		}
-		return null;
-	}
-	
-	public static void addBinding(ControlBindingData binding) {
-		bindings.add(binding);
-		save();
-	}
-	
-	public static void removeBinding(ControlBindingData binding) {
-		bindings.remove(binding);
-		save();
-	}
-	
-	public static void updateBinding(ControlBindingData binding) {
-		removeBinding(binding);
-		addBinding(binding);
-	}
-	
-	private static void load() {
-		try {
-			File jsonFile = new File(EdenCore.getInstance().getSkeleton().getResourcesFolder() + "/control_bindings.json");
-			if(!jsonFile.exists()) {
-				jsonFile.createNewFile();
-				saveDefaults(jsonFile);
+
+	public static void registerBinding(StarMod mod, String name, String description, int defaultBinding) {
+		File file = getBindingsFile(mod);
+		if(file.exists()) {
+			load(mod);
+			if(bindings.get(mod).stream().anyMatch(bindingData -> bindingData.name.equals(name))) EdenCore.getInstance().logInfo("Control binding \"" + name + "\" already exists for mod \"" + mod.getName() + "\"");
+			else {
+				try {
+					bindings.add(mod, new ControlBindingData(name, description, defaultBinding, mod));
+					save(mod);
+				} catch(Exception exception) {
+					EdenCore.getInstance().logException("An error occurred while creating control bindings file", exception);
+				}
 			}
-			JSONObject data = new JSONObject(FileUtils.readFileToString(jsonFile));
-			JSONArray bindingArray = data.getJSONArray("bindings");
-			for(int i = 0; i < bindingArray.length(); i ++) bindings.add(new ControlBindingData(bindingArray.getJSONObject(i)));
-		} catch(Exception exception) {
-			EdenCore.getInstance().logException("An error occurred while loading control bindings", exception);
+		} else {
+			try {
+				file.createNewFile();
+				bindings.add(mod, new ControlBindingData(name, description, defaultBinding, mod));
+				save(mod);
+			} catch(Exception exception) {
+				EdenCore.getInstance().logException("An error occurred while creating control bindings file", exception);
+			}
 		}
 	}
 
-	private static void save() {
-		try {
-			File jsonFile = new File(EdenCore.getInstance().getSkeleton().getResourcesFolder() + "/control_bindings.json");
-			if(!jsonFile.exists()) {
-				jsonFile.createNewFile();
-				saveDefaults(jsonFile);
+	private static File getBindingsFile(StarMod mod) {
+		return new File(mod.getSkeleton().getResourcesFolder() + "/control_bindings.json");
+	}
+
+	public static ArrayList<ControlBindingData> getModBindings(StarMod mod) {
+		if(bindings.get(mod).isEmpty()) load(mod);
+		return new ArrayList<>(bindings.get(mod));
+	}
+
+	private static void save(StarMod mod) {
+		File file = getBindingsFile(mod);
+		if(!file.exists()) {
+			try {
+				file.createNewFile();
+			} catch(Exception exception) {
+				EdenCore.getInstance().logException("An error occurred while creating control bindings file", exception);
 			}
-			JSONObject data = new JSONObject();
-			JSONArray bindingArray = new JSONArray();
-			for(ControlBindingData binding : bindings) bindingArray.put(binding.serialize());
-			data.put("bindings", bindingArray);
-			FileUtils.write(jsonFile, data.toString());
+		}
+		try {
+			JSONArray data = new JSONArray();
+			for(ControlBindingData bindingData : bindings.get(mod)) data.put(bindingData.serialize());
+			FileWriter writer = new FileWriter(file);
+			writer.write(data.toString());
+			writer.close();
 		} catch(Exception exception) {
-			EdenCore.getInstance().logException("An error occurred while saving control bindings", exception);
+			EdenCore.getInstance().logException("An error occurred while saving control bindings file", exception);
 		}
 	}
-	
-	private static void saveDefaults(File jsonFile) {
-		try {
-			Set<ControlBindingData> dataSet = new HashSet<>(); //Todo: Figure out numpad key ids
-			dataSet.add(new ControlBindingData("Guide Menu", "Opens the Guide Menu.", ControlType.KEYBOARD, 0));
-			dataSet.add(new ControlBindingData("Banking Menu", "Opens the Banking Menu.", ControlType.KEYBOARD, 0));
-			dataSet.add(new ControlBindingData("Exchange Menu", "Opens the Exchange Menu.", ControlType.KEYBOARD, 0));
-			dataSet.add(new ControlBindingData("Build Sector Menu", "Opens the Build Sector Menu.", ControlType.KEYBOARD, 0));
-			JSONObject data = new JSONObject();
-			data.put("bindings", dataSet);
-			FileUtils.write(jsonFile, data.toString());
-		} catch(Exception exception) {
-			EdenCore.getInstance().logException("An error occurred while saving default control bindings", exception);
+
+	private static void load(StarMod mod) {
+		File file = getBindingsFile(mod);
+		if(file.exists()) {
+			try {
+				JSONArray data = new JSONArray(new FileReader(file));
+				for(int i = 0; i < data.length(); i++) {
+					JSONObject bindingData = data.getJSONObject(i);
+					bindings.add(mod, new ControlBindingData(bindingData));
+				}
+			} catch(Exception exception) {
+				EdenCore.getInstance().logException("An error occurred while loading control bindings file", exception);
+			}
 		}
+	}
+
+	public static HashList<StarMod, ControlBindingData> getBindings() {
+		return bindings;
+	}
+
+	public static ArrayList<ControlBindingData> getAllBindings() {
+		ArrayList<ControlBindingData> allBindings = new ArrayList<>();
+		for(StarMod mod : bindings.keySet()) allBindings.addAll(bindings.get(mod));
+		return allBindings;
 	}
 }

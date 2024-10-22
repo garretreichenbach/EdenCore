@@ -66,7 +66,8 @@ public class BuildSectorDialog extends PlayerInput {
 			tabbedContent = new GUITabbedContent(getState(), contentPane.getContent(0));
 			tabbedContent.onInit();
 			
-			createMainTab(tabbedContent.addTab("BUILD SECTOR"));
+			createMainTab(tabbedContent.addTab("BUILD SECTORS"));
+			createEntitiesTab(tabbedContent.addTab("ENTITIES"));
 			createPermissionsTab(tabbedContent.addTab("PERMISSIONS"));
 			createSettingsTab(tabbedContent.addTab("SETTINGS"));
 			
@@ -79,6 +80,13 @@ public class BuildSectorDialog extends PlayerInput {
 		}
 		
 		private void createMainTab(GUIContentPane contentPane) {
+			contentPane.setTextBoxHeightLast(400);
+			BuildSectorScrollableList buildSectorList = new BuildSectorScrollableList(getState(), contentPane.getContent(0));
+			buildSectorList.onInit();
+			contentPane.getContent(0).attach(buildSectorList);
+		}
+		
+		private void createEntitiesTab(GUIContentPane contentPane) {
 			contentPane.setTextBoxHeightLast(400);
 			BuildSectorEntityScrollableList entityList = new BuildSectorEntityScrollableList(getState(), contentPane.getContent(0), getBuildSectorData());
 			entityList.onInit();

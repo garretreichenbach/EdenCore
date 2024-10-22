@@ -3,8 +3,11 @@ package thederpgamer.edencore.data.playerdata;
 import api.common.GameCommon;
 import api.network.PacketReadBuffer;
 import api.network.PacketWriteBuffer;
+import com.bulletphysics.linearmath.Transform;
 import org.json.JSONArray;
 import org.json.JSONObject;
+import org.schema.common.util.linAlg.Vector3i;
+import org.schema.game.common.controller.SegmentController;
 import org.schema.game.common.data.player.PlayerState;
 import org.schema.game.common.data.player.faction.Faction;
 import thederpgamer.edencore.data.SerializableData;
@@ -28,15 +31,21 @@ public class PlayerData extends SerializableData {
 	private int factionId;
 	private long storedCredits;
 	private final Set<PlayerBankTransactionData> transactionHistory = new HashSet<>();
+	private final Vector3i lastRealSector = new Vector3i();
+	private final Transform lastRealTransform = new Transform();
 	
-	public PlayerData(String name, int factionId) {
+	public PlayerData(String name, int factionId, Vector3i lastRealSector, Transform lastRealTransform) {
 		super(DataType.PLAYER_DATA);
 		this.name = name;
 		this.factionId = factionId;
+		this.lastRealSector.set(lastRealSector);
+		this.lastRealTransform.set(lastRealTransform);
 	}
 	
 	public PlayerData(PlayerState playerState) {
-		this(playerState.getName(), playerState.getFactionId());
+		this(playerState.getName(), playerState.getFactionId(), playerState.getCurrentSector(), new Transform());
+		if(playerState.getFirstControlledTransformableWOExc() instanceof SegmentController) lastRealTransform.set(playerState.getBuildModePosition().getWorldTransform());
+		else lastRealTransform.set(playerState.getFirstControlledTransformableWOExc().getWorldTransform());
 	}
 
 	public PlayerData(PacketReadBuffer readBuffer) throws IOException {
@@ -57,6 +66,19 @@ public class PlayerData extends SerializableData {
 		data.put("storedCredits", storedCredits);
 		JSONArray transactionArray = new JSONArray();
 		for(PlayerBankTransactionData transaction : transactionHistory) transactionArray.put(transaction.serialize());
+		data.put("transactionHistory", transactionArray);
+		JSONObject lastRealSectorData = new JSONObject();
+		lastRealSectorData.put("x", lastRealSector.x);
+		lastRealSectorData.put("y", lastRealSector.y);
+		lastRealSectorData.put("z", lastRealSector.z);
+		data.put("lastRealSector", lastRealSectorData);
+		JSONObject lastRealTransformData = new JSONObject();
+		JSONObject lastRealTransformOrigin = new JSONObject();
+		lastRealTransformOrigin.put("x", lastRealTransform.origin.x);
+		lastRealTransformOrigin.put("y", lastRealTransform.origin.y);
+		lastRealTransformOrigin.put("z", lastRealTransform.origin.z);
+		lastRealTransformData.put("origin", lastRealTransformOrigin);
+		data.put("lastRealTransform", lastRealTransformData);
 		return data;
 	}
 
@@ -70,6 +92,12 @@ public class PlayerData extends SerializableData {
 		transactionHistory.clear();
 		JSONArray transactionArray = data.getJSONArray("transactionHistory");
 		for(int i = 0; i < transactionArray.length(); i ++) transactionHistory.add(new PlayerBankTransactionData(transactionArray.getJSONObject(i)));
+		JSONObject lastRealSectorData = data.getJSONObject("lastRealSector");
+		lastRealSector.set(lastRealSectorData.getInt("x"), lastRealSectorData.getInt("y"), lastRealSectorData.getInt("z"));
+		JSONObject lastRealTransformData = data.getJSONObject("lastRealTransform");
+		JSONObject lastRealTransformOrigin = lastRealTransformData.getJSONObject("origin");
+		lastRealTransform.setIdentity();
+		lastRealTransform.origin.set((float) lastRealTransformOrigin.getDouble("x"), (float) lastRealTransformOrigin.getDouble("y"), (float) lastRealTransformOrigin.getDouble("z"));
 	}
 
 	@Override
@@ -81,6 +109,12 @@ public class PlayerData extends SerializableData {
 		writeBuffer.writeLong(storedCredits);
 		writeBuffer.writeInt(transactionHistory.size());
 		for(PlayerBankTransactionData transaction : transactionHistory) transaction.serializeNetwork(writeBuffer);
+		writeBuffer.writeInt(lastRealSector.x);
+		writeBuffer.writeInt(lastRealSector.y);
+		writeBuffer.writeInt(lastRealSector.z);
+		writeBuffer.writeFloat(lastRealTransform.origin.x);
+		writeBuffer.writeFloat(lastRealTransform.origin.y);
+		writeBuffer.writeFloat(lastRealTransform.origin.z);
 	}
 
 	@Override
@@ -93,6 +127,9 @@ public class PlayerData extends SerializableData {
 		int transactionCount = readBuffer.readInt();
 		transactionHistory.clear();
 		for(int i = 0; i < transactionCount; i ++) transactionHistory.add(new PlayerBankTransactionData(readBuffer));
+		lastRealSector.set(readBuffer.readInt(), readBuffer.readInt(), readBuffer.readInt());
+		lastRealTransform.setIdentity();
+		lastRealTransform.origin.set(readBuffer.readFloat(), readBuffer.readFloat(), readBuffer.readFloat());
 	}
 	
 	public String getName() {
@@ -135,6 +172,24 @@ public class PlayerData extends SerializableData {
 	
 	public void addTransaction(PlayerBankTransactionData transaction) {
 		transactionHistory.add(transaction);
+		PlayerDataManager.getInstance().updateData(this, getPlayerState().isOnServer());
+	}
+	
+	public Vector3i getLastRealSector() {
+		return lastRealSector;
+	}
+	
+	public void setLastRealSector(Vector3i sector) {
+		lastRealSector.set(sector);
+		PlayerDataManager.getInstance().updateData(this, getPlayerState().isOnServer());
+	}
+	
+	public Transform getLastRealTransform() {
+		return lastRealTransform;
+	}
+	
+	public void setLastRealTransform(Transform transform) {
+		lastRealTransform.set(transform);
 		PlayerDataManager.getInstance().updateData(this, getPlayerState().isOnServer());
 	}
 	

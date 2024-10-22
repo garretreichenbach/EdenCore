@@ -1,5 +1,6 @@
 package thederpgamer.edencore.gui.controls;
 
+import api.mod.StarMod;
 import org.schema.schine.common.language.Lng;
 import org.schema.schine.graphicsengine.core.MouseEvent;
 import org.schema.schine.graphicsengine.forms.font.FontLibrary;
@@ -10,6 +11,7 @@ import org.schema.schine.graphicsengine.forms.gui.GUIElementList;
 import org.schema.schine.graphicsengine.forms.gui.newgui.*;
 import org.schema.schine.graphicsengine.forms.gui.newgui.settingsnew.GUISettingsElementPanelNew;
 import org.schema.schine.input.InputState;
+import org.schema.schine.input.Keyboard;
 import thederpgamer.edencore.data.misc.ControlBindingData;
 
 import java.util.Collection;
@@ -23,23 +25,24 @@ import java.util.Set;
  * @author TheDerpGamer
  */
 public class ControlBindingsScrollableList extends ScrollableTableList<ControlBindingData> implements GUIActiveInterface {
+	
+	private final StarMod mod;
 
-	private final ControlBindingData.ControlType controlType;
-
-	public ControlBindingsScrollableList(InputState state, GUIElement element, ControlBindingData.ControlType controlType) {
+	public ControlBindingsScrollableList(InputState state, GUIElement element, StarMod mod) {
 		super(state, 100, 100, element);
-		this.controlType = controlType;
+		this.mod = mod;
 	}
 
 	@Override
 	protected Collection<ControlBindingData> getElementList() {
-		return ControlBindingData.getBindingsCategory(controlType);
+		return ControlBindingData.getModBindings(mod);
 	}
 
 	@Override
 	public void initColumns() {
-		addColumn(Lng.str("Name"), 4, (o1, o2) -> o1.getName().compareToIgnoreCase(o2.getName()));
-		addColumn(Lng.str("Setting"), 1, Comparator.comparingInt(ControlBindingData::getBinding));
+		addColumn(Lng.str("Name"), 3.0f, (o1, o2) -> o1.getName().compareToIgnoreCase(o2.getName()));
+		addColumn(Lng.str("Description"), 7.0f, (o1, o2) -> o1.getDescription().compareToIgnoreCase(o2.getDescription()));
+		addColumn(Lng.str("Setting"), 3.0f, Comparator.comparingInt(ControlBindingData::getBinding));
 		addTextFilter(new GUIListFilterText<ControlBindingData>() {
 			@Override
 			public boolean isOk(String input, ControlBindingData listElement) {
@@ -53,11 +56,13 @@ public class ControlBindingsScrollableList extends ScrollableTableList<ControlBi
 		guiElementList.deleteObservers();
 		guiElementList.addObserver(this);
 		for(ControlBindingData binding : set) {
-			GUITextOverlayTable nameText = new GUITextOverlayTable(10, 10, getState());
-			GUIHorizontalButton settingBtn = new GUIHorizontalButton(getState(), GUIHorizontalArea.HButtonType.BUTTON_RED_MEDIUM, new Object() {
+			GUIClippedRow nameText = getSimpleRow(binding.getName(), this);
+			GUIClippedRow descriptionText = getSimpleRow(binding.getDescription(), this);
+			GUIHorizontalButton settingButton = new GUIHorizontalButton(getState(), GUIHorizontalArea.HButtonType.BUTTON_RED_MEDIUM, new Object() {
 				@Override
 				public String toString() {
-					return binding.getName();
+					if(binding.getBinding() <= 0) return "NOT BOUND";
+					else return Keyboard.getKeyName(binding.getBinding());
 				}
 			}, new GUICallback() {
 				@Override
@@ -83,22 +88,18 @@ public class ControlBindingsScrollableList extends ScrollableTableList<ControlBi
 					return ControlBindingsScrollableList.this.isActive();
 				}
 			}) {
-
 				@Override
 				public void draw() {
-					setWidth(columns.get(1).bg.getWidth() - 25);
+					setWidth(columns.get(2).bg.getWidth() - 25);
 					HButtonType.getType(HButtonType.TEXT_FILED_LIGHT, isInside(), isActive(), false);
 					setMouseUpdateEnabled(isActive());
 					super.draw();
 				}
 			};
-
-			settingBtn.onInit();
-			settingBtn.setFont(FontLibrary.getBlenderProMedium19());
-			GUISettingsElementPanelNew panelNew = new GUISettingsElementPanelNew(getState(), settingBtn, false, false);
-			nameText.setTextSimple(binding.getDescription());
-			nameText.getPos().y = 3;
-			ControlBindingSettingsRow row = new ControlBindingSettingsRow(getState(), binding, nameText, panelNew);
+			settingButton.onInit();
+			settingButton.setFont(FontLibrary.getBlenderProMedium19());
+			settingButton.getPos().y = 3;
+			ControlBindingSettingsRow row = new ControlBindingSettingsRow(getState(), binding, nameText, descriptionText, settingButton);
 			row.onInit();
 			guiElementList.addWithoutUpdate(row);
 		}

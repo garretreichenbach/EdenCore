@@ -106,7 +106,7 @@ public class BuildSectorEntityScrollableList extends ScrollableTableList<BuildSe
 			entryListRow.expanded = new GUIElementList(getState());
 			entryListRow.expanded.add(new GUIListElement(anchor, getState()));
 			entryListRow.onInit();
-			guiElementList.add(entryListRow);
+			guiElementList.addWithoutUpdate(entryListRow);
 		}
 		guiElementList.updateDim();
 	}

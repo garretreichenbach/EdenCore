@@ -13,6 +13,7 @@ import org.apache.commons.io.IOUtils;
 import org.schema.schine.resource.ResourceLoader;
 import thederpgamer.edencore.commands.GuideCommand;
 import thederpgamer.edencore.data.DataManager;
+import thederpgamer.edencore.data.misc.ControlBindingData;
 import thederpgamer.edencore.element.ElementManager;
 import thederpgamer.edencore.element.items.PrizeBars;
 import thederpgamer.edencore.manager.ConfigManager;
@@ -60,6 +61,7 @@ public class EdenCore extends StarMod {
 		EventManager.initialize(this);
 		registerPackets();
 		registerCommands();
+		registerBindings();
 	}
 
 	@Override
@@ -72,7 +74,6 @@ public class EdenCore extends StarMod {
 	@Override
 	public void onClientCreated(ClientInitializeEvent clientInitializeEvent) {
 		super.onClientCreated(clientInitializeEvent);
-		DataManager.initialize(true);
 		initGlossary();
 	}
 
@@ -136,6 +137,14 @@ public class EdenCore extends StarMod {
 	private void registerCommands() {
 		StarLoader.registerCommand(new GuideCommand());
 		logInfo("Registered Commands");
+	}
+	
+	private void registerBindings() {
+		ControlBindingData.registerBinding(this, "Open Guide", "Opens the Guide Menu", 28);
+		ControlBindingData.registerBinding(this, "Open Banking Menu", "Opens the Banking Menu", 78);
+		ControlBindingData.registerBinding(this, "Open Exchange Menu", "Opens the Exchange Menu", 74);
+		ControlBindingData.registerBinding(this, "Open Build Sector Menu", "Opens the Build Sector Menu",55);
+		logInfo("Registered Bindings");
 	}
 
 	private byte[] overwriteClass(String className, byte[] byteCode) {
