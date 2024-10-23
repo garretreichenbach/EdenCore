@@ -28,6 +28,7 @@ public abstract class DataManager<E extends SerializableData> {
 		PlayerDataManager.initialize(client);
 		BuildSectorDataManager.initialize(client);
 		ExchangeDataManager.initialize(client);
+		EdenCore.getInstance().logInfo("Initialized Data Managers on " + (client ? "Client" : "Server"));
 	}
 
 	public static DataManager<?> getDataManager(Class<? extends DataManager<?>> dataManagerClass) {
@@ -128,4 +129,6 @@ public abstract class DataManager<E extends SerializableData> {
 	public abstract void removeFromClientCache(E data);
 
 	public abstract void updateClientCache(E data);
+	
+	public abstract void createMissingData(Object... args);
 }

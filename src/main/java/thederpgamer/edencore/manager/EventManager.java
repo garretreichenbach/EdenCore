@@ -1,6 +1,8 @@
 package thederpgamer.edencore.manager;
 
 import api.common.GameClient;
+import api.common.GameCommon;
+import api.common.GameServer;
 import api.listener.Listener;
 import api.listener.events.block.SegmentPieceActivateByPlayer;
 import api.listener.events.block.SegmentPieceActivateEvent;
@@ -10,9 +12,11 @@ import api.listener.events.gui.GUITopBarCreateEvent;
 import api.listener.events.gui.MainWindowTabAddEvent;
 import api.listener.events.input.KeyPressEvent;
 import api.listener.events.player.PlayerJoinWorldEvent;
+import api.listener.events.player.PlayerSpawnEvent;
 import api.listener.events.world.SimulationJobExecuteEvent;
 import api.mod.StarLoader;
 import api.mod.StarMod;
+import api.utils.StarRunnable;
 import api.utils.gui.ModGUIHandler;
 import org.schema.common.util.linAlg.Vector3i;
 import org.schema.game.client.view.gui.PlayerPanel;
@@ -106,11 +110,18 @@ public class EventManager {
 		StarLoader.registerListener(PlayerJoinWorldEvent.class, new Listener<PlayerJoinWorldEvent>() {
 			@Override
 			public void onEvent(PlayerJoinWorldEvent event) {
-				if(!event.isServer()) DataManager.initialize(true);
+				}
+		}, instance);
+		
+		StarLoader.registerListener(PlayerSpawnEvent.class, new Listener<PlayerSpawnEvent>() {
+			@Override
+			public void onEvent(PlayerSpawnEvent event) {
+				instance.logDebug("Player " + event.getPlayer().getName() + " spawned in sector " + event.getSector().toString());
+				if(!event.getPlayer().isOnServer()) DataManager.initialize(true);
 				else {
-					ThreadManager.addLoginTimer(event.getPlayerState().getName());
-					if(PlayerDataManager.getInstance().getFromName(event.getPlayerState().getName(), true) == null) PlayerDataManager.getInstance().addData(new PlayerData(event.getPlayerState()), true);
-					if(BuildSectorDataManager.getInstance().getFromPlayer(event.getPlayerState()) == null) BuildSectorDataManager.getInstance().addData(new BuildSectorData(event.getPlayerState().getName()), true);
+					PlayerDataManager.getInstance().createMissingData(event.getPlayer().getName());
+					BuildSectorDataManager.getInstance().createMissingData(event.getPlayer().getName());
+					ThreadManager.addLoginTimer(event.getPlayer().getName());
 				}
 			}
 		}, instance);
@@ -338,11 +349,13 @@ public class EventManager {
 					}
 				} else if(event.getGUIElement() instanceof GUIResizableGrabbableWindow) {
 					GUIResizableGrabbableWindow window = (GUIResizableGrabbableWindow) event.getGUIElement();
-					if(BuildSectorDataManager.getInstance().isPlayerInAnyBuildSector(GameClient.getClientPlayerState())) {
-						for(String windowID : disabledWindows) {
-							if(window.getWindowId().equals(windowID) || window.getWindowId().equals(Lng.str(windowID))) {
-								window.cleanUp();
-								event.setCanceled(true);
+					if(GameClient.getClientPlayerState() != null) {
+						if(BuildSectorDataManager.getInstance().isPlayerInAnyBuildSector(GameClient.getClientPlayerState())) {
+							for(String windowID : disabledWindows) {
+								if(window.getWindowId().equals(windowID) || window.getWindowId().equals(Lng.str(windowID))) {
+									window.cleanUp();
+									event.setCanceled(true);
+								}
 							}
 						}
 					}

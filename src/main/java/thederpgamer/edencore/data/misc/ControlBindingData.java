@@ -3,6 +3,7 @@ package thederpgamer.edencore.data.misc;
 import api.mod.StarLoader;
 import api.mod.StarMod;
 import api.utils.other.HashList;
+import org.apache.commons.io.FileUtils;
 import org.json.JSONArray;
 import org.json.JSONObject;
 import thederpgamer.edencore.EdenCore;
@@ -77,7 +78,7 @@ public class ControlBindingData {
 		File file = getBindingsFile(mod);
 		if(file.exists()) {
 			load(mod);
-			if(bindings.get(mod).stream().anyMatch(bindingData -> bindingData.name.equals(name))) EdenCore.getInstance().logInfo("Control binding \"" + name + "\" already exists for mod \"" + mod.getName() + "\"");
+			if(bindings.containsKey(mod) && bindings.get(mod).stream().anyMatch(bindingData -> bindingData.name.equals(name))) EdenCore.getInstance().logInfo("Control binding \"" + name + "\" already exists for mod \"" + mod.getName() + "\"");
 			else {
 				try {
 					bindings.add(mod, new ControlBindingData(name, description, defaultBinding, mod));
@@ -120,6 +121,7 @@ public class ControlBindingData {
 			for(ControlBindingData bindingData : bindings.get(mod)) data.put(bindingData.serialize());
 			FileWriter writer = new FileWriter(file);
 			writer.write(data.toString());
+			writer.flush();
 			writer.close();
 		} catch(Exception exception) {
 			EdenCore.getInstance().logException("An error occurred while saving control bindings file", exception);
@@ -130,7 +132,7 @@ public class ControlBindingData {
 		File file = getBindingsFile(mod);
 		if(file.exists()) {
 			try {
-				JSONArray data = new JSONArray(new FileReader(file));
+				JSONArray data = new JSONArray(FileUtils.readFileToString(file));
 				for(int i = 0; i < data.length(); i++) {
 					JSONObject bindingData = data.getJSONObject(i);
 					bindings.add(mod, new ControlBindingData(bindingData));

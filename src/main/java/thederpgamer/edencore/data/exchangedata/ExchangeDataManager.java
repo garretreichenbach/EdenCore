@@ -59,7 +59,12 @@ public class ExchangeDataManager extends DataManager<ExchangeData> {
 		clientCache.remove(data);
 		clientCache.add(data);
 	}
-	
+
+	@Override
+	public void createMissingData(Object... args) {
+		//Exchange data doesn't need to be created on client login and isn't critical to the basic mod functions, so we can leave this empty
+	}
+
 	public static Set<ExchangeData> getCategory(ExchangeData.ExchangeDataCategory category) {
 		Set<ExchangeData> data = new HashSet<>();
 		for(ExchangeData exchangeData : instance.clientCache) {

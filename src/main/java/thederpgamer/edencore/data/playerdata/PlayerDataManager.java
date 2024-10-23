@@ -1,6 +1,7 @@
 package thederpgamer.edencore.data.playerdata;
 
 import api.common.GameClient;
+import api.common.GameCommon;
 import api.mod.config.PersistentObjectUtil;
 import api.network.packets.PacketUtil;
 import org.schema.game.common.data.player.PlayerState;
@@ -67,6 +68,16 @@ public class PlayerDataManager extends DataManager<PlayerData> {
 	public void updateClientCache(PlayerData data) {
 		clientCache.remove(data);
 		clientCache.add(data);
+	}
+
+	@Override
+	public void createMissingData(Object... args) {
+		try {
+			PlayerState playerState = GameCommon.getPlayerFromName((String) args[0]);
+			if(playerState != null) addData(new PlayerData(playerState), playerState.isOnServer());
+		} catch(Exception exception) {
+			EdenCore.getInstance().logException("An error occurred while initializing player data", exception);
+		}
 	}
 
 	public PlayerData getFromName(String name, boolean server) {

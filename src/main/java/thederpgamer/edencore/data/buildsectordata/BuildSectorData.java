@@ -43,8 +43,8 @@ public class BuildSectorData extends SerializableData {
 
 	protected String owner;
 	protected Vector3i sector;
-	protected final Set<BuildSectorEntityData> entities = new HashSet<>();
-	protected final HashMap<String, HashMap<PermissionTypes, Boolean>> permissions = new HashMap<>();
+	protected Set<BuildSectorEntityData> entities = new HashSet<>();
+	protected HashMap<String, HashMap<PermissionTypes, Boolean>> permissions = new HashMap<>();
 
 	public BuildSectorData(String owner) {
 		super(DataType.BUILD_SECTOR_DATA);

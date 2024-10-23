@@ -7,7 +7,6 @@ import com.bulletphysics.linearmath.Transform;
 import org.json.JSONArray;
 import org.json.JSONObject;
 import org.schema.common.util.linAlg.Vector3i;
-import org.schema.game.common.controller.SegmentController;
 import org.schema.game.common.data.player.PlayerState;
 import org.schema.game.common.data.player.faction.Faction;
 import thederpgamer.edencore.data.SerializableData;
@@ -30,9 +29,9 @@ public class PlayerData extends SerializableData {
 	private String name;
 	private int factionId;
 	private long storedCredits;
-	private final Set<PlayerBankTransactionData> transactionHistory = new HashSet<>();
-	private final Vector3i lastRealSector = new Vector3i();
-	private final Transform lastRealTransform = new Transform();
+	private Set<PlayerBankTransactionData> transactionHistory = new HashSet<>();
+	private Vector3i lastRealSector = new Vector3i();
+	private Transform lastRealTransform = new Transform();
 	
 	public PlayerData(String name, int factionId, Vector3i lastRealSector, Transform lastRealTransform) {
 		super(DataType.PLAYER_DATA);
@@ -44,8 +43,6 @@ public class PlayerData extends SerializableData {
 	
 	public PlayerData(PlayerState playerState) {
 		this(playerState.getName(), playerState.getFactionId(), playerState.getCurrentSector(), new Transform());
-		if(playerState.getFirstControlledTransformableWOExc() instanceof SegmentController) lastRealTransform.set(playerState.getBuildModePosition().getWorldTransform());
-		else lastRealTransform.set(playerState.getFirstControlledTransformableWOExc().getWorldTransform());
 	}
 
 	public PlayerData(PacketReadBuffer readBuffer) throws IOException {

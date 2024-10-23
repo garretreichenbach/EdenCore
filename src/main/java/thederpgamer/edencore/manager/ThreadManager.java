@@ -1,6 +1,8 @@
 package thederpgamer.edencore.manager;
 
+import api.common.GameCommon;
 import api.common.GameServer;
+import api.listener.events.player.PlayerJoinWorldEvent;
 import api.utils.game.PlayerUtils;
 import api.utils.game.inventory.InventoryUtils;
 import org.schema.game.common.data.player.AbstractOwnerState;
@@ -20,6 +22,7 @@ import java.util.concurrent.ThreadPoolExecutor;
  */
 public class ThreadManager {
 
+	private static boolean initialized;
 	private static final int THREAD_COUNT = 5;
 	private static ThreadPoolExecutor executorService;
 
@@ -28,21 +31,23 @@ public class ThreadManager {
 		executorService.submit((Runnable) () -> {
 			while(true) {
 				try {
+					Thread.sleep(ConfigManager.getMainConfig().getLong("tip_interval"));
 					String tip = ConfigManager.getRandomTip();
 					for(PlayerState playerState : GameServer.getServerState().getPlayerStatesByName().values()) PlayerUtils.sendMessage(playerState, tip);
-					Thread.sleep(ConfigManager.getMainConfig().getLong("tip_interval"));
 				} catch(InterruptedException exception) {
 					instance.logException("An error occurred while sending tips to players", exception);
 				}
 			}
 		});
+		initialized = true;
 	}
 
 	public static void addLoginTimer(String playerName) {
+		if(!initialized) initialize(EdenCore.getInstance());
 		executorService.submit(() -> {
 			try {
 				Thread.sleep(ConfigManager.getMainConfig().getLong("player_login_reward_timer"));
-				PlayerState playerState = GameServer.getServerState().getPlayerFromName(playerName);
+				PlayerState playerState = GameCommon.getPlayerFromName(playerName);
 				if(playerState != null) {
 					Inventory inventory = playerState.getInventory();
 					if(inventory.isInfinite()) { //They are in creative mode, we need to get their survival inventory specifically
@@ -55,7 +60,7 @@ public class ThreadManager {
 					PlayerUtils.sendMessage(playerState, "You have received " + prizeBarCount + " Bronze Bars for logging in today! Thanks for playing!");
 				}
 			} catch(Exception exception) {
-				EdenCore.getInstance().logException("An error occurred while adding login timer for player \"" + playerName + "\"", exception);
+				EdenCore.getInstance().logException("An error occurred while adding login timer for player", exception);
 			}
 		});
 	}

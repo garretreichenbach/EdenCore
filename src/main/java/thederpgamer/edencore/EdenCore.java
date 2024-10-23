@@ -1,11 +1,13 @@
 package thederpgamer.edencore;
 
+import api.common.GameCommon;
 import api.config.BlockConfig;
 import api.listener.events.controller.ClientInitializeEvent;
 import api.listener.events.controller.ServerInitializeEvent;
 import api.mod.StarLoader;
 import api.mod.StarMod;
 import api.network.packets.PacketUtil;
+import api.utils.textures.StarLoaderTexture;
 import glossar.GlossarCategory;
 import glossar.GlossarEntry;
 import glossar.GlossarInit;
@@ -24,6 +26,8 @@ import thederpgamer.edencore.network.PlayerActionCommandPacket;
 import thederpgamer.edencore.network.SendDataPacket;
 import thederpgamer.edencore.network.SyncRequestPacket;
 
+import java.io.File;
+import java.io.FileWriter;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.util.Arrays;
@@ -39,8 +43,14 @@ import java.util.zip.ZipInputStream;
 public class EdenCore extends StarMod {
 	private static EdenCore instance;
 	private final String[] overwriteClasses = {};
-	public EdenCore() {instance = this;}
-	public static void main(String[] args) {}
+
+	public EdenCore() {
+		instance = this;
+	}
+
+	public static void main(String[] args) {
+	}
+
 	public static EdenCore getInstance() {
 		return instance;
 	}
@@ -66,15 +76,12 @@ public class EdenCore extends StarMod {
 
 	@Override
 	public void onServerCreated(ServerInitializeEvent serverInitializeEvent) {
-		super.onServerCreated(serverInitializeEvent);
 		DataManager.initialize(false);
-		ThreadManager.initialize(this);
 	}
 
 	@Override
 	public void onClientCreated(ClientInitializeEvent clientInitializeEvent) {
-		super.onClientCreated(clientInitializeEvent);
-		initGlossary();
+		StarLoaderTexture.runOnGraphicsThread(this::initializeGlossary);
 	}
 
 	@Override
@@ -87,6 +94,29 @@ public class EdenCore extends StarMod {
 	@Override
 	public void onResourceLoad(ResourceLoader resourceLoader) {
 		ResourceManager.loadResources(resourceLoader);
+	}
+
+	private FileWriter getLogFile() {
+		try {
+			File logFile = new File(getSkeleton().getResourcesFolder() + "/logs/edencore_log.0.log");
+			if(!logFile.exists()) logFile.createNewFile();
+			return new FileWriter(logFile);
+		} catch(Exception exception) {
+			logException("Failed to fetch log file", exception);
+			return null;
+		}
+	}
+
+	public void logDebug(String message) {
+		if(ConfigManager.getMainConfig().getBoolean("debug_mode")) {
+			System.out.println("[DEBUG][EdenCore]: " + message);
+			try {
+				getLogFile().write("[DEBUG][EdenCore]: " + message + "\n");
+				getLogFile().flush();
+			} catch(IOException exception) {
+				logException("Failed to write to log file", exception);
+			}
+		}
 	}
 
 	@Override
@@ -115,7 +145,7 @@ public class EdenCore extends StarMod {
 		super.logFatal(message, exception);
 	}
 
-	private void initGlossary() {
+	private void initializeGlossary() {
 		GlossarInit.initGlossar(this);
 		GlossarCategory rules = new GlossarCategory("Server Info and Rules");
 		rules.addEntry(new GlossarEntry("Server Info", "Skies of Eden is a modded survival StarMade server run by the SOE staff team and hosted on CBS hardware.\n" + "We work hard to bring new features and content to the server, and we hope you enjoy your time here.\n" + "Note that not all features are complete, and some may be buggy. If you find any bugs, please report them to a staff member.\n" + "Please read the rules section before playing on the server, and be sure to join our discord at https://discord.gg/qxzvBxT."));
@@ -138,12 +168,12 @@ public class EdenCore extends StarMod {
 		StarLoader.registerCommand(new GuideCommand());
 		logInfo("Registered Commands");
 	}
-	
+
 	private void registerBindings() {
 		ControlBindingData.registerBinding(this, "Open Guide", "Opens the Guide Menu", 28);
 		ControlBindingData.registerBinding(this, "Open Banking Menu", "Opens the Banking Menu", 78);
 		ControlBindingData.registerBinding(this, "Open Exchange Menu", "Opens the Exchange Menu", 74);
-		ControlBindingData.registerBinding(this, "Open Build Sector Menu", "Opens the Build Sector Menu",55);
+		ControlBindingData.registerBinding(this, "Open Build Sector Menu", "Opens the Build Sector Menu", 55);
 		logInfo("Registered Bindings");
 	}
 

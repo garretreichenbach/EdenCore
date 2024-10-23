@@ -69,6 +69,15 @@ public class BuildSectorDataManager extends DataManager<BuildSectorData> {
 		clientCache.add(data);
 	}
 
+	@Override
+	public void createMissingData(Object... args) {
+		try {
+			addData(new BuildSectorData(String.valueOf(args[0])), true);
+		} catch(Exception exception) {
+			EdenCore.getInstance().logException("An error occurred while initializing build sector data", exception);
+		}
+	}
+
 	public boolean isPlayerInAnyBuildSector(PlayerState playerState) {
 		doBoundsCheck(playerState);
 		return getCurrentBuildSector(playerState) != null;
