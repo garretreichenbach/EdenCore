@@ -55,7 +55,6 @@ public class BuildSectorUserScrollableList extends ScrollableTableList<String> i
 		for(String username : set) {
 			GUIClippedRow nameRow = getSimpleRow(username, this);
 			BuildSectorUserScrollableListRow entryListRow = new BuildSectorUserScrollableListRow(getState(), username, nameRow);
-			guiElementList.addWithoutUpdate(entryListRow);
 			GUIAncor anchor = new GUIAncor(getState(), parent.getWidth() - 107.0f, 28.0f) {
 				@Override
 				public void draw() {

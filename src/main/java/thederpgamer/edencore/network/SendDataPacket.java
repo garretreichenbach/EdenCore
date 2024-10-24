@@ -35,7 +35,7 @@ public class SendDataPacket extends Packet {
 	public void readPacketData(PacketReadBuffer packetReadBuffer) {
 		try {
 			type = packetReadBuffer.readInt();
-			dataType = SerializableData.DataType.values()[packetReadBuffer.readInt()];
+			dataType = SerializableData.DataType.valueOf(packetReadBuffer.readString());
 			data = dataType.getDataClass().getConstructor(PacketReadBuffer.class).newInstance(packetReadBuffer);
 		} catch(Exception exception) {
 			EdenCore.getInstance().logException("An error occurred while reading data packet", exception);
@@ -45,7 +45,7 @@ public class SendDataPacket extends Packet {
 	@Override
 	public void writePacketData(PacketWriteBuffer packetWriteBuffer) throws IOException {
 		packetWriteBuffer.writeInt(type);
-		packetWriteBuffer.writeInt(dataType.ordinal());
+		packetWriteBuffer.writeString(dataType.name());
 		data.serializeNetwork(packetWriteBuffer);
 	}
 

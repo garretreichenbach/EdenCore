@@ -81,7 +81,7 @@ public class EdenCore extends StarMod {
 
 	@Override
 	public void onClientCreated(ClientInitializeEvent clientInitializeEvent) {
-		StarLoaderTexture.runOnGraphicsThread(this::initializeGlossary);
+//		StarLoaderTexture.runOnGraphicsThread(this::initializeGlossary);
 	}
 
 	@Override

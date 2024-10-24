@@ -24,10 +24,7 @@ import thederpgamer.edencore.utils.EntityUtils;
 import thederpgamer.edencore.utils.PlayerUtils;
 
 import java.io.IOException;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 
 /**
  * [Description]
@@ -132,11 +129,13 @@ public class BuildSectorData extends SerializableData {
 		owner = readBuffer.readString();
 		sector = new Vector3i(Vector3i.parseVector3i(readBuffer.readString()));
 		int entityCount = readBuffer.readInt();
+		entities = new HashSet<>();
 		for(int i = 0; i < entityCount; i++) entities.add(new BuildSectorEntityData(readBuffer));
 		int permissionCount = readBuffer.readInt();
+		permissions = new HashMap<>();
 		for(int i = 0; i < permissionCount; i++) {
 			String name = readBuffer.readString();
-			PermissionTypes type = PermissionTypes.valueOf(readBuffer.readString());
+			PermissionTypes type = PermissionTypes.valueOf(readBuffer.readString().toUpperCase(Locale.ENGLISH));
 			boolean value = readBuffer.readBoolean();
 			HashMap<PermissionTypes, Boolean> permission = new HashMap<>();
 			permission.put(type, value);
@@ -456,11 +455,11 @@ public class BuildSectorData extends SerializableData {
 			byte version = readBuffer.readByte();
 			dataUUID = readBuffer.readString();
 			entityID = readBuffer.readInt();
-			entityType = EntityType.valueOf(readBuffer.readString());
+			entityType = EntityType.valueOf(readBuffer.readString().toUpperCase(Locale.ENGLISH));
 			int permissionCount = readBuffer.readInt();
 			for(int i = 0; i < permissionCount; i++) {
 				String name = readBuffer.readString();
-				PermissionTypes type = PermissionTypes.valueOf(readBuffer.readString());
+				PermissionTypes type = PermissionTypes.valueOf(readBuffer.readString().toUpperCase(Locale.ENGLISH));
 				boolean value = readBuffer.readBoolean();
 				HashMap<PermissionTypes, Boolean> permission = new HashMap<>();
 				permission.put(type, value);

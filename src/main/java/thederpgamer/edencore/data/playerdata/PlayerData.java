@@ -122,9 +122,12 @@ public class PlayerData extends SerializableData {
 		factionId = readBuffer.readInt();
 		storedCredits = readBuffer.readLong();
 		int transactionCount = readBuffer.readInt();
+		transactionHistory = new HashSet<>();
 		transactionHistory.clear();
 		for(int i = 0; i < transactionCount; i ++) transactionHistory.add(new PlayerBankTransactionData(readBuffer));
+		lastRealSector = new Vector3i();
 		lastRealSector.set(readBuffer.readInt(), readBuffer.readInt(), readBuffer.readInt());
+		lastRealTransform = new Transform();
 		lastRealTransform.setIdentity();
 		lastRealTransform.origin.set(readBuffer.readFloat(), readBuffer.readFloat(), readBuffer.readFloat());
 	}
@@ -289,8 +292,16 @@ public class PlayerData extends SerializableData {
 			return transactionAmount;
 		}
 		
+		public String getFromUUID() {
+			return fromUUID;
+		}
+		
 		public PlayerData getFrom(boolean server) {
 			return PlayerDataManager.getInstance().getFromUUID(fromUUID, server);
+		}
+		
+		public String getToUUID() {
+			return toUUID;
 		}
 		
 		public PlayerData getTo(boolean server) {
