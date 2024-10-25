@@ -74,7 +74,8 @@ public class PlayerDataManager extends DataManager<PlayerData> {
 	public void createMissingData(Object... args) {
 		try {
 			PlayerState playerState = GameCommon.getPlayerFromName((String) args[0]);
-			if(playerState != null) addData(new PlayerData(playerState), playerState.isOnServer());
+			PlayerData data = getFromName((String) args[0], true);
+			if(playerState != null && data == null) addData(new PlayerData(playerState), playerState.isOnServer());
 		} catch(Exception exception) {
 			EdenCore.getInstance().logException("An error occurred while initializing player data", exception);
 		}

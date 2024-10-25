@@ -9,7 +9,6 @@ import org.json.JSONObject;
 import thederpgamer.edencore.EdenCore;
 
 import java.io.File;
-import java.io.FileReader;
 import java.io.FileWriter;
 import java.util.ArrayList;
 
@@ -77,7 +76,6 @@ public class ControlBindingData {
 	public static void registerBinding(StarMod mod, String name, String description, int defaultBinding) {
 		File file = getBindingsFile(mod);
 		if(file.exists()) {
-			load(mod);
 			if(bindings.containsKey(mod) && bindings.get(mod).stream().anyMatch(bindingData -> bindingData.name.equals(name))) EdenCore.getInstance().logInfo("Control binding \"" + name + "\" already exists for mod \"" + mod.getName() + "\"");
 			else {
 				try {
@@ -107,7 +105,7 @@ public class ControlBindingData {
 		return new ArrayList<>(bindings.get(mod));
 	}
 
-	private static void save(StarMod mod) {
+	public static void save(StarMod mod) {
 		File file = getBindingsFile(mod);
 		if(!file.exists()) {
 			try {
@@ -128,7 +126,7 @@ public class ControlBindingData {
 		}
 	}
 
-	private static void load(StarMod mod) {
+	public static void load(StarMod mod) {
 		File file = getBindingsFile(mod);
 		if(file.exists()) {
 			try {

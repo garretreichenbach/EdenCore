@@ -95,7 +95,8 @@ public class BuildSectorDialog extends PlayerInput {
 		
 		private void createPermissionsTab(GUIContentPane contentPane) {
 			contentPane.setTextBoxHeightLast(28);
-			GUIHorizontalButtonTablePane buttonPane = new GUIHorizontalButtonTablePane(getState(), 0, 0, contentPane.getContent(0));
+			GUIHorizontalButtonTablePane buttonPane = new GUIHorizontalButtonTablePane(getState(), 1, 1, contentPane.getContent(0));
+			buttonPane.onInit();
 			buttonPane.addButton(0, 0, "ADD USER", GUIHorizontalArea.HButtonColor.GREEN, new GUICallback() {
 				@Override
 				public void callback(GUIElement guiElement, MouseEvent mouseEvent) {

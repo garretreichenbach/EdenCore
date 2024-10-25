@@ -2,7 +2,6 @@ package thederpgamer.edencore.manager;
 
 import api.common.GameCommon;
 import api.common.GameServer;
-import api.listener.events.player.PlayerJoinWorldEvent;
 import api.utils.game.PlayerUtils;
 import api.utils.game.inventory.InventoryUtils;
 import org.schema.game.common.data.player.AbstractOwnerState;
@@ -12,8 +11,7 @@ import thederpgamer.edencore.EdenCore;
 import thederpgamer.edencore.element.ElementManager;
 
 import java.lang.reflect.Field;
-import java.util.concurrent.Executors;
-import java.util.concurrent.ThreadPoolExecutor;
+import java.util.concurrent.ConcurrentLinkedQueue;
 
 /**
  * [Description]
@@ -22,31 +20,48 @@ import java.util.concurrent.ThreadPoolExecutor;
  */
 public class ThreadManager {
 
-	private static boolean initialized;
-	private static final int THREAD_COUNT = 5;
-	private static ThreadPoolExecutor executorService;
+	private static final long TASK_INTERVAL = 10000;
+	private static final ConcurrentLinkedQueue<Runnable> taskQueue = new ConcurrentLinkedQueue<>();
 
 	public static void initialize(EdenCore instance) {
-		executorService = (ThreadPoolExecutor) Executors.newFixedThreadPool(THREAD_COUNT);
-		executorService.submit((Runnable) () -> {
-			while(true) {
-				try {
-					Thread.sleep(ConfigManager.getMainConfig().getLong("tip_interval"));
-					String tip = ConfigManager.getRandomTip();
-					for(PlayerState playerState : GameServer.getServerState().getPlayerStatesByName().values()) PlayerUtils.sendMessage(playerState, tip);
-				} catch(InterruptedException exception) {
-					instance.logException("An error occurred while sending tips to players", exception);
+		long tipInterval = ConfigManager.getMainConfig().getLong("tip_interval");
+		Thread loginTimerThread = new Thread("EdenCore_Login_Timer_Thread") {
+			@Override
+			public void run() {
+				while(true) {
+					try {
+						sleep(tipInterval);
+						String tip = ConfigManager.getRandomTip();
+						for(PlayerState playerState : GameServer.getServerState().getPlayerStatesByName().values()) PlayerUtils.sendMessage(playerState, tip);
+					} catch(InterruptedException exception) {
+						instance.logException("An error occurred while checking player login timers", exception);
+					}
 				}
 			}
-		});
-		initialized = true;
+		};
+		loginTimerThread.start();
+		
+		Thread taskRunnerThread = new Thread("EdenCore_Task_Runner_Thread") {
+			@Override
+			public void run() {
+				while(true) {
+					try {
+						if(!taskQueue.isEmpty()) taskQueue.poll().run();
+						else sleep(TASK_INTERVAL);
+					} catch(InterruptedException exception) {
+						instance.logException("An error occurred while running task queue", exception);
+					}
+				}
+			}
+		};
+		taskRunnerThread.start();
 	}
 
 	public static void addLoginTimer(String playerName) {
-		if(!initialized) initialize(EdenCore.getInstance());
-		executorService.submit(() -> {
+		long rewardTimer = ConfigManager.getMainConfig().getLong("player_login_reward_timer");
+		taskQueue.add(() -> {
 			try {
-				Thread.sleep(ConfigManager.getMainConfig().getLong("player_login_reward_timer"));
+				Thread.sleep(rewardTimer);
 				PlayerState playerState = GameCommon.getPlayerFromName(playerName);
 				if(playerState != null) {
 					Inventory inventory = playerState.getInventory();
