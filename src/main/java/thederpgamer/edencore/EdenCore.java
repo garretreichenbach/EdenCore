@@ -1,11 +1,16 @@
 package thederpgamer.edencore;
 
+import api.common.GameClient;
+import api.common.GameCommon;
+import api.common.GameServer;
 import api.config.BlockConfig;
 import api.listener.events.controller.ClientInitializeEvent;
 import api.listener.events.controller.ServerInitializeEvent;
 import api.mod.StarLoader;
 import api.mod.StarMod;
 import api.network.packets.PacketUtil;
+import api.utils.StarRunnable;
+import api.utils.textures.StarLoaderTexture;
 import glossar.GlossarCategory;
 import glossar.GlossarEntry;
 import glossar.GlossarInit;
@@ -24,8 +29,6 @@ import thederpgamer.edencore.network.PlayerActionCommandPacket;
 import thederpgamer.edencore.network.SendDataPacket;
 import thederpgamer.edencore.network.SyncRequestPacket;
 
-import java.io.File;
-import java.io.FileWriter;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.util.Arrays;
@@ -39,6 +42,7 @@ import java.util.zip.ZipInputStream;
  * @version 1.0 - [06/27/2021]
  */
 public class EdenCore extends StarMod {
+
 	private static EdenCore instance;
 	private final String[] overwriteClasses = {};
 
@@ -79,7 +83,26 @@ public class EdenCore extends StarMod {
 
 	@Override
 	public void onClientCreated(ClientInitializeEvent clientInitializeEvent) {
-		registerBindings();
+		//We need to run these later, as the client is not fully initialized yet when this event is called
+		//However, StarLoader doesn't have a proper event for when the client is fully initialized, so we will just have to continually
+		//check occasionally if the player is spawned
+		long PLAYER_SPAWN_CHECK_TIMER = 100;
+		(new StarRunnable() {
+			@Override
+			public void run() {
+				if(isClientInitialized()) {
+					registerBindings();
+					DataManager.initialize(true);
+					StarLoaderTexture.runOnGraphicsThread(new Runnable() {
+						@Override
+						public void run() {
+							initializeGlossary();
+						}
+					});
+					cancel();
+				}
+			}
+		}).runTimer(instance, PLAYER_SPAWN_CHECK_TIMER);
 	}
 
 	@Override
@@ -94,53 +117,32 @@ public class EdenCore extends StarMod {
 		ResourceManager.loadResources(resourceLoader);
 	}
 
-	private FileWriter getLogFile() {
-		try {
-			File logFile = new File(getSkeleton().getResourcesFolder() + "/logs/edencore_log.0.log");
-			if(!logFile.exists()) logFile.createNewFile();
-			return new FileWriter(logFile);
-		} catch(Exception exception) {
-			logException("Failed to fetch log file", exception);
-			return null;
-		}
-	}
-
-	public void logDebug(String message) {
-		if(ConfigManager.getMainConfig().getBoolean("debug_mode")) {
-			System.out.println("[DEBUG][EdenCore]: " + message);
-			try {
-				getLogFile().write("[DEBUG][EdenCore]: " + message + "\n");
-				getLogFile().flush();
-			} catch(IOException exception) {
-				logException("Failed to write to log file", exception);
-			}
-		}
-	}
-
 	@Override
 	public void logInfo(String message) {
-		System.out.println("[INFO][EdenCore]: " + message);
 		super.logInfo(message);
+		System.out.println("[INFO]: " + message);
 	}
 
 	@Override
 	public void logWarning(String message) {
-		System.out.println("[WARNING][EdenCore]: " + message);
 		super.logWarning(message);
+		System.err.println("[WARNING]: " + message);
 	}
 
 	@Override
 	public void logException(String message, Exception exception) {
-		System.err.println("[EXCEPTION][EdenCore]: " + message + "\n" + exception.getMessage() + "\n" + Arrays.toString(exception.getStackTrace()));
-		exception.printStackTrace();
 		super.logException(message, exception);
+		System.err.println("[EXCEPTION]: " + message + "\n" + exception.getMessage() + "\n" + Arrays.toString(exception.getStackTrace()));
 	}
 
 	@Override
 	public void logFatal(String message, Exception exception) {
-		System.err.println("[FATAL][EdenCore]: " + message + "\n" + exception.getMessage() + "\n" + Arrays.toString(exception.getStackTrace()));
-		exception.printStackTrace();
-		super.logFatal(message, exception);
+		logException(message, exception);
+		if(GameCommon.getGameState().isOnServer()) GameServer.getServerState().addCountdownMessage(10, "Server will perform an emergency shutdown due to a fatal error: " + message);
+	}
+
+	private boolean isClientInitialized() {
+		return GameClient.getClientState() != null && GameClient.getClientPlayerState() != null && GameClient.getClientPlayerState().getAssingedPlayerCharacter() != null;
 	}
 
 	public void initializeGlossary() {
@@ -187,7 +189,7 @@ public class EdenCore extends StarMod {
 			}
 			file.close();
 		} catch(IOException exception) {
-			exception.printStackTrace();
+			logException("Failed to overwrite class: " + className, exception);
 		}
 		if(bytes != null) return bytes;
 		else return byteCode;

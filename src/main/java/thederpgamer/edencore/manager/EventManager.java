@@ -15,7 +15,6 @@ import api.listener.events.world.SimulationJobExecuteEvent;
 import api.mod.StarLoader;
 import api.mod.StarMod;
 import api.utils.gui.ModGUIHandler;
-import api.utils.textures.StarLoaderTexture;
 import org.schema.common.util.linAlg.Vector3i;
 import org.schema.game.client.view.gui.PlayerPanel;
 import org.schema.game.client.view.gui.catalog.newcatalog.CatalogOptionsButtonPanel;
@@ -33,7 +32,6 @@ import org.schema.schine.graphicsengine.forms.gui.newgui.GUIResizableGrabbableWi
 import org.schema.schine.graphicsengine.forms.gui.newgui.GUITabbedContent;
 import org.schema.schine.input.InputState;
 import thederpgamer.edencore.EdenCore;
-import thederpgamer.edencore.data.DataManager;
 import thederpgamer.edencore.data.buildsectordata.BuildSectorDataManager;
 import thederpgamer.edencore.data.misc.ControlBindingData;
 import thederpgamer.edencore.data.playerdata.PlayerDataManager;
@@ -66,7 +64,7 @@ public class EventManager {
 			542 //Warp Gate Computer
 	};
 
-	public static void initialize(EdenCore instance) {
+	public static void initialize(final EdenCore instance) {
 		StarLoader.registerListener(MainWindowTabAddEvent.class, new Listener<MainWindowTabAddEvent>() {
 			@Override
 			public void onEvent(MainWindowTabAddEvent event) {
@@ -112,16 +110,12 @@ public class EventManager {
 		StarLoader.registerListener(PlayerSpawnEvent.class, new Listener<PlayerSpawnEvent>() {
 			@Override
 			public void onEvent(PlayerSpawnEvent event) {
-				instance.logDebug("Player " + event.getPlayer().getName() + " spawned in sector " + event.getSector().toString());
-//				if(!event.getPlayer().isOnServer()) DataManager.initialize(true);
-//				else {
-//				PlayerDataManager.getInstance().createMissingData(event.getPlayer().getName());
-//				BuildSectorDataManager.getInstance().createMissingData(event.getPlayer().getName());
+				instance.logInfo("Player " + event.getPlayer().getName() + " spawned in sector " + event.getSector().toString());
 				ThreadManager.addLoginTimer(event.getPlayer().getName());
-				StarLoaderTexture.runOnGraphicsThread(() -> EdenCore.getInstance().initializeGlossary());
-				DataManager.initialize(true);
-				if(event.isServer()) PlayerDataManager.getInstance().createMissingData(event.getPlayer().getName());
-//				}
+				if(event.isServer()) {
+					PlayerDataManager.getInstance().createMissingData(event.getPlayer().getName());
+					BuildSectorDataManager.getInstance().createMissingData(event.getPlayer().getName());
+				}
 			}
 		}, instance);
 
@@ -377,6 +371,7 @@ public class EventManager {
 		StarLoader.registerListener(MainWindowTabAddEvent.class, new Listener<MainWindowTabAddEvent>() {
 			@Override
 			public void onEvent(MainWindowTabAddEvent event) {
+				if(GameClient.getClientState() == null || GameClient.getClientPlayerState() == null) return;
 				if(BuildSectorDataManager.getInstance().isPlayerInAnyBuildSector(GameClient.getClientPlayerState())) {
 					for(String s : disabledTabs) {
 						if(event.getTitleAsString().equals(Lng.str(s))) {

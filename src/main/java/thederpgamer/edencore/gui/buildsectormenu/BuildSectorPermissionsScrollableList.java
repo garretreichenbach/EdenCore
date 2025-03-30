@@ -35,12 +35,23 @@ public class BuildSectorPermissionsScrollableList extends ScrollableTableList<Pa
 
 	@Override
 	public void initColumns() {
-		addColumn("Permission", 5.0f, (Comparator.comparing(o -> o.first().getName())));
-		addColumn("Value", 5.0f, (Comparator.comparing(o -> o.second().toString())));
+		addColumn("Permission", 5.0f, new Comparator<Pair<BuildSectorData.PermissionTypes, Boolean>>() {
+			@Override
+			public int compare(Pair<BuildSectorData.PermissionTypes, Boolean> o1, Pair<BuildSectorData.PermissionTypes, Boolean> o2) {
+				return o1.first().getDisplay().compareToIgnoreCase(o2.first().getDisplay());
+			}
+		});
+		addColumn("Value", 5.0f, new Comparator<Pair<BuildSectorData.PermissionTypes, Boolean>>() {
+			@Override
+			public int compare(Pair<BuildSectorData.PermissionTypes, Boolean> o1, Pair<BuildSectorData.PermissionTypes, Boolean> o2) {
+				// Compare boolean values, false < true
+				return Boolean.compare(o1.second(), o2.second());
+			}
+		});
 		addTextFilter(new GUIListFilterText<Pair<BuildSectorData.PermissionTypes, Boolean>>() {
 			@Override
 			public boolean isOk(String s, Pair<BuildSectorData.PermissionTypes, Boolean> permissionTypesBooleanPair) {
-				return permissionTypesBooleanPair.first().getName().toLowerCase().contains(s.toLowerCase());
+				return permissionTypesBooleanPair.first().getDisplay().toLowerCase().contains(s.toLowerCase());
 			}
 		}, ControllerElement.FilterRowStyle.LEFT);
 		addDropdownFilter(new GUIListFilterDropdown<Pair<BuildSectorData.PermissionTypes, Boolean>, String>("TRUE", "FALSE") {
@@ -93,8 +104,8 @@ public class BuildSectorPermissionsScrollableList extends ScrollableTableList<Pa
 	public void updateListEntries(GUIElementList guiElementList, Set<Pair<BuildSectorData.PermissionTypes, Boolean>> set) {
 		guiElementList.deleteObservers();
 		guiElementList.addObserver(this);
-		for(Pair<BuildSectorData.PermissionTypes, Boolean> permission : set) {
-			GUIClippedRow permissionRow = getSimpleRow(permission.first().getName(), this);
+		for(final Pair<BuildSectorData.PermissionTypes, Boolean> permission : set) {
+			GUIClippedRow permissionRow = getSimpleRow(permission.first().getDisplay(), this);
 			GUIClippedRow valueRow = getSimpleRow(permission.second().toString(), this);
 			BuildSectorPermissionsScrollableListRow entryListRow = new BuildSectorPermissionsScrollableListRow(getState(), permission, permissionRow, valueRow);
 			guiElementList.add(entryListRow);

@@ -36,13 +36,27 @@ public class PlayerBankingTransactionScrollableList extends ScrollableTableList<
 
 	@Override
 	public void initColumns() {
-		addColumn("Subject", 10.0f, Comparator.comparing(PlayerData.PlayerBankTransactionData::getSubject));
-		addColumn("From", 7.0f, (o1, o2) -> {
-			String fromName = PlayerDataManager.getInstance().getFromUUID(o1.getFromUUID(), false).getName();
-			String toName = PlayerDataManager.getInstance().getFromUUID(o2.getFromUUID(), false).getName();
-			return fromName.compareTo(toName);
+		addColumn("Subject", 10.0f, new Comparator<PlayerData.PlayerBankTransactionData>() {
+			@Override
+			public int compare(PlayerData.PlayerBankTransactionData o1, PlayerData.PlayerBankTransactionData o2) {
+				return o1.getSubject().compareTo(o2.getSubject()); // Normal string comparison
+			}
 		});
-		addColumn("Time", 7.0f, Comparator.comparingLong(PlayerData.PlayerBankTransactionData::getTime));
+		addColumn("From", 7.0f, new Comparator<PlayerData.PlayerBankTransactionData>() {
+			@Override
+			public int compare(PlayerData.PlayerBankTransactionData o1, PlayerData.PlayerBankTransactionData o2) {
+				String fromName = PlayerDataManager.getInstance().getFromUUID(o1.getFromUUID(), false).getName();
+				String toName = PlayerDataManager.getInstance().getFromUUID(o2.getFromUUID(), false).getName();
+				return fromName.compareTo(toName); // Compare the names of the sender
+			}
+		});
+		addColumn("Time", 7.0f, new Comparator<PlayerData.PlayerBankTransactionData>() {
+			@Override
+			public int compare(PlayerData.PlayerBankTransactionData o1, PlayerData.PlayerBankTransactionData o2) {
+				// Compare the time of the transactions
+				return Long.compare(o1.getTime(), o2.getTime());
+			}
+		});
 		activeSortColumnIndex = 2;
 	}
 
@@ -69,7 +83,7 @@ public class PlayerBankingTransactionScrollableList extends ScrollableTableList<
 			row.expanded = new GUIElementList(getState());
 			row.expanded.add(new GUIListElement(anchor, getState()));
 			row.onInit();
-			guiElementList.addWithoutUpdate(row);		
+			guiElementList.addWithoutUpdate(row);
 		}
 		guiElementList.updateDim();
 	}

@@ -12,6 +12,7 @@ import thederpgamer.edencore.data.buildsectordata.BuildSectorData;
 import thederpgamer.edencore.data.buildsectordata.BuildSectorDataManager;
 
 import java.util.Collection;
+import java.util.Comparator;
 import java.util.Set;
 
 /**
@@ -22,7 +23,7 @@ import java.util.Set;
 public class BuildSectorScrollableList extends ScrollableTableList<BuildSectorData> implements GUIActiveInterface {
 
 	private final GUIElement parent;
-	
+
 	public BuildSectorScrollableList(InputState state, GUIElement parent) {
 		super(state, 100, 100, parent);
 		this.parent = parent;
@@ -35,10 +36,13 @@ public class BuildSectorScrollableList extends ScrollableTableList<BuildSectorDa
 
 	@Override
 	public void initColumns() {
-		addColumn("Owner", 5.0f, (o1, o2) -> {
-			if(o1.getOwner().equals(GameClient.getClientPlayerState().getName())) return -1;
-			else return o1.getOwner().compareTo(o2.getOwner());
-		});
+		addColumn("Owner", 5.0f, new Comparator<BuildSectorData>() {
+			@Override
+			public int compare(BuildSectorData o1, BuildSectorData o2) {
+				if(o1.getOwner().equals(GameClient.getClientPlayerState().getName())) return -1;
+				else return o1.getOwner().compareTo(o2.getOwner());
+			}
+		}); // Sort by owner, with the current player at the top
 		activeSortColumnIndex = 0;
 	}
 
@@ -46,7 +50,7 @@ public class BuildSectorScrollableList extends ScrollableTableList<BuildSectorDa
 	public void updateListEntries(GUIElementList guiElementList, Set<BuildSectorData> set) {
 		guiElementList.deleteObservers();
 		guiElementList.addObserver(this);
-		for(BuildSectorData buildSectorData : set) {
+		for(final BuildSectorData buildSectorData : set) {
 			GUIClippedRow ownerRow = getSimpleRow(buildSectorData.getOwner(), this);
 			BuildSectorScrollableListRow row = new BuildSectorScrollableListRow(getState(), buildSectorData, ownerRow);
 			guiElementList.add(row);
@@ -59,7 +63,7 @@ public class BuildSectorScrollableList extends ScrollableTableList<BuildSectorDa
 			};
 			GUIHorizontalButtonTablePane buttonPane = new GUIHorizontalButtonTablePane(getState(), 1, 1, anchor);
 			buttonPane.onInit();
-			BuildSectorData currentSector = BuildSectorDataManager.getInstance().getCurrentBuildSector(GameClient.getClientPlayerState());
+			final BuildSectorData currentSector = BuildSectorDataManager.getInstance().getCurrentBuildSector(GameClient.getClientPlayerState());
 			if(currentSector == null || currentSector != buildSectorData) {
 				buttonPane.addButton(0, 0, "WARP", GUIHorizontalArea.HButtonColor.BLUE, new GUICallback() {
 					@Override

@@ -7,6 +7,7 @@ import org.schema.schine.input.InputState;
 import thederpgamer.edencore.data.buildsectordata.BuildSectorData;
 
 import java.util.Collection;
+import java.util.Comparator;
 import java.util.Set;
 
 /**
@@ -38,7 +39,12 @@ public class BuildSectorUserScrollableList extends ScrollableTableList<String> i
 
 	@Override
 	public void initColumns() {
-		addColumn("Username", 5.0f, String::compareTo);
+		addColumn("Username", 5.0f, new Comparator<String>() {
+			@Override
+			public int compare(String o1, String o2) {
+				return o1.compareToIgnoreCase(o2); // Sort usernames alphabetically
+			}
+		});
 		addTextFilter(new GUIListFilterText<String>() {
 			@Override
 			public boolean isOk(String s, String s2) {
@@ -52,7 +58,7 @@ public class BuildSectorUserScrollableList extends ScrollableTableList<String> i
 	public void updateListEntries(GUIElementList guiElementList, Set<String> set) {
 		guiElementList.deleteObservers();
 		guiElementList.addObserver(this);
-		for(String username : set) {
+		for(final String username : set) {
 			GUIClippedRow nameRow = getSimpleRow(username, this);
 			BuildSectorUserScrollableListRow entryListRow = new BuildSectorUserScrollableListRow(getState(), username, nameRow);
 			GUIAncor anchor = new GUIAncor(getState(), parent.getWidth() - 107.0f, 28.0f) {
@@ -62,7 +68,7 @@ public class BuildSectorUserScrollableList extends ScrollableTableList<String> i
 					super.draw();
 				}
 			};
-			
+
 			GUIHorizontalButtonTablePane buttonPane = new GUIHorizontalButtonTablePane(getState(), 3, 1, anchor);
 			buttonPane.onInit();
 			buttonPane.addButton(0, 0, "EDIT PERMISSIONS", GUIHorizontalArea.HButtonColor.ORANGE, new GUICallback() {
@@ -91,7 +97,7 @@ public class BuildSectorUserScrollableList extends ScrollableTableList<String> i
 					return buildSectorData.getPermission(username, BuildSectorData.PermissionTypes.EDIT_PERMISSIONS);
 				}
 			});
-			
+
 			anchor.attach(buttonPane);
 			entryListRow.expanded = new GUIElementList(getState());
 			entryListRow.expanded.add(new GUIListElement(anchor, getState()));

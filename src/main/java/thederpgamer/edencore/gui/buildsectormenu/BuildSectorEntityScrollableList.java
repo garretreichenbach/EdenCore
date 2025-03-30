@@ -38,9 +38,34 @@ public class BuildSectorEntityScrollableList extends ScrollableTableList<BuildSe
 
 	@Override
 	public void initColumns() {
-		addColumn("Name", 7.0f, (Comparator.comparing(o -> o.getEntity().getName())));
-		addColumn("Type", 5.0f, (Comparator.comparing(o -> o.getEntity().getType().getName())));
-		addColumn("Mass", 3.0f, (Comparator.comparing(o -> o.getEntity().getMass())));
+		addColumn("ID", 5.0f, new Comparator<BuildSectorData.BuildSectorEntityData>() {
+			@Override
+			public int compare(BuildSectorData.BuildSectorEntityData o1, BuildSectorData.BuildSectorEntityData o2) {
+				return Integer.compare(
+						o1.getEntityID(), // Get the first entity ID
+						o2.getEntityID()  // Get the second entity ID
+				);
+			}
+		});
+		addColumn("Name", 7.0f, new Comparator<BuildSectorData.BuildSectorEntityData>() {
+			@Override
+			public int compare(BuildSectorData.BuildSectorEntityData o1, BuildSectorData.BuildSectorEntityData o2) {
+				return o1.getEntity().getName().compareToIgnoreCase(o2.getEntity().getName());
+			}
+		});
+		addColumn("Type", 5.0f, new Comparator<BuildSectorData.BuildSectorEntityData>() {
+			@Override
+			public int compare(BuildSectorData.BuildSectorEntityData o1, BuildSectorData.BuildSectorEntityData o2) {
+				return o1.getEntity().getType().getName().compareToIgnoreCase(o2.getEntity().getType().getName());
+			}
+		});
+		addColumn("Mass", 3.0f, new Comparator<BuildSectorData.BuildSectorEntityData>() {
+			@Override
+			public int compare(BuildSectorData.BuildSectorEntityData o1, BuildSectorData.BuildSectorEntityData o2) {
+				// Compare the mass of the entities
+				return Double.compare(o1.getEntity().getMass(), o2.getEntity().getMass());
+			}
+		});
 		addTextFilter(new GUIListFilterText<BuildSectorData.BuildSectorEntityData>() {
 			@Override
 			public boolean isOk(String s, BuildSectorData.BuildSectorEntityData buildSectorEntityData) {
@@ -111,10 +136,10 @@ public class BuildSectorEntityScrollableList extends ScrollableTableList<BuildSe
 		guiElementList.updateDim();
 	}
 
-	private void redrawButtonPane(BuildSectorData.BuildSectorEntityData entityData, GUIAncor anchor) {
+	private void redrawButtonPane(final BuildSectorData.BuildSectorEntityData entityData, GUIAncor anchor) {
 		buttonPane = new GUIHorizontalButtonTablePane(getState(), 3, 2, anchor);
 		buttonPane.onInit();
-		String user = ((GameClientState) getState()).getPlayerName();
+		final String user = ((GameClientState) getState()).getPlayerName();
 
 		buttonPane.addButton(0, 0, "WARP TO", GUIHorizontalArea.HButtonColor.YELLOW, new GUICallback() {
 			@Override

@@ -40,11 +40,36 @@ public class ExchangeItemScrollableList extends ScrollableTableList<ExchangeData
 
 	@Override
 	public void initColumns() {
-		addColumn(Lng.str("Name"), 15.0F, Comparator.comparing(ExchangeData::getName));
-		addColumn(Lng.str("Producer"), 10.0f, Comparator.comparing(ExchangeData::getProducer));
-		addColumn(Lng.str("Price"), 3.0f, Comparator.comparingInt(ExchangeData::getPrice));
-		addColumn(Lng.str("Category"), 10.0f, Comparator.comparing(ExchangeData::getCategory));
-		addColumn(Lng.str("Mass"), 5.0f, (o1, o2) -> Float.compare(o1.getMass(), o2.getMass()));
+		addColumn(Lng.str("Name"), 15.0F, new Comparator<ExchangeData>() {
+			@Override
+			public int compare(ExchangeData o1, ExchangeData o2) {
+				return o1.getName().compareToIgnoreCase(o2.getName());
+			}
+		});
+		addColumn(Lng.str("Producer"), 10.0F, new Comparator<ExchangeData>() {
+			@Override
+			public int compare(ExchangeData o1, ExchangeData o2) {
+				return o1.getProducer().compareToIgnoreCase(o2.getProducer());
+			}
+		});
+		addColumn(Lng.str("Price"), 3.0F, new Comparator<ExchangeData>() {
+			@Override
+			public int compare(ExchangeData o1, ExchangeData o2) {
+				return Integer.compare(o1.getPrice(), o2.getPrice());
+			}
+		});
+		addColumn(Lng.str("Category"), 10.0F, new Comparator<ExchangeData>() {
+			@Override
+			public int compare(ExchangeData o1, ExchangeData o2) {
+				return o1.getCategory().compareTo(o2.getCategory());
+			}
+		});
+		addColumn(Lng.str("Mass"), 5.0F, new Comparator<ExchangeData>() {
+			@Override
+			public int compare(ExchangeData o1, ExchangeData o2) {
+				return Float.compare(o1.getMass(), o2.getMass());
+			}
+		});
 
 		addTextFilter(new GUIListFilterText<ExchangeData>() {
 			public boolean isOk(String s, ExchangeData item) {
@@ -166,7 +191,7 @@ public class ExchangeItemScrollableList extends ScrollableTableList<ExchangeData
 		guiElementList.updateDim();
 	}
 
-	private GUIHorizontalButtonTablePane redrawButtonPane(ExchangeData data, GUIAncor anchor) {
+	private GUIHorizontalButtonTablePane redrawButtonPane(final ExchangeData data, GUIAncor anchor) {
 		boolean isOwner = GameClient.getClientPlayerState().getFactionName().equals(data.getProducer());
 		GUIHorizontalButtonTablePane buttonPane = new GUIHorizontalButtonTablePane(getState(), (isOwner ? 2 : 1), 1, anchor);
 		buttonPane.onInit();

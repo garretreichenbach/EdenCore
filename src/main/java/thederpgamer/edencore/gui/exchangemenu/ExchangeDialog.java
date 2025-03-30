@@ -7,7 +7,6 @@ import org.schema.game.client.view.gui.GUIInputPanel;
 import org.schema.game.common.data.player.PlayerState;
 import org.schema.game.server.data.blueprintnw.BlueprintClassification;
 import org.schema.schine.common.language.Lng;
-import org.schema.schine.graphicsengine.core.GLFrame;
 import org.schema.schine.graphicsengine.core.MouseEvent;
 import org.schema.schine.graphicsengine.forms.gui.GUIActivationCallback;
 import org.schema.schine.graphicsengine.forms.gui.GUICallback;
@@ -64,14 +63,14 @@ public class ExchangeDialog extends PlayerInput {
 		private GUITabbedContent tabbedContent;
 
 		public ExchangePanel(InputState state, GUICallback guiCallback) {
-			super("ExchangePanel", state, guiCallback, GLFrame.getWidth() / 2, GLFrame.getHeight() / 1.5);
+			super("ExchangePanel", state, 800, 500, guiCallback, "", "");
 		}
 
 		@Override
 		public void onInit() {
 			super.onInit();
 			GUIContentPane contentPane = ((GUIDialogWindow) background).getMainContentPane();
-			contentPane.setTextBoxHeightLast((int) (getHeight() - 50));
+			contentPane.setTextBoxHeightLast(300);
 			int lastTab = 0;
 			if(tabbedContent != null) {
 				lastTab = tabbedContent.getSelectedTab();
@@ -79,9 +78,10 @@ public class ExchangeDialog extends PlayerInput {
 			}
 			tabbedContent = new GUITabbedContent(getState(), contentPane.getContent(0));
 			tabbedContent.onInit();
-			PlayerState playerState = ((GameClientState) getState()).getPlayer();
+			final PlayerState playerState = ((GameClientState) getState()).getPlayer();
 
 			GUIContentPane shipsTab = tabbedContent.addTab(Lng.str("SHIPS"));
+			shipsTab.setTextBoxHeightLast(300);
 			ExchangeItemScrollableList shipsList = new ExchangeItemScrollableList(getState(), shipsTab.getContent(0), SHIPS);
 			shipsList.onInit();
 			shipsTab.getContent(0).attach(shipsList);
@@ -114,6 +114,7 @@ public class ExchangeDialog extends PlayerInput {
 			shipsTab.getContent(1).attach(shipsAddButton);
 
 			GUIContentPane stationsTab = tabbedContent.addTab(Lng.str("STATIONS"));
+			stationsTab.setTextBoxHeightLast(300);
 			ExchangeItemScrollableList stationsList = new ExchangeItemScrollableList(getState(), stationsTab.getContent(0), STATIONS);
 			stationsList.onInit();
 			stationsTab.getContent(0).attach(stationsList);

@@ -23,8 +23,8 @@ public class ThreadManager {
 	private static final long TASK_INTERVAL = 10000;
 	private static final ConcurrentLinkedQueue<Runnable> taskQueue = new ConcurrentLinkedQueue<>();
 
-	public static void initialize(EdenCore instance) {
-		long tipInterval = ConfigManager.getMainConfig().getLong("tip_interval");
+	public static void initialize(final EdenCore instance) {
+		final long tipInterval = ConfigManager.getMainConfig().getLong("tip_interval");
 		Thread loginTimerThread = new Thread("EdenCore_Login_Timer_Thread") {
 			@Override
 			public void run() {
@@ -40,7 +40,7 @@ public class ThreadManager {
 			}
 		};
 		loginTimerThread.start();
-		
+
 		Thread taskRunnerThread = new Thread("EdenCore_Task_Runner_Thread") {
 			@Override
 			public void run() {
@@ -57,25 +57,28 @@ public class ThreadManager {
 		taskRunnerThread.start();
 	}
 
-	public static void addLoginTimer(String playerName) {
-		long rewardTimer = ConfigManager.getMainConfig().getLong("player_login_reward_timer");
-		taskQueue.add(() -> {
-			try {
-				Thread.sleep(rewardTimer);
-				PlayerState playerState = GameCommon.getPlayerFromName(playerName);
-				if(playerState != null) {
-					Inventory inventory = playerState.getInventory();
-					if(inventory.isInfinite()) { //They are in creative mode, we need to get their survival inventory specifically
-						Field infiniteField = AbstractOwnerState.class.getDeclaredField("inventory");
-						infiniteField.setAccessible(true);
-						inventory = (Inventory) infiniteField.get(playerState);
+	public static void addLoginTimer(final String playerName) {
+		final long rewardTimer = ConfigManager.getMainConfig().getLong("player_login_reward_timer");
+		taskQueue.add(new Runnable() {
+			@Override
+			public void run() {
+				try {
+					Thread.sleep(rewardTimer);
+					PlayerState playerState = GameCommon.getPlayerFromName(playerName);
+					if(playerState != null) {
+						Inventory inventory = playerState.getInventory();
+						if(inventory.isInfinite()) { //They are in creative mode, we need to get their survival inventory specifically
+							Field infiniteField = AbstractOwnerState.class.getDeclaredField("inventory");
+							infiniteField.setAccessible(true);
+							inventory = (Inventory) infiniteField.get(playerState);
+						}
+						int prizeBarCount = 1; //Todo: Donators get extra bars
+						InventoryUtils.addItem(inventory, ElementManager.getItem("Bronze Bar").getId(), prizeBarCount);
+						PlayerUtils.sendMessage(playerState, "You have received " + prizeBarCount + " Bronze Bars for logging in today! Thanks for playing!");
 					}
-					int prizeBarCount = 1; //Todo: Donators get extra bars
-					InventoryUtils.addItem(inventory, ElementManager.getItem("Bronze Bar").getId(), prizeBarCount);
-					PlayerUtils.sendMessage(playerState, "You have received " + prizeBarCount + " Bronze Bars for logging in today! Thanks for playing!");
+				} catch(Exception exception) {
+					EdenCore.getInstance().logException("An error occurred while adding login timer for player", exception);
 				}
-			} catch(Exception exception) {
-				EdenCore.getInstance().logException("An error occurred while adding login timer for player", exception);
 			}
 		});
 	}

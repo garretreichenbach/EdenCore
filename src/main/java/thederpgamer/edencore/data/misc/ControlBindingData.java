@@ -76,8 +76,15 @@ public class ControlBindingData {
 	public static void registerBinding(StarMod mod, String name, String description, int defaultBinding) {
 		File file = getBindingsFile(mod);
 		if(file.exists()) {
-			if(bindings.containsKey(mod) && bindings.get(mod).stream().anyMatch(bindingData -> bindingData.name.equals(name))) EdenCore.getInstance().logInfo("Control binding \"" + name + "\" already exists for mod \"" + mod.getName() + "\"");
-			else {
+			if(bindings.containsKey(mod)) {
+				// Check if a binding with the same name already exists
+				for(ControlBindingData bindingData : bindings.get(mod)) {
+					if(bindingData.getName().equals(name)) {
+						EdenCore.getInstance().logInfo("Control binding \"" + name + "\" already exists for mod \"" + mod.getName() + "\"");
+						return; // Exit if it already exists
+					}
+				}
+			} else {
 				try {
 					bindings.add(mod, new ControlBindingData(name, description, defaultBinding, mod));
 					save(mod);
@@ -101,8 +108,9 @@ public class ControlBindingData {
 	}
 
 	public static ArrayList<ControlBindingData> getModBindings(StarMod mod) {
-		if(bindings.get(mod).isEmpty()) load(mod);
-		return new ArrayList<>(bindings.get(mod));
+		if(bindings.get(mod) == null || bindings.get(mod).isEmpty()) load(mod);
+		if(bindings.get(mod) == null) return new ArrayList<>();
+		else return new ArrayList<>(bindings.get(mod));
 	}
 
 	public static void save(StarMod mod) {

@@ -11,10 +11,7 @@ import org.schema.schine.common.language.Lng;
 import org.schema.schine.graphicsengine.core.GLFrame;
 import org.schema.schine.graphicsengine.core.MouseEvent;
 import org.schema.schine.graphicsengine.forms.font.FontLibrary;
-import org.schema.schine.graphicsengine.forms.gui.GUIAncor;
-import org.schema.schine.graphicsengine.forms.gui.GUICallback;
-import org.schema.schine.graphicsengine.forms.gui.GUIDropDownList;
-import org.schema.schine.graphicsengine.forms.gui.GUITextOverlay;
+import org.schema.schine.graphicsengine.forms.gui.*;
 import org.schema.schine.graphicsengine.forms.gui.newgui.GUIContentPane;
 import org.schema.schine.graphicsengine.forms.gui.newgui.GUIDialogWindow;
 import org.schema.schine.input.InputState;
@@ -66,6 +63,7 @@ public class ExchangeDataDialog extends PlayerOkCancelInput {
 				ExchangeDataManager.getInstance().sendPacket(data, DataManager.UPDATE_DATA, true);
 				break;
 		}
+		deactivate();
 	}
 
 	@Override
@@ -217,10 +215,15 @@ public class ExchangeDataDialog extends PlayerOkCancelInput {
 				overlay.setPos(4, 4, 0);
 				elements[i].attach(overlay);
 			}
-			dropDownList = new GUIDropDownList(getState(), 420, 180, 200, guiListElement -> {
-				selectedPermission = (CatalogPermission) guiListElement.getUserPointer();
-				setData(selectedPermission);
-			}, elements);
+			dropDownList = new GUIDropDownList(getState(), 420, 180, 200, new DropDownCallback() {
+				@Override
+				public void onSelectionChanged(GUIListElement guiListElement) {
+					if(guiListElement != null && guiListElement.getUserPointer() instanceof CatalogPermission) {
+						selectedPermission = (CatalogPermission) guiListElement.getUserPointer();
+						setData(selectedPermission);
+					} else selectedPermission = null; // Reset if no valid selection
+				}
+			});
 			dropDownList.onInit();
 			contentPane.getContent(0).attach(dropDownList);
 			dropDownList.getPos().y += 30;

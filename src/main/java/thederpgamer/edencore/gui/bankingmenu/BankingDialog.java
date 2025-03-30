@@ -6,7 +6,6 @@ import api.utils.gui.SimplePlayerTextInput;
 import org.schema.game.client.controller.PlayerInput;
 import org.schema.game.client.controller.PlayerOkCancelInput;
 import org.schema.game.client.view.gui.GUIInputPanel;
-import org.schema.schine.graphicsengine.core.GLFrame;
 import org.schema.schine.graphicsengine.core.MouseEvent;
 import org.schema.schine.graphicsengine.forms.font.FontLibrary;
 import org.schema.schine.graphicsengine.forms.gui.GUIActivationHighlightCallback;
@@ -54,24 +53,24 @@ public class BankingDialog extends PlayerInput {
 	public static class BankingPanel extends GUIInputPanel {
 		
 		public BankingPanel(InputState state, GUICallback guiCallback) {
-			super("BankingPanel", state, guiCallback, GLFrame.getWidth() / 2, GLFrame.getHeight() / 1.5);
+			super("BankingPanel", state, 800, 500, guiCallback, "", "");
 		}
 
 		@Override
 		public void onInit() {
 			super.onInit();
 			GUIContentPane contentPane = ((GUIDialogWindow) background).getMainContentPane();
-			contentPane.setTextBoxHeightLast((int) (getHeight() - 50));
-			PlayerData playerData = PlayerDataManager.getInstance().getClientOwnData();
-			long storedCredits = playerData.getStoredCredits();
-			long currentCredits = GameClient.getClientPlayerState().getCredits();
+			contentPane.setTextBoxHeightLast(48);
+			final PlayerData playerData = PlayerDataManager.getInstance().getClientOwnData();
+			final long storedCredits = playerData.getStoredCredits();
+			final long currentCredits = GameClient.getClientPlayerState().getCredits();
 			GUITextOverlay storedCreditsText = new GUITextOverlay(10, 10, getState());
 			storedCreditsText.setFont(FontLibrary.FontSize.MEDIUM.getFont());
 			storedCreditsText.onInit();
 			storedCreditsText.setTextSimple("Stored Credits: " + storedCredits);
 			contentPane.getContent(0).attach(storedCreditsText);
 			
-			GUIHorizontalButtonTablePane buttonPane = new GUIHorizontalButtonTablePane(getState(), 2, 2, contentPane.getContent(0));
+			GUIHorizontalButtonTablePane buttonPane = new GUIHorizontalButtonTablePane(getState(), 3, 1, contentPane.getContent(0));
 			buttonPane.onInit();
 			buttonPane.addButton(0, 0, "Deposit Credits", GUIHorizontalArea.HButtonColor.BLUE, new GUICallback() {
 				@Override
@@ -155,7 +154,7 @@ public class BankingDialog extends PlayerInput {
 					return storedCredits > 0;
 				}
 			});
-			buttonPane.addButton(0, 1, "Send Credits", GUIHorizontalArea.HButtonColor.GREEN, new GUICallback() {
+			buttonPane.addButton(2, 0, "Send Credits", GUIHorizontalArea.HButtonColor.GREEN, new GUICallback() {
 				@Override
 				public void callback(GUIElement guiElement, MouseEvent mouseEvent) {
 					if(mouseEvent.pressedLeftMouse()) {

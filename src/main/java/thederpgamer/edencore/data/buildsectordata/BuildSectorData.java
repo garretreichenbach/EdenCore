@@ -47,6 +47,7 @@ public class BuildSectorData extends SerializableData {
 		super(DataType.BUILD_SECTOR_DATA);
 		this.owner = owner;
 		sector = BuildSectorDataManager.calculateRandomSector();
+		permissions = new HashMap<>();
 		setDefaultPerms(owner, OWNER);
 	}
 
@@ -69,11 +70,11 @@ public class BuildSectorData extends SerializableData {
 		for(BuildSectorEntityData entity : entities) entitiesArray.put(entity.serialize());
 		data.put("entities", entitiesArray);
 		JSONArray permissionsArray = new JSONArray();
-		for(String name : permissions.keySet()) {
-			for(Map.Entry<PermissionTypes, Boolean> permission : permissions.get(name).entrySet()) {
+		for(String username : permissions.keySet()) {
+			for(Map.Entry<PermissionTypes, Boolean> permission : permissions.get(username).entrySet()) {
 				JSONObject permissionData = new JSONObject();
-				permissionData.put("name", name);
-				permissionData.put(permission.getKey().getKey(), permission.getValue());
+				permissionData.put("name", username);
+				permissionData.put(permission.getKey().name(), permission.getValue());
 				permissionsArray.put(permissionData);
 			}
 		}
@@ -87,18 +88,19 @@ public class BuildSectorData extends SerializableData {
 		dataUUID = data.getString("uuid");
 		owner = data.getString("owner");
 		sector = new Vector3i(Vector3i.parseVector3i(data.getString("sector")));
+		entities = new HashSet<>();
 		JSONArray entitiesArray = data.getJSONArray("entities");
 		for(int i = 0; i < entitiesArray.length(); i++) entities.add(new BuildSectorEntityData(entitiesArray.getJSONObject(i)));
 		JSONArray permissionsArray = data.getJSONArray("permissions");
 		for(int i = 0; i < permissionsArray.length(); i++) {
 			JSONObject permissionData = permissionsArray.getJSONObject(i);
-			String name = permissionData.getString("name");
+			String username = permissionData.getString("name");
 			for(PermissionTypes type : PermissionTypes.values()) {
-				if(permissionData.has(type.getKey())) {
-					boolean value = permissionData.getBoolean(type.getKey());
+				if(permissionData.has(type.name())) {
+					boolean value = permissionData.getBoolean(type.name());
 					HashMap<PermissionTypes, Boolean> permission = new HashMap<>();
 					permission.put(type, value);
-					permissions.put(name, permission);
+					permissions.put(username, permission);
 				}
 			}
 		}
@@ -113,10 +115,10 @@ public class BuildSectorData extends SerializableData {
 		writeBuffer.writeInt(entities.size());
 		for(BuildSectorEntityData entity : entities) entity.serializeNetwork(writeBuffer);
 		writeBuffer.writeInt(permissions.size());
-		for(String name : permissions.keySet()) {
-			for(Map.Entry<PermissionTypes, Boolean> permission : permissions.get(name).entrySet()) {
-				writeBuffer.writeString(name);
-				writeBuffer.writeString(permission.getKey().getKey());
+		for(String username : permissions.keySet()) {
+			for(Map.Entry<PermissionTypes, Boolean> permission : permissions.get(username).entrySet()) {
+				writeBuffer.writeString(username);
+				writeBuffer.writeString(permission.getKey().name());
 				writeBuffer.writeBoolean(permission.getValue());
 			}
 		}
@@ -134,12 +136,12 @@ public class BuildSectorData extends SerializableData {
 		int permissionCount = readBuffer.readInt();
 		permissions = new HashMap<>();
 		for(int i = 0; i < permissionCount; i++) {
-			String name = readBuffer.readString();
-			PermissionTypes type = PermissionTypes.valueOf(readBuffer.readString().toUpperCase(Locale.ENGLISH));
+			String username = readBuffer.readString();
+			PermissionTypes type = PermissionTypes.valueOf(readBuffer.readString());
 			boolean value = readBuffer.readBoolean();
 			HashMap<PermissionTypes, Boolean> permission = new HashMap<>();
 			permission.put(type, value);
-			permissions.put(name, permission);
+			permissions.put(username, permission);
 		}
 	}
 
@@ -214,10 +216,12 @@ public class BuildSectorData extends SerializableData {
 	}
 
 	public Set<BuildSectorEntityData> getEntities() {
-		return new HashSet<>(entities);
+		if(entities == null) entities = new HashSet<>();
+		return entities;
 	}
 
 	public BuildSectorEntityData getEntity(SegmentController entity) {
+		if(entities == null) entities = new HashSet<>();
 		for(BuildSectorEntityData entityData : entities) {
 			if(entityData.getEntity().equals(entity)) return entityData;
 		}
@@ -230,7 +234,13 @@ public class BuildSectorData extends SerializableData {
 	}
 
 	public void removeEntity(SegmentController entity, boolean server) {
-		entities.removeIf(entityData -> entityData.getEntity().equals(entity));
+		if(entities == null) entities = new HashSet<>();
+		for(BuildSectorEntityData entityData : entities) {
+			if(entityData.getEntity().equals(entity)) {
+				entityData.delete(); // Clean up the entity if needed
+				break; // Found the entity to remove, exit loop
+			}
+		}
 		BuildSectorDataManager.getInstance().updateData(this, server);
 	}
 
@@ -405,7 +415,7 @@ public class BuildSectorData extends SerializableData {
 				for(Map.Entry<PermissionTypes, Boolean> permission : permissions.get(name).entrySet()) {
 					JSONObject permissionData = new JSONObject();
 					permissionData.put("name", name);
-					permissionData.put(permission.getKey().getKey(), permission.getValue());
+					permissionData.put(permission.getKey().name(), permission.getValue());
 					permissionsArray.put(permissionData);
 				}
 			}
@@ -424,8 +434,8 @@ public class BuildSectorData extends SerializableData {
 				JSONObject permissionData = permissionsArray.getJSONObject(i);
 				String name = permissionData.getString("name");
 				for(PermissionTypes type : PermissionTypes.values()) {
-					if(permissionData.has(type.getKey())) {
-						boolean value = permissionData.getBoolean(type.getKey());
+					if(permissionData.has(type.name())) {
+						boolean value = permissionData.getBoolean(type.name());
 						HashMap<PermissionTypes, Boolean> permission = new HashMap<>();
 						permission.put(type, value);
 						permissions.put(name, permission);
@@ -444,7 +454,7 @@ public class BuildSectorData extends SerializableData {
 			for(String name : permissions.keySet()) {
 				for(Map.Entry<PermissionTypes, Boolean> permission : permissions.get(name).entrySet()) {
 					writeBuffer.writeString(name);
-					writeBuffer.writeString(permission.getKey().getKey());
+					writeBuffer.writeString(permission.getKey().name());
 					writeBuffer.writeBoolean(permission.getValue());
 				}
 			}
@@ -590,44 +600,38 @@ public class BuildSectorData extends SerializableData {
 	}
 
 	public enum PermissionTypes {
-		EDIT_SPECIFIC("edit_specific", "Edit Specific Ship", "Whether the player can edit a specific ship."),
-		EDIT_OWN("edit_own", "Edit Own Ships", "Whether the player can edit their own ships."),
-		EDIT_ANY("edit_any", "Edit Other Ships", "Whether the player can edit ships owned by other players."),
-		SPAWN("spawn", "Spawn Ships", "Whether the player can spawn ships from their catalog."),
-		SPAWN_ENEMIES("spawn_enemies", "Spawn Enemies", "Whether the player can spawn enemy ships."),
-		DELETE_SPECIFIC("delete_specific", "Delete Specific Ship", "Whether the player can delete a specific ship."),
-		DELETE_OWN("delete_own", "Delete Own Ships", "Whether the player can delete their own ships."),
-		DELETE_ANY("delete_any", "Delete Other Ships", "Whether the player can delete ships owned by other players."),
-		DELETE_ALL("delete_all", "Delete All Ships", "Whether the player can delete all ships in the sector."),
-		TOGGLE_AI_SPECIFIC("toggle_ai_specific", "Toggle Specific AI", "Whether the player can toggle AI on a specific ship."),
-		TOGGLE_AI_OWN("toggle_ai_own", "Toggle Own AI", "Whether the player can toggle AI on their own ships."),
-		TOGGLE_AI_ANY("toggle_ai_any", "Toggle Other AI", "Whether the player can toggle AI on ships owned by other players."),
-		TOGGLE_AI_ALL("toggle_ai_all", "Toggle All AI", "Whether the player can toggle AI on all ships in the sector."),
-		TOGGLE_DAMAGE_SPECIFIC("toggle_damage_specific", "Toggle Specific Damage", "Whether the player can toggle damage on a specific ship."),
-		TOGGLE_DAMAGE_OWN("toggle_damage_own", "Toggle Own Damage", "Whether the player can toggle damage on their own ships."),
-		TOGGLE_DAMAGE_ANY("toggle_damage_any", "Toggle Other Damage", "Whether the player can toggle damage on ships owned by other players."),
-		TOGGLE_DAMAGE_ALL("toggle_damage_all", "Toggle All Damage", "Whether the player can toggle damage on all ships in the sector."),
-		INVITE("invite", "Invite Players", "Whether the player can invite other players to the sector."),
-		KICK("kick", "Kick Players", "Whether the player can kick other players from the sector."),
-		EDIT_PERMISSIONS("edit_permissions", "Edit Permissions", "Whether the player can edit permissions for other players."),
-		EDIT_ENTITY_PERMISSIONS("edit_entity_permissions", "Edit Entity Permissions", "Whether the player can edit permissions for specific entities.");
+		EDIT_SPECIFIC("Edit Specific Ship", "Whether the player can edit a specific ship."),
+		EDIT_OWN("Edit Own Ships", "Whether the player can edit their own ships."),
+		EDIT_ANY("Edit Other Ships", "Whether the player can edit ships owned by other players."),
+		SPAWN("Spawn Ships", "Whether the player can spawn ships from their catalog."),
+		SPAWN_ENEMIES("Spawn Enemies", "Whether the player can spawn enemy ships."),
+		DELETE_SPECIFIC("Delete Specific Ship", "Whether the player can delete a specific ship."),
+		DELETE_OWN("Delete Own Ships", "Whether the player can delete their own ships."),
+		DELETE_ANY("Delete Other Ships", "Whether the player can delete ships owned by other players."),
+		DELETE_ALL("Delete All Ships", "Whether the player can delete all ships in the sector."),
+		TOGGLE_AI_SPECIFIC("Toggle Specific AI", "Whether the player can toggle AI on a specific ship."),
+		TOGGLE_AI_OWN("Toggle Own AI", "Whether the player can toggle AI on their own ships."),
+		TOGGLE_AI_ANY("Toggle Other AI", "Whether the player can toggle AI on ships owned by other players."),
+		TOGGLE_AI_ALL("Toggle All AI", "Whether the player can toggle AI on all ships in the sector."),
+		TOGGLE_DAMAGE_SPECIFIC("Toggle Specific Damage", "Whether the player can toggle damage on a specific ship."),
+		TOGGLE_DAMAGE_OWN("Toggle Own Damage", "Whether the player can toggle damage on their own ships."),
+		TOGGLE_DAMAGE_ANY("Toggle Other Damage", "Whether the player can toggle damage on ships owned by other players."),
+		TOGGLE_DAMAGE_ALL("Toggle All Damage", "Whether the player can toggle damage on all ships in the sector."),
+		INVITE("Invite Players", "Whether the player can invite other players to the sector."),
+		KICK("Kick Players", "Whether the player can kick other players from the sector."),
+		EDIT_PERMISSIONS("Edit Permissions", "Whether the player can edit permissions for other players."),
+		EDIT_ENTITY_PERMISSIONS("Edit Entity Permissions", "Whether the player can edit permissions for specific entities.");
 
-		private final String key;
-		private final String name;
+		private final String display;
 		private final String description;
 
-		PermissionTypes(String key, String name, String description) {
-			this.key = key;
-			this.name = name;
+		PermissionTypes(String display, String description) {
+			this.display = display;
 			this.description = description;
 		}
 
-		public String getKey() {
-			return key;
-		}
-
-		public String getName() {
-			return name;
+		public String getDisplay() {
+			return display;
 		}
 
 		public String getDescription() {

@@ -5,7 +5,6 @@ import api.utils.game.PlayerUtils;
 import api.utils.gui.SimplePlayerTextInput;
 import org.schema.game.client.controller.PlayerInput;
 import org.schema.game.client.view.gui.GUIInputPanel;
-import org.schema.schine.graphicsengine.core.GLFrame;
 import org.schema.schine.graphicsengine.core.MouseEvent;
 import org.schema.schine.graphicsengine.forms.gui.GUIActivationCallback;
 import org.schema.schine.graphicsengine.forms.gui.GUICallback;
@@ -50,14 +49,14 @@ public class BuildSectorDialog extends PlayerInput {
 		private GUITabbedContent tabbedContent;
 
 		public BuildSectorPanel(InputState state, GUICallback guiCallback) {
-			super("BuildSectorPanel", state, guiCallback, GLFrame.getWidth() / 2, GLFrame.getHeight() / 1.5);
+			super("BuildSectorPanel", state, 800, 500, guiCallback, "", "");
 		}
 
 		@Override
 		public void onInit() {
 			super.onInit();
 			GUIContentPane contentPane = ((GUIDialogWindow) background).getMainContentPane();
-			contentPane.setTextBoxHeightLast((int) (getHeight() - 50));
+			contentPane.setTextBoxHeightLast(300);
 			int lastTab = 0;
 			if(tabbedContent != null) {
 				lastTab = tabbedContent.getSelectedTab();
@@ -66,7 +65,7 @@ public class BuildSectorDialog extends PlayerInput {
 			tabbedContent = new GUITabbedContent(getState(), contentPane.getContent(0));
 			tabbedContent.onInit();
 			
-			createMainTab(tabbedContent.addTab("BUILD SECTORS"));
+			createMainTab(tabbedContent.addTab("SECTORS"));
 			createEntitiesTab(tabbedContent.addTab("ENTITIES"));
 			createPermissionsTab(tabbedContent.addTab("PERMISSIONS"));
 			createSettingsTab(tabbedContent.addTab("SETTINGS"));
@@ -76,7 +75,8 @@ public class BuildSectorDialog extends PlayerInput {
 		}
 		
 		private BuildSectorData getBuildSectorData() {
-			return BuildSectorDataManager.getInstance().getCurrentBuildSector(GameClient.getClientPlayerState());
+			if(BuildSectorDataManager.getInstance().isPlayerInAnyBuildSector(GameClient.getClientPlayerState())) return BuildSectorDataManager.getInstance().getCurrentBuildSector(GameClient.getClientPlayerState());
+			else return BuildSectorDataManager.getInstance().getFromPlayerName(GameClient.getClientPlayerState().getName(), false);
 		}
 		
 		private void createMainTab(GUIContentPane contentPane) {
@@ -133,7 +133,7 @@ public class BuildSectorDialog extends PlayerInput {
 			});
 			contentPane.getContent(0).attach(buttonPane);
 
-			contentPane.addNewTextBox(400);
+			contentPane.addNewTextBox(300);
 			BuildSectorUserScrollableList userScrollableList = new BuildSectorUserScrollableList(getState(), contentPane.getContent(1), getBuildSectorData());
 			userScrollableList.onInit();
 			contentPane.getContent(1).attach(userScrollableList);

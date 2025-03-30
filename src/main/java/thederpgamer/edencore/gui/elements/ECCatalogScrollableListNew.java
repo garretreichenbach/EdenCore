@@ -21,6 +21,7 @@ import org.schema.game.server.data.EntityRequest;
 import org.schema.game.server.data.admin.AdminCommands;
 import org.schema.game.server.data.blueprintnw.BlueprintEntry;
 import org.schema.game.server.data.blueprintnw.BlueprintType;
+import org.schema.schine.common.InputChecker;
 import org.schema.schine.common.TextCallback;
 import org.schema.schine.common.language.Lng;
 import org.schema.schine.graphicsengine.core.MouseEvent;
@@ -65,8 +66,8 @@ public class ECCatalogScrollableListNew extends CatalogScrollableListNew {
 	public void updateListEntries(GUIElementList mainList, Set<CatalogPermission> collection) {
 		mainList.deleteObservers();
 		mainList.addObserver(this);
-		CatalogManager catalogManager = ((GameClientState) getState()).getGameState().getCatalogManager();
-		for(CatalogPermission f : collection) {
+		final CatalogManager catalogManager = ((GameClientState) getState()).getGameState().getCatalogManager();
+		for(final CatalogPermission f : collection) {
 			assert (f.getUid() != null);
 			GUITextOverlayTable nameText = new GUITextOverlayTable(10, 10, getState());
 			GUITextOverlayTable typeText = new GUITextOverlayTable(10, 10, getState());
@@ -99,16 +100,16 @@ public class ECCatalogScrollableListNew extends CatalogScrollableListNew {
 			priceText.getPos().y = heightInset;
 			classText.getPos().y = heightInset;
 			dateText.getPos().y = heightInset;
-			CatalogRow row;
+			final CatalogRow row;
 			if(showPrice) row = new CatalogRow(getState(), f, nameAnchorP, typeText, classAnchorP, dateText, massText, priceText, ratingText);
 			else row = new CatalogRow(getState(), f, nameAnchorP, typeText, classAnchorP, dateText, massText, ratingText);
 			if(!selectSingle) {
 				float height = 56.0f;
 				row.expanded = new GUIElementList(getState());
 
-				String owner = Lng.str("Owner: %s\n", f.ownerUID);
-				String created = Lng.str("Created: %s\n", GuiDateFormats.catalogEntryCreated.format(f.date));
-				GUITextOverlayTableInnerDescription description = new GUITextOverlayTableInnerDescription(10, 10, getState());
+				final String owner = Lng.str("Owner: %s\n", f.ownerUID);
+				final String created = Lng.str("Created: %s\n", GuiDateFormats.catalogEntryCreated.format(f.date));
+				final GUITextOverlayTableInnerDescription description = new GUITextOverlayTableInnerDescription(10, 10, getState());
 				description.setTextSimple(new Object() {
 					@Override
 					public String toString() {
@@ -134,7 +135,7 @@ public class ECCatalogScrollableListNew extends CatalogScrollableListNew {
 				row.expanded.add(new GUIListElement(descriptionAnchor, descriptionAnchor, getState()));
 
 				if(f.score != null) {
-					GUIAncor statsAnchor = new GUIAncor(getState(), 100, 128) {
+					final GUIAncor statsAnchor = new GUIAncor(getState(), 100, 128) {
 						@Override
 						public void draw() {
 							setWidth(row.l.getInnerTextbox().getWidth());
@@ -166,7 +167,7 @@ public class ECCatalogScrollableListNew extends CatalogScrollableListNew {
 					}
 				};
 
-				BuildSectorData buildSectorData = BuildSectorDataManager.getInstance().getCurrentBuildSector(((GameClientState) getState()).getPlayer());
+				final BuildSectorData buildSectorData = BuildSectorDataManager.getInstance().getCurrentBuildSector(((GameClientState) getState()).getPlayer());
 				boolean canSpawn = isPlayerAdmin() || (buildSectorData != null && buildSectorData.getPermission(((GameClientState) getState()).getPlayer().getName(), BuildSectorData.PermissionTypes.SPAWN));
 				int columns = 2;
 				if(isPlayerAdmin() || buildSectorData != null) {
@@ -177,7 +178,7 @@ public class ECCatalogScrollableListNew extends CatalogScrollableListNew {
 
 				GUIHorizontalButtonTablePane buttonPane = new GUIHorizontalButtonTablePane(getState(), columns, 1, buttonAnchor);
 				buttonPane.onInit();
-				PlayerState player = ((GameClientState) getState()).getPlayer();
+				final PlayerState player = ((GameClientState) getState()).getPlayer();
 
 				int x = 0;
 				buttonPane.addButton(x, 0, Lng.str("BUY"), GUIHorizontalArea.HButtonColor.GREEN, new GUICallback() {
@@ -319,7 +320,7 @@ public class ECCatalogScrollableListNew extends CatalogScrollableListNew {
 							buttons.onInit();
 							((GUIDialogWindow) detailsPopup.getInputPanel().background).getMainContentPane().getContent(0).attach(buttons);
 
-							GUIBlueprintConsistenceScrollableList sc = new GUIBlueprintConsistenceScrollableList(getState(), ((GUIDialogWindow) detailsPopup.getInputPanel().background).getMainContentPane().getContent(1));
+							final GUIBlueprintConsistenceScrollableList sc = new GUIBlueprintConsistenceScrollableList(getState(), ((GUIDialogWindow) detailsPopup.getInputPanel().background).getMainContentPane().getContent(1));
 							sc.onInit();
 							((GUIDialogWindow) detailsPopup.getInputPanel().background).getMainContentPane().getContent(1).attach(sc);
 							detailsPopup.getInputPanel().setOkButton(false);
@@ -374,7 +375,7 @@ public class ECCatalogScrollableListNew extends CatalogScrollableListNew {
 						public void callback(GUIElement guiElement, MouseEvent mouseEvent) {
 							if(mouseEvent.pressedLeftMouse()) {
 								if(buildSectorData != null) {
-									BlueprintEntry entry = EntityUtils.getFromCatalog(f);
+									final BlueprintEntry entry = EntityUtils.getFromCatalog(f);
 									String description = Lng.str("Please type in a name for your new Ship!");
 									PlayerGameTextInput pp = new PlayerGameTextInput("CatalogScrollableListNew_f_load", (GameClientState) getState(), 400, 240, 50, Lng.str("New Ship"), description, f.getUid() + "_" + System.currentTimeMillis()) {
 										@Override
@@ -415,11 +416,15 @@ public class ECCatalogScrollableListNew extends CatalogScrollableListNew {
 											return true;
 										}
 									};
-									pp.setInputChecker((s, callback) -> {
-										if(EntityRequest.isShipNameValid(s)) return true;
-										else {
-											callback.onFailedTextCheck(Lng.str("Must only contain letters or numbers or (_-)!"));
-											return false;
+
+									pp.setInputChecker(new InputChecker() {
+										@Override
+										public boolean check(String s, TextCallback textCallback) {
+											if(EntityRequest.isShipNameValid(s)) return true;
+											else {
+												textCallback.onFailedTextCheck(Lng.str("Must only contain letters or numbers or (_-)!"));
+												return false;
+											}
 										}
 									});
 									pp.getInputPanel().onInit();
@@ -564,7 +569,7 @@ public class ECCatalogScrollableListNew extends CatalogScrollableListNew {
 		return ((GameClientState) getState()).getPlayer().getCredits() >= permission.price || isPlayerAdmin();
 	}
 
-	private void changeOwner(CatalogPermission permission) {
+	private void changeOwner(final CatalogPermission permission) {
 		String description = Lng.str("Change the owner of \"%s\"", permission.getUid());
 		PlayerGameTextInput pp = new PlayerGameTextInput("CatalogExtendedPanel_changeOwner", (GameClientState) getState(), 50, Lng.str("Change Owner"), description, permission.ownerUID) {
 			@Override
@@ -606,17 +611,20 @@ public class ECCatalogScrollableListNew extends CatalogScrollableListNew {
 			}
 
 		};
-		pp.setInputChecker((entry, callback) -> {
-			if(EntityRequest.isShipNameValid(entry)) return true;
-			else {
-				callback.onFailedTextCheck(Lng.str("Must only contain Letters or numbers or (_-)!"));
-				return false;
+		pp.setInputChecker(new InputChecker() {
+			@Override
+			public boolean check(String s, TextCallback textCallback) {
+				if(EntityRequest.isShipNameValid(s)) return true;
+				else {
+					textCallback.onFailedTextCheck(Lng.str("Must only contain Letters or numbers or (_-)!"));
+					return false;
+				}
 			}
 		});
 		pp.activate();
 	}
 
-	private void deleteEntry(CatalogPermission permission) {
+	private void deleteEntry(final CatalogPermission permission) {
 		boolean admin = ((GameClientState) getState()).getPlayer().getNetworkObject().isAdminClient.get();
 		if(!admin && !((GameClientState) getState()).getPlayer().getName().toLowerCase(Locale.ENGLISH).equals(permission.ownerUID.toLowerCase(Locale.ENGLISH))) {
 			((GameClientState) getState()).getController().popupAlertTextMessage(Lng.str("ERROR:\nCannot delete!\nYou do not own this!"), 0);
@@ -652,7 +660,7 @@ public class ECCatalogScrollableListNew extends CatalogScrollableListNew {
 		}
 	}
 
-	private void buyEntry(CatalogPermission permission) {
+	private void buyEntry(final CatalogPermission permission) {
 
 		if(!((GameClientState) getState()).isInShopDistance()) {
 			((GameClientState) getState()).getController().popupAlertTextMessage(Lng.str("ERROR:\nCannot buy!\nYou are not near a shop!"), 0);
@@ -703,11 +711,14 @@ public class ECCatalogScrollableListNew extends CatalogScrollableListNew {
 			}
 
 		};
-		pp.setInputChecker((entry, callback) -> {
-			if(EntityRequest.isShipNameValid(entry)) return true;
-			else {
-				callback.onFailedTextCheck(Lng.str("Must only contain letters or numbers or (_-)!"));
-				return false;
+		pp.setInputChecker(new InputChecker() {
+			@Override
+			public boolean check(String s, TextCallback textCallback) {
+				if(EntityRequest.isShipNameValid(s)) return true;
+				else {
+					textCallback.onFailedTextCheck(Lng.str("Must only contain letters or numbers or (_-)!"));
+					return false;
+				}
 			}
 		});
 		pp.getInputPanel().onInit();
@@ -767,7 +778,7 @@ public class ECCatalogScrollableListNew extends CatalogScrollableListNew {
 		pp.activate();
 	}
 
-	private void buyEntryAsMeta(CatalogPermission permission) {
+	private void buyEntryAsMeta(final CatalogPermission permission) {
 		if(!((GameClientState) getState()).isInShopDistance()) {
 			((GameClientState) getState()).getController().popupAlertTextMessage(Lng.str("ERROR:\nCannot buy!\nYou are not near a shop!"), 0);
 		}
@@ -806,7 +817,7 @@ public class ECCatalogScrollableListNew extends CatalogScrollableListNew {
 		}).activate();
 	}
 
-	private void load(CatalogPermission permission) {
+	private void load(final CatalogPermission permission) {
 		String description = Lng.str("Please type in a name for your new Ship!");
 		PlayerGameTextInput pp = new PlayerGameTextInput("CatalogScrollableListNew_f_load", (GameClientState) getState(), 400, 240, 50, Lng.str("New Ship"), description, permission.getUid() + "_" + System.currentTimeMillis()) {
 			@Override
@@ -857,11 +868,14 @@ public class ECCatalogScrollableListNew extends CatalogScrollableListNew {
 			}
 
 		};
-		pp.setInputChecker((entry, callback) -> {
-			if(EntityRequest.isShipNameValid(entry)) return true;
-			else {
-				callback.onFailedTextCheck(Lng.str("Must only contain letters or numbers or (_-)!"));
-				return false;
+		pp.setInputChecker(new InputChecker() {
+			@Override
+			public boolean check(String s, TextCallback textCallback) {
+				if(EntityRequest.isShipNameValid(s)) return true;
+				else {
+					textCallback.onFailedTextCheck(Lng.str("Must only contain letters or numbers or (_-)!"));
+					return false;
+				}
 			}
 		});
 		pp.getInputPanel().onInit();
