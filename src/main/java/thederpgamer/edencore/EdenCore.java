@@ -100,9 +100,14 @@ public class EdenCore extends StarMod {
 		(new Thread("EdenCore_Client_Data_Initialization_Thread") {
 			@Override
 			public void run() {
-				DataManager.initialize(true);
-				registerBindings();
-				initializeGlossary();
+				try {
+					sleep(5000);
+					DataManager.initialize(true);
+					registerBindings();
+					initializeGlossary();
+				} catch(Exception exception) {
+					instance.logException("An unexpected error occurred during client initialization", exception);
+				}
 			}
 		}).start();
 	}
