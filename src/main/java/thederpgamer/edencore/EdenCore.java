@@ -24,7 +24,6 @@ import thederpgamer.edencore.element.items.PrizeBars;
 import thederpgamer.edencore.manager.ConfigManager;
 import thederpgamer.edencore.manager.EventManager;
 import thederpgamer.edencore.manager.ResourceManager;
-import thederpgamer.edencore.manager.ThreadManager;
 import thederpgamer.edencore.network.PlayerActionCommandPacket;
 import thederpgamer.edencore.network.SendDataPacket;
 import thederpgamer.edencore.network.SyncRequestPacket;
@@ -77,7 +76,6 @@ public class EdenCore extends StarMod {
 
 	@Override
 	public void onServerCreated(ServerInitializeEvent serverInitializeEvent) {
-		ThreadManager.initialize(this);
 		DataManager.initialize(false);
 		final long tipInterval = ConfigManager.getMainConfig().getLong("tip_interval");
 		Thread loginTimerThread = new Thread("EdenCore_Login_Timer_Thread") {
