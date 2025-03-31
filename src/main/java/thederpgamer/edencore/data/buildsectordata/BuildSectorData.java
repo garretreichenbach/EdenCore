@@ -134,10 +134,15 @@ public class BuildSectorData extends SerializableData {
 			writeBuffer.writeBoolean(true); // Indicate that there are permissions to serialize
 			writeBuffer.writeInt(permissions.size());
 			for(String username : permissions.keySet()) {
-				for(Map.Entry<PermissionTypes, Boolean> permission : permissions.get(username).entrySet()) {
-					writeBuffer.writeString(username); // Write the username
-					writeBuffer.writeString(permission.getKey().name()); // Write the permission type
-					writeBuffer.writeBoolean(permission.getValue()); // Write the permission value
+				writeBuffer.writeString(username); // Write the username
+				if(permissions.get(username) == null || permissions.get(username).isEmpty()) writeBuffer.writeBoolean(false);
+				else {
+					writeBuffer.writeBoolean(true); // Indicate that there are permissions for this user
+					writeBuffer.writeInt(permissions.get(username).size()); // Write the number of permissions for this user
+					for(Map.Entry<PermissionTypes, Boolean> permission : permissions.get(username).entrySet()) {
+						writeBuffer.writeString(permission.getKey().name()); // Write the permission type
+						writeBuffer.writeBoolean(permission.getValue()); // Write the permission value
+					}
 				}
 			}
 		}
@@ -169,11 +174,20 @@ public class BuildSectorData extends SerializableData {
 			permissions = new HashMap<>();
 			for(int i = 0; i < permissionCount; i++) {
 				String username = readBuffer.readString(); // Read the username
-				PermissionTypes type = PermissionTypes.valueOf(readBuffer.readString().toUpperCase(Locale.ENGLISH)); // Read the permission type
-				boolean value = readBuffer.readBoolean(); // Read the permission value
-				HashMap<PermissionTypes, Boolean> permission = new HashMap<>();
-				permission.put(type, value);
-				permissions.put(username, permission); // Store the permission in the map
+				if(!readBuffer.readBoolean()) {
+					// No permissions for this user
+					permissions.put(username, new HashMap<PermissionTypes, Boolean>()); // Store an empty permissions map
+				} else {
+					int permissionSize = readBuffer.readInt(); // Read the number of permissions for this user
+					HashMap<PermissionTypes, Boolean> permissionMap = new HashMap<>();
+					for(int j = 0; j < permissionSize; j++) {
+						String typeString = readBuffer.readString(); // Read the permission type
+						boolean value = readBuffer.readBoolean(); // Read the permission value
+						PermissionTypes type = PermissionTypes.valueOf(typeString); // Convert to enum
+						permissionMap.put(type, value); // Store in the map
+					}
+					permissions.put(username, permissionMap); // Store the permissions for this user
+				}
 			}
 		}
 	}
