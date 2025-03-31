@@ -108,7 +108,7 @@ public class EventManager {
 			@Override
 			public void onEvent(final PlayerJoinWorldEvent event) {
 				if(event.isServer()) {
-					(new Thread() {
+					(new Thread("EdenCore_Player_Join_World_Thread") {
 						@Override
 						public void run() {
 							try {
