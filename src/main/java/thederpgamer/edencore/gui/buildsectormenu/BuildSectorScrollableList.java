@@ -1,184 +1,133 @@
 package thederpgamer.edencore.gui.buildsectormenu;
 
 import api.common.GameClient;
-import api.network.packets.PacketUtil;
-import api.utils.game.PlayerUtils;
-import org.schema.game.common.controller.SegmentController;
-import org.schema.schine.graphicsengine.core.GLFrame;
 import org.schema.schine.graphicsengine.core.MouseEvent;
 import org.schema.schine.graphicsengine.forms.gui.*;
-import org.schema.schine.graphicsengine.forms.gui.newgui.*;
+import org.schema.schine.graphicsengine.forms.gui.newgui.GUIActiveInterface;
+import org.schema.schine.graphicsengine.forms.gui.newgui.GUIHorizontalArea;
+import org.schema.schine.graphicsengine.forms.gui.newgui.GUIHorizontalButtonTablePane;
+import org.schema.schine.graphicsengine.forms.gui.newgui.ScrollableTableList;
 import org.schema.schine.input.InputState;
-import thederpgamer.edencore.data.other.BuildSectorData;
-import thederpgamer.edencore.manager.ClientCacheManager;
-import thederpgamer.edencore.network.client.buildsector.RequestMoveFromBuildSectorPacket;
-import thederpgamer.edencore.network.client.buildsector.RequestMoveToBuildSectorPacket;
-import thederpgamer.edencore.utils.DataUtils;
+import thederpgamer.edencore.data.buildsectordata.BuildSectorData;
+import thederpgamer.edencore.data.buildsectordata.BuildSectorDataManager;
 
 import java.util.Collection;
 import java.util.Comparator;
 import java.util.Set;
 
 /**
- * <Description>
+ * [Description]
  *
  * @author TheDerpGamer
- * @version 1.0 - [10/22/2021]
  */
-public class BuildSectorScrollableList extends ScrollableTableList<BuildSectorData> {
-	private final BuildSectorMenuPanel panel;
-	private final GUIElement p;
+public class BuildSectorScrollableList extends ScrollableTableList<BuildSectorData> implements GUIActiveInterface {
 
-	public BuildSectorScrollableList(InputState state, GUIElement p, BuildSectorMenuPanel panel) {
-		super(state, (float) (GLFrame.getWidth() / 1.5), (float) (GLFrame.getHeight() / 1.5), p);
-		this.p = p;
-		this.panel = panel;
-		p.attach(this);
-	}
+	private final GUIElement parent;
 
-	@Override
-	public void initColumns() {
-		addColumn("Sectors", 15.0f, new Comparator<BuildSectorData>() {
-			@Override
-			public int compare(BuildSectorData o1, BuildSectorData o2) {
-				return o1.ownerName.compareTo(o2.ownerName);
-			}
-		});
-
-    /*
-    addColumn("Type", 10.0f, new Comparator<BuildSectorData>() {
-        @Override
-        public int compare(BuildSectorData o1, BuildSectorData o2) {
-            return 0;
-        }
-    });
-     */
-		addTextFilter(new GUIListFilterText<BuildSectorData>() {
-			@Override
-			public boolean isOk(String s, BuildSectorData buildSectorData) {
-				return buildSectorData.ownerName.toLowerCase().contains(s.toLowerCase());
-			}
-		}, "SEARCH BY OWNER", ControllerElement.FilterRowStyle.FULL);
+	public BuildSectorScrollableList(InputState state, GUIElement parent) {
+		super(state, 100, 100, parent);
+		this.parent = parent;
 	}
 
 	@Override
 	protected Collection<BuildSectorData> getElementList() {
-		if(ClientCacheManager.accessibleSectors.isEmpty()) ClientCacheManager.accessibleSectors.add(DataUtils.getBuildSector(GameClient.getClientPlayerState().getName()));
-		return ClientCacheManager.accessibleSectors;
+		return BuildSectorDataManager.getInstance().getAccessibleSectors(GameClient.getClientPlayerState());
+	}
+
+	@Override
+	public void initColumns() {
+		addColumn("Owner", 5.0f, new Comparator<BuildSectorData>() {
+			@Override
+			public int compare(BuildSectorData o1, BuildSectorData o2) {
+				if(o1.getOwner().equals(GameClient.getClientPlayerState().getName())) return -1;
+				else return o1.getOwner().compareTo(o2.getOwner());
+			}
+		}); // Sort by owner, with the current player at the top
+		activeSortColumnIndex = 0;
 	}
 
 	@Override
 	public void updateListEntries(GUIElementList guiElementList, Set<BuildSectorData> set) {
 		guiElementList.deleteObservers();
 		guiElementList.addObserver(this);
-		for(BuildSectorData sectorData : set) {
-			if(sectorData != null && sectorData.hasPermission(GameClient.getClientPlayerState().getName(), "ENTER")) {
-				GUITextOverlayTable ownerTextElement;
-				(ownerTextElement = new GUITextOverlayTable(10, 10, getState())).setTextSimple(sectorData.ownerName + "'s Build Sector");
-				GUIClippedRow ownerRowElement;
-				(ownerRowElement = new GUIClippedRow(getState())).attach(ownerTextElement);
-				BuildSectorScrollableListRow listRow = new BuildSectorScrollableListRow(getState(), sectorData, ownerRowElement);
-				GUIAncor anchor = new GUIAncor(getState(), p.getWidth() - 28.0f, 28.0f) {
+		for(final BuildSectorData buildSectorData : set) {
+			if(buildSectorData == null) throw new IllegalArgumentException("BuildSectorData cannot be null in the set provided to updateListEntries()");
+			GUIClippedRow ownerRow = getSimpleRow(buildSectorData.getOwner(), this);
+			final BuildSectorScrollableListRow row = new BuildSectorScrollableListRow(getState(), buildSectorData, ownerRow);
+			GUIAncor anchor = new GUIAncor(getState(), parent.getWidth() - 28.0f, 28.0f) {
+				@Override
+				public void draw() {
+					setWidth(row.getWidth());
+					super.draw();
+				}
+			};
+			GUIHorizontalButtonTablePane buttonPane = new GUIHorizontalButtonTablePane(getState(), 1, 1, anchor);
+			buttonPane.onInit();
+			final BuildSectorData currentSector = BuildSectorDataManager.getInstance().getCurrentBuildSector(GameClient.getClientPlayerState());
+			if(currentSector == null || currentSector != buildSectorData) {
+				buttonPane.addButton(0, 0, "WARP", GUIHorizontalArea.HButtonColor.BLUE, new GUICallback() {
 					@Override
-					public void draw() {
-						setWidth(p.getWidth() - 28.0f);
-						super.draw();
+					public void callback(GUIElement guiElement, MouseEvent mouseEvent) {
+						if(mouseEvent.pressedLeftMouse()) {
+							if(currentSector != null) BuildSectorDataManager.getInstance().leaveBuildSector(GameClient.getClientPlayerState());
+							BuildSectorDataManager.getInstance().enterBuildSector(GameClient.getClientPlayerState(), buildSectorData);
+						}
 					}
-				};
-				anchor.attach(redrawButtonPane(sectorData, anchor));
-				listRow.expanded = new GUIElementList(getState());
-				listRow.expanded.add(new GUIListElement(anchor, getState()));
-				listRow.expanded.attach(anchor);
-				listRow.onInit();
-				guiElementList.addWithoutUpdate(listRow);
+
+					@Override
+					public boolean isOccluded() {
+						return false;
+					}
+				}, new GUIActivationCallback() {
+					@Override
+					public boolean isVisible(InputState inputState) {
+						return true;
+					}
+
+					@Override
+					public boolean isActive(InputState inputState) {
+						return true;
+					}
+				});
+			} else {
+				buttonPane.addButton(0, 0, "LEAVE", GUIHorizontalArea.HButtonColor.BLUE, new GUICallback() {
+					@Override
+					public void callback(GUIElement guiElement, MouseEvent mouseEvent) {
+						if(mouseEvent.pressedLeftMouse()) BuildSectorDataManager.getInstance().leaveBuildSector(GameClient.getClientPlayerState());
+					}
+
+					@Override
+					public boolean isOccluded() {
+						return false;
+					}
+				}, new GUIActivationCallback() {
+					@Override
+					public boolean isVisible(InputState inputState) {
+						return true;
+					}
+
+					@Override
+					public boolean isActive(InputState inputState) {
+						return true;
+					}
+				});
 			}
+			anchor.attach(buttonPane);
+			row.expanded = new GUIElementList(getState());
+			row.expanded.add(new GUIListElement(anchor, getState()));
+			row.onInit();
+			guiElementList.addWithoutUpdate(row);
 		}
 		guiElementList.updateDim();
 	}
 
-	private GUIHorizontalButtonTablePane redrawButtonPane(final BuildSectorData sectorData, GUIAncor anchor) {
-		GUIHorizontalButtonTablePane buttonPane = new GUIHorizontalButtonTablePane(getState(), 2, 1, anchor);
-		buttonPane.onInit();
-		buttonPane.addButton(0, 0, "ENTER SECTOR", GUIHorizontalArea.HButtonColor.BLUE, new GUICallback() {
-			@Override
-			public void callback(GUIElement guiElement, MouseEvent mouseEvent) {
-				if(mouseEvent.pressedLeftMouse() && sectorData.hasPermission(GameClient.getClientPlayerState().getName(), "ENTER") && !DataUtils.isPlayerInAnyBuildSector(GameClient.getClientPlayerState())) {
-					if(PlayerUtils.getCurrentControl(GameClient.getClientPlayerState()) instanceof SegmentController) PlayerUtils.sendMessage(GameClient.getClientPlayerState(), "You can't do this while in an entity.");
-					else {
-						PacketUtil.sendPacketToServer(new RequestMoveToBuildSectorPacket(sectorData));
-						panel.recreateTabs();
-					}
-				}
-			}
-
-			@Override
-			public boolean isOccluded() {
-				return DataUtils.isPlayerInAnyBuildSector(GameClient.getClientPlayerState()) || !getState().getController().getPlayerInputs().isEmpty();
-			}
-		}, new GUIActivationCallback() {
-			@Override
-			public boolean isVisible(InputState inputState) {
-				return true;
-			}
-
-			@Override
-			public boolean isActive(InputState inputState) {
-				return !DataUtils.isPlayerInAnyBuildSector(GameClient.getClientPlayerState()) && getState().getController().getPlayerInputs().isEmpty();
-			}
-		});
-		buttonPane.addButton(1, 0, "LEAVE SECTOR", GUIHorizontalArea.HButtonColor.ORANGE, new GUICallback() {
-			@Override
-			public void callback(GUIElement guiElement, MouseEvent mouseEvent) {
-				if(mouseEvent.pressedLeftMouse() && DataUtils.isPlayerInAnyBuildSector(GameClient.getClientPlayerState())) {
-					if(PlayerUtils.getCurrentControl(GameClient.getClientPlayerState()) instanceof SegmentController) PlayerUtils.sendMessage(GameClient.getClientPlayerState(), "You can't do this while in an entity.");
-					else {
-						PacketUtil.sendPacketToServer(new RequestMoveFromBuildSectorPacket());
-						panel.recreateTabs();
-					}
-				}
-			}
-
-			@Override
-			public boolean isOccluded() {
-				return !DataUtils.isPlayerInAnyBuildSector(GameClient.getClientPlayerState()) || !getState().getController().getPlayerInputs().isEmpty();
-			}
-		}, new GUIActivationCallback() {
-			@Override
-			public boolean isVisible(InputState inputState) {
-				return true;
-			}
-
-			@Override
-			public boolean isActive(InputState inputState) {
-				return DataUtils.isPlayerInAnyBuildSector(GameClient.getClientPlayerState()) && getState().getController().getPlayerInputs().isEmpty();
-			}
-		});
-		return buttonPane;
-	}
-
 	public class BuildSectorScrollableListRow extends ScrollableTableList<BuildSectorData>.Row {
-		public BuildSectorScrollableListRow(InputState state, BuildSectorData sectorData, GUIElement... elements) {
-			super(state, sectorData, elements);
+
+		public BuildSectorScrollableListRow(InputState state, BuildSectorData data, GUIElement... elements) {
+			super(state, data, elements);
 			highlightSelect = true;
 			highlightSelectSimple = true;
 			setAllwaysOneSelected(true);
-		}
-
-		@Override
-		public void extended() {
-			if(!isOccluded()) super.extended();
-			else unexpend();
-		}
-
-		@Override
-		public void collapsed() {
-			if(!isOccluded()) super.collapsed();
-			else super.extended();
-		}
-
-		@Override
-		public boolean isOccluded() {
-			return panel.textInput != null && panel.textInput.isActive();
 		}
 	}
 }

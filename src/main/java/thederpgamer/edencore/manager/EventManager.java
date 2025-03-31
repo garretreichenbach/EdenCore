@@ -1,174 +1,429 @@
 package thederpgamer.edencore.manager;
 
-import api.common.GameServer;
-import api.utils.StarRunnable;
-import org.jdesktop.swingx.calendar.DateUtils;
-import org.schema.game.common.data.player.PlayerState;
-import org.schema.schine.network.RegisteredClientOnServer;
+import api.common.GameClient;
+import api.listener.Listener;
+import api.listener.events.block.SegmentPieceActivateByPlayer;
+import api.listener.events.block.SegmentPieceActivateEvent;
+import api.listener.events.draw.RegisterWorldDrawersEvent;
+import api.listener.events.gui.GUIElementInstansiateEvent;
+import api.listener.events.gui.GUITopBarCreateEvent;
+import api.listener.events.gui.MainWindowTabAddEvent;
+import api.listener.events.input.KeyPressEvent;
+import api.listener.events.player.PlayerJoinWorldEvent;
+import api.listener.events.world.SimulationJobExecuteEvent;
+import api.mod.StarLoader;
+import api.mod.StarMod;
+import api.utils.gui.ModGUIHandler;
+import org.schema.common.util.linAlg.Vector3i;
+import org.schema.game.client.view.gui.PlayerPanel;
+import org.schema.game.client.view.gui.catalog.newcatalog.CatalogOptionsButtonPanel;
+import org.schema.game.client.view.gui.catalog.newcatalog.CatalogPanelNew;
+import org.schema.game.client.view.gui.catalog.newcatalog.CatalogScrollableListNew;
+import org.schema.game.client.view.gui.newgui.GUITopBar;
+import org.schema.game.server.data.simulation.jobs.SpawnPiratePatrolPartyJob;
+import org.schema.schine.common.language.Lng;
+import org.schema.schine.graphicsengine.core.MouseEvent;
+import org.schema.schine.graphicsengine.forms.gui.GUIActivationHighlightCallback;
+import org.schema.schine.graphicsengine.forms.gui.GUICallback;
+import org.schema.schine.graphicsengine.forms.gui.GUIElement;
+import org.schema.schine.graphicsengine.forms.gui.newgui.GUIContentPane;
+import org.schema.schine.graphicsengine.forms.gui.newgui.GUIResizableGrabbableWindow;
+import org.schema.schine.graphicsengine.forms.gui.newgui.GUITabbedContent;
+import org.schema.schine.input.InputState;
 import thederpgamer.edencore.EdenCore;
-import thederpgamer.edencore.data.event.EventData;
-import thederpgamer.edencore.data.event.types.defense.DefenseEvent;
-import thederpgamer.edencore.data.player.PlayerData;
-import thederpgamer.edencore.utils.DataUtils;
+import thederpgamer.edencore.data.buildsectordata.BuildSectorDataManager;
+import thederpgamer.edencore.data.misc.ControlBindingData;
+import thederpgamer.edencore.data.playerdata.PlayerDataManager;
+import thederpgamer.edencore.drawer.BuildSectorHudDrawer;
+import thederpgamer.edencore.gui.bankingmenu.BankingDialog;
+import thederpgamer.edencore.gui.buildsectormenu.BuildSectorDialog;
+import thederpgamer.edencore.gui.controls.ControlBindingsScrollableList;
+import thederpgamer.edencore.gui.elements.ECCatalogScrollableListNew;
+import thederpgamer.edencore.gui.exchangemenu.ExchangeDialog;
+import thederpgamer.edencore.utils.ClassUtils;
 
-import java.io.IOException;
+import java.lang.reflect.Field;
 import java.util.ArrayList;
-import java.util.Date;
-import java.util.concurrent.ConcurrentHashMap;
+import java.util.Locale;
 
 /**
- * <Description>
+ * [Description]
  *
  * @author TheDerpGamer
- * @version 1.0 - [10/13/2021]
  */
 public class EventManager {
-	private static final long EVENT_UPDATE_INTERVAL = 60000; //1 minute
-	private static final ConcurrentHashMap<Integer, EventData> eventMap = new ConcurrentHashMap<>();
 
-	/**
-	 * Runs the date and time checkers for all event intervals and generates new ones when needed.
-	 * <p>For Example, if this is run on a sunday between 12:00 AM - 1:00 AM it will generate a new weekly and a new daily event,
-	 * and even a new monthly one if it's the first week of the month.</p>
-	 */
-	public static void doRunners() {
-		startEventChecker();
-		long ms = System.currentTimeMillis();
-		Date date = new Date(ms);
-		Date twelveAM = DateUtils.startOfDay(date);
-		Date oneAM = DateUtils.startOfDay(date);
-		oneAM.setTime(oneAM.getTime() + 3600000);
-		if(date.after(twelveAM) && date.before(oneAM)) {
-			{ //Daily
-				int eventCode = EventData.DAILY;
-				EventData[] events = {generateEvent(eventCode | EventData.PVE), generateEvent(eventCode | EventData.PVP)};
-				eventMap.replace(eventCode | EventData.PVE, events[0]);
-				eventMap.replace(eventCode | EventData.PVP, events[1]);
-				announceEvent(eventCode | EventData.PVE, events[0]);
-				announceEvent(eventCode | EventData.PVP, events[1]);
-			}
-			{ //Weekly
-				if(DateUtils.getDayOfWeek(ms) == 1) {
-					int eventCode = EventData.WEEKLY;
-					EventData[] events = {generateEvent(eventCode | EventData.PVE), generateEvent(eventCode | EventData.PVP)};
-					eventMap.replace(eventCode | EventData.PVE, events[0]);
-					eventMap.replace(eventCode | EventData.PVP, events[1]);
-					announceEvent(eventCode | EventData.PVE, events[0]);
-					announceEvent(eventCode | EventData.PVP, events[1]);
+	public static final String[] disabledTabs = {"FLEETS", "SHOP", "REPAIRS", "TRADE", "SET PRICES"};
+	public static final String[] disabledWindows = {"Fleet", "ShopPanelNew", "FactionPanelNew"};
+	public static final short[] disabledBlocks = {
+			347, //Shop Module
+			291, //Faction Module
+			667, //Shipyard Computer
+			683, //Race Gate Controller
+			542 //Warp Gate Computer
+	};
+
+	public static void initialize(final EdenCore instance) {
+		StarLoader.registerListener(MainWindowTabAddEvent.class, new Listener<MainWindowTabAddEvent>() {
+			@Override
+			public void onEvent(MainWindowTabAddEvent event) {
+				if(event.getTitleAsString().equals(Lng.str("Keyboard"))) { //Fix for the tab name being lowercase for some reason
+					event.getPane().getTabNameText().setTextSimple(Lng.str("KEYBOARD"));
+				} else if(event.getTitleAsString().equals(Lng.str("CONTROLS")) && event.getWindow().getTabs().size() == 2) { //Make sure we aren't adding a duplicate tab
+					GUIContentPane modControlsPane = event.getWindow().addTab(Lng.str("MOD CONTROLS")); //Todo: StarLoader will support mod controls and settings in these menus next update, so we can remove this later
+					GUITabbedContent tabbedContent = new GUITabbedContent(modControlsPane.getState(), modControlsPane.getContent(0));
+					tabbedContent.activationInterface = event.getWindow().activeInterface;
+					tabbedContent.onInit();
+					tabbedContent.setPos(0, 2, 0);
+					modControlsPane.getContent(0).attach(tabbedContent);
+
+					for(StarMod mod : ControlBindingData.getBindings().keySet()) {
+						ArrayList<ControlBindingData> modBindings = ControlBindingData.getBindings().get(mod);
+						if(!modBindings.isEmpty()) {
+							GUIContentPane modTab = tabbedContent.addTab(mod.getName().toUpperCase(Locale.ENGLISH));
+							ControlBindingsScrollableList scrollableList = new ControlBindingsScrollableList(modTab.getState(), modTab.getContent(0), mod);
+							scrollableList.onInit();
+							modTab.getContent(0).attach(scrollableList);
+						}
+					}
 				}
-			}
-			{ //Monthly
-				if(DateUtils.isFirstOfMonth(ms)) {
-					int eventCode = EventData.MONTHLY;
-					EventData[] events = {generateEvent(eventCode | EventData.PVE), generateEvent(eventCode | EventData.PVP)};
-					eventMap.replace(eventCode | EventData.PVE, events[0]);
-					eventMap.replace(eventCode | EventData.PVP, events[1]);
-					announceEvent(eventCode | EventData.PVE, events[0]);
-					announceEvent(eventCode | EventData.PVP, events[1]);
-				}
-			}
-		}
-	}
 
-	public static void forceGen() {
-		{ //Daily
-			int eventCode = EventData.DAILY;
-			EventData[] events = {generateEvent(eventCode | EventData.PVE), generateEvent(eventCode | EventData.PVP)};
-			eventMap.replace(eventCode | EventData.PVE, events[0]);
-			eventMap.replace(eventCode | EventData.PVP, events[1]);
-			announceEvent(eventCode | EventData.PVE, events[0]);
-			announceEvent(eventCode | EventData.PVP, events[1]);
-		}
-		{ //Weekly
-			int eventCode = EventData.WEEKLY;
-			EventData[] events = {generateEvent(eventCode | EventData.PVE), generateEvent(eventCode | EventData.PVP)};
-			eventMap.replace(eventCode | EventData.PVE, events[0]);
-			eventMap.replace(eventCode | EventData.PVP, events[1]);
-			announceEvent(eventCode | EventData.PVE, events[0]);
-			announceEvent(eventCode | EventData.PVP, events[1]);
-		}
-		{ //Monthly
-			int eventCode = EventData.MONTHLY;
-			EventData[] events = {generateEvent(eventCode | EventData.PVE), generateEvent(eventCode | EventData.PVP)};
-			eventMap.replace(eventCode | EventData.PVE, events[0]);
-			eventMap.replace(eventCode | EventData.PVP, events[1]);
-			announceEvent(eventCode | EventData.PVE, events[0]);
-			announceEvent(eventCode | EventData.PVP, events[1]);
-		}
-	}
-
-	public static EventData generateEvent(int eventCode) {
-		if((eventCode & EventData.PVE) == EventData.PVE) {
-			if((eventCode & EventData.DAILY) == EventData.DAILY) return generateDailyPVE();
-			//else if((eventCode & EventData.WEEKLY) == EventData.WEEKLY) return new generateWeeklyPVE();
-			//else if((eventCode & EventData.MONTHLY) == EventData.MONTHLY) return new generateMonthlyPVE();
-		} else if((eventCode & EventData.PVP) == EventData.PVP) {
-			//if((eventCode & EventData.DAILY) == EventData.DAILY) return new generateDailyPVP();
-			//else if((eventCode & EventData.WEEKLY) == EventData.WEEKLY) return new generateWeeklyPVP();
-			//else if((eventCode & EventData.MONTHLY) == EventData.MONTHLY) return new generateWeeklyPVP();
-		}
-		return null;
-	}
-
-	public static void announceEvent(int eventCode, EventData eventData) {
-		if(GameServer.getServerState() != null) {
-			for(RegisteredClientOnServer client : GameServer.getServerState().getClients().values()) {
-				PlayerData playerData = DataUtils.getPlayerDataByName(client.getPlayerName());
-				if(playerData != null) {
-					if(playerData.settings.getSubscribedEvents().contains(eventCode)) {
-						try {
-							client.serverMessage(eventData.getAnnouncement());
-						} catch(IOException exception) {
-							throw new RuntimeException(exception);
+				if(BuildSectorDataManager.getInstance().isPlayerInAnyBuildSector(GameClient.getClientPlayerState())) {
+					for(String disabledTab : disabledTabs) {
+						if(event.getTitleAsString().equals(Lng.str(disabledTab))) {
+							event.setCanceled(true);
+							event.getWindow().cleanUp();
 						}
 					}
 				}
 			}
-		}
-	}
+		}, instance);
 
-	private static EventData generateDailyPVE() {
-		return EventData.createRandom(EventData.DAILY | EventData.PVE);
-	}
+		StarLoader.registerListener(PlayerJoinWorldEvent.class, new Listener<PlayerJoinWorldEvent>() {
+			@Override
+			public void onEvent(final PlayerJoinWorldEvent event) {
+				if(event.isServer()) {
+					(new Thread("EdenCore_Player_Join_World_Thread") {
+						@Override
+						public void run() {
+							try {
+								sleep(5000);
+								PlayerDataManager.getInstance().createMissingData(event.getPlayerState().getName()); // Create missing player data if it doesn't exist
+								BuildSectorDataManager.getInstance().createMissingData(event.getPlayerState().getName()); // Create missing build sector data if it doesn't exist
+							} catch(Exception exception) {
+								instance.logException("Failed to create missing data for player " + event.getPlayerState().getName(), exception);
+							}
+						}
+					}).start();
+				}
+			}
+		}, instance);
 
-	private static void startEventChecker() {
-		try {
-			new StarRunnable() {
-				@Override
-				public void run() {
-					for(EventData eventData : getAllEvents()) {
-						if(eventData.getSquadData().ready() && eventData.waitingTime <= 0) {
-							eventData.start();
-							announceEvent(eventData.getCode(), eventData);
-						} else eventData.waitingTime--;
+		StarLoader.registerListener(GUITopBarCreateEvent.class, new Listener<GUITopBarCreateEvent>() {
+			@Override
+			public void onEvent(GUITopBarCreateEvent event) {
+				GUITopBar.ExpandedButton dropDownButton = event.getDropdownButtons().get(event.getDropdownButtons().size() - 1);
+				dropDownButton.addExpandedButton("BANKING", new GUICallback() {
+					@Override
+					public void callback(GUIElement guiElement, MouseEvent mouseEvent) {
+						if(mouseEvent.pressedLeftMouse()) (new BankingDialog()).activate();
+					}
+
+					@Override
+					public boolean isOccluded() {
+						return false;
+					}
+				}, new GUIActivationHighlightCallback() {
+					@Override
+					public boolean isHighlighted(InputState inputState) {
+						return false;
+					}
+
+					@Override
+					public boolean isVisible(InputState inputState) {
+						return true;
+					}
+
+					@Override
+					public boolean isActive(InputState inputState) {
+						return true;
+					}
+				});
+				dropDownButton.addExpandedButton("GUIDE", new GUICallback() {
+					@Override
+					public void callback(GUIElement guiElement, MouseEvent mouseEvent) {
+						if(mouseEvent.pressedLeftMouse()) {
+							GameClient.getClientState().getController().queueUIAudio("0022_menu_ui - enter");
+							GameClient.getClientState().getGlobalGameControlManager().getIngameControlManager().getPlayerGameControlManager().deactivateAll();
+							ModGUIHandler.getGUIControlManager("glossarPanel").setActive(true);
+						}
+					}
+
+					@Override
+					public boolean isOccluded() {
+						return false;
+					}
+				}, new GUIActivationHighlightCallback() {
+					@Override
+					public boolean isHighlighted(InputState inputState) {
+						return false;
+					}
+
+					@Override
+					public boolean isVisible(InputState inputState) {
+						return true;
+					}
+
+					@Override
+					public boolean isActive(InputState inputState) {
+						return true;
+					}
+				});
+				dropDownButton.addExpandedButton("BUILD SECTOR", new GUICallback() {
+					@Override
+					public void callback(GUIElement guiElement, MouseEvent mouseEvent) {
+						if(mouseEvent.pressedLeftMouse()) {
+							GameClient.getClientState().getController().queueUIAudio("0022_menu_ui - enter");
+							GameClient.getClientState().getGlobalGameControlManager().getIngameControlManager().getPlayerGameControlManager().deactivateAll();
+							(new BuildSectorDialog()).activate();
+						}
+					}
+
+					@Override
+					public boolean isOccluded() {
+						return false;
+					}
+				}, new GUIActivationHighlightCallback() {
+					@Override
+					public boolean isHighlighted(InputState inputState) {
+						return false;
+					}
+
+					@Override
+					public boolean isVisible(InputState inputState) {
+						return true;
+					}
+
+					@Override
+					public boolean isActive(InputState inputState) {
+						return true;
+					}
+				});
+				dropDownButton.addExpandedButton("EXCHANGE", new GUICallback() {
+					@Override
+					public void callback(GUIElement guiElement, MouseEvent mouseEvent) {
+						if(mouseEvent.pressedLeftMouse()) {
+							GameClient.getClientState().getController().queueUIAudio("0022_menu_ui - enter");
+							GameClient.getClientState().getGlobalGameControlManager().getIngameControlManager().getPlayerGameControlManager().deactivateAll();
+							(new ExchangeDialog()).activate();
+						}
+					}
+
+					@Override
+					public boolean isOccluded() {
+						return false;
+					}
+				}, new GUIActivationHighlightCallback() {
+					@Override
+					public boolean isHighlighted(InputState inputState) {
+						return false;
+					}
+
+					@Override
+					public boolean isVisible(InputState inputState) {
+						return true;
+					}
+
+					@Override
+					public boolean isActive(InputState inputState) {
+						return true;
+					}
+				});
+			}
+		}, instance);
+
+		StarLoader.registerListener(KeyPressEvent.class, new Listener<KeyPressEvent>() {
+			@Override
+			public void onEvent(KeyPressEvent event) {
+				if(event.getKey() != 0 && event.isKeyDown()) {
+					for(ControlBindingData bindingData : ControlBindingData.getModBindings(instance)) {
+						if(event.getKey() == bindingData.getBinding()) {
+							switch(bindingData.getName()) {
+								case "Open Guide":
+									GameClient.getClientState().getController().queueUIAudio("0022_menu_ui - enter");
+									GameClient.getClientState().getGlobalGameControlManager().getIngameControlManager().getPlayerGameControlManager().deactivateAll();
+									ModGUIHandler.getGUIControlManager("glossarPanel").setActive(true);
+									return;
+								case "Open Banking Menu":
+									GameClient.getClientState().getController().queueUIAudio("0022_menu_ui - enter");
+									GameClient.getClientState().getGlobalGameControlManager().getIngameControlManager().getPlayerGameControlManager().deactivateAll();
+									(new BankingDialog()).activate();
+									return;
+								case "Open Exchange Menu":
+									GameClient.getClientState().getController().queueUIAudio("0022_menu_ui - enter");
+									GameClient.getClientState().getGlobalGameControlManager().getIngameControlManager().getPlayerGameControlManager().deactivateAll();
+									(new ExchangeDialog()).activate();
+									return;
+								case "Open Build Sector Menu":
+									GameClient.getClientState().getController().queueUIAudio("0022_menu_ui - enter");
+									GameClient.getClientState().getGlobalGameControlManager().getIngameControlManager().getPlayerGameControlManager().deactivateAll();
+									(new BuildSectorDialog()).activate();
+									return;
+							}
+						}
 					}
 				}
-			}.runTimer(EdenCore.getInstance(), EVENT_UPDATE_INTERVAL);
-		} catch(Exception exception) {
-			exception.printStackTrace();
-			startEventChecker();
-		}
-	}
+			}
+		}, instance);
 
-	public static void startEventEditor(PlayerState sender, EventData eventData) {
-		//TODO
-	}
+		StarLoader.registerListener(GUIElementInstansiateEvent.class, new Listener<GUIElementInstansiateEvent>() {
+			@Override
+			public void onEvent(GUIElementInstansiateEvent event) {
+				if(event.getGUIElement() instanceof CatalogPanelNew) {
+					try {
+						PlayerPanel panel = GameClient.getClientState().getWorldDrawer().getGuiDrawer().getPlayerPanel();
+						Field catalogField = panel.getClass().getDeclaredField("catalogPanelNew");
+						catalogField.setAccessible(true);
+						CatalogPanelNew catalogPanel = (CatalogPanelNew) catalogField.get(panel);
+						if(catalogPanel != null) {
+							catalogPanel.cleanUp();
+							catalogPanel = new CatalogPanelNew(event.getInputState()) {
+								@Override
+								public void createAvailableCatalogPane() {
+									try {
+										Field availListField = CatalogPanelNew.class.getDeclaredField("availList");
+										Field availableTabField = CatalogPanelNew.class.getDeclaredField("availableTab");
 
-	public static EventData getEventByName(String arg) {
-		for(EventData eventData : getAllEvents()) {
-			if(eventData.getName().equalsIgnoreCase(arg)) return eventData;
-		}
-		return null;
-	}
+										availListField.setAccessible(true);
+										availableTabField.setAccessible(true);
 
-	public static ArrayList<EventData> getAllEvents() {
-		return new ArrayList<>(eventMap.values());
-	}
+										CatalogScrollableListNew availList = (CatalogScrollableListNew) availListField.get(this);
 
-	public static EventData createEvent(String type, String combatType, String name) {
-		if("DEFENSE".equalsIgnoreCase(type)) {
-			return DefenseEvent.create(combatType, name);
-		}
-		return null;
+										Field modeField = availList.getClass().getDeclaredField("mode");
+										modeField.setAccessible(true);
+										int mode = modeField.getInt(availList);
+
+										Field showPriceField = availList.getClass().getDeclaredField("showPrice");
+										showPriceField.setAccessible(true);
+										boolean showPrice = showPriceField.getBoolean(availList);
+
+										Field selectSingleField = availList.getClass().getDeclaredField("selectSingle");
+										selectSingleField.setAccessible(true);
+										boolean selectSingle = selectSingleField.getBoolean(availList);
+
+										if(!(availList instanceof ECCatalogScrollableListNew)) {
+											GUIContentPane availableTab = (GUIContentPane) availableTabField.get(this);
+											availList.cleanUp();
+											CatalogOptionsButtonPanel c = new CatalogOptionsButtonPanel(getState(), this);
+											c.onInit();
+											availableTab.setContent(0, c);
+											if(!CatalogOptionsButtonPanel.areMultiplayerButtonVisible()) {
+												availableTab.setTextBoxHeightLast(58);
+												availableTab.addNewTextBox(10);
+											} else {
+												availableTab.setTextBoxHeightLast(82);
+												availableTab.addNewTextBox(10);
+											}
+
+											availList = new ECCatalogScrollableListNew(getState(), availableTab.getContent(1), mode, showPrice, selectSingle);
+											availList.onInit();
+											availableTab.getContent(1).attach(availList);
+										}
+									} catch(Exception exception) {
+										instance.logException("Failed to create Available Catalog Pane", exception);
+									}
+								}
+							};
+							catalogPanel.onInit();
+							catalogField.set(panel, catalogPanel);
+						}
+					} catch(Exception exception) {
+						instance.logException("Failed to replace Catalog Panel", exception);
+					}
+				} else if(event.getGUIElement() instanceof GUIResizableGrabbableWindow) {
+					GUIResizableGrabbableWindow window = (GUIResizableGrabbableWindow) event.getGUIElement();
+					if(GameClient.getClientState() != null && GameClient.getClientPlayerState() != null) {
+						if(BuildSectorDataManager.getInstance().isPlayerInAnyBuildSector(GameClient.getClientPlayerState())) {
+							for(String windowID : disabledWindows) {
+								if(window.getWindowId().equals(windowID) || window.getWindowId().equals(Lng.str(windowID))) {
+									window.cleanUp();
+									event.setCanceled(true);
+								}
+							}
+						}
+					}
+				}
+			}
+		}, instance);
+
+		StarLoader.registerListener(SimulationJobExecuteEvent.class, new Listener<SimulationJobExecuteEvent>() {
+			@Override
+			public void onEvent(SimulationJobExecuteEvent event) {
+				if(event.getSimulationJob() instanceof SpawnPiratePatrolPartyJob) {
+					SpawnPiratePatrolPartyJob job = (SpawnPiratePatrolPartyJob) event.getSimulationJob();
+					Vector3i from = (Vector3i) ClassUtils.getField(job, "from");
+					Vector3i to = (Vector3i) ClassUtils.getField(job, "to");
+					if(BuildSectorDataManager.getInstance().isBuildSector(from) || BuildSectorDataManager.getInstance().isBuildSector(to)) event.setCanceled(true);
+				} else if(BuildSectorDataManager.getInstance().isBuildSector(event.getStartLocation())) event.setCanceled(true);
+			}
+		}, instance);
+
+		StarLoader.registerListener(MainWindowTabAddEvent.class, new Listener<MainWindowTabAddEvent>() {
+			@Override
+			public void onEvent(MainWindowTabAddEvent event) {
+				if(GameClient.getClientState() == null || GameClient.getClientPlayerState() == null) return;
+				if(BuildSectorDataManager.getInstance().isPlayerInAnyBuildSector(GameClient.getClientPlayerState())) {
+					for(String s : disabledTabs) {
+						if(event.getTitleAsString().equals(Lng.str(s))) {
+							event.setCanceled(true);
+							event.getWindow().cleanUp();
+						}
+					}
+				}
+			}
+		}, instance);
+
+		StarLoader.registerListener(RegisterWorldDrawersEvent.class, new Listener<RegisterWorldDrawersEvent>() {
+			@Override
+			public void onEvent(RegisterWorldDrawersEvent event) {
+				event.getModDrawables().add(new BuildSectorHudDrawer());
+			}
+		}, instance);
+
+		StarLoader.registerListener(SegmentPieceActivateEvent.class, new Listener<SegmentPieceActivateEvent>() {
+			@Override
+			public void onEvent(SegmentPieceActivateEvent event) {
+				try {
+					if(BuildSectorDataManager.getInstance().isBuildSector(event.getSegmentPiece().getSegmentController().getSector(new Vector3i()))) {
+						for(short id : disabledBlocks) {
+							if(event.getSegmentPiece().getType() == id) {
+								event.setCanceled(true);
+								return;
+							}
+						}
+					}
+				} catch(Exception exception) {
+					instance.logException("Encountered an exception while trying to enforce permissions in a build sector", exception);
+				}
+			}
+		}, instance);
+
+		StarLoader.registerListener(SegmentPieceActivateByPlayer.class, new Listener<SegmentPieceActivateByPlayer>() {
+			@Override
+			public void onEvent(SegmentPieceActivateByPlayer event) {
+				try {
+					if(BuildSectorDataManager.getInstance().isPlayerInAnyBuildSector(event.getPlayer())) {
+						for(short id : disabledBlocks) {
+							if(event.getSegmentPiece().getType() == id && !event.getPlayer().isAdmin()) {
+								event.setCanceled(true);
+								return;
+							}
+						}
+					}
+				} catch(Exception exception) {
+					instance.logException("Encountered an exception while trying to enforce permissions in a build sector", exception);
+				}
+			}
+		}, instance);
 	}
 }

@@ -32,7 +32,6 @@ public class ColorUtils {
 		switch(code) {
 			case TRANSPARENT:
 				return Color.transparent;
-			default:
 			case WHITE:
 				return Color.white;
 			case LIGHT_GREY:
@@ -59,6 +58,8 @@ public class ColorUtils {
 				return Color.cyan;
 			case GREEN:
 				return Color.green;
+			default:
+				return Color.white;
 		}
 	}
 }
