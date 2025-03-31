@@ -32,6 +32,7 @@ import org.schema.schine.graphicsengine.forms.gui.newgui.GUIResizableGrabbableWi
 import org.schema.schine.graphicsengine.forms.gui.newgui.GUITabbedContent;
 import org.schema.schine.input.InputState;
 import thederpgamer.edencore.EdenCore;
+import thederpgamer.edencore.data.DataManager;
 import thederpgamer.edencore.data.buildsectordata.BuildSectorDataManager;
 import thederpgamer.edencore.data.misc.ControlBindingData;
 import thederpgamer.edencore.data.playerdata.PlayerDataManager;
@@ -42,10 +43,13 @@ import thederpgamer.edencore.gui.controls.ControlBindingsScrollableList;
 import thederpgamer.edencore.gui.elements.ECCatalogScrollableListNew;
 import thederpgamer.edencore.gui.exchangemenu.ExchangeDialog;
 import thederpgamer.edencore.utils.ClassUtils;
+import theleo.jstruct.hidden.R1;
 
 import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.Locale;
+
+import static java.lang.Thread.sleep;
 
 /**
  * [Description]
@@ -70,7 +74,6 @@ public class EventManager {
 			public void onEvent(MainWindowTabAddEvent event) {
 				if(event.getTitleAsString().equals(Lng.str("Keyboard"))) { //Fix for the tab name being lowercase for some reason
 					event.getPane().getTabNameText().setTextSimple(Lng.str("KEYBOARD"));
-					event.getPane().getTabNameText().onInit();
 				} else if(event.getTitleAsString().equals(Lng.str("CONTROLS")) && event.getWindow().getTabs().size() == 2) { //Make sure we aren't adding a duplicate tab
 					GUIContentPane modControlsPane = event.getWindow().addTab(Lng.str("MOD CONTROLS")); //Todo: StarLoader will support mod controls and settings in these menus next update, so we can remove this later
 					GUITabbedContent tabbedContent = new GUITabbedContent(modControlsPane.getState(), modControlsPane.getContent(0));
@@ -103,18 +106,22 @@ public class EventManager {
 
 		StarLoader.registerListener(PlayerJoinWorldEvent.class, new Listener<PlayerJoinWorldEvent>() {
 			@Override
-			public void onEvent(PlayerJoinWorldEvent event) {
-			}
-		}, instance);
-		
-		StarLoader.registerListener(PlayerSpawnEvent.class, new Listener<PlayerSpawnEvent>() {
-			@Override
-			public void onEvent(PlayerSpawnEvent event) {
-				instance.logInfo("Player " + event.getPlayer().getName() + " spawned in sector " + event.getSector().toString());
-				ThreadManager.addLoginTimer(event.getPlayer().getName());
+			public void onEvent(final PlayerJoinWorldEvent event) {
 				if(event.isServer()) {
-					PlayerDataManager.getInstance().createMissingData(event.getPlayer().getName());
-					BuildSectorDataManager.getInstance().createMissingData(event.getPlayer().getName());
+					(new Thread() {
+						@Override
+						public void run() {
+							try {
+								sleep(3000);
+								PlayerDataManager.getInstance().createMissingData(event.getPlayerState().getName());
+								PlayerDataManager.getInstance().sendAllDataToPlayer(event.getPlayerState());
+								BuildSectorDataManager.getInstance().createMissingData(event.getPlayerState().getName());
+								BuildSectorDataManager.getInstance().sendAllDataToPlayer(event.getPlayerState());
+							} catch(Exception exception) {
+								instance.logException("Failed to create missing data for player " + event.getPlayerState().getName(), exception);
+							}
+						}
+					}).start();
 				}
 			}
 		}, instance);
@@ -342,7 +349,7 @@ public class EventManager {
 					}
 				} else if(event.getGUIElement() instanceof GUIResizableGrabbableWindow) {
 					GUIResizableGrabbableWindow window = (GUIResizableGrabbableWindow) event.getGUIElement();
-					if(GameClient.getClientPlayerState() != null) {
+					if(GameClient.getClientState() != null && GameClient.getClientPlayerState() != null) {
 						if(BuildSectorDataManager.getInstance().isPlayerInAnyBuildSector(GameClient.getClientPlayerState())) {
 							for(String windowID : disabledWindows) {
 								if(window.getWindowId().equals(windowID) || window.getWindowId().equals(Lng.str(windowID))) {

@@ -13,6 +13,8 @@ import thederpgamer.edencore.element.ElementManager;
 import java.lang.reflect.Field;
 import java.util.concurrent.ConcurrentLinkedQueue;
 
+import static java.lang.Thread.sleep;
+
 /**
  * [Description]
  *
@@ -20,41 +22,29 @@ import java.util.concurrent.ConcurrentLinkedQueue;
  */
 public class ThreadManager {
 
-	private static final long TASK_INTERVAL = 10000;
+	private static final long TASK_INTERVAL = 1000;
 	private static final ConcurrentLinkedQueue<Runnable> taskQueue = new ConcurrentLinkedQueue<>();
 
 	public static void initialize(final EdenCore instance) {
-		final long tipInterval = ConfigManager.getMainConfig().getLong("tip_interval");
-		Thread loginTimerThread = new Thread("EdenCore_Login_Timer_Thread") {
-			@Override
-			public void run() {
-				while(true) {
-					try {
-						sleep(tipInterval);
-						String tip = ConfigManager.getRandomTip();
-						for(PlayerState playerState : GameServer.getServerState().getPlayerStatesByName().values()) PlayerUtils.sendMessage(playerState, tip);
-					} catch(InterruptedException exception) {
-						instance.logException("An error occurred while checking player login timers", exception);
-					}
-				}
-			}
-		};
-		loginTimerThread.start();
-
 		Thread taskRunnerThread = new Thread("EdenCore_Task_Runner_Thread") {
 			@Override
 			public void run() {
 				while(true) {
 					try {
-						if(!taskQueue.isEmpty()) taskQueue.poll().run();
-						else sleep(TASK_INTERVAL);
+						sleep(TASK_INTERVAL);
+						if(!taskQueue.isEmpty()) (new Thread(taskQueue.poll())).start();
 					} catch(InterruptedException exception) {
 						instance.logException("An error occurred while running task queue", exception);
+						return;
 					}
 				}
 			}
 		};
-		taskRunnerThread.start();
+//		taskRunnerThread.start();
+	}
+
+	public static void addTask(Runnable task) {
+		taskQueue.add(task);
 	}
 
 	public static void addLoginTimer(final String playerName) {
@@ -63,9 +53,9 @@ public class ThreadManager {
 			@Override
 			public void run() {
 				try {
-					Thread.sleep(rewardTimer);
+					sleep(rewardTimer);
 					PlayerState playerState = GameCommon.getPlayerFromName(playerName);
-					if(playerState != null) {
+					if(playerState != null && playerState.spawnedOnce) {
 						Inventory inventory = playerState.getInventory();
 						if(inventory.isInfinite()) { //They are in creative mode, we need to get their survival inventory specifically
 							Field infiniteField = AbstractOwnerState.class.getDeclaredField("inventory");

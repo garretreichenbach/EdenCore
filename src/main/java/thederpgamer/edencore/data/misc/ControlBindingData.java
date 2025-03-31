@@ -81,7 +81,7 @@ public class ControlBindingData {
 				for(ControlBindingData bindingData : bindings.get(mod)) {
 					if(bindingData.getName().equals(name)) {
 						EdenCore.getInstance().logInfo("Control binding \"" + name + "\" already exists for mod \"" + mod.getName() + "\"");
-						return; // Exit if it already exists
+						break; // Exit if it already exists
 					}
 				}
 			} else {

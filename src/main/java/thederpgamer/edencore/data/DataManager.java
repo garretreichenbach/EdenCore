@@ -43,7 +43,9 @@ public abstract class DataManager<E extends SerializableData> {
 	}
 
 	public void sendDataToPlayer(PlayerState player, SerializableData data, int type) {
-		PacketUtil.sendPacket(player, new SendDataPacket(data, type));
+		SendDataPacket packet = new SendDataPacket(data, type);
+		EdenCore.getInstance().logInfo("[SERVER] Sending data " + data.getUUID() + " to player " + player.getName() + " with type " + type);
+		PacketUtil.sendPacket(player, packet);
 	}
 
 	public void sendAllDataToPlayer(PlayerState player) {
@@ -56,6 +58,7 @@ public abstract class DataManager<E extends SerializableData> {
 	}
 
 	public void sendPacket(SerializableData data, int type, boolean toServer) {
+		EdenCore.getInstance().logInfo((toServer ? "[CLIENT]" : "[SERVER]") + " Sending data " + data.getUUID() + " with type " + type);
 		if(toServer) PacketUtil.sendPacketToServer(new SendDataPacket(data, type));
 		else sendDataToAllPlayers(data, type);
 	}
@@ -80,6 +83,7 @@ public abstract class DataManager<E extends SerializableData> {
 	}
 
 	public void handlePacket(SerializableData data, int type, boolean server) {
+		EdenCore.getInstance().logInfo(server ? "[SERVER]" : "[CLIENT]" + " Received data " + data.getUUID() + " with type " + type);
 		switch(type) {
 			case ADD_DATA:
 				addData((E) data, server);

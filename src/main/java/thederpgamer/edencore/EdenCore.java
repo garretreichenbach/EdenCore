@@ -10,11 +10,13 @@ import api.mod.StarLoader;
 import api.mod.StarMod;
 import api.network.packets.PacketUtil;
 import api.utils.StarRunnable;
+import api.utils.game.PlayerUtils;
 import api.utils.textures.StarLoaderTexture;
 import glossar.GlossarCategory;
 import glossar.GlossarEntry;
 import glossar.GlossarInit;
 import org.apache.commons.io.IOUtils;
+import org.schema.game.common.data.player.PlayerState;
 import org.schema.schine.resource.ResourceLoader;
 import thederpgamer.edencore.commands.GuideCommand;
 import thederpgamer.edencore.data.DataManager;
@@ -34,6 +36,8 @@ import java.nio.file.Files;
 import java.util.Arrays;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
+
+import static java.lang.Thread.sleep;
 
 /**
  * Main class for EdenCore mod.
@@ -79,30 +83,29 @@ public class EdenCore extends StarMod {
 	public void onServerCreated(ServerInitializeEvent serverInitializeEvent) {
 		ThreadManager.initialize(this);
 		DataManager.initialize(false);
+		final long tipInterval = ConfigManager.getMainConfig().getLong("tip_interval");
+		Thread loginTimerThread = new Thread("EdenCore_Login_Timer_Thread") {
+			@Override
+			public void run() {
+				while(true) {
+					try {
+						sleep(tipInterval);
+						String tip = ConfigManager.getRandomTip();
+						for(PlayerState playerState : GameServer.getServerState().getPlayerStatesByName().values()) PlayerUtils.sendMessage(playerState, tip);
+					} catch(InterruptedException exception) {
+						instance.logException("An error occurred while checking player login timers", exception);
+						return;
+					}
+				}
+			}
+		};
+		loginTimerThread.start();
 	}
 
 	@Override
 	public void onClientCreated(ClientInitializeEvent clientInitializeEvent) {
-		//We need to run these later, as the client is not fully initialized yet when this event is called
-		//However, StarLoader doesn't have a proper event for when the client is fully initialized, so we will just have to continually
-		//check occasionally if the player is spawned
-		long PLAYER_SPAWN_CHECK_TIMER = 100;
-		(new StarRunnable() {
-			@Override
-			public void run() {
-				if(isClientInitialized()) {
-					registerBindings();
-					DataManager.initialize(true);
-					StarLoaderTexture.runOnGraphicsThread(new Runnable() {
-						@Override
-						public void run() {
-							initializeGlossary();
-						}
-					});
-					cancel();
-				}
-			}
-		}).runTimer(instance, PLAYER_SPAWN_CHECK_TIMER);
+		registerBindings();
+		initializeGlossary();
 	}
 
 	@Override
@@ -120,19 +123,19 @@ public class EdenCore extends StarMod {
 	@Override
 	public void logInfo(String message) {
 		super.logInfo(message);
-		System.out.println("[INFO]: " + message);
+		System.out.println("[INFO] " + message);
 	}
 
 	@Override
 	public void logWarning(String message) {
 		super.logWarning(message);
-		System.err.println("[WARNING]: " + message);
+		System.err.println("[WARNING] " + message);
 	}
 
 	@Override
 	public void logException(String message, Exception exception) {
 		super.logException(message, exception);
-		System.err.println("[EXCEPTION]: " + message + "\n" + exception.getMessage() + "\n" + Arrays.toString(exception.getStackTrace()));
+		System.err.println("[EXCEPTION] " + message + "\n" + exception.getMessage() + "\n" + Arrays.toString(exception.getStackTrace()));
 	}
 
 	@Override
@@ -141,20 +144,24 @@ public class EdenCore extends StarMod {
 		if(GameCommon.getGameState().isOnServer()) GameServer.getServerState().addCountdownMessage(10, "Server will perform an emergency shutdown due to a fatal error: " + message);
 	}
 
-	private boolean isClientInitialized() {
+	public boolean isClientInitialized() {
 		return GameClient.getClientState() != null && GameClient.getClientPlayerState() != null && GameClient.getClientPlayerState().getAssingedPlayerCharacter() != null;
 	}
 
 	public void initializeGlossary() {
-		GlossarInit.initGlossar(this);
-		GlossarCategory rules = new GlossarCategory("Server Rules");
-		rules.addEntry(new GlossarEntry("Server Info", "Skies of Eden is a modded survival StarMade server run by the SOE staff team and hosted on CBS hardware.\n" + "We work hard to bring new features and content to the server, and we hope you enjoy your time here.\n" + "Note that not all features are complete, and some may be buggy. If you find any bugs, please report them to a staff member.\n" + "Please read the rules section before playing on the server, and be sure to join our discord at https://discord.gg/qxzvBxT."));
-		rules.addEntry(new GlossarEntry("Rules", "1) Be polite and respectful in chat.\n" + "2) Do not spam chat or advertise links to other servers.\n" + "3) Do not use any cheats, glitches, exploits, etc. that give you an unfair advantage over other players. If you find a bug, please report it to a staff member.\n" + "4) Keep politics at an absolute minimum. This is a starmade server, not a political forum.\n" + "5) Hate speech and hate symbols are not tolerated. This includes racism, sexism, homophobia, etc.\n" + "6) Do not intentionally create server lag. If your entity is lagging the server, it may be deleted by staff without compensation.\n" + "7) Do not create home-bases on planets.\n" + "8) Do not attempt to attack or capture public infrastructure such as warpgates.\n" + "9) Use common sense. If you are unsure about something, ask a staff member.\n" + "10) Repeated or serious violations of any of the server rules can result in bans of the offenders, deletion of ships/stations, and penalties to anyone involved or associated."));
-		GlossarInit.addCategory(rules);
-		GlossarCategory edenCore = new GlossarCategory("Eden Core");
-		edenCore.addEntry(new GlossarEntry("Build Sectors", "Build Sectors are special sectors unique to each player where you can build freely in creative mode. They are protected from other players and hostiles.\n" + "You can invite other players to your Build Sector, set permissions, spawn entities, and more using the Build Sector menu.\nTo access the Build Sector menu, look in the top right menu bar under PLAYER.\n"));
-		GlossarInit.addCategory(edenCore);
-		logInfo("Initialized Glossary");
+		StarLoaderTexture.runOnGraphicsThread(new Runnable() {
+			@Override
+			public void run() {
+				GlossarCategory rules = new GlossarCategory("Server Rules");
+				rules.addEntry(new GlossarEntry("Server Info", "Skies of Eden is a modded survival StarMade server run by the SOE staff team and hosted on CBS hardware.\n" + "We work hard to bring new features and content to the server, and we hope you enjoy your time here.\n" + "Note that not all features are complete, and some may be buggy. If you find any bugs, please report them to a staff member.\n" + "Please read the rules section before playing on the server, and be sure to join our discord at https://discord.gg/qxzvBxT."));
+				rules.addEntry(new GlossarEntry("Rules", "1) Be polite and respectful in chat.\n" + "2) Do not spam chat or advertise links to other servers.\n" + "3) Do not use any cheats, glitches, exploits, etc. that give you an unfair advantage over other players. If you find a bug, please report it to a staff member.\n" + "4) Keep politics at an absolute minimum. This is a starmade server, not a political forum.\n" + "5) Hate speech and hate symbols are not tolerated. This includes racism, sexism, homophobia, etc.\n" + "6) Do not intentionally create server lag. If your entity is lagging the server, it may be deleted by staff without compensation.\n" + "7) Do not create home-bases on planets.\n" + "8) Do not attempt to attack or capture public infrastructure such as warpgates.\n" + "9) Use common sense. If you are unsure about something, ask a staff member.\n" + "10) Repeated or serious violations of any of the server rules can result in bans of the offenders, deletion of ships/stations, and penalties to anyone involved or associated."));
+				GlossarInit.addCategory(rules);
+				GlossarCategory edenCore = new GlossarCategory("Eden Core");
+				edenCore.addEntry(new GlossarEntry("Build Sectors", "Build Sectors are special sectors unique to each player where you can build freely in creative mode. They are protected from other players and hostiles.\n" + "You can invite other players to your Build Sector, set permissions, spawn entities, and more using the Build Sector menu.\nTo access the Build Sector menu, look in the top right menu bar under PLAYER.\n"));
+				GlossarInit.addCategory(edenCore);
+				logInfo("Initialized Glossary");
+			}
+		});
 	}
 
 	private void registerPackets() {
@@ -169,7 +176,7 @@ public class EdenCore extends StarMod {
 		logInfo("Registered Commands");
 	}
 
-	private void registerBindings() {
+	public void registerBindings() {
 		ControlBindingData.load(this);
 		ControlBindingData.registerBinding(this, "Open Guide", "Opens the Guide Menu", 181);
 		ControlBindingData.registerBinding(this, "Open Banking Menu", "Opens the Banking Menu", 78);

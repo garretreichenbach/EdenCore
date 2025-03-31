@@ -81,12 +81,8 @@ public class ExchangeDialog extends PlayerInput {
 			final PlayerState playerState = ((GameClientState) getState()).getPlayer();
 
 			GUIContentPane shipsTab = tabbedContent.addTab(Lng.str("SHIPS"));
-			shipsTab.setTextBoxHeightLast(300);
-			ExchangeItemScrollableList shipsList = new ExchangeItemScrollableList(getState(), shipsTab.getContent(0), SHIPS);
-			shipsList.onInit();
-			shipsTab.getContent(0).attach(shipsList);
-			shipsTab.addNewTextBox(28);
-			GUIHorizontalButtonTablePane shipsAddButton = new GUIHorizontalButtonTablePane(getState(), 1, 1, shipsTab.getContent(1));
+			shipsTab.setTextBoxHeightLast(28);
+			GUIHorizontalButtonTablePane shipsAddButton = new GUIHorizontalButtonTablePane(getState(), 1, 1, shipsTab.getContent(0));
 			shipsAddButton.onInit();
 			shipsAddButton.addButton(0, 0, Lng.str("ADD"), GUIHorizontalArea.HButtonColor.GREEN, new GUICallback() {
 				@Override
@@ -111,15 +107,16 @@ public class ExchangeDialog extends PlayerInput {
 					return playerState.getFactionId() != 0;
 				}
 			});
-			shipsTab.getContent(1).attach(shipsAddButton);
+			shipsTab.getContent(0).attach(shipsAddButton);
+
+			shipsTab.addNewTextBox(300);
+			ExchangeItemScrollableList shipsList = new ExchangeItemScrollableList(getState(), shipsTab.getContent(1), SHIPS);
+			shipsList.onInit();
+			shipsTab.getContent(1).attach(shipsList);
 
 			GUIContentPane stationsTab = tabbedContent.addTab(Lng.str("STATIONS"));
-			stationsTab.setTextBoxHeightLast(300);
-			ExchangeItemScrollableList stationsList = new ExchangeItemScrollableList(getState(), stationsTab.getContent(0), STATIONS);
-			stationsList.onInit();
-			stationsTab.getContent(0).attach(stationsList);
-			stationsTab.addNewTextBox(28);
-			GUIHorizontalButtonTablePane stationsAddButton = new GUIHorizontalButtonTablePane(getState(), 1, 1, stationsTab.getContent(1));
+			stationsTab.setTextBoxHeightLast(28);
+			GUIHorizontalButtonTablePane stationsAddButton = new GUIHorizontalButtonTablePane(getState(), 1, 1, stationsTab.getContent(0));
 			stationsAddButton.onInit();
 			stationsAddButton.addButton(0, 0, Lng.str("ADD"), GUIHorizontalArea.HButtonColor.GREEN, new GUICallback() {
 				@Override
@@ -144,8 +141,13 @@ public class ExchangeDialog extends PlayerInput {
 					return playerState.getFactionId() != 0;
 				}
 			});
-			stationsTab.getContent(1).attach(stationsAddButton);
-			
+			stationsTab.getContent(0).attach(stationsAddButton);
+
+			stationsTab.addNewTextBox(300);
+			ExchangeItemScrollableList stationsList = new ExchangeItemScrollableList(getState(), stationsTab.getContent(1), STATIONS);
+			stationsList.onInit();
+			stationsTab.getContent(1).attach(stationsList);
+
 			tabbedContent.setSelectedTab(lastTab);
 			contentPane.getContent(0).attach(tabbedContent);
 		}
