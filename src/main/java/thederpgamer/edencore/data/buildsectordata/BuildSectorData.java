@@ -198,17 +198,17 @@ public class BuildSectorData extends SerializableData {
 	}
 
 	public PlayerData getOwnerData(boolean server) {
-		return PlayerDataManager.getInstance().getFromName(owner, server);
+		return PlayerDataManager.getInstance(server).getFromName(owner, server);
 	}
 
 	public void addPlayer(String name, int type, boolean server) {
 		setDefaultPerms(name, type);
-		BuildSectorDataManager.getInstance().updateData(this, server);
+		BuildSectorDataManager.getInstance(server).updateData(this, server);
 	}
 
 	public void removePlayer(String name, boolean server) {
 		permissions.remove(name);
-		BuildSectorDataManager.getInstance().updateData(this, server);
+		BuildSectorDataManager.getInstance(server).updateData(this, server);
 	}
 
 	public boolean getPermission(String user, PermissionTypes type) {
@@ -228,7 +228,7 @@ public class BuildSectorData extends SerializableData {
 			newPermissionMap.put(type, value);
 			permissions.put(user, newPermissionMap);
 		}
-		BuildSectorDataManager.getInstance().updateData(this, server);
+		BuildSectorDataManager.getInstance(server).updateData(this, server);
 	}
 
 	public boolean getPermissionForEntity(String user, int entityId, PermissionTypes... types) {
@@ -274,7 +274,7 @@ public class BuildSectorData extends SerializableData {
 
 	public void addEntity(SegmentController entity, boolean server) {
 		entities.add(new BuildSectorEntityData(entity));
-		BuildSectorDataManager.getInstance().updateData(this, server);
+		BuildSectorDataManager.getInstance(server).updateData(this, server);
 	}
 
 	public void removeEntity(SegmentController entity, boolean server) {
@@ -285,7 +285,7 @@ public class BuildSectorData extends SerializableData {
 				break; // Found the entity to remove, exit loop
 			}
 		}
-		BuildSectorDataManager.getInstance().updateData(this, server);
+		BuildSectorDataManager.getInstance(server).updateData(this, server);
 	}
 
 	public void updateEntity(SegmentController entity, boolean server) {
@@ -294,7 +294,7 @@ public class BuildSectorData extends SerializableData {
 		else {
 			entityData.entityID = entity.getId();
 			entityData.entityType = EntityType.fromEntity(entity);
-			BuildSectorDataManager.getInstance().updateData(this, server);
+			BuildSectorDataManager.getInstance(server).updateData(this, server);
 		}
 	}
 
@@ -603,7 +603,7 @@ public class BuildSectorData extends SerializableData {
 				newPermissionMap.put(type, value);
 				permissions.put(user, newPermissionMap);
 			}
-			BuildSectorDataManager.getInstance().updateData(BuildSectorData.this, server);
+			BuildSectorDataManager.getInstance(server).updateData(BuildSectorData.this, server);
 		}
 
 		public boolean isAIActive() {

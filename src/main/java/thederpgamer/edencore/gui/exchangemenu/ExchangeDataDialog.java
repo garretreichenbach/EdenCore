@@ -57,10 +57,10 @@ public class ExchangeDataDialog extends PlayerOkCancelInput {
 		ExchangeData data = panel.getData();
 		switch(panel.mode) {
 			case ADD:
-				ExchangeDataManager.getInstance().sendPacket(data, DataManager.ADD_DATA, true);
+				ExchangeDataManager.getInstance(false).sendPacket(data, DataManager.ADD_DATA, true);
 				break;
 			case EDIT:
-				ExchangeDataManager.getInstance().sendPacket(data, DataManager.UPDATE_DATA, true);
+				ExchangeDataManager.getInstance(false).sendPacket(data, DataManager.UPDATE_DATA, true);
 				break;
 		}
 		deactivate();
@@ -204,7 +204,7 @@ public class ExchangeDataDialog extends PlayerOkCancelInput {
 
 			ArrayList<CatalogPermission> catalogPermissions = new ArrayList<>();
 			for(CatalogPermission permission : ((GameClientState) getState()).getCatalog().getAvailableCatalog()) {
-				if(!ExchangeDataManager.getInstance().existsName(permission.getUid())) catalogPermissions.add(permission);
+				if(!ExchangeDataManager.getInstance(false).existsName(permission.getUid())) catalogPermissions.add(permission);
 			}
 			GUIAncor[] elements = new GUIAncor[catalogPermissions.size()];
 			for(int i = 0; i < elements.length; i++) {

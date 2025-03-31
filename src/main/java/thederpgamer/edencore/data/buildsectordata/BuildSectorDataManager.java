@@ -24,15 +24,19 @@ import java.util.*;
 public class BuildSectorDataManager extends DataManager<BuildSectorData> {
 
 	private final Set<BuildSectorData> clientCache = new HashSet<>();
-	private static BuildSectorDataManager instance;
-
-	public static BuildSectorDataManager getInstance() {
-		return instance;
-	}
-
+	private static BuildSectorDataManager clientInstance;
+	private static BuildSectorDataManager serverInstance;
+	
 	public static void initialize(boolean client) {
-		instance = new BuildSectorDataManager();
-		if(client) instance.requestFromServer();
+		if(client) {
+			clientInstance = new BuildSectorDataManager();
+			clientInstance.requestFromServer();
+		} else serverInstance = new BuildSectorDataManager();
+	}
+	
+	public static BuildSectorDataManager getInstance(boolean server) {
+		if(server) return serverInstance;
+		else return clientInstance;
 	}
 
 	@Override
@@ -73,7 +77,10 @@ public class BuildSectorDataManager extends DataManager<BuildSectorData> {
 	public void createMissingData(Object... args) {
 		try {
 			String playerName = args[0].toString();
-			if(!dataExistsForPlayer(playerName, true)) addData(new BuildSectorData(playerName), true);
+			if(!dataExistsForPlayer(playerName, true)) {
+				PersistentObjectUtil.addObject(EdenCore.getInstance().getSkeleton(), new BuildSectorData(playerName));
+				PersistentObjectUtil.save(EdenCore.getInstance().getSkeleton());
+			}
 		} catch(Exception exception) {
 			EdenCore.getInstance().logException("An error occurred while initializing build sector data", exception);
 		}

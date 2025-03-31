@@ -75,8 +75,8 @@ public class BuildSectorDialog extends PlayerInput {
 		}
 		
 		private BuildSectorData getBuildSectorData() {
-			if(BuildSectorDataManager.getInstance().isPlayerInAnyBuildSector(GameClient.getClientPlayerState())) return BuildSectorDataManager.getInstance().getCurrentBuildSector(GameClient.getClientPlayerState());
-			else return BuildSectorDataManager.getInstance().getFromPlayerName(GameClient.getClientPlayerState().getName(), false);
+			if(BuildSectorDataManager.getInstance(false).isPlayerInAnyBuildSector(GameClient.getClientPlayerState())) return BuildSectorDataManager.getInstance(false).getCurrentBuildSector(GameClient.getClientPlayerState());
+			else return BuildSectorDataManager.getInstance(false).getFromPlayerName(GameClient.getClientPlayerState().getName(), false);
 		}
 		
 		private void createMainTab(GUIContentPane contentPane) {
@@ -104,7 +104,7 @@ public class BuildSectorDialog extends PlayerInput {
 						(new SimplePlayerTextInput("Add User", "") {
 							@Override
 							public boolean onInput(String s) {
-								if(PlayerDataManager.getInstance().getFromName(s.trim(), false) != null) {
+								if(PlayerDataManager.getInstance(false).getFromName(s.trim(), false) != null) {
 									getBuildSectorData().addPlayer(s.trim(), BuildSectorData.FRIEND, false);
 									return true;
 								} else {

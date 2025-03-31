@@ -9,6 +9,7 @@ import org.schema.game.common.data.player.faction.Faction;
 import thederpgamer.edencore.EdenCore;
 import thederpgamer.edencore.data.DataManager;
 import thederpgamer.edencore.data.SerializableData;
+import thederpgamer.edencore.data.buildsectordata.BuildSectorDataManager;
 import thederpgamer.edencore.manager.PlayerActionManager;
 import thederpgamer.edencore.network.PlayerActionCommandPacket;
 
@@ -25,15 +26,19 @@ import java.util.Set;
 public class PlayerDataManager extends DataManager<PlayerData> {
 
 	private final Set<PlayerData> clientCache = new HashSet<>();
-	private static PlayerDataManager instance;
-
-	public static PlayerDataManager getInstance() {
-		return instance;
+	private static PlayerDataManager clientInstance;
+	private static PlayerDataManager serverInstance;
+	
+	public static PlayerDataManager getInstance(boolean server) {
+		if(server) return serverInstance;
+		else return clientInstance;
 	}
-
+	
 	public static void initialize(boolean client) {
-		instance = new PlayerDataManager();
-		if(client) instance.requestFromServer();
+		if(client) {
+			clientInstance = new PlayerDataManager();
+			clientInstance.requestFromServer();
+		} else serverInstance = new PlayerDataManager();
 	}
 
 	@Override
@@ -75,7 +80,10 @@ public class PlayerDataManager extends DataManager<PlayerData> {
 		try {
 			PlayerState playerState = GameCommon.getPlayerFromName((String) args[0]);
 			PlayerData data = getFromName((String) args[0], true);
-			if(playerState != null && data == null) addData(new PlayerData(playerState), playerState.isOnServer());
+			if(playerState != null && data == null) {
+				PersistentObjectUtil.addObject(EdenCore.getInstance().getSkeleton(), new PlayerData(playerState));
+				PersistentObjectUtil.save(EdenCore.getInstance().getSkeleton());
+			}
 		} catch(Exception exception) {
 			EdenCore.getInstance().logException("An error occurred while initializing player data", exception);
 		}

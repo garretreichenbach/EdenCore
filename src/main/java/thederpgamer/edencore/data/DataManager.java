@@ -31,10 +31,10 @@ public abstract class DataManager<E extends SerializableData> {
 		EdenCore.getInstance().logInfo("Initialized Data Managers on " + (client ? "Client" : "Server"));
 	}
 
-	public static DataManager<?> getDataManager(Class<? extends DataManager<?>> dataManagerClass) {
-		if(dataManagerClass.equals(PlayerDataManager.class)) return PlayerDataManager.getInstance();
-		else if(dataManagerClass.equals(BuildSectorDataManager.class)) return BuildSectorDataManager.getInstance();
-		else if(dataManagerClass.equals(ExchangeDataManager.class)) return ExchangeDataManager.getInstance();
+	public static DataManager<?> getDataManager(Class<? extends DataManager<?>> dataManagerClass, boolean server) {
+		if(dataManagerClass.equals(PlayerDataManager.class)) return PlayerDataManager.getInstance(server);
+		else if(dataManagerClass.equals(BuildSectorDataManager.class)) return BuildSectorDataManager.getInstance(server);
+		else if(dataManagerClass.equals(ExchangeDataManager.class)) return ExchangeDataManager.getInstance(server);
 		return null;
 	}
 

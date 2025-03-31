@@ -31,7 +31,7 @@ public class BuildSectorScrollableList extends ScrollableTableList<BuildSectorDa
 
 	@Override
 	protected Collection<BuildSectorData> getElementList() {
-		return BuildSectorDataManager.getInstance().getAccessibleSectors(GameClient.getClientPlayerState());
+		return BuildSectorDataManager.getInstance(false).getAccessibleSectors(GameClient.getClientPlayerState());
 	}
 
 	@Override
@@ -63,14 +63,14 @@ public class BuildSectorScrollableList extends ScrollableTableList<BuildSectorDa
 			};
 			GUIHorizontalButtonTablePane buttonPane = new GUIHorizontalButtonTablePane(getState(), 1, 1, anchor);
 			buttonPane.onInit();
-			final BuildSectorData currentSector = BuildSectorDataManager.getInstance().getCurrentBuildSector(GameClient.getClientPlayerState());
+			final BuildSectorData currentSector = BuildSectorDataManager.getInstance(false).getCurrentBuildSector(GameClient.getClientPlayerState());
 			if(currentSector == null || currentSector != buildSectorData) {
 				buttonPane.addButton(0, 0, "WARP", GUIHorizontalArea.HButtonColor.BLUE, new GUICallback() {
 					@Override
 					public void callback(GUIElement guiElement, MouseEvent mouseEvent) {
 						if(mouseEvent.pressedLeftMouse()) {
-							if(currentSector != null) BuildSectorDataManager.getInstance().leaveBuildSector(GameClient.getClientPlayerState());
-							BuildSectorDataManager.getInstance().enterBuildSector(GameClient.getClientPlayerState(), buildSectorData);
+							if(currentSector != null) BuildSectorDataManager.getInstance(false).leaveBuildSector(GameClient.getClientPlayerState());
+							BuildSectorDataManager.getInstance(false).enterBuildSector(GameClient.getClientPlayerState(), buildSectorData);
 						}
 					}
 
@@ -93,7 +93,7 @@ public class BuildSectorScrollableList extends ScrollableTableList<BuildSectorDa
 				buttonPane.addButton(0, 0, "LEAVE", GUIHorizontalArea.HButtonColor.BLUE, new GUICallback() {
 					@Override
 					public void callback(GUIElement guiElement, MouseEvent mouseEvent) {
-						if(mouseEvent.pressedLeftMouse()) BuildSectorDataManager.getInstance().leaveBuildSector(GameClient.getClientPlayerState());
+						if(mouseEvent.pressedLeftMouse()) BuildSectorDataManager.getInstance(false).leaveBuildSector(GameClient.getClientPlayerState());
 					}
 
 					@Override

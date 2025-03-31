@@ -44,7 +44,7 @@ public class SyncRequestPacket extends Packet {
 	@Override
 	public void processPacketOnServer(PlayerState playerState) {
 		if(dataType.getDataManagerClass() != null) {
-			DataManager<?> dataManager = DataManager.getDataManager(dataType.getDataManagerClass());
+			DataManager<?> dataManager = DataManager.getDataManager(dataType.getDataManagerClass(), playerState.isOnServer());
 			if(dataManager != null) {
 				for(SerializableData data : dataManager.getCache(true)) dataManager.sendDataToPlayer(playerState, data, DataManager.ADD_DATA);
 			} else {

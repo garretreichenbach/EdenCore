@@ -48,8 +48,8 @@ public class PlayerActionManager {
 					break;
 				case ENTER_BUILD_SECTOR:
 					playerState = GameCommon.getPlayerFromName(args[0]);
-					playerData = PlayerDataManager.getInstance().getFromName(playerState.getName(), playerState.isOnServer());
-					BuildSectorData data = BuildSectorDataManager.getInstance().getFromUUID(args[1], playerState.isOnServer());
+					playerData = PlayerDataManager.getInstance(playerState.isOnServer()).getFromName(playerState.getName(), playerState.isOnServer());
+					BuildSectorData data = BuildSectorDataManager.getInstance(playerState.isOnServer()).getFromUUID(args[1], playerState.isOnServer());
 					playerData.setLastRealSector(playerState.getCurrentSector());
 					Transform lastRealTransform = new Transform();
 					lastRealTransform.setIdentity();
@@ -61,7 +61,7 @@ public class PlayerActionManager {
 					break;
 				case LEAVE_BUILD_SECTOR:
 					playerState = GameCommon.getPlayerFromName(args[0]);
-					playerData = PlayerDataManager.getInstance().getFromName(playerState.getName(), playerState.isOnServer());
+					playerData = PlayerDataManager.getInstance(playerState.isOnServer()).getFromName(playerState.getName(), playerState.isOnServer());
 					Vector3i lastRealSector = playerData.getLastRealSector();
 					Transform lastRealTransform1 = playerData.getLastRealTransform();
 					GameServer.executeAdminCommand("change_sector " + lastRealSector.x + " " + lastRealSector.y + " " + lastRealSector.z);

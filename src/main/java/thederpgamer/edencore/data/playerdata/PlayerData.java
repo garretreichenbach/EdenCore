@@ -141,7 +141,7 @@ public class PlayerData extends SerializableData {
 		PlayerState playerState = getPlayerState();
 		if(playerState != null && factionId != playerState.getFactionId()) {
 			factionId = playerState.getFactionId();
-			PlayerDataManager.getInstance().updateData(this, playerState.isOnServer());
+			PlayerDataManager.getInstance(playerState.isOnServer()).updateData(this, playerState.isOnServer());
 		}
 		return factionId;
 	}
@@ -164,7 +164,7 @@ public class PlayerData extends SerializableData {
 	
 	public void setStoredCredits(long credits) {
 		storedCredits = credits;
-		PlayerDataManager.getInstance().updateData(this, getPlayerState().isOnServer());
+		PlayerDataManager.getInstance(getPlayerState().isOnServer()).updateData(this, getPlayerState().isOnServer());
 	}
 	
 	public Set<PlayerBankTransactionData> getTransactionHistory() {
@@ -173,7 +173,7 @@ public class PlayerData extends SerializableData {
 	
 	public void addTransaction(PlayerBankTransactionData transaction) {
 		transactionHistory.add(transaction);
-		PlayerDataManager.getInstance().updateData(this, getPlayerState().isOnServer());
+		PlayerDataManager.getInstance(getPlayerState().isOnServer()).updateData(this, getPlayerState().isOnServer());
 	}
 	
 	public Vector3i getLastRealSector() {
@@ -182,7 +182,7 @@ public class PlayerData extends SerializableData {
 	
 	public void setLastRealSector(Vector3i sector) {
 		lastRealSector.set(sector);
-		PlayerDataManager.getInstance().updateData(this, getPlayerState().isOnServer());
+		PlayerDataManager.getInstance(getPlayerState().isOnServer()).updateData(this, getPlayerState().isOnServer());
 	}
 	
 	public Transform getLastRealTransform() {
@@ -191,7 +191,7 @@ public class PlayerData extends SerializableData {
 	
 	public void setLastRealTransform(Transform transform) {
 		lastRealTransform.set(transform);
-		PlayerDataManager.getInstance().updateData(this, getPlayerState().isOnServer());
+		PlayerDataManager.getInstance(getPlayerState().isOnServer()).updateData(this, getPlayerState().isOnServer());
 	}
 	
 	public static class PlayerBankTransactionData extends SerializableData {
@@ -300,7 +300,7 @@ public class PlayerData extends SerializableData {
 		}
 		
 		public PlayerData getFrom(boolean server) {
-			return PlayerDataManager.getInstance().getFromUUID(fromUUID, server);
+			return PlayerDataManager.getInstance(server).getFromUUID(fromUUID, server);
 		}
 		
 		public String getToUUID() {
@@ -308,7 +308,7 @@ public class PlayerData extends SerializableData {
 		}
 		
 		public PlayerData getTo(boolean server) {
-			return PlayerDataManager.getInstance().getFromUUID(toUUID, server);
+			return PlayerDataManager.getInstance(server).getFromUUID(toUUID, server);
 		}
 		
 		public String formatDate() {

@@ -53,13 +53,13 @@ public class SendDataPacket extends Packet {
 	public void processPacketOnClient() {
 		switch(dataType) {
 			case PLAYER_DATA:
-				PlayerDataManager.getInstance().handlePacket(data, type, false);
+				PlayerDataManager.getInstance(false).handlePacket(data, type, false);
 				break;
 			case EXCHANGE_DATA:
-				ExchangeDataManager.getInstance().handlePacket(data, type, false);
+				ExchangeDataManager.getInstance(false).handlePacket(data, type, false);
 				break;
 			case BUILD_SECTOR_DATA:
-				BuildSectorDataManager.getInstance().handlePacket(data, type, false);
+				BuildSectorDataManager.getInstance(false).handlePacket(data, type, false);
 				break;
 			default:
 				throw new IllegalStateException("Unexpected value: " + dataType);
@@ -70,13 +70,13 @@ public class SendDataPacket extends Packet {
 	public void processPacketOnServer(PlayerState playerState) {
 		switch(dataType) {
 			case PLAYER_DATA:
-				PlayerDataManager.getInstance().handlePacket(data, type, true);
+				PlayerDataManager.getInstance(false).handlePacket(data, type, true);
 				break;
 			case EXCHANGE_DATA:
-				ExchangeDataManager.getInstance().handlePacket(data, type, true);
+				ExchangeDataManager.getInstance(false).handlePacket(data, type, true);
 				break;
 			case BUILD_SECTOR_DATA:
-				BuildSectorDataManager.getInstance().handlePacket(data, type, true);
+				BuildSectorDataManager.getInstance(false).handlePacket(data, type, true);
 				break;
 			default:
 				throw new IllegalStateException("Unexpected value: " + dataType);

@@ -61,7 +61,7 @@ public class BankingDialog extends PlayerInput {
 			super.onInit();
 			GUIContentPane contentPane = ((GUIDialogWindow) background).getMainContentPane();
 			contentPane.setTextBoxHeightLast(48);
-			final PlayerData playerData = PlayerDataManager.getInstance().getClientOwnData();
+			final PlayerData playerData = PlayerDataManager.getInstance(false).getClientOwnData();
 			final long storedCredits = playerData.getStoredCredits();
 			final long currentCredits = GameClient.getClientPlayerState().getCredits();
 			GUITextOverlay storedCreditsText = new GUITextOverlay(10, 10, getState());
@@ -83,7 +83,7 @@ public class BankingDialog extends PlayerInput {
 									long amount = Long.parseLong(s.trim());
 									if(amount > 0 && amount <= currentCredits) {
 										playerData.setStoredCredits(playerData.getStoredCredits() + amount);
-										PlayerDataManager.getInstance().setPlayerCredits(GameClient.getClientPlayerState(), currentCredits - amount);
+										PlayerDataManager.getInstance(false).setPlayerCredits(GameClient.getClientPlayerState(), currentCredits - amount);
 										return true;
 									}
 								} catch(NumberFormatException ignored) {}
@@ -124,7 +124,7 @@ public class BankingDialog extends PlayerInput {
 									long amount = Long.parseLong(s.trim());
 									if(amount > 0 && amount <= storedCredits) {
 										playerData.setStoredCredits(playerData.getStoredCredits() - amount);
-										PlayerDataManager.getInstance().setPlayerCredits(GameClient.getClientPlayerState(), currentCredits + amount);
+										PlayerDataManager.getInstance(false).setPlayerCredits(GameClient.getClientPlayerState(), currentCredits + amount);
 										return true;
 									}
 								} catch(NumberFormatException ignored) {}
@@ -203,14 +203,14 @@ public class BankingDialog extends PlayerInput {
 								PlayerData playerData = null;
 								try {
 									amount = Long.parseLong(amountText);
-									playerData = PlayerDataManager.getInstance().getFromName(playerText, false);
+									playerData = PlayerDataManager.getInstance(false).getFromName(playerText, false);
 								} catch(Exception ignored) {}
 								if(amount > 0) {
 									if(amount <= storedCredits) {
 										if(playerData != null) {
 											playerData.setStoredCredits(playerData.getStoredCredits() + amount);
-											playerData.addTransaction(new PlayerData.PlayerBankTransactionData(amount, PlayerDataManager.getInstance().getClientOwnData(), playerData, subjectInput.getText(), messageInput.getText(), PlayerData.PlayerBankTransactionData.TransactionType.TRANSFER));
-											PlayerDataManager.getInstance().getClientOwnData().setStoredCredits(storedCredits - amount);
+											playerData.addTransaction(new PlayerData.PlayerBankTransactionData(amount, PlayerDataManager.getInstance(false).getClientOwnData(), playerData, subjectInput.getText(), messageInput.getText(), PlayerData.PlayerBankTransactionData.TransactionType.TRANSFER));
+											PlayerDataManager.getInstance(false).getClientOwnData().setStoredCredits(storedCredits - amount);
 											deactivate();
 										} else PlayerUtils.sendMessage(GameClient.getClientPlayerState(), "Player not found.");
 									} else PlayerUtils.sendMessage(GameClient.getClientPlayerState(), "Invalid amount to send.");

@@ -15,15 +15,24 @@ import java.util.*;
 public class ExchangeDataManager extends DataManager<ExchangeData> {
 
 	private final Set<ExchangeData> clientCache = new HashSet<>();
-	private static ExchangeDataManager instance;
+	private static ExchangeDataManager clientInstance;
+	private static ExchangeDataManager serverInstance;
 
-	public static ExchangeDataManager getInstance() {
-		return instance;
+	public static ExchangeDataManager getInstance(boolean server) {
+		if(server) {
+			if(serverInstance == null) serverInstance = new ExchangeDataManager();
+			return serverInstance;
+		} else {
+			if(clientInstance == null) clientInstance = new ExchangeDataManager();
+			return clientInstance;
+		}
 	}
 
 	public static void initialize(boolean client) {
-		instance = new ExchangeDataManager();
-		if(client) instance.requestFromServer();
+		if(client) {
+			clientInstance = new ExchangeDataManager();
+			clientInstance.requestFromServer();
+		} else serverInstance = new ExchangeDataManager();
 	}
 
 	@Override
@@ -67,7 +76,7 @@ public class ExchangeDataManager extends DataManager<ExchangeData> {
 
 	public static Set<ExchangeData> getCategory(ExchangeData.ExchangeDataCategory category) {
 		Set<ExchangeData> data = new HashSet<>();
-		for(ExchangeData exchangeData : instance.clientCache) {
+		for(ExchangeData exchangeData : getInstance(false).getClientCache()) {
 			if(exchangeData.getCategory() == category) data.add(exchangeData);
 		}
 		return data;

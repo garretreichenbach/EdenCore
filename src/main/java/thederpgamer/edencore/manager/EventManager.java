@@ -88,7 +88,7 @@ public class EventManager {
 					}
 				}
 
-				if(BuildSectorDataManager.getInstance().isPlayerInAnyBuildSector(GameClient.getClientPlayerState())) {
+				if(BuildSectorDataManager.getInstance(false).isPlayerInAnyBuildSector(GameClient.getClientPlayerState())) {
 					for(String disabledTab : disabledTabs) {
 						if(event.getTitleAsString().equals(Lng.str(disabledTab))) {
 							event.setCanceled(true);
@@ -108,8 +108,8 @@ public class EventManager {
 						public void run() {
 							try {
 								sleep(5000);
-								PlayerDataManager.getInstance().createMissingData(event.getPlayerState().getName()); // Create missing player data if it doesn't exist
-								BuildSectorDataManager.getInstance().createMissingData(event.getPlayerState().getName()); // Create missing build sector data if it doesn't exist
+								PlayerDataManager.getInstance(event.getPlayerState().isOnServer()).createMissingData(event.getPlayerState().getName()); // Create missing player data if it doesn't exist
+								BuildSectorDataManager.getInstance(event.getPlayerState().isOnServer()).createMissingData(event.getPlayerState().getName()); // Create missing build sector data if it doesn't exist
 							} catch(Exception exception) {
 								instance.logException("Failed to create missing data for player " + event.getPlayerState().getName(), exception);
 							}
@@ -343,7 +343,7 @@ public class EventManager {
 				} else if(event.getGUIElement() instanceof GUIResizableGrabbableWindow) {
 					GUIResizableGrabbableWindow window = (GUIResizableGrabbableWindow) event.getGUIElement();
 					if(GameClient.getClientState() != null && GameClient.getClientPlayerState() != null) {
-						if(BuildSectorDataManager.getInstance().isPlayerInAnyBuildSector(GameClient.getClientPlayerState())) {
+						if(BuildSectorDataManager.getInstance(false).isPlayerInAnyBuildSector(GameClient.getClientPlayerState())) {
 							for(String windowID : disabledWindows) {
 								if(window.getWindowId().equals(windowID) || window.getWindowId().equals(Lng.str(windowID))) {
 									window.cleanUp();
@@ -363,8 +363,8 @@ public class EventManager {
 					SpawnPiratePatrolPartyJob job = (SpawnPiratePatrolPartyJob) event.getSimulationJob();
 					Vector3i from = (Vector3i) ClassUtils.getField(job, "from");
 					Vector3i to = (Vector3i) ClassUtils.getField(job, "to");
-					if(BuildSectorDataManager.getInstance().isBuildSector(from) || BuildSectorDataManager.getInstance().isBuildSector(to)) event.setCanceled(true);
-				} else if(BuildSectorDataManager.getInstance().isBuildSector(event.getStartLocation())) event.setCanceled(true);
+					if(BuildSectorDataManager.getInstance(false).isBuildSector(from) || BuildSectorDataManager.getInstance(false).isBuildSector(to)) event.setCanceled(true);
+				} else if(BuildSectorDataManager.getInstance(false).isBuildSector(event.getStartLocation())) event.setCanceled(true);
 			}
 		}, instance);
 
@@ -372,7 +372,7 @@ public class EventManager {
 			@Override
 			public void onEvent(MainWindowTabAddEvent event) {
 				if(GameClient.getClientState() == null || GameClient.getClientPlayerState() == null) return;
-				if(BuildSectorDataManager.getInstance().isPlayerInAnyBuildSector(GameClient.getClientPlayerState())) {
+				if(BuildSectorDataManager.getInstance(false).isPlayerInAnyBuildSector(GameClient.getClientPlayerState())) {
 					for(String s : disabledTabs) {
 						if(event.getTitleAsString().equals(Lng.str(s))) {
 							event.setCanceled(true);
@@ -394,7 +394,7 @@ public class EventManager {
 			@Override
 			public void onEvent(SegmentPieceActivateEvent event) {
 				try {
-					if(BuildSectorDataManager.getInstance().isBuildSector(event.getSegmentPiece().getSegmentController().getSector(new Vector3i()))) {
+					if(BuildSectorDataManager.getInstance(false).isBuildSector(event.getSegmentPiece().getSegmentController().getSector(new Vector3i()))) {
 						for(short id : disabledBlocks) {
 							if(event.getSegmentPiece().getType() == id) {
 								event.setCanceled(true);
@@ -412,7 +412,7 @@ public class EventManager {
 			@Override
 			public void onEvent(SegmentPieceActivateByPlayer event) {
 				try {
-					if(BuildSectorDataManager.getInstance().isPlayerInAnyBuildSector(event.getPlayer())) {
+					if(BuildSectorDataManager.getInstance(false).isPlayerInAnyBuildSector(event.getPlayer())) {
 						for(short id : disabledBlocks) {
 							if(event.getSegmentPiece().getType() == id && !event.getPlayer().isAdmin()) {
 								event.setCanceled(true);

@@ -23,7 +23,7 @@ public class BuildSectorHudDrawer extends ModWorldDrawer {
 	@Override
 	public void draw() {
 		Hud hud = GameClient.getClientState().getWorldDrawer().getGuiDrawer().getHud();
-		if(BuildSectorDataManager.getInstance().isPlayerInAnyBuildSector(GameClient.getClientPlayerState())) {
+		if(BuildSectorDataManager.getInstance(false).isPlayerInAnyBuildSector(GameClient.getClientPlayerState())) {
 			try {
 				if(!wasInBuildSectorLastFrame) {
 					hud.getRadar().getLocation().setTextSimple("<Build Sector>");

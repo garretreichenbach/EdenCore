@@ -45,8 +45,8 @@ public class PlayerBankingTransactionScrollableList extends ScrollableTableList<
 		addColumn("From", 7.0f, new Comparator<PlayerData.PlayerBankTransactionData>() {
 			@Override
 			public int compare(PlayerData.PlayerBankTransactionData o1, PlayerData.PlayerBankTransactionData o2) {
-				String fromName = PlayerDataManager.getInstance().getFromUUID(o1.getFromUUID(), false).getName();
-				String toName = PlayerDataManager.getInstance().getFromUUID(o2.getFromUUID(), false).getName();
+				String fromName = PlayerDataManager.getInstance(false).getFromUUID(o1.getFromUUID(), false).getName();
+				String toName = PlayerDataManager.getInstance(false).getFromUUID(o2.getFromUUID(), false).getName();
 				return fromName.compareTo(toName); // Compare the names of the sender
 			}
 		});
@@ -66,7 +66,7 @@ public class PlayerBankingTransactionScrollableList extends ScrollableTableList<
 		guiElementList.addObserver(this);
 		for(PlayerData.PlayerBankTransactionData data : set) {
 			GUIClippedRow subjectRow = getSimpleRow(data.getSubject(), this);
-			GUIClippedRow fromRow = getSimpleRow(PlayerDataManager.getInstance().getFromUUID(data.getFromUUID(), false).getName(), this);
+			GUIClippedRow fromRow = getSimpleRow(PlayerDataManager.getInstance(false).getFromUUID(data.getFromUUID(), false).getName(), this);
 			GUIClippedRow timeRow = getSimpleRow(DateUtils.getTimeFormatted(data.getTime()), this);
 			PlayerBankingTransactionScrollableListRow row = new PlayerBankingTransactionScrollableListRow(getState(), data, subjectRow, fromRow, timeRow);
 			GUIAncor anchor = new GUIAncor(getState(), parent.getWidth() - 107.0f, 52.0f) {

@@ -167,7 +167,7 @@ public class ECCatalogScrollableListNew extends CatalogScrollableListNew {
 					}
 				};
 
-				final BuildSectorData buildSectorData = BuildSectorDataManager.getInstance().getCurrentBuildSector(((GameClientState) getState()).getPlayer());
+				final BuildSectorData buildSectorData = BuildSectorDataManager.getInstance(false).getCurrentBuildSector(((GameClientState) getState()).getPlayer());
 				boolean canSpawn = isPlayerAdmin() || (buildSectorData != null && buildSectorData.getPermission(((GameClientState) getState()).getPlayer().getName(), BuildSectorData.PermissionTypes.SPAWN));
 				int columns = 2;
 				if(isPlayerAdmin() || buildSectorData != null) {
