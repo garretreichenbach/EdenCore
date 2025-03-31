@@ -107,7 +107,7 @@ public class EventManager {
 						@Override
 						public void run() {
 							try {
-								sleep(3000);
+								sleep(5000);
 								PlayerDataManager.getInstance().createMissingData(event.getPlayerState().getName()); // Create missing player data if it doesn't exist
 								BuildSectorDataManager.getInstance().createMissingData(event.getPlayerState().getName()); // Create missing build sector data if it doesn't exist
 							} catch(Exception exception) {
