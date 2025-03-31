@@ -78,7 +78,7 @@ public class EdenCore extends StarMod {
 	public void onServerCreated(ServerInitializeEvent serverInitializeEvent) {
 		DataManager.initialize(false);
 		final long tipInterval = ConfigManager.getMainConfig().getLong("tip_interval");
-		Thread loginTimerThread = new Thread("EdenCore_Login_Timer_Thread") {
+		(new Thread("EdenCore_Login_Timer_Thread") {
 			@Override
 			public void run() {
 				while(true) {
@@ -92,14 +92,19 @@ public class EdenCore extends StarMod {
 					}
 				}
 			}
-		};
-		loginTimerThread.start();
+		}).start();
 	}
 
 	@Override
 	public void onClientCreated(ClientInitializeEvent clientInitializeEvent) {
-		registerBindings();
-		initializeGlossary();
+		(new Thread("EdenCore_Client_Data_Initialization_Thread") {
+			@Override
+			public void run() {
+				DataManager.initialize(true);
+				registerBindings();
+				initializeGlossary();
+			}
+		}).start();
 	}
 
 	@Override
