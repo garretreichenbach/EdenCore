@@ -1,6 +1,5 @@
 package thederpgamer.edencore;
 
-import api.common.GameClient;
 import api.common.GameCommon;
 import api.common.GameServer;
 import api.config.BlockConfig;
@@ -9,7 +8,6 @@ import api.listener.events.controller.ServerInitializeEvent;
 import api.mod.StarLoader;
 import api.mod.StarMod;
 import api.network.packets.PacketUtil;
-import api.utils.StarRunnable;
 import api.utils.game.PlayerUtils;
 import api.utils.textures.StarLoaderTexture;
 import glossar.GlossarCategory;
@@ -36,8 +34,6 @@ import java.nio.file.Files;
 import java.util.Arrays;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
-
-import static java.lang.Thread.sleep;
 
 /**
  * Main class for EdenCore mod.
@@ -142,10 +138,6 @@ public class EdenCore extends StarMod {
 	public void logFatal(String message, Exception exception) {
 		logException(message, exception);
 		if(GameCommon.getGameState().isOnServer()) GameServer.getServerState().addCountdownMessage(10, "Server will perform an emergency shutdown due to a fatal error: " + message);
-	}
-
-	public boolean isClientInitialized() {
-		return GameClient.getClientState() != null && GameClient.getClientPlayerState() != null && GameClient.getClientPlayerState().getAssingedPlayerCharacter() != null;
 	}
 
 	public void initializeGlossary() {
