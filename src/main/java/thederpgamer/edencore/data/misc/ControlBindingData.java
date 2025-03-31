@@ -108,9 +108,8 @@ public class ControlBindingData {
 	}
 
 	public static ArrayList<ControlBindingData> getModBindings(StarMod mod) {
-		if(bindings.get(mod) == null || bindings.get(mod).isEmpty()) load(mod);
-		if(bindings.get(mod) == null) return new ArrayList<>();
-		else return new ArrayList<>(bindings.get(mod));
+		if(bindings.getList(mod).isEmpty()) load(mod);
+		return new ArrayList<>(bindings.getList(mod));
 	}
 
 	public static void save(StarMod mod) {
@@ -124,7 +123,7 @@ public class ControlBindingData {
 		}
 		try {
 			JSONArray data = new JSONArray();
-			for(ControlBindingData bindingData : bindings.get(mod)) data.put(bindingData.serialize());
+			for(ControlBindingData bindingData : bindings.getList(mod)) data.put(bindingData.serialize());
 			FileWriter writer = new FileWriter(file);
 			writer.write(data.toString());
 			writer.flush();
