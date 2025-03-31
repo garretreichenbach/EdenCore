@@ -66,11 +66,11 @@ public class BuildSectorData extends SerializableData {
 		data.put("version", VERSION);
 		data.put("uuid", getUUID());
 		data.put("owner", owner);
-		JSONObject lastRealSectorData = new JSONObject();
-		lastRealSectorData.put("x", sector.x);
-		lastRealSectorData.put("y", sector.y);
-		lastRealSectorData.put("z", sector.z);
-		data.put("lastRealSector", lastRealSectorData);
+		JSONObject sectorData = new JSONObject();
+		sectorData.put("x", sector.x);
+		sectorData.put("y", sector.y);
+		sectorData.put("z", sector.z);
+		data.put("sector", sectorData);
 		JSONArray entitiesArray = new JSONArray();
 		for(BuildSectorEntityData entity : entities) entitiesArray.put(entity.serialize());
 		data.put("entities", entitiesArray);
@@ -89,12 +89,14 @@ public class BuildSectorData extends SerializableData {
 
 	@Override
 	public void deserialize(JSONObject data) {
+		sector = new Vector3i();
+		entities = new HashSet<>();
+		permissions = new HashMap<>();
 		byte version = (byte) data.getInt("version");
 		dataUUID = data.getString("uuid");
 		owner = data.getString("owner");
-		JSONObject lastRealSectorData = data.getJSONObject("sector");
-		sector.set(lastRealSectorData.getInt("x"), lastRealSectorData.getInt("y"), lastRealSectorData.getInt("z"));
-		entities = new HashSet<>();
+		JSONObject sectorData = data.getJSONObject("sector");
+		sector.set(sectorData.getInt("x"), sectorData.getInt("y"), sectorData.getInt("z"));
 		JSONArray entitiesArray = data.getJSONArray("entities");
 		for(int i = 0; i < entitiesArray.length(); i++) entities.add(new BuildSectorEntityData(entitiesArray.getJSONObject(i)));
 		JSONArray permissionsArray = data.getJSONArray("permissions");
@@ -114,81 +116,76 @@ public class BuildSectorData extends SerializableData {
 
 	@Override
 	public void serializeNetwork(PacketWriteBuffer writeBuffer) throws IOException {
-		if(permissions == null) permissions = new HashMap<>();
-		writeBuffer.writeString(serialize().toString()); //Stupid shit doesn't work, just use json ffs
-//		writeBuffer.writeByte(VERSION);
-//		writeBuffer.writeString(dataUUID);
-//		writeBuffer.writeString(owner);
-//		writeBuffer.writeInt(sector.x); // Write the x coordinate of the sector
-//		writeBuffer.writeInt(sector.y); // Write the y coordinate of the sector
-//		writeBuffer.writeInt(sector.z); // Write the z coordinate of the sector
-//		if(entities.isEmpty()) writeBuffer.writeBoolean(false);
-//		else {
-//			writeBuffer.writeBoolean(true); // Indicate that there are entities to serialize
-//			writeBuffer.writeInt(entities.size());
-//			for(BuildSectorEntityData entity : entities) {
-//				entity.serializeNetwork(writeBuffer); // Serialize each entity
-//			}
-//		}
-//		if(permissions.isEmpty()) writeBuffer.writeBoolean(false);
-//		else {
-//			writeBuffer.writeBoolean(true); // Indicate that there are permissions to serialize
-//			writeBuffer.writeInt(permissions.size());
-//			for(String username : permissions.keySet()) {
-//				writeBuffer.writeString(username); // Write the username
-//				if(permissions.get(username) == null || permissions.get(username).isEmpty()) writeBuffer.writeBoolean(false);
-//				else {
-//					writeBuffer.writeBoolean(true); // Indicate that there are permissions for this user
-//					writeBuffer.writeInt(permissions.get(username).size()); // Write the number of permissions for this user
-//					for(Map.Entry<PermissionTypes, Boolean> permission : permissions.get(username).entrySet()) {
-//						writeBuffer.writeString(permission.getKey().name()); // Write the permission type
-//						writeBuffer.writeBoolean(permission.getValue()); // Write the permission value
-//					}
-//				}
-//			}
-//		}
+		writeBuffer.writeByte(VERSION);
+		writeBuffer.writeString(dataUUID);
+		writeBuffer.writeString(owner);
+		writeBuffer.writeInt(sector.x); // Write the x coordinate of the sector
+		writeBuffer.writeInt(sector.y); // Write the y coordinate of the sector
+		writeBuffer.writeInt(sector.z); // Write the z coordinate of the sector
+		if(entities.isEmpty()) writeBuffer.writeBoolean(false);
+		else {
+			writeBuffer.writeBoolean(true); // Indicate that there are entities to serialize
+			writeBuffer.writeInt(entities.size());
+			for(BuildSectorEntityData entity : entities) {
+				entity.serializeNetwork(writeBuffer); // Serialize each entity
+			}
+		}
+		if(permissions.isEmpty()) writeBuffer.writeBoolean(false);
+		else {
+			writeBuffer.writeBoolean(true); // Indicate that there are permissions to serialize
+			writeBuffer.writeInt(permissions.size());
+			for(String username : permissions.keySet()) {
+				writeBuffer.writeString(username); // Write the username
+				if(permissions.get(username) == null || permissions.get(username).isEmpty()) writeBuffer.writeBoolean(false);
+				else {
+					writeBuffer.writeBoolean(true); // Indicate that there are permissions for this user
+					writeBuffer.writeInt(permissions.get(username).size()); // Write the number of permissions for this user
+					for(Map.Entry<PermissionTypes, Boolean> permission : permissions.get(username).entrySet()) {
+						writeBuffer.writeString(permission.getKey().name()); // Write the permission type
+						writeBuffer.writeBoolean(permission.getValue()); // Write the permission value
+					}
+				}
+			}
+		}
 	}
 
 	@Override
 	public void deserializeNetwork(PacketReadBuffer readBuffer) throws IOException {
-		if(permissions == null) permissions = new HashMap<>();
-		deserialize(new JSONObject(readBuffer.readString())); //Stupid shit doesn't work, just use JSON ffs
-//		byte version = readBuffer.readByte();
-//		dataUUID = readBuffer.readString();
-//		dataType = DataType.BUILD_SECTOR_DATA; // Set the data type for consistency
-//		owner = readBuffer.readString();
-//		sector = new Vector3i(readBuffer.readInt(), readBuffer.readInt(), readBuffer.readInt()); // Read the sector coordinates
-//		if(!readBuffer.readBoolean()) {
-//			// No entities to deserialize
-//			entities = new HashSet<>();
-//		} else {
-//			int entityCount = readBuffer.readInt();
-//			entities = new HashSet<>();
-//			for(int i = 0; i < entityCount; i++) {
-//				BuildSectorEntityData entityData = new BuildSectorEntityData(readBuffer);
-//				entities.add(entityData); // Deserialize each entity
-//			}
-//		}
-//		if(readBuffer.readBoolean()) {
-//			int permissionCount = readBuffer.readInt();
-//			for(int i = 0; i < permissionCount; i++) {
-//				String username = readBuffer.readString(); // Read the username
-//				if(!readBuffer.readBoolean()) {
-//					// No permissions for this user
-//					permissions.put(username, new HashMap<PermissionTypes, Boolean>()); // Store an empty permissions map
-//				} else {
-//					int permissionSize = readBuffer.readInt(); // Read the number of permissions for this user
-//					HashMap<PermissionTypes, Boolean> permissionMap = new HashMap<>();
-//					for(int j = 0; j < permissionSize; j++) {
-//						String typeString = readBuffer.readString(); // Read the permission type
-//						boolean value = readBuffer.readBoolean(); // Read the permission value
-//						PermissionTypes type = PermissionTypes.valueOf(typeString); // Convert to enum
-//						permissionMap.put(type, value); // Store in the map
-//					}
-//					permissions.put(username, permissionMap); // Store the permissions for this user
-//				}
-//			}
-//		}
+		sector = new Vector3i();
+		entities = new HashSet<>();
+		permissions = new HashMap<>();
+		byte version = readBuffer.readByte();
+		dataUUID = readBuffer.readString();
+		dataType = DataType.BUILD_SECTOR_DATA; // Set the data type for consistency
+		owner = readBuffer.readString();
+		sector = new Vector3i(readBuffer.readInt(), readBuffer.readInt(), readBuffer.readInt()); // Read the sector coordinates
+		if(readBuffer.readBoolean()) {
+			int entityCount = readBuffer.readInt();
+			for(int i = 0; i < entityCount; i++) {
+				BuildSectorEntityData entityData = new BuildSectorEntityData(readBuffer);
+				entities.add(entityData); // Deserialize each entity
+			}
+		}
+		if(readBuffer.readBoolean()) {
+			int permissionCount = readBuffer.readInt();
+			for(int i = 0; i < permissionCount; i++) {
+				String username = readBuffer.readString(); // Read the username
+				if(!readBuffer.readBoolean()) {
+					// No permissions for this user
+					permissions.put(username, new HashMap<PermissionTypes, Boolean>()); // Store an empty permissions map
+				} else {
+					int permissionSize = readBuffer.readInt(); // Read the number of permissions for this user
+					HashMap<PermissionTypes, Boolean> permissionMap = new HashMap<>();
+					for(int j = 0; j < permissionSize; j++) {
+						String typeString = readBuffer.readString(); // Read the permission type
+						boolean value = readBuffer.readBoolean(); // Read the permission value
+						PermissionTypes type = PermissionTypes.valueOf(typeString); // Convert to enum
+						permissionMap.put(type, value); // Store in the map
+					}
+					permissions.put(username, permissionMap); // Store the permissions for this user
+				}
+			}
+		}
 	}
 
 	public Vector3i getSector() {
