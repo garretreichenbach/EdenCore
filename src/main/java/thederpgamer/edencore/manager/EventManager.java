@@ -10,7 +10,6 @@ import api.listener.events.gui.GUITopBarCreateEvent;
 import api.listener.events.gui.MainWindowTabAddEvent;
 import api.listener.events.input.KeyPressEvent;
 import api.listener.events.player.PlayerJoinWorldEvent;
-import api.listener.events.player.PlayerSpawnEvent;
 import api.listener.events.world.SimulationJobExecuteEvent;
 import api.mod.StarLoader;
 import api.mod.StarMod;
@@ -43,13 +42,10 @@ import thederpgamer.edencore.gui.controls.ControlBindingsScrollableList;
 import thederpgamer.edencore.gui.elements.ECCatalogScrollableListNew;
 import thederpgamer.edencore.gui.exchangemenu.ExchangeDialog;
 import thederpgamer.edencore.utils.ClassUtils;
-import theleo.jstruct.hidden.R1;
 
 import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.Locale;
-
-import static java.lang.Thread.sleep;
 
 /**
  * [Description]
@@ -112,11 +108,13 @@ public class EventManager {
 						@Override
 						public void run() {
 							try {
-								sleep(3000);
-								PlayerDataManager.getInstance().createMissingData(event.getPlayerState().getName());
-								PlayerDataManager.getInstance().sendAllDataToPlayer(event.getPlayerState());
-								BuildSectorDataManager.getInstance().createMissingData(event.getPlayerState().getName());
-								BuildSectorDataManager.getInstance().sendAllDataToPlayer(event.getPlayerState());
+								sleep(10000);
+								if(PlayerDataManager.getInstance().dataExistsForPlayer(event.getPlayerState().getName(), true)) {
+									PlayerDataManager.getInstance().sendDataToPlayer(event.getPlayerState(), PlayerDataManager.getInstance().getFromName(event.getPlayerState().getName(), true), DataManager.ADD_DATA);
+								} else PlayerDataManager.getInstance().createMissingData(event.getPlayerState().getName()); // Create missing player data if it doesn't exist
+								if(BuildSectorDataManager.getInstance().dataExistsForPlayer(event.getPlayerState().getName(), true)) {
+									BuildSectorDataManager.getInstance().sendDataToPlayer(event.getPlayerState(), BuildSectorDataManager.getInstance().getFromPlayerName(event.getPlayerState().getName(), true), DataManager.ADD_DATA);
+								} else BuildSectorDataManager.getInstance().createMissingData(event.getPlayerState().getName()); // Create missing build sector data if it doesn't exist
 							} catch(Exception exception) {
 								instance.logException("Failed to create missing data for player " + event.getPlayerState().getName(), exception);
 							}

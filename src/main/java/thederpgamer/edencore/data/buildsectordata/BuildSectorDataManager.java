@@ -159,4 +159,21 @@ public class BuildSectorDataManager extends DataManager<BuildSectorData> {
 		if(!playerState.isOnServer()) PacketUtil.sendPacket(playerState, new PlayerActionCommandPacket(PlayerActionManager.LEAVE_BUILD_SECTOR, playerState.getName()));
 		else PacketUtil.sendPacketToServer(new PlayerActionCommandPacket(PlayerActionManager.LEAVE_BUILD_SECTOR, playerState.getName()));
 	}
+	
+	public boolean dataExistsForPlayer(String playerName, boolean server) {
+		// Check if data exists for the specified player
+		if(server) {
+			// On server, check the server cache
+			for(BuildSectorData data : getServerCache()) {
+				if(data.getOwner().equals(playerName)) return true;
+			}
+		} else {
+			// On client, check the client cache
+			for(BuildSectorData data : getClientCache()) {
+				if(data.getOwner().equals(playerName)) return true;
+			}
+		}
+		// If no data was found, return false
+		return false; // No data exists for the specified player
+	}
 }

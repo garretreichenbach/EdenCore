@@ -108,4 +108,14 @@ public class PlayerDataManager extends DataManager<PlayerData> {
 		if(playerState.isOnServer()) playerState.setCredits(credits);
 		else PacketUtil.sendPacketToServer(new PlayerActionCommandPacket(PlayerActionManager.SET_CREDITS, playerState.getName(), String.valueOf(credits)));
 	}
+	
+	public boolean dataExistsForPlayer(String playerName, boolean server) {
+		// Check if data exists for the specified player
+		if(server) {
+			return getFromName(playerName, true) != null;
+		} else {
+			// Client check
+			return getFromName(playerName, false) != null;
+		}
+	}
 }
