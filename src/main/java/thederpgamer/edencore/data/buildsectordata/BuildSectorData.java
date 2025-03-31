@@ -38,7 +38,7 @@ public class BuildSectorData extends SerializableData {
 	public static final int OTHER = 2;
 	private static final byte VERSION = 0;
 
-	protected String owner;
+	protected String owner = "";
 	protected Vector3i sector = new Vector3i();
 	protected Set<BuildSectorEntityData> entities = new HashSet<>();
 	protected HashMap<String, HashMap<PermissionTypes, Boolean>> permissions = new HashMap<>();
@@ -161,6 +161,7 @@ public class BuildSectorData extends SerializableData {
 		sector = new Vector3i(readBuffer.readInt(), readBuffer.readInt(), readBuffer.readInt()); // Read the sector coordinates
 		if(readBuffer.readBoolean()) {
 			int entityCount = readBuffer.readInt();
+			entities = new HashSet<>();
 			for(int i = 0; i < entityCount; i++) {
 				BuildSectorEntityData entityData = new BuildSectorEntityData(readBuffer);
 				entities.add(entityData); // Deserialize each entity
@@ -432,7 +433,7 @@ public class BuildSectorData extends SerializableData {
 
 		private int entityID;
 		private EntityType entityType;
-		protected final HashMap<String, HashMap<PermissionTypes, Boolean>> permissions = new HashMap<>();
+		protected HashMap<String, HashMap<PermissionTypes, Boolean>> permissions = new HashMap<>();
 
 		public BuildSectorEntityData(SegmentController entity) {
 			super(DataType.BUILD_SECTOR_ENTITY_DATA);
@@ -473,6 +474,7 @@ public class BuildSectorData extends SerializableData {
 
 		@Override
 		public void deserialize(JSONObject data) {
+			permissions = new HashMap<>();
 			byte version = (byte) data.getInt("version");
 			dataUUID = data.getString("uuid");
 			entityID = data.getInt("entityID");
@@ -494,37 +496,44 @@ public class BuildSectorData extends SerializableData {
 
 		@Override
 		public void serializeNetwork(PacketWriteBuffer writeBuffer) throws IOException {
-			writeBuffer.writeString(serialize().toString());
-//			writeBuffer.writeByte(VERSION);
-//			writeBuffer.writeString(dataUUID);
-//			writeBuffer.writeInt(entityID);
-//			writeBuffer.writeString(entityType.name());
-//			writeBuffer.writeInt(permissions.size());
-//			for(String name : permissions.keySet()) {
-//				for(Map.Entry<PermissionTypes, Boolean> permission : permissions.get(name).entrySet()) {
-//					writeBuffer.writeString(name);
-//					writeBuffer.writeString(permission.getKey().name());
-//					writeBuffer.writeBoolean(permission.getValue());
-//				}
-//			}
+			writeBuffer.writeByte(VERSION);
+			writeBuffer.writeString(dataUUID);
+			writeBuffer.writeInt(entityID);
+			writeBuffer.writeString(entityType.name());
+			writeBuffer.writeInt(permissions.size());
+			for(String name : permissions.keySet()) {
+				writeBuffer.writeString(name);
+				writeBuffer.writeInt(permissions.get(name).size()); // Write the number of permissions for this user
+				for(Map.Entry<PermissionTypes, Boolean> permission : permissions.get(name).entrySet()) {
+					writeBuffer.writeString(permission.getKey().name());
+					writeBuffer.writeBoolean(permission.getValue());
+				}
+			}
 		}
 
 		@Override
 		public void deserializeNetwork(PacketReadBuffer readBuffer) throws IOException {
-			deserialize(new JSONObject(readBuffer.readString()));
-//			byte version = readBuffer.readByte();
-//			dataUUID = readBuffer.readString();
-//			entityID = readBuffer.readInt();
-//			entityType = EntityType.valueOf(readBuffer.readString().toUpperCase(Locale.ENGLISH));
-//			int permissionCount = readBuffer.readInt();
-//			for(int i = 0; i < permissionCount; i++) {
-//				String name = readBuffer.readString();
-//				PermissionTypes type = PermissionTypes.valueOf(readBuffer.readString().toUpperCase(Locale.ENGLISH));
-//				boolean value = readBuffer.readBoolean();
-//				HashMap<PermissionTypes, Boolean> permission = new HashMap<>();
-//				permission.put(type, value);
-//				permissions.put(name, permission);
-//			}
+			permissions = new HashMap<>();
+			byte version = readBuffer.readByte();
+			dataUUID = readBuffer.readString();
+			entityID = readBuffer.readInt();
+			entityType = EntityType.valueOf(readBuffer.readString().toUpperCase(Locale.ENGLISH));
+			int permissionCount = readBuffer.readInt();
+			for(int i = 0; i < permissionCount; i++) {
+				String name = readBuffer.readString();
+				int permissionSize = readBuffer.readInt();
+				HashMap<PermissionTypes, Boolean> permissionMap = new HashMap<>();
+				if(permissionSize > 0) {
+					// Read the permissions for this user
+					for(int j = 0; j < permissionSize; j++) {
+						String typeString = readBuffer.readString(); // Read the permission type
+						boolean value = readBuffer.readBoolean(); // Read the permission value
+						PermissionTypes type = PermissionTypes.valueOf(typeString.toUpperCase(Locale.ENGLISH)); // Convert to enum
+						permissionMap.put(type, value); // Store in the map
+					}
+				}
+				permissions.put(name, permissionMap); // Store the permissions for this user
+			}
 		}
 
 		private void setDefaultEntityPerms(String user, int type) {

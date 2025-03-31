@@ -26,7 +26,7 @@ public class PlayerData extends SerializableData {
 
 	private static final byte VERSION = 0;
 
-	private String name;
+	private String name = "";
 	private int factionId;
 	private long storedCredits;
 	private Set<PlayerBankTransactionData> transactionHistory = new HashSet<>();
@@ -125,7 +125,6 @@ public class PlayerData extends SerializableData {
 		storedCredits = readBuffer.readLong();
 		int transactionCount = readBuffer.readInt();
 		transactionHistory = new HashSet<>();
-		transactionHistory.clear();
 		for(int i = 0; i < transactionCount; i ++) transactionHistory.add(new PlayerBankTransactionData(readBuffer));
 		lastRealSector = new Vector3i();
 		lastRealSector.set(readBuffer.readInt(), readBuffer.readInt(), readBuffer.readInt());
