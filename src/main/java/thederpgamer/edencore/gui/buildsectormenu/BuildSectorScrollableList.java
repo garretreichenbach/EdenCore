@@ -51,9 +51,10 @@ public class BuildSectorScrollableList extends ScrollableTableList<BuildSectorDa
 		guiElementList.deleteObservers();
 		guiElementList.addObserver(this);
 		for(final BuildSectorData buildSectorData : set) {
+			if(buildSectorData == null) throw new IllegalArgumentException("BuildSectorData cannot be null in the set provided to updateListEntries()");
 			GUIClippedRow ownerRow = getSimpleRow(buildSectorData.getOwner(), this);
 			final BuildSectorScrollableListRow row = new BuildSectorScrollableListRow(getState(), buildSectorData, ownerRow);
-			GUIAncor anchor = new GUIAncor(getState(), 100.0f, 28.0f) {
+			GUIAncor anchor = new GUIAncor(getState(), parent.getWidth() - 28.0f, 28.0f) {
 				@Override
 				public void draw() {
 					setWidth(row.getWidth());
