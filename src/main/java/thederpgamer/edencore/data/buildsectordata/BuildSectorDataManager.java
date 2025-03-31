@@ -131,7 +131,7 @@ public class BuildSectorDataManager extends DataManager<BuildSectorData> {
 	public Set<BuildSectorData> getAccessibleSectors(PlayerState playerState) {
 		Set<BuildSectorData> accessibleSectors = new HashSet<>();
 		for(BuildSectorData data : getCache(playerState.isOnServer())) {
-			if(data.getPermissionsForUser(playerState.getName()) != null) accessibleSectors.add(data);
+			if(data.getPermissionsForUser(playerState.getName()) != null || data.getOwner().equals(playerState.getName())) accessibleSectors.add(data);
 		}
 		return accessibleSectors;
 	}

@@ -47,7 +47,6 @@ public class BuildSectorData extends SerializableData {
 		super(DataType.BUILD_SECTOR_DATA);
 		this.owner = owner;
 		sector = BuildSectorDataManager.calculateRandomSector();
-		permissions = new HashMap<>();
 		setDefaultPerms(owner, OWNER);
 	}
 
@@ -115,6 +114,7 @@ public class BuildSectorData extends SerializableData {
 
 	@Override
 	public void serializeNetwork(PacketWriteBuffer writeBuffer) throws IOException {
+		if(permissions == null) permissions = new HashMap<>();
 		writeBuffer.writeByte(VERSION);
 		writeBuffer.writeString(dataUUID);
 		writeBuffer.writeString(owner);
@@ -150,6 +150,7 @@ public class BuildSectorData extends SerializableData {
 
 	@Override
 	public void deserializeNetwork(PacketReadBuffer readBuffer) throws IOException {
+		if(permissions == null) permissions = new HashMap<>();
 		byte version = readBuffer.readByte();
 		dataUUID = readBuffer.readString();
 		dataType = DataType.BUILD_SECTOR_DATA; // Set the data type for consistency
@@ -166,12 +167,8 @@ public class BuildSectorData extends SerializableData {
 				entities.add(entityData); // Deserialize each entity
 			}
 		}
-		if(!readBuffer.readBoolean()) {
-			// No permissions to deserialize
-			permissions = new HashMap<>();
-		} else {
+		if(readBuffer.readBoolean()) {
 			int permissionCount = readBuffer.readInt();
-			permissions = new HashMap<>();
 			for(int i = 0; i < permissionCount; i++) {
 				String username = readBuffer.readString(); // Read the username
 				if(!readBuffer.readBoolean()) {
@@ -322,6 +319,7 @@ public class BuildSectorData extends SerializableData {
 	}
 
 	private void setDefaultPerms(String user, int type) {
+		if(permissions == null) permissions = new HashMap<>();
 		switch(type) {
 			case OWNER:
 				permissions.put(user, new HashMap<PermissionTypes, Boolean>() {{
@@ -387,6 +385,7 @@ public class BuildSectorData extends SerializableData {
 	}
 
 	public Set<String> getAllUsers() {
+		if(permissions == null) permissions = new HashMap<>();
 		return new HashSet<>(permissions.keySet());
 	}
 
@@ -397,6 +396,7 @@ public class BuildSectorData extends SerializableData {
 	}
 
 	public HashMap<PermissionTypes, Boolean> getPermissionsForUser(String username) {
+		if(permissions == null) permissions = new HashMap<>();
 		return permissions.get(username);
 	}
 

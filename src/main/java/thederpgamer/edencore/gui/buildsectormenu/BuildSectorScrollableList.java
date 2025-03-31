@@ -52,12 +52,11 @@ public class BuildSectorScrollableList extends ScrollableTableList<BuildSectorDa
 		guiElementList.addObserver(this);
 		for(final BuildSectorData buildSectorData : set) {
 			GUIClippedRow ownerRow = getSimpleRow(buildSectorData.getOwner(), this);
-			BuildSectorScrollableListRow row = new BuildSectorScrollableListRow(getState(), buildSectorData, ownerRow);
-			guiElementList.add(row);
-			GUIAncor anchor = new GUIAncor(getState(), parent.getWidth() - 107.0f, 28.0f) {
+			final BuildSectorScrollableListRow row = new BuildSectorScrollableListRow(getState(), buildSectorData, ownerRow);
+			GUIAncor anchor = new GUIAncor(getState(), 100.0f, 28.0f) {
 				@Override
 				public void draw() {
-					setWidth(parent.getWidth() - 107.0f);
+					setWidth(row.getWidth());
 					super.draw();
 				}
 			};
