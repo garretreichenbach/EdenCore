@@ -31,7 +31,6 @@ import org.schema.schine.graphicsengine.forms.gui.newgui.GUIResizableGrabbableWi
 import org.schema.schine.graphicsengine.forms.gui.newgui.GUITabbedContent;
 import org.schema.schine.input.InputState;
 import thederpgamer.edencore.EdenCore;
-import thederpgamer.edencore.data.DataManager;
 import thederpgamer.edencore.data.buildsectordata.BuildSectorDataManager;
 import thederpgamer.edencore.data.misc.ControlBindingData;
 import thederpgamer.edencore.data.playerdata.PlayerDataManager;
@@ -108,13 +107,9 @@ public class EventManager {
 						@Override
 						public void run() {
 							try {
-								sleep(10000);
-								if(PlayerDataManager.getInstance().dataExistsForPlayer(event.getPlayerState().getName(), true)) {
-									PlayerDataManager.getInstance().sendDataToPlayer(event.getPlayerState(), PlayerDataManager.getInstance().getFromName(event.getPlayerState().getName(), true), DataManager.ADD_DATA);
-								} else PlayerDataManager.getInstance().createMissingData(event.getPlayerState().getName()); // Create missing player data if it doesn't exist
-								if(BuildSectorDataManager.getInstance().dataExistsForPlayer(event.getPlayerState().getName(), true)) {
-									BuildSectorDataManager.getInstance().sendDataToPlayer(event.getPlayerState(), BuildSectorDataManager.getInstance().getFromPlayerName(event.getPlayerState().getName(), true), DataManager.ADD_DATA);
-								} else BuildSectorDataManager.getInstance().createMissingData(event.getPlayerState().getName()); // Create missing build sector data if it doesn't exist
+								sleep(3000);
+								PlayerDataManager.getInstance().createMissingData(event.getPlayerState().getName()); // Create missing player data if it doesn't exist
+								BuildSectorDataManager.getInstance().createMissingData(event.getPlayerState().getName()); // Create missing build sector data if it doesn't exist
 							} catch(Exception exception) {
 								instance.logException("Failed to create missing data for player " + event.getPlayerState().getName(), exception);
 							}
@@ -318,7 +313,7 @@ public class EventManager {
 
 										if(!(availList instanceof ECCatalogScrollableListNew)) {
 											GUIContentPane availableTab = (GUIContentPane) availableTabField.get(this);
-											if(availList != null) availList.cleanUp();
+											availList.cleanUp();
 											CatalogOptionsButtonPanel c = new CatalogOptionsButtonPanel(getState(), this);
 											c.onInit();
 											availableTab.setContent(0, c);

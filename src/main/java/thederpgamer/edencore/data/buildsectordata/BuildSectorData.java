@@ -39,7 +39,7 @@ public class BuildSectorData extends SerializableData {
 	private static final byte VERSION = 0;
 
 	protected String owner;
-	protected Vector3i sector;
+	protected Vector3i sector = new Vector3i();
 	protected Set<BuildSectorEntityData> entities = new HashSet<>();
 	protected HashMap<String, HashMap<PermissionTypes, Boolean>> permissions = new HashMap<>();
 
@@ -53,10 +53,12 @@ public class BuildSectorData extends SerializableData {
 
 	public BuildSectorData(PacketReadBuffer readBuffer) throws IOException {
 		super(readBuffer);
+		dataType = DataType.BUILD_SECTOR_DATA;
 	}
 
 	public BuildSectorData(JSONObject data) {
 		super(data);
+		dataType = DataType.BUILD_SECTOR_DATA;
 	}
 
 	@Override
@@ -65,7 +67,11 @@ public class BuildSectorData extends SerializableData {
 		data.put("version", VERSION);
 		data.put("uuid", getUUID());
 		data.put("owner", owner);
-		data.put("sector", sector.toString());
+		JSONObject lastRealSectorData = new JSONObject();
+		lastRealSectorData.put("x", sector.x);
+		lastRealSectorData.put("y", sector.y);
+		lastRealSectorData.put("z", sector.z);
+		data.put("lastRealSector", lastRealSectorData);
 		JSONArray entitiesArray = new JSONArray();
 		for(BuildSectorEntityData entity : entities) entitiesArray.put(entity.serialize());
 		data.put("entities", entitiesArray);
@@ -87,7 +93,8 @@ public class BuildSectorData extends SerializableData {
 		byte version = (byte) data.getInt("version");
 		dataUUID = data.getString("uuid");
 		owner = data.getString("owner");
-		sector = new Vector3i(Vector3i.parseVector3i(data.getString("sector")));
+		JSONObject lastRealSectorData = data.getJSONObject("sector");
+		sector.set(lastRealSectorData.getInt("x"), lastRealSectorData.getInt("y"), lastRealSectorData.getInt("z"));
 		entities = new HashSet<>();
 		JSONArray entitiesArray = data.getJSONArray("entities");
 		for(int i = 0; i < entitiesArray.length(); i++) entities.add(new BuildSectorEntityData(entitiesArray.getJSONObject(i)));
@@ -111,15 +118,27 @@ public class BuildSectorData extends SerializableData {
 		writeBuffer.writeByte(VERSION);
 		writeBuffer.writeString(dataUUID);
 		writeBuffer.writeString(owner);
-		writeBuffer.writeString(sector.toStringPure());
-		writeBuffer.writeInt(entities.size());
-		for(BuildSectorEntityData entity : entities) entity.serializeNetwork(writeBuffer);
-		writeBuffer.writeInt(permissions.size());
-		for(String username : permissions.keySet()) {
-			for(Map.Entry<PermissionTypes, Boolean> permission : permissions.get(username).entrySet()) {
-				writeBuffer.writeString(username);
-				writeBuffer.writeString(permission.getKey().name());
-				writeBuffer.writeBoolean(permission.getValue());
+		writeBuffer.writeInt(sector.x); // Write the x coordinate of the sector
+		writeBuffer.writeInt(sector.y); // Write the y coordinate of the sector
+		writeBuffer.writeInt(sector.z); // Write the z coordinate of the sector
+		if(entities.isEmpty()) writeBuffer.writeBoolean(false);
+		else {
+			writeBuffer.writeBoolean(true); // Indicate that there are entities to serialize
+			writeBuffer.writeInt(entities.size());
+			for(BuildSectorEntityData entity : entities) {
+				entity.serializeNetwork(writeBuffer); // Serialize each entity
+			}
+		}
+		if(permissions.isEmpty()) writeBuffer.writeBoolean(false);
+		else {
+			writeBuffer.writeBoolean(true); // Indicate that there are permissions to serialize
+			writeBuffer.writeInt(permissions.size());
+			for(String username : permissions.keySet()) {
+				for(Map.Entry<PermissionTypes, Boolean> permission : permissions.get(username).entrySet()) {
+					writeBuffer.writeString(username); // Write the username
+					writeBuffer.writeString(permission.getKey().name()); // Write the permission type
+					writeBuffer.writeBoolean(permission.getValue()); // Write the permission value
+				}
 			}
 		}
 	}
@@ -128,20 +147,34 @@ public class BuildSectorData extends SerializableData {
 	public void deserializeNetwork(PacketReadBuffer readBuffer) throws IOException {
 		byte version = readBuffer.readByte();
 		dataUUID = readBuffer.readString();
+		dataType = DataType.BUILD_SECTOR_DATA; // Set the data type for consistency
 		owner = readBuffer.readString();
-		sector = new Vector3i(Vector3i.parseVector3i(readBuffer.readString()));
-		int entityCount = readBuffer.readInt();
-		entities = new HashSet<>();
-		for(int i = 0; i < entityCount; i++) entities.add(new BuildSectorEntityData(readBuffer));
-		int permissionCount = readBuffer.readInt();
-		permissions = new HashMap<>();
-		for(int i = 0; i < permissionCount; i++) {
-			String username = readBuffer.readString();
-			PermissionTypes type = PermissionTypes.valueOf(readBuffer.readString());
-			boolean value = readBuffer.readBoolean();
-			HashMap<PermissionTypes, Boolean> permission = new HashMap<>();
-			permission.put(type, value);
-			permissions.put(username, permission);
+		sector = new Vector3i(readBuffer.readInt(), readBuffer.readInt(), readBuffer.readInt()); // Read the sector coordinates
+		if(!readBuffer.readBoolean()) {
+			// No entities to deserialize
+			entities = new HashSet<>();
+		} else {
+			int entityCount = readBuffer.readInt();
+			entities = new HashSet<>();
+			for(int i = 0; i < entityCount; i++) {
+				BuildSectorEntityData entityData = new BuildSectorEntityData(readBuffer);
+				entities.add(entityData); // Deserialize each entity
+			}
+		}
+		if(!readBuffer.readBoolean()) {
+			// No permissions to deserialize
+			permissions = new HashMap<>();
+		} else {
+			int permissionCount = readBuffer.readInt();
+			permissions = new HashMap<>();
+			for(int i = 0; i < permissionCount; i++) {
+				String username = readBuffer.readString(); // Read the username
+				PermissionTypes type = PermissionTypes.valueOf(readBuffer.readString().toUpperCase(Locale.ENGLISH)); // Read the permission type
+				boolean value = readBuffer.readBoolean(); // Read the permission value
+				HashMap<PermissionTypes, Boolean> permission = new HashMap<>();
+				permission.put(type, value);
+				permissions.put(username, permission); // Store the permission in the map
+			}
 		}
 	}
 
@@ -397,10 +430,12 @@ public class BuildSectorData extends SerializableData {
 
 		public BuildSectorEntityData(PacketReadBuffer readBuffer) throws IOException {
 			super(readBuffer);
+			dataType = DataType.BUILD_SECTOR_ENTITY_DATA;
 		}
 
 		public BuildSectorEntityData(JSONObject data) {
 			super(data);
+			dataType = DataType.BUILD_SECTOR_ENTITY_DATA;
 		}
 
 		@Override

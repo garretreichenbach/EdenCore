@@ -45,10 +45,12 @@ public class ExchangeData extends SerializableData {
 
 	public ExchangeData(PacketReadBuffer readBuffer) throws IOException {
 		super(readBuffer);
+		dataType = DataType.EXCHANGE_DATA;
 	}
 
 	public ExchangeData(JSONObject data) {
 		super(data);
+		dataType = DataType.EXCHANGE_DATA;
 	}
 
 	@Override

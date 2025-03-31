@@ -73,7 +73,7 @@ public class BuildSectorDataManager extends DataManager<BuildSectorData> {
 	public void createMissingData(Object... args) {
 		try {
 			String playerName = args[0].toString();
-			if(getFromPlayerName(playerName, true) == null) addData(new BuildSectorData(playerName), true);
+			if(!dataExistsForPlayer(playerName, true)) addData(new BuildSectorData(playerName), true);
 		} catch(Exception exception) {
 			EdenCore.getInstance().logException("An error occurred while initializing build sector data", exception);
 		}
@@ -142,7 +142,7 @@ public class BuildSectorDataManager extends DataManager<BuildSectorData> {
 		}
 		return null;
 	}
-	
+
 	public BuildSectorData getFromPlayerName(String playerName, boolean server) {
 		for(BuildSectorData data : getCache(server)) {
 			if(data.getOwner().equals(playerName)) return data;
@@ -154,12 +154,12 @@ public class BuildSectorDataManager extends DataManager<BuildSectorData> {
 		if(playerState.isOnServer()) PacketUtil.sendPacket(playerState, new PlayerActionCommandPacket(PlayerActionManager.ENTER_BUILD_SECTOR, playerState.getName(), buildSectorData.getUUID()));
 		else PacketUtil.sendPacketToServer(new PlayerActionCommandPacket(PlayerActionManager.ENTER_BUILD_SECTOR, playerState.getName(), buildSectorData.getUUID()));
 	}
-	
+
 	public void leaveBuildSector(PlayerState playerState) {
 		if(!playerState.isOnServer()) PacketUtil.sendPacket(playerState, new PlayerActionCommandPacket(PlayerActionManager.LEAVE_BUILD_SECTOR, playerState.getName()));
 		else PacketUtil.sendPacketToServer(new PlayerActionCommandPacket(PlayerActionManager.LEAVE_BUILD_SECTOR, playerState.getName()));
 	}
-	
+
 	public boolean dataExistsForPlayer(String playerName, boolean server) {
 		// Check if data exists for the specified player
 		if(server) {

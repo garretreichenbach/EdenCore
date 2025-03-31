@@ -13,9 +13,7 @@ import api.utils.textures.StarLoaderTexture;
 import glossar.GlossarCategory;
 import glossar.GlossarEntry;
 import glossar.GlossarInit;
-import org.apache.commons.io.IOUtils;
 import org.schema.game.common.data.player.PlayerState;
-import org.schema.schine.resource.ResourceLoader;
 import thederpgamer.edencore.commands.GuideCommand;
 import thederpgamer.edencore.data.DataManager;
 import thederpgamer.edencore.data.misc.ControlBindingData;
@@ -23,16 +21,11 @@ import thederpgamer.edencore.element.ElementManager;
 import thederpgamer.edencore.element.items.PrizeBars;
 import thederpgamer.edencore.manager.ConfigManager;
 import thederpgamer.edencore.manager.EventManager;
-import thederpgamer.edencore.manager.ResourceManager;
 import thederpgamer.edencore.network.PlayerActionCommandPacket;
 import thederpgamer.edencore.network.SendDataPacket;
 import thederpgamer.edencore.network.SyncRequestPacket;
 
-import java.io.IOException;
-import java.nio.file.Files;
 import java.util.Arrays;
-import java.util.zip.ZipEntry;
-import java.util.zip.ZipInputStream;
 
 /**
  * Main class for EdenCore mod.
@@ -43,30 +36,16 @@ import java.util.zip.ZipInputStream;
 public class EdenCore extends StarMod {
 
 	private static EdenCore instance;
-	private final String[] overwriteClasses = {};
-
 	public EdenCore() {
 		instance = this;
 	}
-
-	public static void main(String[] args) {
-	}
-
+	public static void main(String[] args) {}
 	public static EdenCore getInstance() {
 		return instance;
 	}
 
 	@Override
-	public byte[] onClassTransform(String className, byte[] byteCode) {
-		for(String name : overwriteClasses) {
-			if(className.endsWith(name)) return overwriteClass(className, byteCode);
-		}
-		return super.onClassTransform(className, byteCode);
-	}
-
-	@Override
 	public void onEnable() {
-		super.onEnable();
 		instance = this;
 		ConfigManager.initialize(this);
 		EventManager.initialize(this);
@@ -101,7 +80,7 @@ public class EdenCore extends StarMod {
 			@Override
 			public void run() {
 				try {
-					sleep(5000);
+					sleep(7500);
 					DataManager.initialize(true);
 					registerBindings();
 					initializeGlossary();
@@ -117,11 +96,6 @@ public class EdenCore extends StarMod {
 		ElementManager.addItemGroup(new PrizeBars());
 		ElementManager.initialize();
 		logInfo("Initialized Blocks");
-	}
-
-	@Override
-	public void onResourceLoad(ResourceLoader resourceLoader) {
-		ResourceManager.loadResources(resourceLoader);
 	}
 
 	@Override
@@ -183,22 +157,5 @@ public class EdenCore extends StarMod {
 		ControlBindingData.registerBinding(this, "Open Exchange Menu", "Opens the Exchange Menu", 74);
 		ControlBindingData.registerBinding(this, "Open Build Sector Menu", "Opens the Build Sector Menu", 55);
 		logInfo("Registered Bindings");
-	}
-
-	private byte[] overwriteClass(String className, byte[] byteCode) {
-		byte[] bytes = null;
-		try {
-			ZipInputStream file = new ZipInputStream(Files.newInputStream(getSkeleton().getJarFile().toPath()));
-			while(true) {
-				ZipEntry nextEntry = file.getNextEntry();
-				if(nextEntry == null) break;
-				if(nextEntry.getName().endsWith(className + ".class")) bytes = IOUtils.toByteArray(file);
-			}
-			file.close();
-		} catch(IOException exception) {
-			logException("Failed to overwrite class: " + className, exception);
-		}
-		if(bytes != null) return bytes;
-		else return byteCode;
 	}
 }

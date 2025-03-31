@@ -43,9 +43,8 @@ public abstract class DataManager<E extends SerializableData> {
 	}
 
 	public void sendDataToPlayer(PlayerState player, SerializableData data, int type) {
-		SendDataPacket packet = new SendDataPacket(data, type);
-		EdenCore.getInstance().logInfo("[SERVER] Sending data " + data.getUUID() + " to player " + player.getName() + " with type " + getTypeString(type));
-		PacketUtil.sendPacket(player, packet);
+		EdenCore.getInstance().logInfo("[SERVER] Sending " + data.getDataType().name() + " " + data.getUUID() + " to player " + player.getName() + " with type " + getTypeString(type) + ".");
+		PacketUtil.sendPacket(player, new SendDataPacket(data, type)); // Send the packet to the specific player
 	}
 
 	public void sendAllDataToPlayer(PlayerState player) {
@@ -54,11 +53,12 @@ public abstract class DataManager<E extends SerializableData> {
 	}
 
 	public void requestFromServer() {
+		EdenCore.getInstance().logInfo("[CLIENT] Requesting all data from server for " + getDataType() + ".");
 		PacketUtil.sendPacketToServer(new SyncRequestPacket(getDataType()));
 	}
 
 	public void sendPacket(SerializableData data, int type, boolean toServer) {
-		EdenCore.getInstance().logInfo((toServer ? "[CLIENT]" : "[SERVER]") + " Sending data " + data.getUUID() + " with type " + getTypeString(type));
+		EdenCore.getInstance().logInfo((toServer ? "[CLIENT]" : "[SERVER]") + " Sending " + data.getDataType().name() + " " + data.getUUID() + " with type " + getTypeString(type) + ".");
 		if(toServer) PacketUtil.sendPacketToServer(new SendDataPacket(data, type));
 		else sendDataToAllPlayers(data, type);
 	}
@@ -68,22 +68,25 @@ public abstract class DataManager<E extends SerializableData> {
 	}
 
 	public void addData(E data, boolean server) {
+		EdenCore.getInstance().logInfo("Adding " + data.getDataType().name() + " " + data.getUUID() + " to " + (server ? "server" : "client") + " cache.");
 		if(server) addToServerCache(data);
 		else addToClientCache(data);
 	}
 
 	public void removeData(E data, boolean server) {
+		EdenCore.getInstance().logInfo("Removing " + data.getDataType().name() + " " + data.getUUID() + " from " + (server ? "server" : "client") + " cache.");
 		if(server) removeFromServerCache(data);
 		else removeFromClientCache(data);
 	}
 
 	public void updateData(E data, boolean server) {
+		EdenCore.getInstance().logInfo("Updating " + data.getDataType().name() + " " + data.getUUID() + " in " + (server ? "server" : "client") + " cache.");
 		if(server) updateServerCache(data);
 		else updateClientCache(data);
 	}
 
 	public void handlePacket(SerializableData data, int type, boolean server) {
-		EdenCore.getInstance().logInfo(server ? "[SERVER]" : "[CLIENT]" + " Received data " + data.getUUID() + " with type " + getTypeString(type));
+		EdenCore.getInstance().logInfo(server ? "[SERVER]" : "[CLIENT]" + " Received " + data.getDataType() + " " + data.getUUID() + " with type " + getTypeString(type) + ".");
 		switch(type) {
 			case ADD_DATA:
 				addData((E) data, server);
@@ -102,7 +105,7 @@ public abstract class DataManager<E extends SerializableData> {
 		for(E data : cache) if(data.getUUID().equals(uuid)) return data;
 		return null;
 	}
-	
+
 	public abstract Set<E> getServerCache();
 
 	public void addToServerCache(E data) {
@@ -123,8 +126,8 @@ public abstract class DataManager<E extends SerializableData> {
 		PersistentObjectUtil.save(EdenCore.getInstance().getSkeleton());
 		sendDataToAllPlayers(data, UPDATE_DATA);
 	}
-	
-	private String getTypeString(int type) {
+
+	protected String getTypeString(int type) {
 		switch(type) {
 			case ADD_DATA:
 				return "ADD_DATA";
@@ -133,10 +136,10 @@ public abstract class DataManager<E extends SerializableData> {
 			case UPDATE_DATA:
 				return "UPDATE_DATA";
 			default:
-				return "UNKNOWN_TYPE";
+				throw new IllegalArgumentException("Invalid type: " + type + ". Must be one of ADD_DATA, REMOVE_DATA, or UPDATE_DATA.");
 		}
 	}
-	
+
 	public abstract SerializableData.DataType getDataType();
 
 	public abstract Set<E> getClientCache();
@@ -146,6 +149,6 @@ public abstract class DataManager<E extends SerializableData> {
 	public abstract void removeFromClientCache(E data);
 
 	public abstract void updateClientCache(E data);
-	
+
 	public abstract void createMissingData(Object... args);
 }
