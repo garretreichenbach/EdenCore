@@ -70,13 +70,13 @@ public class SendDataPacket extends Packet {
 	public void processPacketOnServer(PlayerState playerState) {
 		switch(dataType) {
 			case PLAYER_DATA:
-				PlayerDataManager.getInstance(false).handlePacket(data, type, true);
+				PlayerDataManager.getInstance(true).handlePacket(data, type, true);
 				break;
 			case EXCHANGE_DATA:
-				ExchangeDataManager.getInstance(false).handlePacket(data, type, true);
+				ExchangeDataManager.getInstance(true).handlePacket(data, type, true);
 				break;
 			case BUILD_SECTOR_DATA:
-				BuildSectorDataManager.getInstance(false).handlePacket(data, type, true);
+				BuildSectorDataManager.getInstance(true).handlePacket(data, type, true);
 				break;
 			default:
 				throw new IllegalStateException("Unexpected value: " + dataType);
