@@ -57,6 +57,7 @@ public class PlayerActionManager {
 					else lastRealTransform.origin.set(playerState.getBuildModePosition().getWorldTransform().origin);
 					playerData.setLastRealTransform(lastRealTransform);
 					Vector3i sector = data.getSector();
+					GameServer.executeAdminCommand("creative_mode " + playerState.getName() + " true");
 					GameServer.executeAdminCommand("change_sector_for " + playerState.getName() + " " + sector.x + " " + sector.y + " " + sector.z);
 					break;
 				case LEAVE_BUILD_SECTOR:
@@ -64,6 +65,7 @@ public class PlayerActionManager {
 					playerData = PlayerDataManager.getInstance(playerState.isOnServer()).getFromName(playerState.getName(), playerState.isOnServer());
 					Vector3i lastRealSector = playerData.getLastRealSector();
 					Transform lastRealTransform1 = playerData.getLastRealTransform();
+					GameServer.executeAdminCommand("creative_mode " + playerState.getName() + " false");
 					GameServer.executeAdminCommand("change_sector " + lastRealSector.x + " " + lastRealSector.y + " " + lastRealSector.z);
 					playerState.getAssingedPlayerCharacter().warpTransformable(lastRealTransform1, true, false, null);
 					break;

@@ -1,6 +1,7 @@
 package thederpgamer.edencore.manager;
 
 import api.common.GameClient;
+import api.common.GameServer;
 import api.listener.Listener;
 import api.listener.events.block.SegmentPieceActivateByPlayer;
 import api.listener.events.block.SegmentPieceActivateEvent;
@@ -9,7 +10,10 @@ import api.listener.events.gui.GUIElementInstansiateEvent;
 import api.listener.events.gui.GUITopBarCreateEvent;
 import api.listener.events.gui.MainWindowTabAddEvent;
 import api.listener.events.input.KeyPressEvent;
+import api.listener.events.player.PlayerChangeSectorEvent;
+import api.listener.events.player.PlayerDeathEvent;
 import api.listener.events.player.PlayerJoinWorldEvent;
+import api.listener.events.player.PlayerSpawnEvent;
 import api.listener.events.world.SimulationJobExecuteEvent;
 import api.mod.StarLoader;
 import api.mod.StarMod;
@@ -22,9 +26,14 @@ import org.schema.game.client.view.gui.catalog.newcatalog.CatalogOptionsButtonPa
 import org.schema.game.client.view.gui.catalog.newcatalog.CatalogPanelNew;
 import org.schema.game.client.view.gui.catalog.newcatalog.CatalogScrollableListNew;
 import org.schema.game.client.view.gui.newgui.GUITopBar;
+import org.schema.game.common.data.element.Element;
+import org.schema.game.common.data.element.ElementCollection;
 import org.schema.game.common.data.player.AbstractOwnerState;
 import org.schema.game.common.data.player.PlayerState;
 import org.schema.game.common.data.player.inventory.Inventory;
+import org.schema.game.common.data.world.RemoteSector;
+import org.schema.game.common.data.world.Sector;
+import org.schema.game.server.data.Galaxy;
 import org.schema.game.server.data.simulation.jobs.SpawnPiratePatrolPartyJob;
 import org.schema.schine.common.language.Lng;
 import org.schema.schine.graphicsengine.core.MouseEvent;
@@ -35,6 +44,7 @@ import org.schema.schine.graphicsengine.forms.gui.newgui.GUIContentPane;
 import org.schema.schine.graphicsengine.forms.gui.newgui.GUIResizableGrabbableWindow;
 import org.schema.schine.graphicsengine.forms.gui.newgui.GUITabbedContent;
 import org.schema.schine.input.InputState;
+import org.schema.schine.network.objects.Sendable;
 import thederpgamer.edencore.EdenCore;
 import thederpgamer.edencore.data.buildsectordata.BuildSectorDataManager;
 import thederpgamer.edencore.data.exchangedata.ExchangeDataManager;
@@ -130,6 +140,53 @@ public class EventManager {
 							event.getWindow().cleanUp();
 						}
 					}
+				}
+			}
+		}, instance);
+		
+		StarLoader.registerListener(PlayerSpawnEvent.class, new Listener<PlayerSpawnEvent>() {
+			@Override
+			public void onEvent(PlayerSpawnEvent event) {
+				if(event.isServer()) GameServer.executeAdminCommand("creative_mode " + event.getPlayer().getName() + " false");
+				if(!event.getPlayer().getOwnerState().isAdmin()) event.getPlayer().getOwnerState().setHasCreativeMode(false);
+				event.getPlayer().getOwnerState().setUseCreativeMode(false);
+			}
+		}, instance);
+		
+		StarLoader.registerListener(PlayerDeathEvent.class, new Listener<PlayerDeathEvent>() {
+			@Override
+			public void onEvent(PlayerDeathEvent event) {
+				if(event.isServer()) GameServer.executeAdminCommand("creative_mode " + event.getPlayer().getName() + " false");
+				if(!event.getPlayer().isAdmin()) event.getPlayer().setHasCreativeMode(false);
+				event.getPlayer().setUseCreativeMode(false);
+			}
+		}, instance);
+		
+		StarLoader.registerListener(PlayerChangeSectorEvent.class, new Listener<PlayerChangeSectorEvent>() {
+			@Override
+			public void onEvent(PlayerChangeSectorEvent event) {
+				try {
+					int oldSectorId = event.getOldSectorId();
+					int newSectorId = event.getNewSectorId();
+					if(oldSectorId == newSectorId) return;
+					if(!event.getPlayerState().isOnServer()) {
+						RemoteSector oldSector = (RemoteSector) event.getPlayerState().getState().getLocalAndRemoteObjectContainer().getLocalObjects().get(oldSectorId);
+						RemoteSector newSector = (RemoteSector) event.getPlayerState().getState().getLocalAndRemoteObjectContainer().getLocalObjects().get(newSectorId);
+						if(BuildSectorDataManager.getInstance(false).isBuildSector(oldSector.clientPos())) {
+							if(!event.getPlayerState().isAdmin()) event.getPlayerState().setHasCreativeMode(false);
+							event.getPlayerState().setUseCreativeMode(false);
+						}
+					} else {
+						Sector oldSector = GameServer.getServerState().getUniverse().getSector(oldSectorId);
+						Sector newSector = GameServer.getServerState().getUniverse().getSector(newSectorId);
+						if(oldSector != null && BuildSectorDataManager.getInstance(true).isBuildSector(oldSector.pos)) {
+							if(event.isServer()) GameServer.executeAdminCommand("creative_mode " + event.getPlayerState().getName() + " false");
+							if(!event.getPlayerState().isAdmin()) event.getPlayerState().setHasCreativeMode(false);
+							event.getPlayerState().setUseCreativeMode(false);
+						}
+					}
+				} catch(Exception exception) {
+					instance.logException("Failed to retrieve sectors during PlayerChangeSectorEvent for player " + event.getPlayerState().getName(), exception);
 				}
 			}
 		}, instance);
@@ -346,6 +403,7 @@ public class EventManager {
 					if(GameClient.getClientState() != null && GameClient.getClientPlayerState() != null) {
 						if(BuildSectorDataManager.getInstance(false).isPlayerInAnyBuildSector(GameClient.getClientPlayerState())) {
 							for(String windowID : disabledWindows) {
+								if(window.getWindowId() == null) continue;
 								if(window.getWindowId().equals(windowID) || window.getWindowId().equals(Lng.str(windowID))) {
 									window.cleanUp();
 									event.setCanceled(true);
