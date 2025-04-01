@@ -241,7 +241,7 @@ public class ExchangeItemScrollableList extends ScrollableTableList<ExchangeData
 				entryListRow.onInit();
 				guiElementList.addWithoutUpdate(entryListRow);
 			} else {
-				GUIClippedRow typeRow = createIconRow(data.getItemId());
+				GUIClippedRow typeRow = (type == ExchangeDialog.ITEMS) ? createIconRow(data.getItemId()) : createMetaRow(data.getItemId());
 				GUIClippedRow nameRow = getSimpleRow(data.getName(), this);
 				GUIClippedRow priceRow = getSimpleRow(String.valueOf(data.getPrice()), this);
 				ExchangeItemScrollableListRow entryListRow = new ExchangeItemScrollableListRow(getState(), data, typeRow, nameRow, priceRow);
@@ -265,6 +265,14 @@ public class ExchangeItemScrollableList extends ScrollableTableList<ExchangeData
 
 	private ScrollableTableList<ExchangeData>.GUIClippedRow createIconRow(short type) {
 		GUIBlockSprite sprite = new GUIBlockSprite(getState(), type);
+		GUIClippedRow iconRowElement = new GUIClippedRow(getState());
+		iconRowElement.attach(sprite);
+		return iconRowElement;
+	}
+
+	private ScrollableTableList<ExchangeData>.GUIClippedRow createMetaRow(short type) {
+		GUIBlockSprite sprite = new GUIBlockSprite(getState(), type);
+		sprite.setLayer(-1);
 		GUIClippedRow iconRowElement = new GUIClippedRow(getState());
 		iconRowElement.attach(sprite);
 		return iconRowElement;
