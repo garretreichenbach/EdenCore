@@ -190,23 +190,22 @@ public class ExchangeItemScrollableList extends ScrollableTableList<ExchangeData
 			GUIClippedRow priceRow = getSimpleRow(String.valueOf(data.getPrice()), this);
 			GUIClippedRow categoryRow = getSimpleRow(data.getCategory(), this);
 			GUIClippedRow massRow = getSimpleRow(StringTools.massFormat(data.getMass()), this);
-			ExchangeItemScrollableListRow entryListRow = new ExchangeItemScrollableListRow(getState(), data, nameRow, producerRow, priceRow, categoryRow, massRow);
-			GUIAncor anchor = new GUIAncor(getState(), pane.getWidth() - 107.0f, 28.0f) {
+			final ExchangeItemScrollableListRow entryListRow = new ExchangeItemScrollableListRow(getState(), data, nameRow, producerRow, priceRow, categoryRow, massRow);
+			GUIAncor anchor = new GUIAncor(getState(), pane.getWidth() - 28.0f, 28.0f) {
 				@Override
 				public void draw() {
-					setWidth(pane.getWidth() - 107.0f);
 					super.draw();
+					setWidth(entryListRow.getWidth());
 				}
 			};
 			GUIHorizontalButtonTablePane buttonTablePane = redrawButtonPane(data, anchor);
 			anchor.attach(buttonTablePane);
-			entryListRow.expanded = new GUIElementList(getState());
 			GUITextOverlayTableInnerDescription description = new GUITextOverlayTableInnerDescription(10, 10, getState());
 			description.onInit();
 			description.setTextSimple(data.getDescription());
-			entryListRow.expanded.add(new GUIListElement(description, getState()));
+			entryListRow.expanded = new GUIElementList(getState());
+//			entryListRow.expanded.add(new GUIListElement(description, getState()));
 			entryListRow.expanded.add(new GUIListElement(anchor, getState()));
-//			entryListRow.expanded.attach(anchor);
 			entryListRow.onInit();
 			guiElementList.addWithoutUpdate(entryListRow);
 		}

@@ -195,6 +195,13 @@ public class BuildSectorData extends SerializableData {
 		}
 	}
 
+	public static SegmentController getEntity(String entityUID) {
+		for(Sendable sendable : GameCommon.getGameState().getState().getLocalAndRemoteObjectContainer().getLocalObjects().values()) {
+			if(sendable instanceof SegmentController && ((SegmentController) sendable).getUniqueIdentifier().equals(entityUID)) return (SegmentController) sendable;
+		}
+		return null;
+	}
+
 	public Vector3i getSector() {
 		return sector;
 	}
@@ -237,8 +244,8 @@ public class BuildSectorData extends SerializableData {
 		BuildSectorDataManager.getInstance(server).updateData(this, server);
 	}
 
-	public boolean getPermissionForEntity(String user, int entityId, PermissionTypes... types) {
-		BuildSectorEntityData entityData = getEntity((SegmentController) GameCommon.getGameObject(entityId));
+	public boolean getPermissionForEntity(String user, String entityUID, PermissionTypes... types) {
+		BuildSectorEntityData entityData = getEntityData(getEntity(entityUID));
 		if(entityData != null) {
 			for(PermissionTypes type : types) {
 				if(entityData.getPermission(user, type)) return true;
@@ -247,21 +254,28 @@ public class BuildSectorData extends SerializableData {
 		return false;
 	}
 
-	public boolean getPermissionForEntityOrGlobal(String user, int entityId, PermissionTypes type) {
-		SegmentController entity = (SegmentController) GameCommon.getGameObject(entityId);
+	public static SegmentController getEntityData(String entityUID) {
+		for(Sendable sendable : GameCommon.getGameState().getState().getLocalAndRemoteObjectContainer().getLocalObjects().values()) {
+			if(sendable instanceof SegmentController && ((SegmentController) sendable).getUniqueIdentifier().equals(entityUID)) return (SegmentController) sendable;
+		}
+		return null;
+	}
+
+	public boolean getPermissionForEntityOrGlobal(String user, String entityUID, PermissionTypes type) {
+		SegmentController entity = getEntity(entityUID);
 		switch(type) {
 			case EDIT_SPECIFIC:
-				return getPermissionForEntity(user, entityId, PermissionTypes.EDIT_SPECIFIC, PermissionTypes.EDIT_ANY) || (getPermission(user, PermissionTypes.EDIT_OWN) && entity.getSpawner().equals(user));
+				return getPermissionForEntity(user, entityUID, PermissionTypes.EDIT_SPECIFIC, PermissionTypes.EDIT_ANY) || (getPermission(user, PermissionTypes.EDIT_OWN) && entity.getSpawner().equals(user));
 			case DELETE_SPECIFIC:
-				return getPermissionForEntity(user, entityId, PermissionTypes.DELETE_SPECIFIC, PermissionTypes.DELETE_ANY) || (getPermission(user, PermissionTypes.DELETE_OWN) && entity.getSpawner().equals(user));
+				return getPermissionForEntity(user, entityUID, PermissionTypes.DELETE_SPECIFIC, PermissionTypes.DELETE_ANY) || (getPermission(user, PermissionTypes.DELETE_OWN) && entity.getSpawner().equals(user));
 			case TOGGLE_AI_SPECIFIC:
-				return getPermissionForEntity(user, entityId, PermissionTypes.TOGGLE_AI_SPECIFIC, PermissionTypes.TOGGLE_AI_ANY) || (getPermission(user, PermissionTypes.TOGGLE_AI_OWN) && entity.getSpawner().equals(user));
+				return getPermissionForEntity(user, entityUID, PermissionTypes.TOGGLE_AI_SPECIFIC, PermissionTypes.TOGGLE_AI_ANY) || (getPermission(user, PermissionTypes.TOGGLE_AI_OWN) && entity.getSpawner().equals(user));
 			case TOGGLE_DAMAGE_SPECIFIC:
-				return getPermissionForEntity(user, entityId, PermissionTypes.TOGGLE_DAMAGE_SPECIFIC, PermissionTypes.TOGGLE_DAMAGE_ANY) || (getPermission(user, PermissionTypes.TOGGLE_DAMAGE_OWN) && entity.getSpawner().equals(user));
+				return getPermissionForEntity(user, entityUID, PermissionTypes.TOGGLE_DAMAGE_SPECIFIC, PermissionTypes.TOGGLE_DAMAGE_ANY) || (getPermission(user, PermissionTypes.TOGGLE_DAMAGE_OWN) && entity.getSpawner().equals(user));
 			case EDIT_ENTITY_PERMISSIONS:
-				return getPermissionForEntity(user, entityId, PermissionTypes.EDIT_ENTITY_PERMISSIONS) || getPermission(user, PermissionTypes.EDIT_PERMISSIONS);
+				return getPermissionForEntity(user, entityUID, PermissionTypes.EDIT_ENTITY_PERMISSIONS) || getPermission(user, PermissionTypes.EDIT_PERMISSIONS);
 			default:
-				return getPermissionForEntity(user, entityId, type);
+				return getPermissionForEntity(user, entityUID, type);
 		}
 	}
 
@@ -276,26 +290,22 @@ public class BuildSectorData extends SerializableData {
 		for(Sendable sendable : GameCommon.getGameState().getState().getLocalAndRemoteObjectContainer().getLocalObjects().values()) {
 			if(sendable instanceof SegmentController) {
 				SegmentController entity = (SegmentController) sendable;
-				if(entity.getSector(new Vector3i()).equals(sector) && entity.existsInState()) addEntity(entity, entity.isOnServer());
-				else throw new IllegalStateException("This shouldn't ever happen unless prune() somehow broke!");
+				if(entity.getSector(new Vector3i()).equals(sector) && entity.existsInState() && getEntityData(entity) == null) addEntity(entity, entity.isOnServer());
 			}
 		}
 	}
 	
 	public void prune() {
-		boolean onServer = false;
 		ObjectArrayList<BuildSectorEntityData> toRemove = new ObjectArrayList<>();
 		for(BuildSectorEntityData entityData : entities) {
-			if(entityData.getEntity() == null || !entityData.getEntity().existsInState() || !entityData.getEntity().getSector(new Vector3i()).equals(sector)) {
+			if(entityData.getEntity() == null || !entityData.getEntity().getSector(new Vector3i()).equals(sector)) {
 				toRemove.add(entityData);
-				onServer = entityData.getEntity().isOnServer();
 			}
 		}
 		for(BuildSectorEntityData entityData : toRemove) entities.remove(entityData); //Prevent concurrency issues
-		if(!toRemove.isEmpty()) BuildSectorDataManager.getInstance(onServer).updateData(this, onServer);
 	}
 
-	public BuildSectorEntityData getEntity(SegmentController entity) {
+	public BuildSectorEntityData getEntityData(SegmentController entity) {
 		if(entities == null) entities = new HashSet<>();
 		for(BuildSectorEntityData entityData : entities) {
 			if(entityData.getEntity().equals(entity)) return entityData;
@@ -320,10 +330,10 @@ public class BuildSectorData extends SerializableData {
 	}
 
 	public void updateEntity(SegmentController entity, boolean server) {
-		BuildSectorEntityData entityData = getEntity(entity);
+		BuildSectorEntityData entityData = getEntityData(entity);
 		if(entityData == null) addEntity(entity, server);
 		else {
-			entityData.entityID = entity.getId();
+			entityData.entityUID = entity.getUniqueIdentifier();
 			entityData.entityType = EntityType.fromEntity(entity);
 			BuildSectorDataManager.getInstance(server).updateData(this, server);
 		}
@@ -424,8 +434,8 @@ public class BuildSectorData extends SerializableData {
 		return new HashSet<>(permissions.keySet());
 	}
 
-	public HashMap<PermissionTypes, Boolean> getPermissionsForEntity(int entityID, String username) {
-		BuildSectorEntityData entityData = getEntity((SegmentController) GameCommon.getGameObject(entityID));
+	public HashMap<PermissionTypes, Boolean> getPermissionsForEntity(String entityUID, String username) {
+		BuildSectorEntityData entityData = getEntityData(getEntity(entityUID));
 		if(entityData != null) return entityData.permissions.get(username);
 		else return null;
 	}
@@ -435,16 +445,9 @@ public class BuildSectorData extends SerializableData {
 		return permissions.get(username);
 	}
 
-	public void setPermissionForEntity(int entityID, String username, PermissionTypes type, boolean value, boolean server) {
-		BuildSectorEntityData entityData = getEntity((SegmentController) GameCommon.getGameObject(entityID));
+	public void setPermissionForEntity(String entityUID, String username, PermissionTypes type, boolean value, boolean server) {
+		BuildSectorEntityData entityData = getEntityData(getEntity(entityUID));
 		if(entityData != null) entityData.setPermission(username, type, value, server);
-	}
-
-	public BuildSectorEntityData getEntityByID(int id) {
-		for(BuildSectorEntityData entityData : entities) {
-			if(entityData.getEntityID() == id) return entityData;
-		}
-		return null;
 	}
 
 	public enum EntityType {
@@ -466,13 +469,13 @@ public class BuildSectorData extends SerializableData {
 
 		private static final byte VERSION = 0;
 
-		private int entityID;
+		private String entityUID;
 		private EntityType entityType;
 		protected HashMap<String, HashMap<PermissionTypes, Boolean>> permissions = new HashMap<>();
 
 		public BuildSectorEntityData(SegmentController entity) {
 			super(DataType.BUILD_SECTOR_ENTITY_DATA);
-			entityID = entity.getId();
+			entityUID = entity.getUniqueIdentifier();
 			entityType = EntityType.fromEntity(entity);
 			setDefaultEntityPerms(entity.getSpawner(), OWNER);
 		}
@@ -492,7 +495,7 @@ public class BuildSectorData extends SerializableData {
 			JSONObject data = new JSONObject();
 			data.put("version", VERSION);
 			data.put("uuid", getUUID());
-			data.put("entityID", entityID);
+			data.put("entityUID", entityUID);
 			data.put("entityType", entityType.name());
 			JSONArray permissionsArray = new JSONArray();
 			for(String name : permissions.keySet()) {
@@ -512,7 +515,7 @@ public class BuildSectorData extends SerializableData {
 			permissions = new HashMap<>();
 			byte version = (byte) data.getInt("version");
 			dataUUID = data.getString("uuid");
-			entityID = data.getInt("entityID");
+			entityUID = data.getString("entityUID");
 			entityType = EntityType.valueOf(data.getString("entityType"));
 			JSONArray permissionsArray = data.getJSONArray("permissions");
 			for(int i = 0; i < permissionsArray.length(); i++) {
@@ -533,7 +536,7 @@ public class BuildSectorData extends SerializableData {
 		public void serializeNetwork(PacketWriteBuffer writeBuffer) throws IOException {
 			writeBuffer.writeByte(VERSION);
 			writeBuffer.writeString(dataUUID);
-			writeBuffer.writeInt(entityID);
+			writeBuffer.writeString(entityUID);
 			writeBuffer.writeString(entityType.name());
 			writeBuffer.writeInt(permissions.size());
 			for(String name : permissions.keySet()) {
@@ -551,7 +554,7 @@ public class BuildSectorData extends SerializableData {
 			permissions = new HashMap<>();
 			byte version = readBuffer.readByte();
 			dataUUID = readBuffer.readString();
-			entityID = readBuffer.readInt();
+			entityUID = readBuffer.readString();
 			entityType = EntityType.valueOf(readBuffer.readString().toUpperCase(Locale.ENGLISH));
 			int permissionCount = readBuffer.readInt();
 			for(int i = 0; i < permissionCount; i++) {
@@ -605,12 +608,15 @@ public class BuildSectorData extends SerializableData {
 			}
 		}
 
-		public int getEntityID() {
-			return entityID;
+		public String getEntityUID() {
+			return entityUID;
 		}
 
 		public SegmentController getEntity() {
-			return (SegmentController) GameCommon.getGameObject(entityID);
+			for(Sendable sendable : GameCommon.getGameState().getState().getLocalAndRemoteObjectContainer().getLocalObjects().values()) {
+				if(sendable instanceof SegmentController && ((SegmentController) sendable).getUniqueIdentifier().equals(entityUID)) return (SegmentController) sendable;
+			}
+			return null;
 		}
 
 		public EntityType getEntityType() {

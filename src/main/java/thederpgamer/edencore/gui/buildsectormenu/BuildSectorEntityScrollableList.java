@@ -38,15 +38,6 @@ public class BuildSectorEntityScrollableList extends ScrollableTableList<BuildSe
 
 	@Override
 	public void initColumns() {
-		addColumn("ID", 5.0f, new Comparator<BuildSectorData.BuildSectorEntityData>() {
-			@Override
-			public int compare(BuildSectorData.BuildSectorEntityData o1, BuildSectorData.BuildSectorEntityData o2) {
-				return Integer.compare(
-						o1.getEntityID(), // Get the first entity ID
-						o2.getEntityID()  // Get the second entity ID
-				);
-			}
-		});
 		addColumn("Name", 7.0f, new Comparator<BuildSectorData.BuildSectorEntityData>() {
 			@Override
 			public int compare(BuildSectorData.BuildSectorEntityData o1, BuildSectorData.BuildSectorEntityData o2) {
@@ -112,20 +103,15 @@ public class BuildSectorEntityScrollableList extends ScrollableTableList<BuildSe
 			GUIClippedRow nameRow = getSimpleRow(entityData.getEntity().getName(), this);
 			GUIClippedRow typeRow = getSimpleRow(entityData.getEntity().getType().getName(), this);
 			GUIClippedRow massRow = getSimpleRow(StringTools.massFormat(entityData.getEntity().getMass()), this);
-
-			BuildSectorEntityScrollableListRow entryListRow = new BuildSectorEntityScrollableListRow(getState(), entityData, nameRow, typeRow, massRow);
-			guiElementList.add(entryListRow);
-			GUIAncor anchor = new GUIAncor(getState(), parent.getWidth() - 107.0f, 56.0f) {
+			final BuildSectorEntityScrollableListRow entryListRow = new BuildSectorEntityScrollableListRow(getState(), entityData, nameRow, typeRow, massRow);
+			GUIAncor anchor = new GUIAncor(getState(), parent.getWidth() - 28.0f, 56.0f) {
 				@Override
 				public void draw() {
-					setWidth(parent.getWidth() - 107.0f);
 					super.draw();
+					setWidth(entryListRow.getWidth());
 				}
 			};
-			if(buttonPane != null) {
-				anchor.detach(buttonPane);
-				buttonPane.cleanUp();
-			}
+			if(buttonPane != null) buttonPane.cleanUp();
 			redrawButtonPane(entityData, anchor);
 			anchor.attach(buttonPane);
 			entryListRow.expanded = new GUIElementList(getState());
@@ -149,7 +135,7 @@ public class BuildSectorEntityScrollableList extends ScrollableTableList<BuildSe
 
 			@Override
 			public boolean isOccluded() {
-				return !buildSectorData.getPermissionForEntityOrGlobal(user, entityData.getEntityID(), BuildSectorData.PermissionTypes.EDIT_SPECIFIC);
+				return !buildSectorData.getPermissionForEntityOrGlobal(user, entityData.getEntityUID(), BuildSectorData.PermissionTypes.EDIT_SPECIFIC);
 			}
 		}, new GUIActivationCallback() {
 			@Override
@@ -159,7 +145,7 @@ public class BuildSectorEntityScrollableList extends ScrollableTableList<BuildSe
 
 			@Override
 			public boolean isActive(InputState inputState) {
-				return buildSectorData.getPermissionForEntityOrGlobal(user, entityData.getEntityID(), BuildSectorData.PermissionTypes.EDIT_SPECIFIC);
+				return buildSectorData.getPermissionForEntityOrGlobal(user, entityData.getEntityUID(), BuildSectorData.PermissionTypes.EDIT_SPECIFIC);
 			}
 		});
 		buttonPane.addButton(1, 0, "EDIT PERMISSIONS", GUIHorizontalArea.HButtonColor.ORANGE, new GUICallback() {
@@ -172,7 +158,7 @@ public class BuildSectorEntityScrollableList extends ScrollableTableList<BuildSe
 
 			@Override
 			public boolean isOccluded() {
-				return !buildSectorData.getPermissionForEntityOrGlobal(user, entityData.getEntityID(), BuildSectorData.PermissionTypes.EDIT_ENTITY_PERMISSIONS);
+				return !buildSectorData.getPermissionForEntityOrGlobal(user, entityData.getEntityUID(), BuildSectorData.PermissionTypes.EDIT_ENTITY_PERMISSIONS);
 			}
 		}, new GUIActivationCallback() {
 			@Override
@@ -182,7 +168,7 @@ public class BuildSectorEntityScrollableList extends ScrollableTableList<BuildSe
 
 			@Override
 			public boolean isActive(InputState inputState) {
-				return buildSectorData.getPermissionForEntityOrGlobal(user, entityData.getEntityID(), BuildSectorData.PermissionTypes.EDIT_ENTITY_PERMISSIONS);
+				return buildSectorData.getPermissionForEntityOrGlobal(user, entityData.getEntityUID(), BuildSectorData.PermissionTypes.EDIT_ENTITY_PERMISSIONS);
 			}
 		});
 		if(entityData.isAIActive()) {
@@ -197,7 +183,7 @@ public class BuildSectorEntityScrollableList extends ScrollableTableList<BuildSe
 
 				@Override
 				public boolean isOccluded() {
-					return !buildSectorData.getPermissionForEntityOrGlobal(user, entityData.getEntityID(), BuildSectorData.PermissionTypes.TOGGLE_AI_SPECIFIC);
+					return !buildSectorData.getPermissionForEntityOrGlobal(user, entityData.getEntityUID(), BuildSectorData.PermissionTypes.TOGGLE_AI_SPECIFIC);
 				}
 			}, new GUIActivationCallback() {
 				@Override
@@ -207,7 +193,7 @@ public class BuildSectorEntityScrollableList extends ScrollableTableList<BuildSe
 
 				@Override
 				public boolean isActive(InputState inputState) {
-					return buildSectorData.getPermissionForEntityOrGlobal(user, entityData.getEntityID(), BuildSectorData.PermissionTypes.TOGGLE_AI_SPECIFIC);
+					return buildSectorData.getPermissionForEntityOrGlobal(user, entityData.getEntityUID(), BuildSectorData.PermissionTypes.TOGGLE_AI_SPECIFIC);
 				}
 			});
 		} else {
@@ -222,7 +208,7 @@ public class BuildSectorEntityScrollableList extends ScrollableTableList<BuildSe
 
 				@Override
 				public boolean isOccluded() {
-					return !buildSectorData.getPermissionForEntityOrGlobal(user, entityData.getEntityID(), BuildSectorData.PermissionTypes.TOGGLE_AI_SPECIFIC);
+					return !buildSectorData.getPermissionForEntityOrGlobal(user, entityData.getEntityUID(), BuildSectorData.PermissionTypes.TOGGLE_AI_SPECIFIC);
 				}
 			}, new GUIActivationCallback() {
 				@Override
@@ -232,7 +218,7 @@ public class BuildSectorEntityScrollableList extends ScrollableTableList<BuildSe
 
 				@Override
 				public boolean isActive(InputState inputState) {
-					return buildSectorData.getPermissionForEntityOrGlobal(user, entityData.getEntityID(), BuildSectorData.PermissionTypes.TOGGLE_AI_SPECIFIC);
+					return buildSectorData.getPermissionForEntityOrGlobal(user, entityData.getEntityUID(), BuildSectorData.PermissionTypes.TOGGLE_AI_SPECIFIC);
 				}
 			});
 		}
@@ -247,7 +233,7 @@ public class BuildSectorEntityScrollableList extends ScrollableTableList<BuildSe
 
 			@Override
 			public boolean isOccluded() {
-				return !buildSectorData.getPermissionForEntityOrGlobal(user, entityData.getEntityID(), BuildSectorData.PermissionTypes.DELETE_SPECIFIC);
+				return !buildSectorData.getPermissionForEntityOrGlobal(user, entityData.getEntityUID(), BuildSectorData.PermissionTypes.DELETE_SPECIFIC);
 			}
 		}, new GUIActivationCallback() {
 			@Override
@@ -257,7 +243,7 @@ public class BuildSectorEntityScrollableList extends ScrollableTableList<BuildSe
 
 			@Override
 			public boolean isActive(InputState inputState) {
-				return buildSectorData.getPermissionForEntityOrGlobal(user, entityData.getEntityID(), BuildSectorData.PermissionTypes.DELETE_SPECIFIC);
+				return buildSectorData.getPermissionForEntityOrGlobal(user, entityData.getEntityUID(), BuildSectorData.PermissionTypes.DELETE_SPECIFIC);
 			}
 		});
 		buttonPane.addButton(1, 1, "DELETE TURRETS", GUIHorizontalArea.HButtonColor.RED, new GUICallback() {
@@ -271,7 +257,7 @@ public class BuildSectorEntityScrollableList extends ScrollableTableList<BuildSe
 
 			@Override
 			public boolean isOccluded() {
-				return !buildSectorData.getPermissionForEntityOrGlobal(user, entityData.getEntityID(), BuildSectorData.PermissionTypes.DELETE_SPECIFIC);
+				return !buildSectorData.getPermissionForEntityOrGlobal(user, entityData.getEntityUID(), BuildSectorData.PermissionTypes.DELETE_SPECIFIC);
 			}
 		}, new GUIActivationCallback() {
 			@Override
@@ -281,7 +267,7 @@ public class BuildSectorEntityScrollableList extends ScrollableTableList<BuildSe
 
 			@Override
 			public boolean isActive(InputState inputState) {
-				return buildSectorData.getPermissionForEntityOrGlobal(user, entityData.getEntityID(), BuildSectorData.PermissionTypes.DELETE_SPECIFIC);
+				return buildSectorData.getPermissionForEntityOrGlobal(user, entityData.getEntityUID(), BuildSectorData.PermissionTypes.DELETE_SPECIFIC);
 			}
 		});
 	}

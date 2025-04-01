@@ -19,9 +19,9 @@ public class BuildSectorEditEntityUserPermissionsDialog extends PlayerInput {
 	
 	private final BuildSectorEditEntityUserPermissionsPanel panel;
 	
-	public BuildSectorEditEntityUserPermissionsDialog(int entityID, String username, BuildSectorData buildSectorData) {
+	public BuildSectorEditEntityUserPermissionsDialog(String entityUID, String username, BuildSectorData buildSectorData) {
 		super(GameClient.getClientState());
-		(panel = new BuildSectorEditEntityUserPermissionsPanel(getState(), this, username, buildSectorData, entityID)).onInit();
+		(panel = new BuildSectorEditEntityUserPermissionsPanel(getState(), this, username, buildSectorData, entityUID)).onInit();
 	}
 
 	@Override
@@ -43,13 +43,13 @@ public class BuildSectorEditEntityUserPermissionsDialog extends PlayerInput {
 
 		private final BuildSectorData buildSectorData;
 		private final String username;
-		private final int entityID;
+		private final String entityUID;
 
-		public BuildSectorEditEntityUserPermissionsPanel(InputState state, GUICallback guiCallback, String username, BuildSectorData buildSectorData, int entityID) {
+		public BuildSectorEditEntityUserPermissionsPanel(InputState state, GUICallback guiCallback, String username, BuildSectorData buildSectorData, String entityUID) {
 			super("BuildSectorEditEntityUserPermissionsPanel", state, guiCallback, "Edit User Permissions", "");
 			this.username = username;
 			this.buildSectorData = buildSectorData;
-			this.entityID = entityID;
+			this.entityUID = entityUID;
 		}
 
 		@Override
@@ -57,7 +57,7 @@ public class BuildSectorEditEntityUserPermissionsDialog extends PlayerInput {
 			super.onInit();
 			GUIContentPane contentPane = ((GUIDialogWindow) background).getMainContentPane();
 			contentPane.setTextBoxHeightLast((int) (getHeight() - 50));
-			BuildSectorPermissionsScrollableList permissionsScrollableList = new BuildSectorPermissionsScrollableList(getState(), contentPane.getContent(0), username, buildSectorData, entityID);
+			BuildSectorPermissionsScrollableList permissionsScrollableList = new BuildSectorPermissionsScrollableList(getState(), contentPane.getContent(0), username, buildSectorData, entityUID);
 			permissionsScrollableList.onInit();
 			contentPane.getContent(0).attach(permissionsScrollableList);
 		}

@@ -68,11 +68,11 @@ public class PlayerBankingTransactionScrollableList extends ScrollableTableList<
 			GUIClippedRow subjectRow = getSimpleRow(data.getSubject(), this);
 			GUIClippedRow fromRow = getSimpleRow(PlayerDataManager.getInstance(false).getFromUUID(data.getFromUUID(), false).getName(), this);
 			GUIClippedRow timeRow = getSimpleRow(DateUtils.getTimeFormatted(data.getTime()), this);
-			PlayerBankingTransactionScrollableListRow row = new PlayerBankingTransactionScrollableListRow(getState(), data, subjectRow, fromRow, timeRow);
-			GUIAncor anchor = new GUIAncor(getState(), parent.getWidth() - 107.0f, 52.0f) {
+			final PlayerBankingTransactionScrollableListRow row = new PlayerBankingTransactionScrollableListRow(getState(), data, subjectRow, fromRow, timeRow);
+			GUIAncor anchor = new GUIAncor(getState(), parent.getWidth() - 28.0f, 52.0f) {
 				@Override
 				public void draw() {
-					setWidth(parent.getWidth() - 107.0f);
+					setWidth(row.getWidth());
 					super.draw();
 				}
 			};

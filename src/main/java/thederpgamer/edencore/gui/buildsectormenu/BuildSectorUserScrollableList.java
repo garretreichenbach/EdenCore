@@ -19,18 +19,18 @@ import java.util.Set;
 public class BuildSectorUserScrollableList extends ScrollableTableList<String> implements GUIActiveInterface {
 
 	private final GUIElement parent;
-	private final int entityID;
+	private final String entityUID;
 	private final BuildSectorData buildSectorData;
 
-	public BuildSectorUserScrollableList(InputState state, GUIElement parent, BuildSectorData buildSectorData, int entityID) {
+	public BuildSectorUserScrollableList(InputState state, GUIElement parent, BuildSectorData buildSectorData, String entityUID) {
 		super(state, 100, 100, parent);
 		this.parent = parent;
 		this.buildSectorData = buildSectorData;
-		this.entityID = entityID;
+		this.entityUID = entityUID;
 	}
 
 	public BuildSectorUserScrollableList(InputState state, GUIElement parent, BuildSectorData buildSectorData) {
-		this(state, parent, buildSectorData, -1);
+		this(state, parent, buildSectorData, null);
 	}
 
 	@Override
@@ -76,15 +76,15 @@ public class BuildSectorUserScrollableList extends ScrollableTableList<String> i
 				@Override
 				public void callback(GUIElement guiElement, MouseEvent mouseEvent) {
 					if(mouseEvent.pressedLeftMouse()) {
-						if(entityID != -1) (new BuildSectorEditUserPermissionsDialog(username, buildSectorData)).activate();
-						else (new BuildSectorEditEntityUserPermissionsDialog(entityID, username, buildSectorData)).activate();
+						if(entityUID != null) (new BuildSectorEditUserPermissionsDialog(username, buildSectorData)).activate();
+						else (new BuildSectorEditEntityUserPermissionsDialog(entityUID, username, buildSectorData)).activate();
 					}
 				}
 
 				@Override
 				public boolean isOccluded() {
 					if(!getState().getController().getPlayerInputs().isEmpty() && !getState().getController().getPlayerInputs().contains(getDialog())) return true;
-					if(entityID != -1) return !buildSectorData.getPermissionForEntityOrGlobal(username, entityID, BuildSectorData.PermissionTypes.EDIT_ENTITY_PERMISSIONS);
+					if(entityUID != null) return !buildSectorData.getPermissionForEntityOrGlobal(username, entityUID, BuildSectorData.PermissionTypes.EDIT_ENTITY_PERMISSIONS);
 					else return !buildSectorData.getPermission(username, BuildSectorData.PermissionTypes.EDIT_PERMISSIONS);
 				}
 			}, new GUIActivationCallback() {
@@ -95,7 +95,7 @@ public class BuildSectorUserScrollableList extends ScrollableTableList<String> i
 
 				@Override
 				public boolean isActive(InputState inputState) {
-					if(entityID != -1) return buildSectorData.getPermissionForEntityOrGlobal(username, entityID, BuildSectorData.PermissionTypes.EDIT_ENTITY_PERMISSIONS);
+					if(entityUID != null) return buildSectorData.getPermissionForEntityOrGlobal(username, entityUID, BuildSectorData.PermissionTypes.EDIT_ENTITY_PERMISSIONS);
 					return buildSectorData.getPermission(username, BuildSectorData.PermissionTypes.EDIT_PERMISSIONS);
 				}
 			});

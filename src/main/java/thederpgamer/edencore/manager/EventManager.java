@@ -174,6 +174,7 @@ public class EventManager {
 					if(!event.getPlayerState().isOnServer()) {
 						RemoteSector oldSector = (RemoteSector) event.getPlayerState().getState().getLocalAndRemoteObjectContainer().getLocalObjects().get(oldSectorId);
 						RemoteSector newSector = (RemoteSector) event.getPlayerState().getState().getLocalAndRemoteObjectContainer().getLocalObjects().get(newSectorId);
+						if(oldSector == null || newSector == null) return;
 						if(BuildSectorDataManager.getInstance(false).isBuildSector(oldSector.clientPos())) {
 							if(!event.getPlayerState().isAdmin()) event.getPlayerState().setHasCreativeMode(false);
 							event.getPlayerState().setUseCreativeMode(false);
@@ -181,7 +182,8 @@ public class EventManager {
 					} else {
 						Sector oldSector = GameServer.getServerState().getUniverse().getSector(oldSectorId);
 						Sector newSector = GameServer.getServerState().getUniverse().getSector(newSectorId);
-						if(oldSector != null && BuildSectorDataManager.getInstance(true).isBuildSector(oldSector.pos)) {
+						if(oldSector == null || newSector == null) return;
+						if(BuildSectorDataManager.getInstance(true).isBuildSector(oldSector.pos)) {
 							if(!event.getPlayerState().isAdmin()) event.getPlayerState().setHasCreativeMode(false);
 							event.getPlayerState().setUseCreativeMode(false);
 						}
