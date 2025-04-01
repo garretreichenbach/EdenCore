@@ -169,8 +169,7 @@ public class BankingDialog extends PlayerInput {
 								try {
 									amount = Long.parseLong(amountText);
 									playerData = PlayerDataManager.getInstance(false).getFromName(playerText, false);
-								} catch(Exception ignored) {
-								}
+								} catch(Exception ignored) {}
 								if(amount > 0) {
 									if(playerData == null) {
 										PlayerUtils.sendMessage(GameClient.getClientPlayerState(), "Invalid player name.");
