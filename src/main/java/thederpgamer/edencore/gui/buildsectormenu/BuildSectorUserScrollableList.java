@@ -61,7 +61,7 @@ public class BuildSectorUserScrollableList extends ScrollableTableList<String> i
 		guiElementList.addObserver(this);
 		for(final String username : set) {
 			GUIClippedRow nameRow = getSimpleRow(username, this);
-			final BuildSectorUserScrollableListRow entryListRow = new BuildSectorUserScrollableListRow(getState(), username, nameRow);
+			BuildSectorUserScrollableListRow entryListRow = new BuildSectorUserScrollableListRow(getState(), username, nameRow);
 			GUIAncor anchor = new GUIAncor(getState(), parent.getWidth() - 28.0f, 28.0f) {
 				@Override
 				public void draw() {
@@ -83,7 +83,8 @@ public class BuildSectorUserScrollableList extends ScrollableTableList<String> i
 
 				@Override
 				public boolean isOccluded() {
-					if(!getState().getController().getPlayerInputs().isEmpty() && !getState().getController().getPlayerInputs().contains(getDialog())) return true;
+					if(isObscured()) return true;
+					if(buildSectorData.getOwner().equals(GameClient.getClientPlayerState().getName())) return true;
 					if(entityUID != null) return !buildSectorData.getPermissionForEntityOrGlobal(username, entityUID, BuildSectorData.PermissionTypes.EDIT_ENTITY_PERMISSIONS);
 					else return !buildSectorData.getPermission(username, BuildSectorData.PermissionTypes.EDIT_PERMISSIONS);
 				}
@@ -95,6 +96,7 @@ public class BuildSectorUserScrollableList extends ScrollableTableList<String> i
 
 				@Override
 				public boolean isActive(InputState inputState) {
+					if(buildSectorData.getOwner().equals(GameClient.getClientPlayerState().getName())) return false;
 					if(entityUID != null) return buildSectorData.getPermissionForEntityOrGlobal(username, entityUID, BuildSectorData.PermissionTypes.EDIT_ENTITY_PERMISSIONS);
 					return buildSectorData.getPermission(username, BuildSectorData.PermissionTypes.EDIT_PERMISSIONS);
 				}
@@ -110,9 +112,9 @@ public class BuildSectorUserScrollableList extends ScrollableTableList<String> i
 
 				@Override
 				public boolean isOccluded() {
-					if(!getState().getController().getPlayerInputs().isEmpty() && !getState().getController().getPlayerInputs().contains(getDialog())) return true;
+					if(buildSectorData.getOwner().equals(GameClient.getClientPlayerState().getName())) return true;
+					if(isObscured()) return true;
 					return !buildSectorData.getPermission(username, BuildSectorData.PermissionTypes.KICK) || buildSectorData.getOwner().equals(GameClient.getClientPlayerState().getName());
-
 				}
 			}, new GUIActivationCallback() {
 				@Override
@@ -135,8 +137,11 @@ public class BuildSectorUserScrollableList extends ScrollableTableList<String> i
 		guiElementList.updateDim();
 	}
 
-	private BuildSectorDialog getDialog() {
-		return BuildSectorDialog.getInstance();
+	private static boolean isObscured() {
+		for(DialogInterface dialogInterface : GameClient.getClientState().getController().getPlayerInputs()) {
+			if(dialogInterface instanceof BuildSectorEditEntityPermissionsDialog || dialogInterface instanceof BuildSectorEditEntityUserPermissionsDialog) return true;
+		}
+		return false;
 	}
 
 	public class BuildSectorUserScrollableListRow extends ScrollableTableList<String>.Row {

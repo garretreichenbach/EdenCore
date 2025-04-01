@@ -65,6 +65,11 @@ public class BuildSectorData extends SerializableData {
 	}
 
 	@Override
+	public int hashCode() {
+		return sector.hashCode() + dataUUID.hashCode();
+	}
+
+	@Override
 	public JSONObject serialize() {
 		doEntityUpdateCheck();
 		JSONObject data = new JSONObject();
@@ -294,7 +299,7 @@ public class BuildSectorData extends SerializableData {
 			}
 		}
 	}
-	
+
 	public void prune() {
 		ObjectArrayList<BuildSectorEntityData> toRemove = new ObjectArrayList<>();
 		for(BuildSectorEntityData entityData : entities) {
@@ -307,26 +312,33 @@ public class BuildSectorData extends SerializableData {
 
 	public BuildSectorEntityData getEntityData(SegmentController entity) {
 		if(entities == null) entities = new HashSet<>();
+		if(entity == null) return null;
 		for(BuildSectorEntityData entityData : entities) {
-			if(entityData.getEntity().equals(entity)) return entityData;
+			if(entityData.getEntity() != null) {
+				if(entityData.getEntity().equals(entity)) return entityData;
+			}
 		}
 		return null;
 	}
 
 	public void addEntity(SegmentController entity, boolean server) {
-		entities.add(new BuildSectorEntityData(entity));
+		BuildSectorEntityData data = new BuildSectorEntityData(entity);
+		data.setDefaultEntityPerms(owner, OWNER);
+		entities.add(data);
 		BuildSectorDataManager.getInstance(server).updateData(this, server);
 	}
 
 	public void removeEntity(SegmentController entity, boolean server) {
 		if(entities == null) entities = new HashSet<>();
+		BuildSectorEntityData toRemove = null;
 		for(BuildSectorEntityData entityData : entities) {
 			if(entityData.getEntity().equals(entity)) {
+				toRemove = entityData;
 				entityData.delete(); // Clean up the entity if needed
 				break; // Found the entity to remove, exit loop
 			}
 		}
-		BuildSectorDataManager.getInstance(server).updateData(this, server);
+		if(toRemove != null) entities.remove(toRemove);
 	}
 
 	public void updateEntity(SegmentController entity, boolean server) {
@@ -689,7 +701,8 @@ public class BuildSectorData extends SerializableData {
 		}
 
 		public void delete() {
-			EntityUtils.delete(getEntity());
+			SegmentController entity = getEntity();
+			if(entity != null) EntityUtils.delete(entity);
 		}
 
 		public void deleteTurrets() {

@@ -1,6 +1,8 @@
 package thederpgamer.edencore.gui.buildsectormenu;
 
+import api.common.GameClient;
 import org.schema.common.util.StringTools;
+import org.schema.game.client.controller.PlayerInput;
 import org.schema.game.client.data.GameClientState;
 import org.schema.schine.graphicsengine.core.MouseEvent;
 import org.schema.schine.graphicsengine.forms.gui.*;
@@ -135,6 +137,7 @@ public class BuildSectorEntityScrollableList extends ScrollableTableList<BuildSe
 
 			@Override
 			public boolean isOccluded() {
+				if(isObscured()) return true;
 				return !buildSectorData.getPermissionForEntityOrGlobal(user, entityData.getEntityUID(), BuildSectorData.PermissionTypes.EDIT_SPECIFIC);
 			}
 		}, new GUIActivationCallback() {
@@ -158,6 +161,7 @@ public class BuildSectorEntityScrollableList extends ScrollableTableList<BuildSe
 
 			@Override
 			public boolean isOccluded() {
+				if(isObscured()) return true;
 				return !buildSectorData.getPermissionForEntityOrGlobal(user, entityData.getEntityUID(), BuildSectorData.PermissionTypes.EDIT_ENTITY_PERMISSIONS);
 			}
 		}, new GUIActivationCallback() {
@@ -183,6 +187,7 @@ public class BuildSectorEntityScrollableList extends ScrollableTableList<BuildSe
 
 				@Override
 				public boolean isOccluded() {
+					if(isObscured()) return true;
 					return !buildSectorData.getPermissionForEntityOrGlobal(user, entityData.getEntityUID(), BuildSectorData.PermissionTypes.TOGGLE_AI_SPECIFIC);
 				}
 			}, new GUIActivationCallback() {
@@ -208,6 +213,7 @@ public class BuildSectorEntityScrollableList extends ScrollableTableList<BuildSe
 
 				@Override
 				public boolean isOccluded() {
+					if(isObscured()) return true;
 					return !buildSectorData.getPermissionForEntityOrGlobal(user, entityData.getEntityUID(), BuildSectorData.PermissionTypes.TOGGLE_AI_SPECIFIC);
 				}
 			}, new GUIActivationCallback() {
@@ -226,13 +232,14 @@ public class BuildSectorEntityScrollableList extends ScrollableTableList<BuildSe
 			@Override
 			public void callback(GUIElement guiElement, MouseEvent mouseEvent) {
 				if(mouseEvent.pressedLeftMouse()) {
-					entityData.delete();
+					buildSectorData.removeEntity(entityData.getEntity(), false);
 					clear();
 				}
 			}
 
 			@Override
 			public boolean isOccluded() {
+				if(isObscured()) return true;
 				return !buildSectorData.getPermissionForEntityOrGlobal(user, entityData.getEntityUID(), BuildSectorData.PermissionTypes.DELETE_SPECIFIC);
 			}
 		}, new GUIActivationCallback() {
@@ -257,6 +264,7 @@ public class BuildSectorEntityScrollableList extends ScrollableTableList<BuildSe
 
 			@Override
 			public boolean isOccluded() {
+				if(isObscured()) return true;
 				return !buildSectorData.getPermissionForEntityOrGlobal(user, entityData.getEntityUID(), BuildSectorData.PermissionTypes.DELETE_SPECIFIC);
 			}
 		}, new GUIActivationCallback() {
@@ -270,6 +278,13 @@ public class BuildSectorEntityScrollableList extends ScrollableTableList<BuildSe
 				return buildSectorData.getPermissionForEntityOrGlobal(user, entityData.getEntityUID(), BuildSectorData.PermissionTypes.DELETE_SPECIFIC);
 			}
 		});
+	}
+
+	private static boolean isObscured() {
+		for(DialogInterface dialogInterface : GameClient.getClientState().getController().getPlayerInputs()) {
+			if(dialogInterface instanceof BuildSectorEditEntityPermissionsDialog || dialogInterface instanceof BuildSectorEditEntityUserPermissionsDialog) return true;
+		}
+		return false;
 	}
 
 	public class BuildSectorEntityScrollableListRow extends ScrollableTableList<BuildSectorData.BuildSectorEntityData>.Row {

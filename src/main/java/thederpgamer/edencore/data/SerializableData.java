@@ -56,8 +56,14 @@ public abstract class SerializableData {
 
 	}
 
+	@Override
 	public boolean equals(Object obj) {
 		return obj.getClass() == getClass() && ((SerializableData) obj).dataUUID.equals(dataUUID);
+	}
+
+	@Override
+	public int hashCode() {
+		return dataUUID.hashCode();
 	}
 
 	public String getUUID() {

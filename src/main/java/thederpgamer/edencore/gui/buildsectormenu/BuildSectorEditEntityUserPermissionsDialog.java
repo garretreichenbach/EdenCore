@@ -3,6 +3,7 @@ package thederpgamer.edencore.gui.buildsectormenu;
 import api.common.GameClient;
 import org.schema.game.client.controller.PlayerInput;
 import org.schema.game.client.view.gui.GUIInputPanel;
+import org.schema.schine.common.language.Lng;
 import org.schema.schine.graphicsengine.core.MouseEvent;
 import org.schema.schine.graphicsengine.forms.gui.GUICallback;
 import org.schema.schine.graphicsengine.forms.gui.newgui.GUIContentPane;
@@ -46,7 +47,7 @@ public class BuildSectorEditEntityUserPermissionsDialog extends PlayerInput {
 		private final String entityUID;
 
 		public BuildSectorEditEntityUserPermissionsPanel(InputState state, GUICallback guiCallback, String username, BuildSectorData buildSectorData, String entityUID) {
-			super("BuildSectorEditEntityUserPermissionsPanel", state, guiCallback, "Edit User Permissions", "");
+			super("BuildSectorEditEntityUserPermissionsPanel", state, guiCallback, Lng.str("Edit User Permissions"), "");
 			this.username = username;
 			this.buildSectorData = buildSectorData;
 			this.entityUID = entityUID;

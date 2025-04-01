@@ -3,6 +3,7 @@ package thederpgamer.edencore.gui.buildsectormenu;
 import api.common.GameClient;
 import org.schema.game.client.controller.PlayerInput;
 import org.schema.game.client.view.gui.GUIInputPanel;
+import org.schema.schine.common.language.Lng;
 import org.schema.schine.graphicsengine.core.GLFrame;
 import org.schema.schine.graphicsengine.core.MouseEvent;
 import org.schema.schine.graphicsengine.forms.gui.GUICallback;
@@ -46,7 +47,7 @@ public class BuildSectorEditEntityPermissionsDialog extends PlayerInput {
 		private final BuildSectorData buildSectorData;
 		
 		public EditBuildSectorEntityPermissionsPanel(InputState state, GUICallback guiCallback, BuildSectorData.BuildSectorEntityData entityData, BuildSectorData buildSectorData) {
-			super("EditBuildSectorEntityPermissionsPanel", state, guiCallback, GLFrame.getWidth() / 2, GLFrame.getHeight() / 1.5);
+			super("EditBuildSectorEntityPermissionsPanel", state, guiCallback, Lng.str("Edit Permissions"), "");
 			this.entityData = entityData;
 			this.buildSectorData = buildSectorData;
 		}
@@ -56,7 +57,7 @@ public class BuildSectorEditEntityPermissionsDialog extends PlayerInput {
 			super.onInit();
 			GUIContentPane contentPane = ((GUIDialogWindow) background).getMainContentPane();
 			contentPane.setTextBoxHeightLast(300);
-			BuildSectorUserScrollableList userScrollableList = new BuildSectorUserScrollableList(getState(), contentPane, buildSectorData, entityData.getEntityUID());
+			BuildSectorUserScrollableList userScrollableList = new BuildSectorUserScrollableList(getState(), contentPane.getContent(0), buildSectorData, entityData.getEntityUID());
 			userScrollableList.onInit();
 			contentPane.getContent(0).attach(userScrollableList);
 		}
