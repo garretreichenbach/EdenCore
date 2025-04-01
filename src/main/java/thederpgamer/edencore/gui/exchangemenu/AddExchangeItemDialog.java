@@ -63,8 +63,8 @@ public class AddExchangeItemDialog extends PlayerInput {
 						data.setProducer(GameClient.getClientPlayerState().getFactionName());
 						ExchangeDataManager.getInstance(false).addData(data, false);
 						ExchangeDataManager.getInstance(false).sendPacket(data, DataManager.ADD_DATA, true);
-						deactivate();
 					}
+					deactivate();
 					break;
 				case "CANCEL":
 				case "X":
@@ -96,6 +96,7 @@ public class AddExchangeItemDialog extends PlayerInput {
 		private GUIActivatableTextBar descriptionInput;
 		private GUIActivatableTextBar priceInput;
 		private GUIActivatableTextBar countInput;
+		private GUIElement itemDisplay;
 
 		public AddExchangeBlueprintPanel(InputState state, GUICallback guiCallback) {
 			super("Add_Exchange_Blueprint_Panel", state, 500, 500, guiCallback, Lng.str("Add Blueprint"), "");
@@ -116,16 +117,16 @@ public class AddExchangeItemDialog extends PlayerInput {
 							List<CatalogPermission> catalogEntries = getCatalogEntries();
 							GUIAncor[] entries = new GUIAncor[catalogEntries.size()];
 							for(int i = 0; i < entries.length; i++) {
-								entries[i] = new GUIAncor(getState(), 300, 24);
+								entries[i] = new GUIAncor(getState(), 300, 22);
 								entries[i].setUserPointer(catalogEntries.get(i));
 								GUITextOverlay t = new GUITextOverlay(30, 10, FontLibrary.FontSize.SMALL, getState());
 								t.setTextSimple(catalogEntries.get(i).getUid());
-								t.setPos(4, 4, 0);
+								t.setPos(2, 2, 0);
 								t.setUserPointer(catalogEntries.get(i));
 								entries[i].attach(t);
 							}
 
-							(new PlayerGameDropDownInput("Add_Blueprint_Dialog_Select_Entry", (GameClientState) getState(), Lng.str("Select Blueprint"), 24, Lng.str("Select Blueprint"), entries) {
+							(new PlayerGameDropDownInput("Add_Blueprint_Dialog_Select_Entry", (GameClientState) getState(), Lng.str("Select Blueprint"), 22, Lng.str("Select Blueprint"), entries) {
 
 								public CatalogControlManager getPlayerCatalogControlManager() {
 									return getState().getGlobalGameControlManager().getIngameControlManager().getPlayerGameControlManager().getCatalogControlManager();
@@ -196,7 +197,7 @@ public class AddExchangeItemDialog extends PlayerInput {
 				});
 				contentPane.getContent(0).attach(buttonPane);
 
-				nameInput = new GUIActivatableTextBar(getState(), FontLibrary.FontSize.SMALL, 32, 1, "Name", contentPane.getContent(0), new TextCallback() {
+				nameInput = new GUIActivatableTextBar(getState(), FontLibrary.FontSize.SMALL, 64, 1, "Name", contentPane.getContent(0), new TextCallback() {
 					@Override
 					public String[] getCommandPrefixes() {
 						return new String[0];
@@ -227,9 +228,14 @@ public class AddExchangeItemDialog extends PlayerInput {
 						exchangeData.setName(s); // Set the name in the exchange data object
 						return s; // Return the current string to be displayed in the text box
 					}
-				});
+				}) {
+					@Override
+					public void cleanUp() {
 
-				nameInput.setPos(0, buttonPane.getPos().y + buttonPane.getHeight() + 4, 0);
+					}
+				};
+
+				nameInput.setPos(0, buttonPane.getPos().y + buttonPane.getHeight() + 2, 0);
 				nameInput.setText(exchangeData.getName());
 				contentPane.getContent(0).attach(nameInput);
 
@@ -270,11 +276,16 @@ public class AddExchangeItemDialog extends PlayerInput {
 						}
 						return String.valueOf(exchangeData.getPrice());
 					}
-				});
-				priceInput.setPos(0, nameInput.getPos().y + nameInput.getHeight() + 4, 0);
+				}) {
+					@Override
+					public void cleanUp() {
+
+					}
+				};
+				priceInput.setPos(0, nameInput.getPos().y + nameInput.getHeight() + 2, 0);
 				contentPane.getContent(0).attach(priceInput);
 
-				descriptionInput = new GUIActivatableTextBar(getState(), FontLibrary.FontSize.SMALL, 256, 3, "Description", contentPane.getContent(0), new TextCallback() {
+				descriptionInput = new GUIActivatableTextBar(getState(), FontLibrary.FontSize.SMALL, 512, 2, "Description", contentPane.getContent(0), new TextCallback() {
 					@Override
 					public String[] getCommandPrefixes() {
 						return new String[0];
@@ -305,13 +316,17 @@ public class AddExchangeItemDialog extends PlayerInput {
 						exchangeData.setDescription(s); // Set the description in the exchange data object
 						return s; // Return the current string to be displayed in the text box
 					}
-				});
-				descriptionInput.setPos(0, priceInput.getPos().y + priceInput.getHeight() + 4, 0);
+				}) {
+					@Override
+					public void cleanUp() {
+
+					}
+				};
+				descriptionInput.setPos(0, priceInput.getPos().y + priceInput.getHeight() + 2, 0);
 				descriptionInput.setText(exchangeData.getDescription());
 				contentPane.getContent(0).attach(descriptionInput);
-			}
-			else {
-				nameInput = new GUIActivatableTextBar(getState(), FontLibrary.FontSize.SMALL, 32, 1, "Name", contentPane.getContent(0), new TextCallback() {
+			} else {
+				nameInput = new GUIActivatableTextBar(getState(), FontLibrary.FontSize.SMALL, 64, 1, "Name", contentPane.getContent(0), new TextCallback() {
 					@Override
 					public String[] getCommandPrefixes() {
 						return new String[0];
@@ -342,12 +357,16 @@ public class AddExchangeItemDialog extends PlayerInput {
 						exchangeData.setName(s); // Set the name in the exchange data object
 						return s; // Return the current string to be displayed in the text box
 					}
-				});
+				}) {
+					@Override
+					public void cleanUp() {
 
-				nameInput.setPos(0, 4, 0);
+					}
+				};
+
 				nameInput.setText(exchangeData.getName());
 				contentPane.getContent(0).attach(nameInput);
-				
+
 				priceInput = new GUIActivatableTextBar(getState(), FontLibrary.FontSize.SMALL, 2, 1, "Price", contentPane.getContent(0), new TextCallback() {
 					@Override
 					public String[] getCommandPrefixes() {
@@ -385,10 +404,15 @@ public class AddExchangeItemDialog extends PlayerInput {
 						}
 						return String.valueOf(exchangeData.getPrice());
 					}
-				});
-				priceInput.setPos(0, nameInput.getPos().y + nameInput.getHeight() + 4, 0);
+				}) {
+					@Override
+					public void cleanUp() {
+
+					}
+				};
+				priceInput.setPos(0, nameInput.getPos().y + nameInput.getHeight() + 2, 0);
 				contentPane.getContent(0).attach(priceInput);
-				
+
 				countInput = new GUIActivatableTextBar(getState(), FontLibrary.FontSize.SMALL, 10, 1, "Count", contentPane.getContent(0), new TextCallback() {
 					@Override
 					public String[] getCommandPrefixes() {
@@ -426,12 +450,18 @@ public class AddExchangeItemDialog extends PlayerInput {
 						}
 						return String.valueOf(exchangeData.getItemCount());
 					}
-				});
-				countInput.setPos(0, priceInput.getPos().y + priceInput.getHeight() + 4, 0);
+				}) {
+					@Override
+					public void cleanUp() {
+
+					}
+				};
+				countInput.setPos(0, priceInput.getPos().y + priceInput.getHeight() + 2, 0);
 				contentPane.getContent(0).attach(countInput);
-				
+
 				if(mode == ExchangeDialog.ITEMS) {
-					GUIAdvBlockDisplay blockDisplay = new GUIAdvBlockDisplay(getState(), contentPane.getContent(0), new BlockDisplayResult() {
+					GUIAncor anchor = new GUIAncor(getState(), 64, 64);
+					itemDisplay = new GUIAdvBlockDisplay(getState(), anchor, new BlockDisplayResult() {
 						@Override
 						public short getCurrentValue() {
 							return exchangeData.getItemId();
@@ -457,10 +487,12 @@ public class AddExchangeItemDialog extends PlayerInput {
 							return Lng.str("Select Block");
 						}
 					});
-					blockDisplay.setPos(0, countInput.getPos().y + countInput.getHeight() + 4, 0);
-					contentPane.getContent(0).attach(blockDisplay);
+					anchor.attach(itemDisplay);
+					anchor.setPos(0, countInput.getPos().y + countInput.getHeight() + 2, 0);
+					contentPane.getContent(0).attach(anchor);
 				} else {
-					GUIAdvMetaItemDisplay itemDisplay = new GUIAdvMetaItemDisplay(getState(), contentPane.getContent(0), new MetaItemDisplayResult() {
+					GUIAncor anchor = new GUIAncor(getState(), 64, 64);
+					itemDisplay = new GUIAdvMetaItemDisplay(getState(), anchor, new MetaItemDisplayResult() {
 						@Override
 						public short getCurrentValue() {
 							return exchangeData.getItemId();
@@ -486,14 +518,15 @@ public class AddExchangeItemDialog extends PlayerInput {
 							return Lng.str("Select Weapon");
 						}
 					});
-					itemDisplay.setPos(0, countInput.getPos().y + countInput.getHeight() + 4, 0);
-					contentPane.getContent(0).attach(itemDisplay);
+					anchor.attach(itemDisplay);
+					anchor.setPos(0, countInput.getPos().y + countInput.getHeight() + 2, 0);
+					contentPane.getContent(0).attach(anchor);
 				}
 			}
 		}
 
 		private boolean isValid() {
-			return !exchangeData.getCatalogName().isEmpty() && !exchangeData.getName().isEmpty() && !exchangeData.getDescription().isEmpty() && exchangeData.getPrice() > 0 && ((mode == ExchangeDialog.SHIPS || mode == ExchangeDialog.STATIONS) || ((mode == ExchangeDialog.ITEMS || mode == ExchangeDialog.WEAPONS) && exchangeData.getItemCount() > 0 && ElementKeyMap.isValidType(exchangeData.getItemId())));
+			return !exchangeData.getName().isEmpty() && !exchangeData.getDescription().isEmpty() && exchangeData.getPrice() > 0 && ((mode == ExchangeDialog.SHIPS || mode == ExchangeDialog.STATIONS) || ((mode == ExchangeDialog.ITEMS || mode == ExchangeDialog.WEAPONS) && exchangeData.getItemCount() > 0 && ElementKeyMap.isValidType(exchangeData.getItemId())));
 		}
 
 		public ExchangeData getExchangeData() {

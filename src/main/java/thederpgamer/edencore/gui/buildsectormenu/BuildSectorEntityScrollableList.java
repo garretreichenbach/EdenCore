@@ -11,10 +11,7 @@ import org.schema.schine.input.InputState;
 import thederpgamer.edencore.data.buildsectordata.BuildSectorData;
 import thederpgamer.edencore.utils.EntityUtils;
 
-import java.util.Collection;
-import java.util.Comparator;
-import java.util.Locale;
-import java.util.Set;
+import java.util.*;
 
 /**
  * [Description]
@@ -35,6 +32,7 @@ public class BuildSectorEntityScrollableList extends ScrollableTableList<BuildSe
 
 	@Override
 	protected Collection<BuildSectorData.BuildSectorEntityData> getElementList() {
+		if(buildSectorData == null) return Collections.emptyList();
 		return buildSectorData.getEntities();
 	}
 

@@ -1,6 +1,8 @@
 package thederpgamer.edencore.gui.elements;
 
 import org.schema.game.client.view.gui.GUIBlockSprite;
+import org.schema.game.client.view.gui.advanced.tools.BlockDisplayResult;
+import org.schema.game.client.view.gui.advanced.tools.GUIAdvBlockDisplay;
 import org.schema.game.client.view.gui.advanced.tools.GUIAdvTool;
 import org.schema.schine.graphicsengine.forms.gui.GUIElement;
 import org.schema.schine.input.InputState;
@@ -11,7 +13,7 @@ import org.schema.schine.input.InputState;
  * @author TheDerpGamer
  */
 public class GUIAdvMetaItemDisplay extends GUIAdvTool<MetaItemDisplayResult> {
-	
+
 	private final GUIBlockSprite blockOverlay;
 	private short currentValue;
 
@@ -26,12 +28,10 @@ public class GUIAdvMetaItemDisplay extends GUIAdvTool<MetaItemDisplayResult> {
 					currentValue = res.getCurrentValue(); // Store the new value
 				}
 				setScale(getIconScale(), getIconScale(), 0.0F);
-				super.draw();
-				if(getRes().isBlockInit()) {
-					getRes().beforeBlockDraw(this);
-					super.draw();
-					getRes().afterBlockDraw(this);
-				}
+				getSprite().setSelectedMultiSprite(currentValue);
+				getRes().beforeBlockDraw(this);
+				getSprite().draw();
+				getRes().afterBlockDraw(this);
 			}
 		};
 		blockOverlay.setLayer(-1);

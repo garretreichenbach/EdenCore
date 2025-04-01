@@ -75,6 +75,13 @@ public class ExchangeDialog extends PlayerInput {
 			super("ExchangePanel", state, 800, 500, guiCallback, "", "");
 		}
 
+		private static boolean isObscured() {
+			for(DialogInterface dialogInterface : GameClient.getClientController().getPlayerInputs()) {
+				if(dialogInterface instanceof AddExchangeItemDialog) return true;
+			}
+			return false;
+		}
+
 		@Override
 		public void onInit() {
 			super.onInit();
@@ -93,7 +100,7 @@ public class ExchangeDialog extends PlayerInput {
 			shipsTab.setTextBoxHeightLast(28);
 			GUIHorizontalButtonTablePane shipsAddButton = new GUIHorizontalButtonTablePane(getState(), 1, 1, shipsTab.getContent(0));
 			shipsAddButton.onInit();
-			shipsAddButton.addButton(0, 0, Lng.str("ADD"), GUIHorizontalArea.HButtonColor.GREEN, new GUICallback() {
+			shipsAddButton.addButton(0, 0, Lng.str("ADD BLUEPRINT"), GUIHorizontalArea.HButtonColor.GREEN, new GUICallback() {
 				@Override
 				public void callback(GUIElement guiElement, MouseEvent mouseEvent) {
 					if(mouseEvent.pressedLeftMouse()) {
@@ -103,7 +110,8 @@ public class ExchangeDialog extends PlayerInput {
 
 				@Override
 				public boolean isOccluded() {
-					return playerState.getFactionId() == 0;
+					if(isObscured()) return true;
+					return playerState.getFactionId() == 0 && !playerState.isAdmin();
 				}
 			}, new GUIActivationCallback() {
 				@Override
@@ -113,7 +121,7 @@ public class ExchangeDialog extends PlayerInput {
 
 				@Override
 				public boolean isActive(InputState inputState) {
-					return playerState.getFactionId() != 0;
+					return playerState.getFactionId() != 0 || playerState.isAdmin();
 				}
 			});
 			shipsTab.getContent(0).attach(shipsAddButton);
@@ -127,7 +135,7 @@ public class ExchangeDialog extends PlayerInput {
 			stationsTab.setTextBoxHeightLast(28);
 			GUIHorizontalButtonTablePane stationsAddButton = new GUIHorizontalButtonTablePane(getState(), 1, 1, stationsTab.getContent(0));
 			stationsAddButton.onInit();
-			stationsAddButton.addButton(0, 0, Lng.str("ADD"), GUIHorizontalArea.HButtonColor.GREEN, new GUICallback() {
+			stationsAddButton.addButton(0, 0, Lng.str("ADD BLUEPRINT"), GUIHorizontalArea.HButtonColor.GREEN, new GUICallback() {
 				@Override
 				public void callback(GUIElement guiElement, MouseEvent mouseEvent) {
 					if(mouseEvent.pressedLeftMouse()) {
@@ -137,7 +145,8 @@ public class ExchangeDialog extends PlayerInput {
 
 				@Override
 				public boolean isOccluded() {
-					return playerState.getFactionId() == 0;
+					if(isObscured()) return true;
+					return playerState.getFactionId() == 0 && !playerState.isAdmin();
 				}
 			}, new GUIActivationCallback() {
 				@Override
@@ -147,7 +156,7 @@ public class ExchangeDialog extends PlayerInput {
 
 				@Override
 				public boolean isActive(InputState inputState) {
-					return playerState.getFactionId() != 0;
+					return playerState.getFactionId() != 0 || playerState.isAdmin();
 				}
 			});
 			stationsTab.getContent(0).attach(stationsAddButton);
@@ -157,89 +166,89 @@ public class ExchangeDialog extends PlayerInput {
 			stationsList.onInit();
 			stationsTab.getContent(1).attach(stationsList);
 			
-			GUIContentPane itemsTab = tabbedContent.addTab(Lng.str("ITEMS"));
-			if(GameClient.getClientPlayerState().isAdmin()) { //Only admins can add new items
-				itemsTab.setTextBoxHeightLast(28);
-				GUIHorizontalButtonTablePane itemsAddButtonPane = new GUIHorizontalButtonTablePane(getState(), 1, 1, itemsTab.getContent(0));
-				itemsAddButtonPane.onInit();
-				itemsAddButtonPane.addButton(0, 0, Lng.str("ADD ITEM"), GUIHorizontalArea.HButtonColor.GREEN, new GUICallback() {
-					@Override
-					public void callback(GUIElement guiElement, MouseEvent mouseEvent) {
-						if(mouseEvent.pressedLeftMouse()) {
-							// Open the dialog to add a new exchange item
-							(new AddExchangeItemDialog(GameClient.getClientState(), ITEMS)).activate();
-						}
-					}
-
-					@Override
-					public boolean isOccluded() {
-						return false;
-					}
-				}, new GUIActivationCallback() {
-					@Override
-					public boolean isVisible(InputState inputState) {
-						return true;
-					}
-
-					@Override
-					public boolean isActive(InputState inputState) {
-						return true;
-					}
-				});
-				
-				itemsTab.getContent(0).attach(itemsAddButtonPane); // Attach the add button pane to the content pane
-				
-				itemsTab.addNewTextBox(300); // Add a text box for the scrollable list
-				ExchangeItemScrollableList itemsList = new ExchangeItemScrollableList(getState(), itemsTab.getContent(1), ITEMS);
-				itemsList.onInit();
-				itemsTab.getContent(1).attach(itemsList); // Attach the scrollable list to the content pane
-			} else {
-				itemsTab.setTextBoxHeightLast(300);
-				ExchangeItemScrollableList itemsList = new ExchangeItemScrollableList(getState(), itemsTab.getContent(0), ITEMS);
-				itemsList.onInit(); // Initialize the scrollable list
-				itemsTab.getContent(0).attach(itemsList); // Attach the scrollable list to the content pane
-			}
-			
-			GUIContentPane weaponsTab = tabbedContent.addTab(Lng.str("WEAPONS"));
-			if(GameClient.getClientPlayerState().isAdmin()) { //Only admins can add new weapons
-				weaponsTab.setTextBoxHeightLast(28);
-				GUIHorizontalButtonTablePane weaponsAddButtonPane = new GUIHorizontalButtonTablePane(getState(), 1, 1, weaponsTab.getContent(0));
-				weaponsAddButtonPane.onInit();
-				weaponsAddButtonPane.addButton(0, 0, Lng.str("ADD WEAPON"), GUIHorizontalArea.HButtonColor.GREEN, new GUICallback() {
-					@Override
-					public void callback(GUIElement guiElement, MouseEvent mouseEvent) {
-						if(mouseEvent.pressedLeftMouse()) {
-							(new AddExchangeItemDialog(GameClient.getClientState(), WEAPONS)).activate();
-						}
-					}
-
-					@Override
-					public boolean isOccluded() {
-						return false; // Always visible for admins
-					}
-				}, new GUIActivationCallback() {
-					@Override
-					public boolean isVisible(InputState inputState) {
-						return true; // Always visible for admins
-					}
-
-					@Override
-					public boolean isActive(InputState inputState) {
-						return GameClient.getClientPlayerState().isAdmin(); // Only active for admins
-					}
-				});
-				weaponsTab.getContent(0).attach(weaponsAddButtonPane); // Attach the add button pane to the content pane
-				
-				weaponsTab.addNewTextBox(300); // Add a text box for the scrollable list
-				ExchangeItemScrollableList weaponsList = new ExchangeItemScrollableList(getState(), weaponsTab.getContent(1), WEAPONS);
-				weaponsList.onInit(); // Initialize the scrollable list
-				weaponsTab.getContent(1).attach(weaponsList); // Attach the scrollable list to the content pane
-			} else {
-				weaponsTab.setTextBoxHeightLast(300); // Set the height for non-admins
-				ExchangeItemScrollableList weaponsList = new ExchangeItemScrollableList(getState(), weaponsTab.getContent(0), WEAPONS);
-				weaponsList.onInit(); // Initialize the scrollable list
-				weaponsTab.getContent(0).attach(weaponsList); // Attach the scrollable list to the content pane
-			}
+//			GUIContentPane itemsTab = tabbedContent.addTab(Lng.str("ITEMS"));
+//			if(GameClient.getClientPlayerState().isAdmin()) { //Only admins can add new items
+//				itemsTab.setTextBoxHeightLast(28);
+//				GUIHorizontalButtonTablePane itemsAddButtonPane = new GUIHorizontalButtonTablePane(getState(), 1, 1, itemsTab.getContent(0));
+//				itemsAddButtonPane.onInit();
+//				itemsAddButtonPane.addButton(0, 0, Lng.str("ADD ITEM"), GUIHorizontalArea.HButtonColor.GREEN, new GUICallback() {
+//					@Override
+//					public void callback(GUIElement guiElement, MouseEvent mouseEvent) {
+//						if(mouseEvent.pressedLeftMouse()) {
+//							// Open the dialog to add a new exchange item
+//							(new AddExchangeItemDialog(GameClient.getClientState(), ITEMS)).activate();
+//						}
+//					}
+//
+//					@Override
+//					public boolean isOccluded() {
+//						return isObscured();
+//					}
+//				}, new GUIActivationCallback() {
+//					@Override
+//					public boolean isVisible(InputState inputState) {
+//						return true;
+//					}
+//
+//					@Override
+//					public boolean isActive(InputState inputState) {
+//						return GameClient.getClientPlayerState().isAdmin(); // Only active for admins
+//					}
+//				});
+//
+//				itemsTab.getContent(0).attach(itemsAddButtonPane); // Attach the add button pane to the content pane
+//
+//				itemsTab.addNewTextBox(300); // Add a text box for the scrollable list
+//				ExchangeItemScrollableList itemsList = new ExchangeItemScrollableList(getState(), itemsTab.getContent(1), ITEMS);
+//				itemsList.onInit();
+//				itemsTab.getContent(1).attach(itemsList); // Attach the scrollable list to the content pane
+//			} else {
+//				itemsTab.setTextBoxHeightLast(300);
+//				ExchangeItemScrollableList itemsList = new ExchangeItemScrollableList(getState(), itemsTab.getContent(0), ITEMS);
+//				itemsList.onInit(); // Initialize the scrollable list
+//				itemsTab.getContent(0).attach(itemsList); // Attach the scrollable list to the content pane
+//			}
+//
+//			GUIContentPane weaponsTab = tabbedContent.addTab(Lng.str("WEAPONS"));
+//			if(GameClient.getClientPlayerState().isAdmin()) { //Only admins can add new weapons
+//				weaponsTab.setTextBoxHeightLast(28);
+//				GUIHorizontalButtonTablePane weaponsAddButtonPane = new GUIHorizontalButtonTablePane(getState(), 1, 1, weaponsTab.getContent(0));
+//				weaponsAddButtonPane.onInit();
+//				weaponsAddButtonPane.addButton(0, 0, Lng.str("ADD WEAPON"), GUIHorizontalArea.HButtonColor.GREEN, new GUICallback() {
+//					@Override
+//					public void callback(GUIElement guiElement, MouseEvent mouseEvent) {
+//						if(mouseEvent.pressedLeftMouse()) {
+//							(new AddExchangeItemDialog(GameClient.getClientState(), WEAPONS)).activate();
+//						}
+//					}
+//
+//					@Override
+//					public boolean isOccluded() {
+//						return isObscured();
+//					}
+//				}, new GUIActivationCallback() {
+//					@Override
+//					public boolean isVisible(InputState inputState) {
+//						return true; // Always visible for admins
+//					}
+//
+//					@Override
+//					public boolean isActive(InputState inputState) {
+//						return GameClient.getClientPlayerState().isAdmin(); // Only active for admins
+//					}
+//				});
+//				weaponsTab.getContent(0).attach(weaponsAddButtonPane); // Attach the add button pane to the content pane
+//
+//				weaponsTab.addNewTextBox(300); // Add a text box for the scrollable list
+//				ExchangeItemScrollableList weaponsList = new ExchangeItemScrollableList(getState(), weaponsTab.getContent(1), WEAPONS);
+//				weaponsList.onInit(); // Initialize the scrollable list
+//				weaponsTab.getContent(1).attach(weaponsList); // Attach the scrollable list to the content pane
+//			} else {
+//				weaponsTab.setTextBoxHeightLast(300); // Set the height for non-admins
+//				ExchangeItemScrollableList weaponsList = new ExchangeItemScrollableList(getState(), weaponsTab.getContent(0), WEAPONS);
+//				weaponsList.onInit(); // Initialize the scrollable list
+//				weaponsTab.getContent(0).attach(weaponsList); // Attach the scrollable list to the content pane
+//			}
 
 			tabbedContent.setSelectedTab(lastTab);
 			contentPane.getContent(0).attach(tabbedContent);

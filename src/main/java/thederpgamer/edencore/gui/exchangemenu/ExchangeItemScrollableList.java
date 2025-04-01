@@ -17,6 +17,7 @@ import org.schema.schine.graphicsengine.forms.gui.*;
 import org.schema.schine.graphicsengine.forms.gui.newgui.*;
 import org.schema.schine.input.InputState;
 import thederpgamer.edencore.data.DataManager;
+import thederpgamer.edencore.data.buildsectordata.BuildSectorDataManager;
 import thederpgamer.edencore.data.exchangedata.ExchangeData;
 import thederpgamer.edencore.data.exchangedata.ExchangeDataManager;
 import thederpgamer.edencore.element.ElementManager;
@@ -358,6 +359,7 @@ public class ExchangeItemScrollableList extends ScrollableTableList<ExchangeData
 
 	public String canBuy(ExchangeData data) {
 		GameClientState state = (GameClientState) getState();
+		if(BuildSectorDataManager.getInstance(false).isPlayerInAnyBuildSector(state.getPlayer())) return "You can't do this while in a build sector!";
 		if(type == ExchangeDialog.SHIPS || type == ExchangeDialog.STATIONS) {
 			if(!hasPermission(data)) return "Selected blueprint is not available or you don't have access to it!";
 			else {

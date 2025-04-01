@@ -31,10 +31,10 @@ public class ExchangeData extends SerializableData {
 
 	private static final byte VERSION = 0;
 	
-	private String name;
-	private String catalogName;
-	private String description;
-	private String producer;
+	private String name = "";
+	private String catalogName = "";
+	private String description = "";
+	private String producer = "";
 	private int price;
 	private ExchangeDataCategory category;
 	private BlueprintClassification classification;
