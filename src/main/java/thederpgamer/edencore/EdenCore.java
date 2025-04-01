@@ -146,7 +146,7 @@ public class EdenCore extends StarMod {
 		ControlBindingData.load(this);
 		ControlBindingData.registerBinding(this, "Open Guide", "Opens the Guide Menu", 181);
 		ControlBindingData.registerBinding(this, "Open Banking Menu", "Opens the Banking Menu", 78);
-//		ControlBindingData.registerBinding(this, "Open Exchange Menu", "Opens the Exchange Menu", 74);
+		ControlBindingData.registerBinding(this, "Open Exchange Menu", "Opens the Exchange Menu", 74);
 		ControlBindingData.registerBinding(this, "Open Build Sector Menu", "Opens the Build Sector Menu", 55);
 		logInfo("Registered Bindings");
 	}

@@ -12,6 +12,9 @@ import api.listener.events.input.KeyPressEvent;
 import api.listener.events.player.PlayerJoinWorldEvent;
 import api.listener.events.world.SimulationJobExecuteEvent;
 import api.mod.StarLoader;
+import api.mod.StarMod;
+import api.utils.game.PlayerUtils;
+import api.utils.game.inventory.InventoryUtils;
 import api.utils.gui.ModGUIHandler;
 import org.schema.common.util.linAlg.Vector3i;
 import org.schema.game.client.view.gui.PlayerPanel;
@@ -19,6 +22,9 @@ import org.schema.game.client.view.gui.catalog.newcatalog.CatalogOptionsButtonPa
 import org.schema.game.client.view.gui.catalog.newcatalog.CatalogPanelNew;
 import org.schema.game.client.view.gui.catalog.newcatalog.CatalogScrollableListNew;
 import org.schema.game.client.view.gui.newgui.GUITopBar;
+import org.schema.game.common.data.player.AbstractOwnerState;
+import org.schema.game.common.data.player.PlayerState;
+import org.schema.game.common.data.player.inventory.Inventory;
 import org.schema.game.server.data.simulation.jobs.SpawnPiratePatrolPartyJob;
 import org.schema.schine.common.language.Lng;
 import org.schema.schine.graphicsengine.core.MouseEvent;
@@ -27,18 +33,25 @@ import org.schema.schine.graphicsengine.forms.gui.GUICallback;
 import org.schema.schine.graphicsengine.forms.gui.GUIElement;
 import org.schema.schine.graphicsengine.forms.gui.newgui.GUIContentPane;
 import org.schema.schine.graphicsengine.forms.gui.newgui.GUIResizableGrabbableWindow;
+import org.schema.schine.graphicsengine.forms.gui.newgui.GUITabbedContent;
 import org.schema.schine.input.InputState;
 import thederpgamer.edencore.EdenCore;
 import thederpgamer.edencore.data.buildsectordata.BuildSectorDataManager;
+import thederpgamer.edencore.data.exchangedata.ExchangeDataManager;
 import thederpgamer.edencore.data.misc.ControlBindingData;
 import thederpgamer.edencore.data.playerdata.PlayerDataManager;
 import thederpgamer.edencore.drawer.BuildSectorHudDrawer;
+import thederpgamer.edencore.element.ElementManager;
 import thederpgamer.edencore.gui.bankingmenu.BankingDialog;
 import thederpgamer.edencore.gui.buildsectormenu.BuildSectorDialog;
+import thederpgamer.edencore.gui.controls.ControlBindingsScrollableList;
 import thederpgamer.edencore.gui.elements.ECCatalogScrollableListNew;
+import thederpgamer.edencore.gui.exchangemenu.ExchangeDialog;
 import thederpgamer.edencore.utils.ClassUtils;
 
 import java.lang.reflect.Field;
+import java.util.ArrayList;
+import java.util.Locale;
 
 /**
  * [Description]
@@ -64,22 +77,50 @@ public class EventManager {
 				if(event.getTitleAsString().equals(Lng.str("Keyboard"))) { //Fix for the tab name being lowercase for some reason
 					event.getPane().getTabNameText().setTextSimple(Lng.str("KEYBOARD"));
 				} else if(event.getTitleAsString().equals(Lng.str("CONTROLS")) && event.getWindow().getTabs().size() == 2) { //Make sure we aren't adding a duplicate tab
-//					GUIContentPane modControlsPane = event.getWindow().addTab(Lng.str("MOD CONTROLS")); //Todo: StarLoader will support mod controls and settings in these menus next update, so we can remove this later
-//					GUITabbedContent tabbedContent = new GUITabbedContent(modControlsPane.getState(), modControlsPane.getContent(0));
-//					tabbedContent.activationInterface = event.getWindow().activeInterface;
-//					tabbedContent.onInit();
-//					tabbedContent.setPos(0, 2, 0);
-//					modControlsPane.getContent(0).attach(tabbedContent);
-//
-//					for(StarMod mod : ControlBindingData.getBindings().keySet()) {
-//						ArrayList<ControlBindingData> modBindings = ControlBindingData.getBindings().get(mod);
-//						if(!modBindings.isEmpty()) {
-//							GUIContentPane modTab = tabbedContent.addTab(mod.getName().toUpperCase(Locale.ENGLISH));
-//							ControlBindingsScrollableList scrollableList = new ControlBindingsScrollableList(modTab.getState(), modTab.getContent(0), mod);
-//							scrollableList.onInit();
-//							modTab.getContent(0).attach(scrollableList);
-//						}
-//					}
+					GUIContentPane modControlsPane = event.getWindow().addTab(Lng.str("MOD CONTROLS")); //Todo: StarLoader will support mod controls and settings in these menus next update, so we can remove this later
+					GUITabbedContent tabbedContent = new GUITabbedContent(modControlsPane.getState(), modControlsPane.getContent(0));
+					tabbedContent.activationInterface = event.getWindow().activeInterface;
+					tabbedContent.onInit();
+					tabbedContent.setPos(0, 2, 0);
+					modControlsPane.getContent(0).attach(tabbedContent);
+
+					for(StarMod mod : ControlBindingData.getBindings().keySet()) {
+						ArrayList<ControlBindingData> modBindings = ControlBindingData.getBindings().get(mod);
+						if(!modBindings.isEmpty()) {
+							GUIContentPane modTab = tabbedContent.addTab(mod.getName().toUpperCase(Locale.ENGLISH));
+							ControlBindingsScrollableList scrollableList = new ControlBindingsScrollableList(modTab.getState(), modTab.getContent(0), mod);
+							scrollableList.onInit();
+							modTab.getContent(0).attach(scrollableList);
+						}
+					}
+				} else if(event.getTitleAsString().equals(Lng.str("BLUEPRINTS"))) {
+					try {
+						if(event.getWindow().activeInterface instanceof CatalogPanelNew) {
+							CatalogPanelNew panel = (CatalogPanelNew) event.getWindow().activeInterface;
+							CatalogScrollableListNew availList = (CatalogScrollableListNew) ClassUtils.getField(panel, "availList");
+							if(!(availList instanceof ECCatalogScrollableListNew)) {
+								availList.cleanUp();
+								CatalogOptionsButtonPanel c = new CatalogOptionsButtonPanel(GameClient.getClientState(), panel);
+								c.onInit();
+								event.getPane().setContent(0, c);
+								if(!CatalogOptionsButtonPanel.areMultiplayerButtonVisible()) {
+									event.getPane().setTextBoxHeightLast(58);
+									event.getPane().addNewTextBox(10);
+								} else {
+									event.getPane().setTextBoxHeightLast(82);
+									event.getPane().addNewTextBox(10);
+								}
+								int mode = (int) ClassUtils.getField(availList, "mode");
+								boolean showPrice = (boolean) ClassUtils.getField(availList, "showPrice");
+								boolean selectSingle = (boolean) ClassUtils.getField(availList, "selectSingle");
+								availList = new ECCatalogScrollableListNew(GameClient.getClientState(), event.getPane().getContent(1), mode, showPrice, selectSingle);
+								availList.onInit();
+								event.getPane().getContent(1).attach(availList);
+							}
+						}
+					} catch(Exception exception) {
+						instance.logException("Failed to create Available Catalog Pane", exception);
+					}
 				}
 
 				if(BuildSectorDataManager.getInstance(false).isPlayerInAnyBuildSector(GameClient.getClientPlayerState())) {
@@ -109,6 +150,29 @@ public class EventManager {
 							}
 						}
 					}).start();
+
+					(new Thread("EdenCore_Player_Login_Reward_Timer") {
+						@Override
+						public void run() {
+							try {
+								sleep(ConfigManager.getMainConfig().getLong("player_login_reward_timer"));
+								PlayerState playerState = event.getPlayerState();
+								if(playerState != null && playerState.spawnedOnce) {
+									Inventory inventory = playerState.getInventory();
+									if(inventory.isInfinite()) { //They are in creative mode, we need to get their survival inventory specifically
+										Field infiniteField = AbstractOwnerState.class.getDeclaredField("inventory");
+										infiniteField.setAccessible(true);
+										inventory = (Inventory) infiniteField.get(playerState);
+									}
+									int prizeBarCount = 1; //Todo: Donators get extra bars
+									InventoryUtils.addItem(inventory, ElementManager.getItem("Bronze Bar").getId(), prizeBarCount);
+									PlayerUtils.sendMessage(playerState, "You have received " + prizeBarCount + " Bronze Bars for logging in today! Thanks for playing!");
+								}
+							} catch(Exception exception) {
+								instance.logException("Failed to start player login reward timer for player " + event.getPlayerState().getName(), exception);
+							}
+						}
+					}).start();
 				}
 			}
 		}, instance);
@@ -118,7 +182,7 @@ public class EventManager {
 			public void onEvent(GUITopBarCreateEvent event) {
 				BuildSectorDataManager.getInstance(false);
 				PlayerDataManager.getInstance(false);
-//				ExchangeDataManager.getInstance(false);
+				ExchangeDataManager.getInstance(false);
 
 				GUITopBar.ExpandedButton dropDownButton = event.getDropdownButtons().get(event.getDropdownButtons().size() - 1);
 				dropDownButton.addExpandedButton("BANKING", new GUICallback() {
@@ -207,36 +271,36 @@ public class EventManager {
 						return true;
 					}
 				});
-//				dropDownButton.addExpandedButton("EXCHANGE", new GUICallback() {
-//					@Override
-//					public void callback(GUIElement guiElement, MouseEvent mouseEvent) {
-//						if(mouseEvent.pressedLeftMouse()) {
-//							GameClient.getClientState().getController().queueUIAudio("0022_menu_ui - enter");
-//							GameClient.getClientState().getGlobalGameControlManager().getIngameControlManager().getPlayerGameControlManager().deactivateAll();
-//							(new ExchangeDialog()).activate();
-//						}
-//					}
-//
-//					@Override
-//					public boolean isOccluded() {
-//						return false;
-//					}
-//				}, new GUIActivationHighlightCallback() {
-//					@Override
-//					public boolean isHighlighted(InputState inputState) {
-//						return false;
-//					}
-//
-//					@Override
-//					public boolean isVisible(InputState inputState) {
-//						return true;
-//					}
-//
-//					@Override
-//					public boolean isActive(InputState inputState) {
-//						return true;
-//					}
-//				});
+				dropDownButton.addExpandedButton("EXCHANGE", new GUICallback() {
+					@Override
+					public void callback(GUIElement guiElement, MouseEvent mouseEvent) {
+						if(mouseEvent.pressedLeftMouse()) {
+							GameClient.getClientState().getController().queueUIAudio("0022_menu_ui - enter");
+							GameClient.getClientState().getGlobalGameControlManager().getIngameControlManager().getPlayerGameControlManager().deactivateAll();
+							(new ExchangeDialog()).activate();
+						}
+					}
+
+					@Override
+					public boolean isOccluded() {
+						return false;
+					}
+				}, new GUIActivationHighlightCallback() {
+					@Override
+					public boolean isHighlighted(InputState inputState) {
+						return false;
+					}
+
+					@Override
+					public boolean isVisible(InputState inputState) {
+						return true;
+					}
+
+					@Override
+					public boolean isActive(InputState inputState) {
+						return true;
+					}
+				});
 			}
 		}, instance);
 
@@ -257,11 +321,11 @@ public class EventManager {
 									GameClient.getClientState().getGlobalGameControlManager().getIngameControlManager().getPlayerGameControlManager().deactivateAll();
 									(new BankingDialog()).activate();
 									return;
-//								case "Open Exchange Menu":
-//									GameClient.getClientState().getController().queueUIAudio("0022_menu_ui - enter");
-//									GameClient.getClientState().getGlobalGameControlManager().getIngameControlManager().getPlayerGameControlManager().deactivateAll();
-//									(new ExchangeDialog()).activate();
-//									return;
+								case "Open Exchange Menu":
+									GameClient.getClientState().getController().queueUIAudio("0022_menu_ui - enter");
+									GameClient.getClientState().getGlobalGameControlManager().getIngameControlManager().getPlayerGameControlManager().deactivateAll();
+									(new ExchangeDialog()).activate();
+									return;
 								case "Open Build Sector Menu":
 									GameClient.getClientState().getController().queueUIAudio("0022_menu_ui - enter");
 									GameClient.getClientState().getGlobalGameControlManager().getIngameControlManager().getPlayerGameControlManager().deactivateAll();
@@ -277,68 +341,7 @@ public class EventManager {
 		StarLoader.registerListener(GUIElementInstansiateEvent.class, new Listener<GUIElementInstansiateEvent>() {
 			@Override
 			public void onEvent(GUIElementInstansiateEvent event) {
-				if(event.getGUIElement() instanceof CatalogPanelNew) {
-					try {
-						PlayerPanel panel = GameClient.getClientState().getWorldDrawer().getGuiDrawer().getPlayerPanel();
-						Field catalogField = panel.getClass().getDeclaredField("catalogPanelNew");
-						catalogField.setAccessible(true);
-						CatalogPanelNew catalogPanel = (CatalogPanelNew) catalogField.get(panel);
-						if(catalogPanel != null) {
-							catalogPanel.cleanUp();
-							catalogPanel = new CatalogPanelNew(event.getInputState()) {
-								@Override
-								public void createAvailableCatalogPane() {
-									try {
-										Field availListField = CatalogPanelNew.class.getDeclaredField("availList");
-										Field availableTabField = CatalogPanelNew.class.getDeclaredField("availableTab");
-
-										availListField.setAccessible(true);
-										availableTabField.setAccessible(true);
-
-										CatalogScrollableListNew availList = (CatalogScrollableListNew) availListField.get(this);
-
-										Field modeField = availList.getClass().getDeclaredField("mode");
-										modeField.setAccessible(true);
-										int mode = modeField.getInt(availList);
-
-										Field showPriceField = availList.getClass().getDeclaredField("showPrice");
-										showPriceField.setAccessible(true);
-										boolean showPrice = showPriceField.getBoolean(availList);
-
-										Field selectSingleField = availList.getClass().getDeclaredField("selectSingle");
-										selectSingleField.setAccessible(true);
-										boolean selectSingle = selectSingleField.getBoolean(availList);
-
-										if(!(availList instanceof ECCatalogScrollableListNew)) {
-											GUIContentPane availableTab = (GUIContentPane) availableTabField.get(this);
-											availList.cleanUp();
-											CatalogOptionsButtonPanel c = new CatalogOptionsButtonPanel(getState(), this);
-											c.onInit();
-											availableTab.setContent(0, c);
-											if(!CatalogOptionsButtonPanel.areMultiplayerButtonVisible()) {
-												availableTab.setTextBoxHeightLast(58);
-												availableTab.addNewTextBox(10);
-											} else {
-												availableTab.setTextBoxHeightLast(82);
-												availableTab.addNewTextBox(10);
-											}
-
-											availList = new ECCatalogScrollableListNew(getState(), availableTab.getContent(1), mode, showPrice, selectSingle);
-											availList.onInit();
-											availableTab.getContent(1).attach(availList);
-										}
-									} catch(Exception exception) {
-										instance.logException("Failed to create Available Catalog Pane", exception);
-									}
-								}
-							};
-							catalogPanel.onInit();
-							catalogField.set(panel, catalogPanel);
-						}
-					} catch(Exception exception) {
-						instance.logException("Failed to replace Catalog Panel", exception);
-					}
-				} else if(event.getGUIElement() instanceof GUIResizableGrabbableWindow) {
+				if(event.getGUIElement() instanceof GUIResizableGrabbableWindow) {
 					GUIResizableGrabbableWindow window = (GUIResizableGrabbableWindow) event.getGUIElement();
 					if(GameClient.getClientState() != null && GameClient.getClientPlayerState() != null) {
 						if(BuildSectorDataManager.getInstance(false).isPlayerInAnyBuildSector(GameClient.getClientPlayerState())) {
@@ -363,21 +366,6 @@ public class EventManager {
 					Vector3i to = (Vector3i) ClassUtils.getField(job, "to");
 					if(BuildSectorDataManager.getInstance(false).isBuildSector(from) || BuildSectorDataManager.getInstance(false).isBuildSector(to)) event.setCanceled(true);
 				} else if(BuildSectorDataManager.getInstance(false).isBuildSector(event.getStartLocation())) event.setCanceled(true);
-			}
-		}, instance);
-
-		StarLoader.registerListener(MainWindowTabAddEvent.class, new Listener<MainWindowTabAddEvent>() {
-			@Override
-			public void onEvent(MainWindowTabAddEvent event) {
-				if(GameClient.getClientState() == null || GameClient.getClientPlayerState() == null) return;
-				if(BuildSectorDataManager.getInstance(false).isPlayerInAnyBuildSector(GameClient.getClientPlayerState())) {
-					for(String s : disabledTabs) {
-						if(event.getTitleAsString().equals(Lng.str(s))) {
-							event.setCanceled(true);
-							event.getWindow().cleanUp();
-						}
-					}
-				}
 			}
 		}, instance);
 

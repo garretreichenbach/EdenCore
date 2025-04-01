@@ -3,6 +3,7 @@ package thederpgamer.edencore.data.exchangedata;
 import api.network.PacketReadBuffer;
 import api.network.PacketWriteBuffer;
 import org.json.JSONObject;
+import org.schema.game.common.data.player.catalog.CatalogPermission;
 import org.schema.game.server.data.blueprintnw.BlueprintClassification;
 import thederpgamer.edencore.data.SerializableData;
 
@@ -14,7 +15,10 @@ import java.io.IOException;
  * @author TheDerpGamer
  */
 public class ExchangeData extends SerializableData {
-	
+
+	public void setFromCatalogEntry(CatalogPermission permission) {
+	}
+
 	public enum ExchangeDataCategory {
 		SHIP,
 		STATION
@@ -30,6 +34,10 @@ public class ExchangeData extends SerializableData {
 	private ExchangeDataCategory category;
 	private BlueprintClassification classification;
 	private float mass;
+	
+	public ExchangeData() {
+		
+	}
 	
 	public ExchangeData(String name, String catalogName, String description, String producer, int price, ExchangeDataCategory category, BlueprintClassification classification, float mass) {
 		super(DataType.EXCHANGE_DATA);

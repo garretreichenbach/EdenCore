@@ -15,7 +15,7 @@ public class ConfigManager {
 
 	private static final String[] defaultMainConfig = {
 			"debug_mode: false",
-			"build_sector_distance_offset: 100000",
+			"build_sector_distance_offset: 1000000",
 			"player_login_reward_timer: 900000",
 			"tip_interval: 600000"
 	};

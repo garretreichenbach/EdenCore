@@ -73,34 +73,32 @@ public class ControlBindingData {
 		binding = data.getInt("binding");
 	}
 
+	/**
+	 * Registers a new control binding for a mod. This will create the control bindings file if it does not exist.
+	 * @param mod The mod to register the control binding for
+	 * @param name The name of the control binding (this should be unique per mod)
+	 * @param description A short description of the control binding (for display purposes)
+	 * @param defaultBinding The default binding for this control (typically a key code or input ID). Use 0 or negative values to indicate no binding.
+	 */
 	public static void registerBinding(StarMod mod, String name, String description, int defaultBinding) {
-		File file = getBindingsFile(mod);
-		if(file.exists()) {
-			if(bindings.containsKey(mod)) {
-				// Check if a binding with the same name already exists
-				for(ControlBindingData bindingData : bindings.get(mod)) {
-					if(bindingData.getName().equals(name)) {
-						EdenCore.getInstance().logInfo("Control binding \"" + name + "\" already exists for mod \"" + mod.getName() + "\"");
-						return; // Exit if it already exists
-					}
-				}
-			} else {
-				try {
-					bindings.add(mod, new ControlBindingData(name, description, defaultBinding, mod));
-					save(mod);
-				} catch(Exception exception) {
-					EdenCore.getInstance().logException("An error occurred while creating control bindings file", exception);
-				}
-			}
-		} else {
-			try {
-				file.createNewFile();
-				bindings.add(mod, new ControlBindingData(name, description, defaultBinding, mod));
-				save(mod);
-			} catch(Exception exception) {
-				EdenCore.getInstance().logException("An error occurred while creating control bindings file", exception);
+		if(bindingExists(mod, name)) return;
+		// Create the control binding data
+		ControlBindingData bindingData = new ControlBindingData(name, description, defaultBinding, mod);
+		// Add to the bindings list
+		bindings.add(mod, bindingData);
+		// Save to file
+		save(mod);
+	}
+	
+	public static boolean bindingExists(StarMod mod, String bindingName) {
+		for(ControlBindingData bindingData : bindings.getList(mod)) {
+			if(bindingData.name.equals(bindingName)) {
+				// Binding already exists for this mod
+				return true;
 			}
 		}
+		// Binding does not exist for this mod
+		return false;
 	}
 
 	private static File getBindingsFile(StarMod mod) {
@@ -111,7 +109,7 @@ public class ControlBindingData {
 		if(bindings.getList(mod).isEmpty()) load(mod);
 		return new ArrayList<>(bindings.getList(mod));
 	}
-
+	
 	public static void save(StarMod mod) {
 		File file = getBindingsFile(mod);
 		if(!file.exists()) {
@@ -122,8 +120,11 @@ public class ControlBindingData {
 			}
 		}
 		try {
-			JSONArray data = new JSONArray();
-			for(ControlBindingData bindingData : bindings.getList(mod)) data.put(bindingData.serialize());
+			JSONObject data = new JSONObject();
+			data.put("version", VERSION); // Store the version of the serialization format
+			JSONArray array = new JSONArray(); // Create an array to hold the serialized data
+			for(ControlBindingData bindingData : bindings.getList(mod)) array.put(bindingData.serialize());
+			data.put("bindings", array); // Add the array to the main JSON object
 			FileWriter writer = new FileWriter(file);
 			writer.write(data.toString());
 			writer.flush();
@@ -137,10 +138,12 @@ public class ControlBindingData {
 		File file = getBindingsFile(mod);
 		if(file.exists()) {
 			try {
-				JSONArray data = new JSONArray(FileUtils.readFileToString(file));
-				for(int i = 0; i < data.length(); i++) {
-					JSONObject bindingData = data.getJSONObject(i);
-					bindings.add(mod, new ControlBindingData(bindingData));
+				JSONObject data = new JSONObject(FileUtils.readFileToString(file));
+				byte version = (byte) data.getInt("version");
+				JSONArray dataArray = data.optJSONArray("bindings");
+				for(int i = 0; i < dataArray.length(); i++) {
+					JSONObject bindingsData = dataArray.getJSONObject(i); // Get the JSON object for each binding
+					bindings.add(mod, new ControlBindingData(bindingsData));
 				}
 			} catch(Exception exception) {
 				EdenCore.getInstance().logException("An error occurred while loading control bindings file", exception);

@@ -6,6 +6,7 @@ import api.network.packets.PacketUtil;
 import api.utils.game.PlayerUtils;
 import org.schema.common.util.linAlg.Vector3i;
 import org.schema.game.common.data.player.PlayerState;
+import org.schema.game.common.data.world.Sector;
 import org.schema.game.server.data.ServerConfig;
 import thederpgamer.edencore.EdenCore;
 import thederpgamer.edencore.data.DataManager;
@@ -73,8 +74,21 @@ public class BuildSectorDataManager extends DataManager<BuildSectorData> {
 		try {
 			String playerName = args[0].toString();
 			if(!dataExistsForPlayer(playerName, true)) {
-				PersistentObjectUtil.addObject(EdenCore.getInstance().getSkeleton(), new BuildSectorData(playerName));
+				BuildSectorData sectorData = new BuildSectorData(playerName);
+				PersistentObjectUtil.addObject(EdenCore.getInstance().getSkeleton(), sectorData);
 				PersistentObjectUtil.save(EdenCore.getInstance().getSkeleton());
+				
+				try {
+					Sector sector = sectorData.getServerSector();
+					int mask = 0;
+					mask |= Sector.SectorMode.LOCK_NO_EXIT.code;
+					mask |= Sector.SectorMode.LOCK_NO_ENTER.code;
+					mask |= Sector.SectorMode.NO_FP_LOSS.code;
+					mask |= Sector.SectorMode.PROT_NO_ATTACK.code;
+					sector.setProtectionMode(mask);
+				} catch(Exception exception) {
+					EdenCore.getInstance().logException("Failed to lock sector " + sectorData.sector.toString() + " for player " + playerName + ". This may cause issues.", exception);
+				}
 			}
 		} catch(Exception exception) {
 			EdenCore.getInstance().logException("An error occurred while initializing build sector data", exception);

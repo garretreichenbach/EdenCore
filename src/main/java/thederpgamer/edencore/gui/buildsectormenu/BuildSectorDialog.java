@@ -74,7 +74,6 @@ public class BuildSectorDialog extends PlayerInput {
 			createMainTab(tabbedContent.addTab("SECTORS"));
 			createEntitiesTab(tabbedContent.addTab("ENTITIES"));
 			createPermissionsTab(tabbedContent.addTab("PERMISSIONS"));
-			createSettingsTab(tabbedContent.addTab("SETTINGS"));
 			
 			tabbedContent.setSelectedTab(lastTab);
 			contentPane.getContent(0).attach(tabbedContent);
@@ -143,10 +142,6 @@ public class BuildSectorDialog extends PlayerInput {
 			BuildSectorUserScrollableList userScrollableList = new BuildSectorUserScrollableList(getState(), contentPane.getContent(1), getBuildSectorData());
 			userScrollableList.onInit();
 			contentPane.getContent(1).attach(userScrollableList);
-		}
-		
-		private void createSettingsTab(GUIContentPane contentPane) {
-		
 		}
 	}
 }

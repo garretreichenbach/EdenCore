@@ -29,6 +29,28 @@ import java.util.*;
  */
 public class ExchangeItemScrollableList extends ScrollableTableList<ExchangeData> implements GUIActiveInterface {
 
+	private static final BlueprintClassification[] shipClassifications = {
+			BlueprintClassification.ATTACK,
+			BlueprintClassification.CARGO,
+			BlueprintClassification.CARRIER,
+			BlueprintClassification.DEFENSE,
+			BlueprintClassification.MINING,
+			BlueprintClassification.SCAVENGER,
+			BlueprintClassification.SCOUT,
+			BlueprintClassification.SUPPORT
+	};
+	
+	private static final BlueprintClassification[] stationClassifications = {
+			BlueprintClassification.DEFENSE_STATION,
+			BlueprintClassification.FACTORY_STATION,
+			BlueprintClassification.MINING_STATION,
+			BlueprintClassification.OUTPOST_STATION,
+			BlueprintClassification.WAYPOINT_STATION,
+			BlueprintClassification.SHIPYARD_STATION,
+			BlueprintClassification.SHOPPING_STATION,
+			BlueprintClassification.TRADE_STATION
+	};
+
 	private final GUIAncor pane;
 	private final int type;
 
@@ -83,7 +105,7 @@ public class ExchangeItemScrollableList extends ScrollableTableList<ExchangeData
 		}, ControllerElement.FilterRowStyle.LEFT);
 		switch(type) {
 			case ExchangeDialog.SHIPS:
-				addDropdownFilter(new GUIListFilterDropdown<ExchangeData, BlueprintClassification>(getShipClassifications()) {
+				addDropdownFilter(new GUIListFilterDropdown<ExchangeData, BlueprintClassification>(shipClassifications) {
 					public boolean isOk(BlueprintClassification classification, ExchangeData item) {
 						return item.getClassification() == classification;
 					}
@@ -113,7 +135,7 @@ public class ExchangeItemScrollableList extends ScrollableTableList<ExchangeData
 				}, ControllerElement.FilterRowStyle.RIGHT);
 				break;
 			case ExchangeDialog.STATIONS:
-				addDropdownFilter(new GUIListFilterDropdown<ExchangeData, BlueprintClassification>(BlueprintClassification.stationValues().toArray(getStationClassifications())) {
+				addDropdownFilter(new GUIListFilterDropdown<ExchangeData, BlueprintClassification>(BlueprintClassification.stationValues().toArray(stationClassifications)) {
 					public boolean isOk(BlueprintClassification classification, ExchangeData item) {
 						return item.getClassification() == classification;
 					}
@@ -193,33 +215,10 @@ public class ExchangeItemScrollableList extends ScrollableTableList<ExchangeData
 
 	private GUIHorizontalButtonTablePane redrawButtonPane(final ExchangeData data, GUIAncor anchor) {
 		boolean isOwner = GameClient.getClientPlayerState().getFactionName().equals(data.getProducer());
-		GUIHorizontalButtonTablePane buttonPane = new GUIHorizontalButtonTablePane(getState(), (isOwner ? 2 : 1), 1, anchor);
+		GUIHorizontalButtonTablePane buttonPane = new GUIHorizontalButtonTablePane(getState(), 1, 1, anchor);
 		buttonPane.onInit();
 		if(isOwner) {
-			buttonPane.addButton(0, 0, Lng.str("EDIT"), GUIHorizontalArea.HButtonColor.YELLOW, new GUICallback() {
-				@Override
-				public void callback(GUIElement guiElement, MouseEvent mouseEvent) {
-					if(mouseEvent.pressedLeftMouse()) {
-						(new ExchangeDataDialog(data, ExchangeDataDialog.EDIT, Lng.str("Edit Listing"))).activate();
-					}
-				}
-
-				@Override
-				public boolean isOccluded() {
-					return false;
-				}
-			}, new GUIActivationCallback() {
-				@Override
-				public boolean isVisible(InputState inputState) {
-					return true;
-				}
-
-				@Override
-				public boolean isActive(InputState inputState) {
-					return true;
-				}
-			});
-			buttonPane.addButton(1, 0, Lng.str("REMOVE"), GUIHorizontalArea.HButtonColor.RED, new GUICallback() {
+			buttonPane.addButton(0, 0, Lng.str("REMOVE"), GUIHorizontalArea.HButtonColor.RED, new GUICallback() {
 				@Override
 				public void callback(GUIElement guiElement, MouseEvent mouseEvent) {
 					if(mouseEvent.pressedLeftMouse()) {
@@ -319,22 +318,6 @@ public class ExchangeItemScrollableList extends ScrollableTableList<ExchangeData
 		req.directBuy = true;
 		((GameClientState) getState()).getPlayer().getNetworkObject().catalogPlayerHandleBuffer.add(new RemoteBlueprintPlayerRequest(req, false));
 		InventoryUtils.consumeItems(((GameClientState) getState()).getPlayer().getInventory(), ElementManager.getItem("Bronze Bar").getId(), data.getPrice());
-	}
-
-	private BlueprintClassification[] getShipClassifications() {
-		List<BlueprintClassification> classifications = new ArrayList<>();
-		for(BlueprintClassification classification : BlueprintClassification.shipValues()) {
-			if(classification != BlueprintClassification.NONE && classification != BlueprintClassification.ALL_SHIPS) classifications.add(classification);
-		}
-		return classifications.toArray(new BlueprintClassification[0]);
-	}
-
-	private BlueprintClassification[] getStationClassifications() {
-		List<BlueprintClassification> classifications = new ArrayList<>();
-		for(BlueprintClassification classification : BlueprintClassification.stationValues()) {
-			if(classification != BlueprintClassification.NONE && classification != BlueprintClassification.NONE_STATION) classifications.add(classification);
-		}
-		return classifications.toArray(new BlueprintClassification[0]);
 	}
 
 	public class ExchangeItemScrollableListRow extends ScrollableTableList<ExchangeData>.Row {

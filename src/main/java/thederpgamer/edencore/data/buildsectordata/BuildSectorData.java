@@ -1,6 +1,7 @@
 package thederpgamer.edencore.data.buildsectordata;
 
 import api.common.GameCommon;
+import api.common.GameServer;
 import api.network.PacketReadBuffer;
 import api.network.PacketWriteBuffer;
 import org.json.JSONArray;
@@ -14,6 +15,7 @@ import org.schema.game.common.controller.rails.RailRelation;
 import org.schema.game.common.data.SegmentPiece;
 import org.schema.game.common.data.player.PlayerState;
 import org.schema.game.common.data.player.faction.FactionManager;
+import org.schema.game.common.data.world.Sector;
 import org.schema.game.common.data.world.SimpleTransformableSendableObject;
 import org.schema.game.server.data.blueprintnw.BlueprintEntry;
 import thederpgamer.edencore.EdenCore;
@@ -318,6 +320,10 @@ public class BuildSectorData extends SerializableData {
 		EntityUtils.toggleAI(entity, value);
 	}
 
+	public Sector getServerSector() throws Exception {
+		return GameServer.getServerState().getUniverse().getSector(sector);
+	}
+	
 	private void setDefaultPerms(String user, int type) {
 		if(permissions == null) permissions = new HashMap<>();
 		switch(type) {

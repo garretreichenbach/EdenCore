@@ -5,7 +5,6 @@ import org.schema.game.client.controller.PlayerInput;
 import org.schema.game.client.data.GameClientState;
 import org.schema.game.client.view.gui.GUIInputPanel;
 import org.schema.game.common.data.player.PlayerState;
-import org.schema.game.server.data.blueprintnw.BlueprintClassification;
 import org.schema.schine.common.language.Lng;
 import org.schema.schine.graphicsengine.core.MouseEvent;
 import org.schema.schine.graphicsengine.forms.gui.GUIActivationCallback;
@@ -27,6 +26,7 @@ public class ExchangeDialog extends PlayerInput {
 
 	public static final int SHIPS = 0;
 	public static final int STATIONS = 1;
+	public static final int ITEMS = 2; // Not used in this dialog but left here for future use
 
 	private final ExchangePanel panel;
 
@@ -88,7 +88,7 @@ public class ExchangeDialog extends PlayerInput {
 				@Override
 				public void callback(GUIElement guiElement, MouseEvent mouseEvent) {
 					if(mouseEvent.pressedLeftMouse()) {
-						(new ExchangeDataDialog(new ExchangeData("New Ship", "N/A", "No description provided.", playerState.getFactionName(), 1, ExchangeData.ExchangeDataCategory.SHIP, BlueprintClassification.NONE, 0.0f), ExchangeDataDialog.ADD, Lng.str("Add Ship"))).activate();
+						(new AddExchangeBlueprintDialog(GameClient.getClientState(), SHIPS)).activate();
 					}
 				}
 
@@ -122,7 +122,7 @@ public class ExchangeDialog extends PlayerInput {
 				@Override
 				public void callback(GUIElement guiElement, MouseEvent mouseEvent) {
 					if(mouseEvent.pressedLeftMouse()) {
-						(new ExchangeDataDialog(new ExchangeData("New Station", "N/A", "No description provided.", playerState.getFactionName(), 1, ExchangeData.ExchangeDataCategory.STATION, BlueprintClassification.NONE_STATION, 0.0f), ExchangeDataDialog.ADD, Lng.str("Add Station"))).activate();
+						(new AddExchangeBlueprintDialog(GameClient.getClientState(), STATIONS)).activate();
 					}
 				}
 

@@ -1,3 +1,4 @@
+
 package thederpgamer.edencore.commands;
 
 import api.mod.StarMod;
