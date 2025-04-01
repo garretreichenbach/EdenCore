@@ -47,6 +47,7 @@ import thederpgamer.edencore.data.misc.ControlBindingData;
 import thederpgamer.edencore.data.playerdata.PlayerDataManager;
 import thederpgamer.edencore.drawer.BuildSectorHudDrawer;
 import thederpgamer.edencore.element.ElementManager;
+import thederpgamer.edencore.gui.bankingmenu.BankingDialog;
 import thederpgamer.edencore.gui.buildsectormenu.BuildSectorDialog;
 import thederpgamer.edencore.gui.controls.ControlBindingsScrollableList;
 import thederpgamer.edencore.gui.elements.ECCatalogScrollableListNew;
@@ -239,32 +240,32 @@ public class EventManager {
 				ExchangeDataManager.getInstance(false);
 
 				GUITopBar.ExpandedButton dropDownButton = event.getDropdownButtons().get(event.getDropdownButtons().size() - 1);
-//				dropDownButton.addExpandedButton("BANKING", new GUICallback() {
-//					@Override
-//					public void callback(GUIElement guiElement, MouseEvent mouseEvent) {
-//						if(mouseEvent.pressedLeftMouse()) (new BankingDialog()).activate();
-//					}
-//
-//					@Override
-//					public boolean isOccluded() {
-//						return false;
-//					}
-//				}, new GUIActivationHighlightCallback() {
-//					@Override
-//					public boolean isHighlighted(InputState inputState) {
-//						return false;
-//					}
-//
-//					@Override
-//					public boolean isVisible(InputState inputState) {
-//						return true;
-//					}
-//
-//					@Override
-//					public boolean isActive(InputState inputState) {
-//						return true;
-//					}
-//				});
+				dropDownButton.addExpandedButton("BANKING", new GUICallback() {
+					@Override
+					public void callback(GUIElement guiElement, MouseEvent mouseEvent) {
+						if(mouseEvent.pressedLeftMouse()) (new BankingDialog()).activate();
+					}
+
+					@Override
+					public boolean isOccluded() {
+						return false;
+					}
+				}, new GUIActivationHighlightCallback() {
+					@Override
+					public boolean isHighlighted(InputState inputState) {
+						return false;
+					}
+
+					@Override
+					public boolean isVisible(InputState inputState) {
+						return true;
+					}
+
+					@Override
+					public boolean isActive(InputState inputState) {
+						return true;
+					}
+				});
 				dropDownButton.addExpandedButton("GUIDE", new GUICallback() {
 					@Override
 					public void callback(GUIElement guiElement, MouseEvent mouseEvent) {
@@ -373,7 +374,7 @@ public class EventManager {
 								case "Open Banking Menu":
 									GameClient.getClientState().getController().queueUIAudio("0022_menu_ui - enter");
 									GameClient.getClientState().getGlobalGameControlManager().getIngameControlManager().getPlayerGameControlManager().deactivateAll();
-//									(new BankingDialog()).activate();
+									(new BankingDialog()).activate();
 									return;
 								case "Open Exchange Menu":
 									GameClient.getClientState().getController().queueUIAudio("0022_menu_ui - enter");
