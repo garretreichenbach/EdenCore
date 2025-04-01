@@ -15,24 +15,14 @@ import java.util.*;
 public class ExchangeDataManager extends DataManager<ExchangeData> {
 
 	private final Set<ExchangeData> clientCache = new HashSet<>();
-	private static ExchangeDataManager clientInstance;
-	private static ExchangeDataManager serverInstance;
+	private static ExchangeDataManager instance;
 
 	public static ExchangeDataManager getInstance(boolean server) {
-		if(server) {
-			if(serverInstance == null) serverInstance = new ExchangeDataManager();
-			return serverInstance;
-		} else {
-			if(clientInstance == null) clientInstance = new ExchangeDataManager();
-			return clientInstance;
+		if(instance == null) {
+			instance = new ExchangeDataManager();
+			if(!server) instance.requestFromServer();
 		}
-	}
-
-	public static void initialize(boolean client) {
-		if(client) {
-			clientInstance = new ExchangeDataManager();
-			clientInstance.requestFromServer();
-		} else serverInstance = new ExchangeDataManager();
+		return instance;
 	}
 
 	@Override

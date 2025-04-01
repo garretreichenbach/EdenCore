@@ -17,15 +17,16 @@ import java.io.IOException;
  *
  * @author TheDerpGamer
  */
-public class SendDataPacket extends Packet {
+public class SendDataToClientPacket extends Packet {
 
 	private SerializableData.DataType dataType;
 	private SerializableData data;
 	private int type;
 
-	public SendDataPacket() {}
+	public SendDataToClientPacket() {
+	}
 
-	public SendDataPacket(SerializableData data, int type) {
+	public SendDataToClientPacket(SerializableData data, int type) {
 		this.data = data;
 		this.type = type;
 		dataType = data.getDataType();
@@ -68,18 +69,6 @@ public class SendDataPacket extends Packet {
 
 	@Override
 	public void processPacketOnServer(PlayerState playerState) {
-		switch(dataType) {
-			case PLAYER_DATA:
-				PlayerDataManager.getInstance(true).handlePacket(data, type, true);
-				break;
-			case EXCHANGE_DATA:
-				ExchangeDataManager.getInstance(true).handlePacket(data, type, true);
-				break;
-			case BUILD_SECTOR_DATA:
-				BuildSectorDataManager.getInstance(true).handlePacket(data, type, true);
-				break;
-			default:
-				throw new IllegalStateException("Unexpected value: " + dataType);
-		}
+
 	}
 }

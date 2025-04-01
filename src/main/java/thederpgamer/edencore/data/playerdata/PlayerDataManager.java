@@ -9,7 +9,6 @@ import org.schema.game.common.data.player.faction.Faction;
 import thederpgamer.edencore.EdenCore;
 import thederpgamer.edencore.data.DataManager;
 import thederpgamer.edencore.data.SerializableData;
-import thederpgamer.edencore.data.buildsectordata.BuildSectorDataManager;
 import thederpgamer.edencore.manager.PlayerActionManager;
 import thederpgamer.edencore.network.PlayerActionCommandPacket;
 
@@ -26,19 +25,14 @@ import java.util.Set;
 public class PlayerDataManager extends DataManager<PlayerData> {
 
 	private final Set<PlayerData> clientCache = new HashSet<>();
-	private static PlayerDataManager clientInstance;
-	private static PlayerDataManager serverInstance;
+	private static PlayerDataManager instance;
 	
 	public static PlayerDataManager getInstance(boolean server) {
-		if(server) return serverInstance;
-		else return clientInstance;
-	}
-	
-	public static void initialize(boolean client) {
-		if(client) {
-			clientInstance = new PlayerDataManager();
-			clientInstance.requestFromServer();
-		} else serverInstance = new PlayerDataManager();
+		if(instance == null) {
+			instance = new PlayerDataManager();
+			if(!server) instance.requestFromServer();
+		}
+		return instance;
 	}
 
 	@Override

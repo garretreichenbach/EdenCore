@@ -152,7 +152,7 @@ public class EventManager {
 				dropDownButton.addExpandedButton("GUIDE", new GUICallback() {
 					@Override
 					public void callback(GUIElement guiElement, MouseEvent mouseEvent) {
-						if(mouseEvent.pressedLeftMouse()) {
+						if(mouseEvent.pressedLeftMouse() && ModGUIHandler.getGUIControlManager("glossarPanel")!= null) {
 							GameClient.getClientState().getController().queueUIAudio("0022_menu_ui - enter");
 							GameClient.getClientState().getGlobalGameControlManager().getIngameControlManager().getPlayerGameControlManager().deactivateAll();
 							ModGUIHandler.getGUIControlManager("glossarPanel").setActive(true);

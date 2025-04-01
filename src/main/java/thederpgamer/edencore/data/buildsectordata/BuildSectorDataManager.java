@@ -24,19 +24,14 @@ import java.util.*;
 public class BuildSectorDataManager extends DataManager<BuildSectorData> {
 
 	private final Set<BuildSectorData> clientCache = new HashSet<>();
-	private static BuildSectorDataManager clientInstance;
-	private static BuildSectorDataManager serverInstance;
-	
-	public static void initialize(boolean client) {
-		if(client) {
-			clientInstance = new BuildSectorDataManager();
-			clientInstance.requestFromServer();
-		} else serverInstance = new BuildSectorDataManager();
-	}
-	
+	private static BuildSectorDataManager instance;
+
 	public static BuildSectorDataManager getInstance(boolean server) {
-		if(server) return serverInstance;
-		else return clientInstance;
+		if(instance == null) {
+			instance = new BuildSectorDataManager();
+			if(!server) instance.requestFromServer();
+		}
+		return instance;
 	}
 
 	@Override

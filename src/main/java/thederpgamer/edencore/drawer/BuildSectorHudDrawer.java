@@ -23,29 +23,31 @@ public class BuildSectorHudDrawer extends ModWorldDrawer {
 	@Override
 	public void draw() {
 		Hud hud = GameClient.getClientState().getWorldDrawer().getGuiDrawer().getHud();
-		if(BuildSectorDataManager.getInstance(false).isPlayerInAnyBuildSector(GameClient.getClientPlayerState())) {
-			try {
-				if(!wasInBuildSectorLastFrame) {
-					hud.getRadar().getLocation().setTextSimple("<Build Sector>");
-					hud.getIndicator().drawSectorIndicators = false;
-					hud.getIndicator().drawWaypoints = false;
-					if(GameClient.getClientState().getController().getClientGameData().getWaypoint() != null) GameClient.getClientState().getController().getClientGameData().setWaypoint(null);
+		if(BuildSectorDataManager.getInstance(false) != null) {
+			if(BuildSectorDataManager.getInstance(false).isPlayerInAnyBuildSector(GameClient.getClientPlayerState())) {
+				try {
+					if(!wasInBuildSectorLastFrame) {
+						hud.getRadar().getLocation().setTextSimple("<Build Sector>");
+						hud.getIndicator().drawSectorIndicators = false;
+						hud.getIndicator().drawWaypoints = false;
+						if(GameClient.getClientState().getController().getClientGameData().getWaypoint() != null) GameClient.getClientState().getController().getClientGameData().setWaypoint(null);
+					}
+				} catch(Exception exception) {
+					EdenCore.getInstance().logException("An error occurred while updating the HUD", exception);
 				}
-			} catch(Exception exception) {
-				EdenCore.getInstance().logException("An error occurred while updating the HUD", exception);
-			}
-			wasInBuildSectorLastFrame = true;
-		} else {
-			try {
-				if(wasInBuildSectorLastFrame) {
-					hud.getRadar().getLocation().setTextSimple(GameClient.getClientPlayerState().getCurrentSector().toStringPure());
-					hud.getIndicator().drawSectorIndicators = true;
-					hud.getIndicator().drawWaypoints = true;
+				wasInBuildSectorLastFrame = true;
+			} else {
+				try {
+					if(wasInBuildSectorLastFrame) {
+						hud.getRadar().getLocation().setTextSimple(GameClient.getClientPlayerState().getCurrentSector().toStringPure());
+						hud.getIndicator().drawSectorIndicators = true;
+						hud.getIndicator().drawWaypoints = true;
+					}
+				} catch(Exception exception) {
+					EdenCore.getInstance().logException("An error occurred while updating the HUD", exception);
 				}
-			} catch(Exception exception) {
-				EdenCore.getInstance().logException("An error occurred while updating the HUD", exception);
+				wasInBuildSectorLastFrame = false;
 			}
-			wasInBuildSectorLastFrame = false;
 		}
 	}
 

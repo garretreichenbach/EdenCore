@@ -15,14 +15,14 @@ import glossar.GlossarEntry;
 import glossar.GlossarInit;
 import org.schema.game.common.data.player.PlayerState;
 import thederpgamer.edencore.commands.GuideCommand;
-import thederpgamer.edencore.data.DataManager;
 import thederpgamer.edencore.data.misc.ControlBindingData;
 import thederpgamer.edencore.element.ElementManager;
 import thederpgamer.edencore.element.items.PrizeBars;
 import thederpgamer.edencore.manager.ConfigManager;
 import thederpgamer.edencore.manager.EventManager;
 import thederpgamer.edencore.network.PlayerActionCommandPacket;
-import thederpgamer.edencore.network.SendDataPacket;
+import thederpgamer.edencore.network.SendDataToClientPacket;
+import thederpgamer.edencore.network.SendDataToServerPacket;
 import thederpgamer.edencore.network.SyncRequestPacket;
 
 import java.util.Arrays;
@@ -36,10 +36,14 @@ import java.util.Arrays;
 public class EdenCore extends StarMod {
 
 	private static EdenCore instance;
+
 	public EdenCore() {
 		instance = this;
 	}
-	public static void main(String[] args) {}
+
+	public static void main(String[] args) {
+	}
+
 	public static EdenCore getInstance() {
 		return instance;
 	}
@@ -55,7 +59,6 @@ public class EdenCore extends StarMod {
 
 	@Override
 	public void onServerCreated(ServerInitializeEvent serverInitializeEvent) {
-		DataManager.initialize(false);
 		final long tipInterval = ConfigManager.getMainConfig().getLong("tip_interval");
 		(new Thread("EdenCore_Login_Timer_Thread") {
 			@Override
@@ -76,19 +79,8 @@ public class EdenCore extends StarMod {
 
 	@Override
 	public void onClientCreated(ClientInitializeEvent clientInitializeEvent) {
-		(new Thread("EdenCore_Client_Data_Initialization_Thread") {
-			@Override
-			public void run() {
-				try {
-					sleep(7500);
-					DataManager.initialize(true);
-					registerBindings();
-					initializeGlossary();
-				} catch(Exception exception) {
-					instance.logException("An unexpected error occurred during client initialization", exception);
-				}
-			}
-		}).start();
+		registerBindings();
+		initializeGlossary();
 	}
 
 	@Override
@@ -140,7 +132,8 @@ public class EdenCore extends StarMod {
 
 	private void registerPackets() {
 		PacketUtil.registerPacket(PlayerActionCommandPacket.class);
-		PacketUtil.registerPacket(SendDataPacket.class);
+		PacketUtil.registerPacket(SendDataToClientPacket.class);
+		PacketUtil.registerPacket(SendDataToServerPacket.class);
 		PacketUtil.registerPacket(SyncRequestPacket.class);
 		logInfo("Registered Packets");
 	}
