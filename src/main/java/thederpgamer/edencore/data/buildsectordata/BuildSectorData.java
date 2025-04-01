@@ -4,6 +4,7 @@ import api.common.GameCommon;
 import api.common.GameServer;
 import api.network.PacketReadBuffer;
 import api.network.PacketWriteBuffer;
+import it.unimi.dsi.fastutil.objects.ObjectArrayList;
 import org.json.JSONArray;
 import org.json.JSONObject;
 import org.schema.common.util.linAlg.Vector3i;
@@ -18,6 +19,7 @@ import org.schema.game.common.data.player.faction.FactionManager;
 import org.schema.game.common.data.world.Sector;
 import org.schema.game.common.data.world.SimpleTransformableSendableObject;
 import org.schema.game.server.data.blueprintnw.BlueprintEntry;
+import org.schema.schine.network.objects.Sendable;
 import thederpgamer.edencore.EdenCore;
 import thederpgamer.edencore.data.SerializableData;
 import thederpgamer.edencore.data.playerdata.PlayerData;
@@ -64,6 +66,7 @@ public class BuildSectorData extends SerializableData {
 
 	@Override
 	public JSONObject serialize() {
+		doEntityUpdateCheck();
 		JSONObject data = new JSONObject();
 		data.put("version", VERSION);
 		data.put("uuid", getUUID());
@@ -118,6 +121,7 @@ public class BuildSectorData extends SerializableData {
 
 	@Override
 	public void serializeNetwork(PacketWriteBuffer writeBuffer) throws IOException {
+		doEntityUpdateCheck();
 		writeBuffer.writeByte(VERSION);
 		writeBuffer.writeString(dataUUID);
 		writeBuffer.writeString(owner);
@@ -263,7 +267,32 @@ public class BuildSectorData extends SerializableData {
 
 	public Set<BuildSectorEntityData> getEntities() {
 		if(entities == null) entities = new HashSet<>();
+		doEntityUpdateCheck();
 		return entities;
+	}
+
+	public void doEntityUpdateCheck() {
+		prune();
+		for(Sendable sendable : GameCommon.getGameState().getState().getLocalAndRemoteObjectContainer().getLocalObjects().values()) {
+			if(sendable instanceof SegmentController) {
+				SegmentController entity = (SegmentController) sendable;
+				if(entity.getSector(new Vector3i()).equals(sector) && entity.existsInState()) addEntity(entity, entity.isOnServer());
+				else throw new IllegalStateException("This shouldn't ever happen unless prune() somehow broke!");
+			}
+		}
+	}
+	
+	public void prune() {
+		boolean onServer = false;
+		ObjectArrayList<BuildSectorEntityData> toRemove = new ObjectArrayList<>();
+		for(BuildSectorEntityData entityData : entities) {
+			if(entityData.getEntity() == null || !entityData.getEntity().existsInState() || !entityData.getEntity().getSector(new Vector3i()).equals(sector)) {
+				toRemove.add(entityData);
+				onServer = entityData.getEntity().isOnServer();
+			}
+		}
+		for(BuildSectorEntityData entityData : toRemove) entities.remove(entityData); //Prevent concurrency issues
+		if(!toRemove.isEmpty()) BuildSectorDataManager.getInstance(onServer).updateData(this, onServer);
 	}
 
 	public BuildSectorEntityData getEntity(SegmentController entity) {
@@ -323,7 +352,7 @@ public class BuildSectorData extends SerializableData {
 	public Sector getServerSector() throws Exception {
 		return GameServer.getServerState().getUniverse().getSector(sector);
 	}
-	
+
 	private void setDefaultPerms(String user, int type) {
 		if(permissions == null) permissions = new HashMap<>();
 		switch(type) {

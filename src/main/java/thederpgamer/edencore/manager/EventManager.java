@@ -147,18 +147,20 @@ public class EventManager {
 		StarLoader.registerListener(PlayerSpawnEvent.class, new Listener<PlayerSpawnEvent>() {
 			@Override
 			public void onEvent(PlayerSpawnEvent event) {
-				if(event.isServer()) GameServer.executeAdminCommand("creative_mode " + event.getPlayer().getName() + " false");
-				if(!event.getPlayer().getOwnerState().isAdmin()) event.getPlayer().getOwnerState().setHasCreativeMode(false);
-				event.getPlayer().getOwnerState().setUseCreativeMode(false);
+				if(!BuildSectorDataManager.getInstance(event.getPlayer().isOnServer()).isBuildSector(event.getSector())) {
+					if(!event.getPlayer().getOwnerState().isAdmin()) event.getPlayer().getOwnerState().setHasCreativeMode(false);
+					event.getPlayer().getOwnerState().setUseCreativeMode(false);
+				}
 			}
 		}, instance);
 		
 		StarLoader.registerListener(PlayerDeathEvent.class, new Listener<PlayerDeathEvent>() {
 			@Override
 			public void onEvent(PlayerDeathEvent event) {
-				if(event.isServer()) GameServer.executeAdminCommand("creative_mode " + event.getPlayer().getName() + " false");
-				if(!event.getPlayer().isAdmin()) event.getPlayer().setHasCreativeMode(false);
-				event.getPlayer().setUseCreativeMode(false);
+				if(!BuildSectorDataManager.getInstance(event.getPlayer().isOnServer()).isBuildSector(event.getPlayer().getCurrentSector())) {
+					if(!event.getPlayer().isAdmin()) event.getPlayer().setHasCreativeMode(false);
+					event.getPlayer().setUseCreativeMode(false);
+				}
 			}
 		}, instance);
 		
@@ -180,7 +182,6 @@ public class EventManager {
 						Sector oldSector = GameServer.getServerState().getUniverse().getSector(oldSectorId);
 						Sector newSector = GameServer.getServerState().getUniverse().getSector(newSectorId);
 						if(oldSector != null && BuildSectorDataManager.getInstance(true).isBuildSector(oldSector.pos)) {
-							if(event.isServer()) GameServer.executeAdminCommand("creative_mode " + event.getPlayerState().getName() + " false");
 							if(!event.getPlayerState().isAdmin()) event.getPlayerState().setHasCreativeMode(false);
 							event.getPlayerState().setUseCreativeMode(false);
 						}

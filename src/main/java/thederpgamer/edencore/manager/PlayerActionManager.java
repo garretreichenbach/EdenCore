@@ -48,6 +48,7 @@ public class PlayerActionManager {
 					break;
 				case ENTER_BUILD_SECTOR:
 					playerState = GameCommon.getPlayerFromName(args[0]);
+					playerState.getControllerState().forcePlayerOutOfSegmentControllers();
 					playerData = PlayerDataManager.getInstance(playerState.isOnServer()).getFromName(playerState.getName(), playerState.isOnServer());
 					BuildSectorData data = BuildSectorDataManager.getInstance(playerState.isOnServer()).getFromUUID(args[1], playerState.isOnServer());
 					playerData.setLastRealSector(playerState.getCurrentSector());
@@ -57,16 +58,19 @@ public class PlayerActionManager {
 					else lastRealTransform.origin.set(playerState.getBuildModePosition().getWorldTransform().origin);
 					playerData.setLastRealTransform(lastRealTransform);
 					Vector3i sector = data.getSector();
-					GameServer.executeAdminCommand("creative_mode " + playerState.getName() + " true");
 					GameServer.executeAdminCommand("change_sector_for " + playerState.getName() + " " + sector.x + " " + sector.y + " " + sector.z);
+					playerState.setHasCreativeMode(true);
+					playerState.setUseCreativeMode(true);
 					break;
 				case LEAVE_BUILD_SECTOR:
 					playerState = GameCommon.getPlayerFromName(args[0]);
+					playerState.getControllerState().forcePlayerOutOfSegmentControllers();
 					playerData = PlayerDataManager.getInstance(playerState.isOnServer()).getFromName(playerState.getName(), playerState.isOnServer());
 					Vector3i lastRealSector = playerData.getLastRealSector();
 					Transform lastRealTransform1 = playerData.getLastRealTransform();
-					GameServer.executeAdminCommand("creative_mode " + playerState.getName() + " false");
-					GameServer.executeAdminCommand("change_sector " + lastRealSector.x + " " + lastRealSector.y + " " + lastRealSector.z);
+					playerState.setHasCreativeMode(false);
+					playerState.setUseCreativeMode(false);
+					GameServer.executeAdminCommand("change_sector_for " + playerState.getName() + " " + lastRealSector.x + " " + lastRealSector.y + " " + lastRealSector.z);
 					playerState.getAssingedPlayerCharacter().warpTransformable(lastRealTransform1, true, false, null);
 					break;
 			}
