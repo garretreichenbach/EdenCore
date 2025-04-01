@@ -21,19 +21,15 @@ import api.utils.game.PlayerUtils;
 import api.utils.game.inventory.InventoryUtils;
 import api.utils.gui.ModGUIHandler;
 import org.schema.common.util.linAlg.Vector3i;
-import org.schema.game.client.view.gui.PlayerPanel;
 import org.schema.game.client.view.gui.catalog.newcatalog.CatalogOptionsButtonPanel;
 import org.schema.game.client.view.gui.catalog.newcatalog.CatalogPanelNew;
 import org.schema.game.client.view.gui.catalog.newcatalog.CatalogScrollableListNew;
 import org.schema.game.client.view.gui.newgui.GUITopBar;
-import org.schema.game.common.data.element.Element;
-import org.schema.game.common.data.element.ElementCollection;
 import org.schema.game.common.data.player.AbstractOwnerState;
 import org.schema.game.common.data.player.PlayerState;
 import org.schema.game.common.data.player.inventory.Inventory;
 import org.schema.game.common.data.world.RemoteSector;
 import org.schema.game.common.data.world.Sector;
-import org.schema.game.server.data.Galaxy;
 import org.schema.game.server.data.simulation.jobs.SpawnPiratePatrolPartyJob;
 import org.schema.schine.common.language.Lng;
 import org.schema.schine.graphicsengine.core.MouseEvent;
@@ -44,7 +40,6 @@ import org.schema.schine.graphicsengine.forms.gui.newgui.GUIContentPane;
 import org.schema.schine.graphicsengine.forms.gui.newgui.GUIResizableGrabbableWindow;
 import org.schema.schine.graphicsengine.forms.gui.newgui.GUITabbedContent;
 import org.schema.schine.input.InputState;
-import org.schema.schine.network.objects.Sendable;
 import thederpgamer.edencore.EdenCore;
 import thederpgamer.edencore.data.buildsectordata.BuildSectorDataManager;
 import thederpgamer.edencore.data.exchangedata.ExchangeDataManager;
@@ -52,7 +47,6 @@ import thederpgamer.edencore.data.misc.ControlBindingData;
 import thederpgamer.edencore.data.playerdata.PlayerDataManager;
 import thederpgamer.edencore.drawer.BuildSectorHudDrawer;
 import thederpgamer.edencore.element.ElementManager;
-import thederpgamer.edencore.gui.bankingmenu.BankingDialog;
 import thederpgamer.edencore.gui.buildsectormenu.BuildSectorDialog;
 import thederpgamer.edencore.gui.controls.ControlBindingsScrollableList;
 import thederpgamer.edencore.gui.elements.ECCatalogScrollableListNew;
@@ -245,32 +239,32 @@ public class EventManager {
 				ExchangeDataManager.getInstance(false);
 
 				GUITopBar.ExpandedButton dropDownButton = event.getDropdownButtons().get(event.getDropdownButtons().size() - 1);
-				dropDownButton.addExpandedButton("BANKING", new GUICallback() {
-					@Override
-					public void callback(GUIElement guiElement, MouseEvent mouseEvent) {
-						if(mouseEvent.pressedLeftMouse()) (new BankingDialog()).activate();
-					}
-
-					@Override
-					public boolean isOccluded() {
-						return false;
-					}
-				}, new GUIActivationHighlightCallback() {
-					@Override
-					public boolean isHighlighted(InputState inputState) {
-						return false;
-					}
-
-					@Override
-					public boolean isVisible(InputState inputState) {
-						return true;
-					}
-
-					@Override
-					public boolean isActive(InputState inputState) {
-						return true;
-					}
-				});
+//				dropDownButton.addExpandedButton("BANKING", new GUICallback() {
+//					@Override
+//					public void callback(GUIElement guiElement, MouseEvent mouseEvent) {
+//						if(mouseEvent.pressedLeftMouse()) (new BankingDialog()).activate();
+//					}
+//
+//					@Override
+//					public boolean isOccluded() {
+//						return false;
+//					}
+//				}, new GUIActivationHighlightCallback() {
+//					@Override
+//					public boolean isHighlighted(InputState inputState) {
+//						return false;
+//					}
+//
+//					@Override
+//					public boolean isVisible(InputState inputState) {
+//						return true;
+//					}
+//
+//					@Override
+//					public boolean isActive(InputState inputState) {
+//						return true;
+//					}
+//				});
 				dropDownButton.addExpandedButton("GUIDE", new GUICallback() {
 					@Override
 					public void callback(GUIElement guiElement, MouseEvent mouseEvent) {
@@ -379,7 +373,7 @@ public class EventManager {
 								case "Open Banking Menu":
 									GameClient.getClientState().getController().queueUIAudio("0022_menu_ui - enter");
 									GameClient.getClientState().getGlobalGameControlManager().getIngameControlManager().getPlayerGameControlManager().deactivateAll();
-									(new BankingDialog()).activate();
+//									(new BankingDialog()).activate();
 									return;
 								case "Open Exchange Menu":
 									GameClient.getClientState().getController().queueUIAudio("0022_menu_ui - enter");
