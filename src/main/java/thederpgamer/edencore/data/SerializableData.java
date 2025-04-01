@@ -52,12 +52,8 @@ public abstract class SerializableData {
 		dataUUID = UUID.randomUUID().toString();
 	}
 
-	protected SerializableData(PacketReadBuffer readBuffer) throws IOException {
-		deserializeNetwork(readBuffer);
-	}
+	protected SerializableData() {
 
-	protected SerializableData(JSONObject data) {
-		deserialize(data);
 	}
 
 	public boolean equals(Object obj) {

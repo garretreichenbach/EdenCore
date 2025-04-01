@@ -1,5 +1,6 @@
 package thederpgamer.edencore.gui.buildsectormenu;
 
+import api.common.GameClient;
 import org.schema.schine.graphicsengine.core.MouseEvent;
 import org.schema.schine.graphicsengine.forms.gui.*;
 import org.schema.schine.graphicsengine.forms.gui.newgui.*;
@@ -108,11 +109,10 @@ public class BuildSectorPermissionsScrollableList extends ScrollableTableList<Pa
 			GUIClippedRow permissionRow = getSimpleRow(permission.first().getDisplay(), this);
 			GUIClippedRow valueRow = getSimpleRow(permission.second().toString(), this);
 			BuildSectorPermissionsScrollableListRow entryListRow = new BuildSectorPermissionsScrollableListRow(getState(), permission, permissionRow, valueRow);
-			guiElementList.add(entryListRow);
-			GUIAncor anchor = new GUIAncor(getState(), parent.getWidth() - 107.0f, 28.0f) {
+			GUIAncor anchor = new GUIAncor(getState(), parent.getWidth() - 28.0f, 28.0f) {
 				@Override
 				public void draw() {
-					setWidth(parent.getWidth() - 107.0f);
+					setWidth(parent.getWidth() - 28.0f);
 					super.draw();
 				}
 			};
@@ -130,6 +130,8 @@ public class BuildSectorPermissionsScrollableList extends ScrollableTableList<Pa
 
 				@Override
 				public boolean isOccluded() {
+					if(!getState().getController().getPlayerInputs().isEmpty() && !getState().getController().getPlayerInputs().contains(getDialog())) return true;
+					if(buildSectorData.getOwner().equals(GameClient.getClientPlayerState().getName())) return true;
 					if(entityID != -1) return !buildSectorData.getPermissionForEntityOrGlobal(username, entityID, BuildSectorData.PermissionTypes.EDIT_ENTITY_PERMISSIONS);
 					return !buildSectorData.getPermission(username, BuildSectorData.PermissionTypes.EDIT_PERMISSIONS);
 				}
@@ -141,6 +143,7 @@ public class BuildSectorPermissionsScrollableList extends ScrollableTableList<Pa
 
 				@Override
 				public boolean isActive(InputState inputState) {
+					if(buildSectorData.getOwner().equals(GameClient.getClientPlayerState().getName())) return false;
 					if(entityID != -1) return buildSectorData.getPermissionForEntityOrGlobal(username, entityID, BuildSectorData.PermissionTypes.EDIT_ENTITY_PERMISSIONS);
 					return buildSectorData.getPermission(username, BuildSectorData.PermissionTypes.EDIT_PERMISSIONS);
 				}
@@ -157,6 +160,8 @@ public class BuildSectorPermissionsScrollableList extends ScrollableTableList<Pa
 
 				@Override
 				public boolean isOccluded() {
+					if(!getState().getController().getPlayerInputs().isEmpty() && !getState().getController().getPlayerInputs().contains(getDialog())) return true;
+					if(buildSectorData.getOwner().equals(GameClient.getClientPlayerState().getName())) return true;
 					if(entityID != -1) return !buildSectorData.getPermissionForEntityOrGlobal(username, entityID, BuildSectorData.PermissionTypes.EDIT_ENTITY_PERMISSIONS);
 					return !buildSectorData.getPermission(username, BuildSectorData.PermissionTypes.EDIT_PERMISSIONS);
 				}
@@ -168,6 +173,7 @@ public class BuildSectorPermissionsScrollableList extends ScrollableTableList<Pa
 
 				@Override
 				public boolean isActive(InputState inputState) {
+					if(buildSectorData.getOwner().equals(GameClient.getClientPlayerState().getName())) return false;
 					if(entityID != -1) return buildSectorData.getPermissionForEntityOrGlobal(username, entityID, BuildSectorData.PermissionTypes.EDIT_ENTITY_PERMISSIONS);
 					return buildSectorData.getPermission(username, BuildSectorData.PermissionTypes.EDIT_PERMISSIONS);
 				}
@@ -179,6 +185,10 @@ public class BuildSectorPermissionsScrollableList extends ScrollableTableList<Pa
 			guiElementList.addWithoutUpdate(entryListRow);
 		}
 		guiElementList.updateDim();
+	}
+
+	private BuildSectorDialog getDialog() {
+		return BuildSectorDialog.getInstance();
 	}
 
 	public class BuildSectorPermissionsScrollableListRow extends ScrollableTableList<Pair<BuildSectorData.PermissionTypes, Boolean>>.Row {

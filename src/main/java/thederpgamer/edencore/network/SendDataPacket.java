@@ -12,21 +12,16 @@ import thederpgamer.edencore.data.playerdata.PlayerDataManager;
 
 import java.io.IOException;
 
-/**
- * [Description]
- *
- * @author TheDerpGamer
- */
-public class SendDataToClientPacket extends Packet {
+public class SendDataPacket extends Packet {
 
 	private SerializableData.DataType dataType;
 	private SerializableData data;
 	private int type;
 
-	public SendDataToClientPacket() {
+	public SendDataPacket() {
 	}
 
-	public SendDataToClientPacket(SerializableData data, int type) {
+	public SendDataPacket(SerializableData data, int type) {
 		this.data = data;
 		this.type = type;
 		dataType = data.getDataType();
@@ -69,6 +64,18 @@ public class SendDataToClientPacket extends Packet {
 
 	@Override
 	public void processPacketOnServer(PlayerState playerState) {
-
+		switch(dataType) {
+			case PLAYER_DATA:
+				PlayerDataManager.getInstance(playerState.isOnServer()).handlePacket(data, type, playerState.isOnServer());
+				break;
+			case EXCHANGE_DATA:
+				ExchangeDataManager.getInstance(playerState.isOnServer()).handlePacket(data, type, playerState.isOnServer());
+				break;
+			case BUILD_SECTOR_DATA:
+				BuildSectorDataManager.getInstance(playerState.isOnServer()).handlePacket(data, type, playerState.isOnServer());
+				break;
+			default:
+				throw new IllegalStateException("Unexpected value: " + dataType);
+		}
 	}
 }

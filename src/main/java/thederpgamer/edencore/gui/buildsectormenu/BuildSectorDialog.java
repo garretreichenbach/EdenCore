@@ -23,9 +23,15 @@ import thederpgamer.edencore.data.playerdata.PlayerDataManager;
 public class BuildSectorDialog extends PlayerInput {
 	
 	private final BuildSectorPanel panel;
+	private static BuildSectorDialog instance;
+
+	public static BuildSectorDialog getInstance() {
+		return instance;
+	}
 	
 	public BuildSectorDialog() {
 		super(GameClient.getClientState());
+		instance = this;
 		(panel = new BuildSectorPanel(getState(), this)).onInit();
 	}
 

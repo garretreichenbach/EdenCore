@@ -93,9 +93,9 @@ public class ExchangeItemScrollableList extends ScrollableTableList<ExchangeData
 					public GUIElement create(BlueprintClassification classification) {
 						GUIAncor anchor = new GUIAncor(getState(), 10.0F, 24.0F);
 						GUITextOverlayTableDropDown dropDown;
-						(dropDown = new GUITextOverlayTableDropDown(10, 10, getState())).setTextSimple(classification.getName());
+						(dropDown = new GUITextOverlayTableDropDown(10, 10, getState())).setTextSimple(classification.getName().toUpperCase(Locale.ENGLISH));
 						dropDown.setPos(4.0F, 4.0F, 0.0F);
-						anchor.setUserPointer(classification.name());
+						anchor.setUserPointer(classification.name().toUpperCase(Locale.ENGLISH));
 						anchor.attach(dropDown);
 						return anchor;
 					}
@@ -123,9 +123,9 @@ public class ExchangeItemScrollableList extends ScrollableTableList<ExchangeData
 					public GUIElement create(BlueprintClassification classification) {
 						GUIAncor anchor = new GUIAncor(getState(), 10.0F, 24.0F);
 						GUITextOverlayTableDropDown dropDown;
-						(dropDown = new GUITextOverlayTableDropDown(10, 10, getState())).setTextSimple(classification.getName());
+						(dropDown = new GUITextOverlayTableDropDown(10, 10, getState())).setTextSimple(classification.getName().toUpperCase(Locale.ENGLISH));
 						dropDown.setPos(4.0F, 4.0F, 0.0F);
-						anchor.setUserPointer(classification.name());
+						anchor.setUserPointer(classification.name().toUpperCase(Locale.ENGLISH));
 						anchor.attach(dropDown);
 						return anchor;
 					}
@@ -186,7 +186,7 @@ public class ExchangeItemScrollableList extends ScrollableTableList<ExchangeData
 			entryListRow.expanded.add(new GUIListElement(anchor, getState()));
 //			entryListRow.expanded.attach(anchor);
 			entryListRow.onInit();
-			guiElementList.add(entryListRow);
+			guiElementList.addWithoutUpdate(entryListRow);
 		}
 		guiElementList.updateDim();
 	}

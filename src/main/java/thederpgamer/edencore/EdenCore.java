@@ -21,8 +21,7 @@ import thederpgamer.edencore.element.items.PrizeBars;
 import thederpgamer.edencore.manager.ConfigManager;
 import thederpgamer.edencore.manager.EventManager;
 import thederpgamer.edencore.network.PlayerActionCommandPacket;
-import thederpgamer.edencore.network.SendDataToClientPacket;
-import thederpgamer.edencore.network.SendDataToServerPacket;
+import thederpgamer.edencore.network.SendDataPacket;
 import thederpgamer.edencore.network.SyncRequestPacket;
 
 import java.util.Arrays;
@@ -118,8 +117,9 @@ public class EdenCore extends StarMod {
 		StarLoaderTexture.runOnGraphicsThread(new Runnable() {
 			@Override
 			public void run() {
+				GlossarInit.initGlossar(getInstance());
 				GlossarCategory rules = new GlossarCategory("Server Rules");
-				rules.addEntry(new GlossarEntry("Server Info", "Skies of Eden is a modded survival StarMade server run by the SOE staff team and hosted on CBS hardware.\n" + "We work hard to bring new features and content to the server, and we hope you enjoy your time here.\n" + "Note that not all features are complete, and some may be buggy. If you find any bugs, please report them to a staff member.\n" + "Please read the rules section before playing on the server, and be sure to join our discord at https://discord.gg/qxzvBxT."));
+				rules.addEntry(new GlossarEntry("Server Info", "Skies of Eden is a modded survival StarMade server run by the SOE staff team and hosted on PingPerfect hardware.\n" + "We work hard to bring new features and content to the server, and we hope you enjoy your time here.\n" + "Note that not all features are complete, and some may be buggy. If you find any bugs, please report them to a staff member.\n" + "Please read the rules section before playing on the server, and be sure to join our discord at https://discord.gg/qxzvBxT."));
 				rules.addEntry(new GlossarEntry("Rules", "1) Be polite and respectful in chat.\n" + "2) Do not spam chat or advertise links to other servers.\n" + "3) Do not use any cheats, glitches, exploits, etc. that give you an unfair advantage over other players. If you find a bug, please report it to a staff member.\n" + "4) Keep politics at an absolute minimum. This is a starmade server, not a political forum.\n" + "5) Hate speech and hate symbols are not tolerated. This includes racism, sexism, homophobia, etc.\n" + "6) Do not intentionally create server lag. If your entity is lagging the server, it may be deleted by staff without compensation.\n" + "7) Do not create home-bases on planets.\n" + "8) Do not attempt to attack or capture public infrastructure such as warpgates.\n" + "9) Use common sense. If you are unsure about something, ask a staff member.\n" + "10) Repeated or serious violations of any of the server rules can result in bans of the offenders, deletion of ships/stations, and penalties to anyone involved or associated."));
 				GlossarInit.addCategory(rules);
 				GlossarCategory edenCore = new GlossarCategory("Eden Core");
@@ -132,8 +132,7 @@ public class EdenCore extends StarMod {
 
 	private void registerPackets() {
 		PacketUtil.registerPacket(PlayerActionCommandPacket.class);
-		PacketUtil.registerPacket(SendDataToClientPacket.class);
-		PacketUtil.registerPacket(SendDataToServerPacket.class);
+		PacketUtil.registerPacket(SendDataPacket.class);
 		PacketUtil.registerPacket(SyncRequestPacket.class);
 		logInfo("Registered Packets");
 	}
@@ -147,7 +146,7 @@ public class EdenCore extends StarMod {
 		ControlBindingData.load(this);
 		ControlBindingData.registerBinding(this, "Open Guide", "Opens the Guide Menu", 181);
 		ControlBindingData.registerBinding(this, "Open Banking Menu", "Opens the Banking Menu", 78);
-		ControlBindingData.registerBinding(this, "Open Exchange Menu", "Opens the Exchange Menu", 74);
+//		ControlBindingData.registerBinding(this, "Open Exchange Menu", "Opens the Exchange Menu", 74);
 		ControlBindingData.registerBinding(this, "Open Build Sector Menu", "Opens the Build Sector Menu", 55);
 		logInfo("Registered Bindings");
 	}

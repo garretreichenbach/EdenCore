@@ -1,5 +1,6 @@
 package thederpgamer.edencore.gui.buildsectormenu;
 
+import api.common.GameClient;
 import org.schema.schine.graphicsengine.core.MouseEvent;
 import org.schema.schine.graphicsengine.forms.gui.*;
 import org.schema.schine.graphicsengine.forms.gui.newgui.*;
@@ -60,18 +61,18 @@ public class BuildSectorUserScrollableList extends ScrollableTableList<String> i
 		guiElementList.addObserver(this);
 		for(final String username : set) {
 			GUIClippedRow nameRow = getSimpleRow(username, this);
-			BuildSectorUserScrollableListRow entryListRow = new BuildSectorUserScrollableListRow(getState(), username, nameRow);
-			GUIAncor anchor = new GUIAncor(getState(), parent.getWidth() - 107.0f, 28.0f) {
+			final BuildSectorUserScrollableListRow entryListRow = new BuildSectorUserScrollableListRow(getState(), username, nameRow);
+			GUIAncor anchor = new GUIAncor(getState(), parent.getWidth() - 28.0f, 28.0f) {
 				@Override
 				public void draw() {
-					setWidth(parent.getWidth() - 107.0f);
+					setWidth(entryListRow.getWidth());
 					super.draw();
 				}
 			};
 
-			GUIHorizontalButtonTablePane buttonPane = new GUIHorizontalButtonTablePane(getState(), 3, 1, anchor);
+			GUIHorizontalButtonTablePane buttonPane = new GUIHorizontalButtonTablePane(getState(), 2, 1, anchor);
 			buttonPane.onInit();
-			buttonPane.addButton(0, 0, "EDIT PERMISSIONS", GUIHorizontalArea.HButtonColor.ORANGE, new GUICallback() {
+			buttonPane.addButton(0, 0, "EDIT PERMISSIONS", GUIHorizontalArea.HButtonColor.BLUE, new GUICallback() {
 				@Override
 				public void callback(GUIElement guiElement, MouseEvent mouseEvent) {
 					if(mouseEvent.pressedLeftMouse()) {
@@ -82,6 +83,7 @@ public class BuildSectorUserScrollableList extends ScrollableTableList<String> i
 
 				@Override
 				public boolean isOccluded() {
+					if(!getState().getController().getPlayerInputs().isEmpty() && !getState().getController().getPlayerInputs().contains(getDialog())) return true;
 					if(entityID != -1) return !buildSectorData.getPermissionForEntityOrGlobal(username, entityID, BuildSectorData.PermissionTypes.EDIT_ENTITY_PERMISSIONS);
 					else return !buildSectorData.getPermission(username, BuildSectorData.PermissionTypes.EDIT_PERMISSIONS);
 				}
@@ -97,6 +99,32 @@ public class BuildSectorUserScrollableList extends ScrollableTableList<String> i
 					return buildSectorData.getPermission(username, BuildSectorData.PermissionTypes.EDIT_PERMISSIONS);
 				}
 			});
+			buttonPane.addButton(1, 0, "REMOVE USER", GUIHorizontalArea.HButtonColor.ORANGE, new GUICallback() {
+				@Override
+				public void callback(GUIElement guiElement, MouseEvent mouseEvent) {
+					if(mouseEvent.pressedLeftMouse()) {
+						buildSectorData.removePlayer(username, false);
+						flagDirty();
+					}
+				}
+
+				@Override
+				public boolean isOccluded() {
+					if(!getState().getController().getPlayerInputs().isEmpty() && !getState().getController().getPlayerInputs().contains(getDialog())) return true;
+					return !buildSectorData.getPermission(username, BuildSectorData.PermissionTypes.KICK) || buildSectorData.getOwner().equals(GameClient.getClientPlayerState().getName());
+
+				}
+			}, new GUIActivationCallback() {
+				@Override
+				public boolean isVisible(InputState inputState) {
+					return true;
+				}
+
+				@Override
+				public boolean isActive(InputState inputState) {
+					return buildSectorData.getPermission(username, BuildSectorData.PermissionTypes.KICK) && !buildSectorData.getOwner().equals(GameClient.getClientPlayerState().getName());
+				}
+			});
 
 			anchor.attach(buttonPane);
 			entryListRow.expanded = new GUIElementList(getState());
@@ -105,6 +133,10 @@ public class BuildSectorUserScrollableList extends ScrollableTableList<String> i
 			guiElementList.addWithoutUpdate(entryListRow);
 		}
 		guiElementList.updateDim();
+	}
+
+	private BuildSectorDialog getDialog() {
+		return BuildSectorDialog.getInstance();
 	}
 
 	public class BuildSectorUserScrollableListRow extends ScrollableTableList<String>.Row {

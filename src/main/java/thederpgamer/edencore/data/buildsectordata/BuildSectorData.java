@@ -51,12 +51,12 @@ public class BuildSectorData extends SerializableData {
 	}
 
 	public BuildSectorData(PacketReadBuffer readBuffer) throws IOException {
-		super(readBuffer);
+		deserializeNetwork(readBuffer);
 		dataType = DataType.BUILD_SECTOR_DATA;
 	}
 
 	public BuildSectorData(JSONObject data) {
-		super(data);
+		deserialize(data);
 		dataType = DataType.BUILD_SECTOR_DATA;
 	}
 
@@ -443,12 +443,12 @@ public class BuildSectorData extends SerializableData {
 		}
 
 		public BuildSectorEntityData(PacketReadBuffer readBuffer) throws IOException {
-			super(readBuffer);
+			deserializeNetwork(readBuffer);
 			dataType = DataType.BUILD_SECTOR_ENTITY_DATA;
 		}
 
 		public BuildSectorEntityData(JSONObject data) {
-			super(data);
+			deserialize(data);
 			dataType = DataType.BUILD_SECTOR_ENTITY_DATA;
 		}
 

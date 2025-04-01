@@ -57,7 +57,7 @@ public class PlayerActionManager {
 					else lastRealTransform.origin.set(playerState.getBuildModePosition().getWorldTransform().origin);
 					playerData.setLastRealTransform(lastRealTransform);
 					Vector3i sector = data.getSector();
-					GameServer.executeAdminCommand("change_sector " + sector.x + " " + sector.y + " " + sector.z);
+					GameServer.executeAdminCommand("change_sector_for " + playerState.getName() + " " + sector.x + " " + sector.y + " " + sector.z);
 					break;
 				case LEAVE_BUILD_SECTOR:
 					playerState = GameCommon.getPlayerFromName(args[0]);

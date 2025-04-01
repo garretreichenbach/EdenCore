@@ -82,7 +82,7 @@ public class ExchangeDataDialog extends PlayerOkCancelInput {
 		private GUIDropDownList dropDownList;
 
 		public ExchangeDataPanel(InputState state, GUICallback guiCallback, ExchangeData data, int mode) {
-			super("ExchangeDataPanel", state, guiCallback, width, height);
+			super("ExchangeDataPanel", state, guiCallback, "Add To Exchange", "");
 			this.data = data;
 			this.mode = mode;
 		}
@@ -93,7 +93,6 @@ public class ExchangeDataDialog extends PlayerOkCancelInput {
 			GUIContentPane contentPane = ((GUIDialogWindow) background).getMainContentPane();
 			contentPane.setTextBoxHeightLast((int) (getHeight() - 50));
 			nameInput = new GUILabeledTextInput(10, 10, getState(), Lng.str("Name"), GUILabeledTextInput.LEFT);
-			nameInput.setTextBox(true);
 			nameInput.setTextInput(new TextAreaInput(64, 1, new TextCallback() {
 				@Override
 				public String[] getCommandPrefixes() {
@@ -125,7 +124,6 @@ public class ExchangeDataDialog extends PlayerOkCancelInput {
 			contentPane.getContent(0).attach(nameInput);
 
 			descriptionInput = new GUILabeledTextInput(10, 10, getState(), Lng.str("Description"), GUILabeledTextInput.LEFT);
-			descriptionInput.setTextBox(true);
 			descriptionInput.setTextInput(new TextAreaInput(512, 5, new TextCallback() {
 				@Override
 				public String[] getCommandPrefixes() {
@@ -158,7 +156,6 @@ public class ExchangeDataDialog extends PlayerOkCancelInput {
 			descriptionInput.getPos().y += nameInput.getHeight() + 4;
 
 			priceInput = new GUILabeledTextInput(10, 10, getState(), Lng.str("Price"), GUILabeledTextInput.LEFT);
-			priceInput.setTextBox(true);
 			priceInput.setTextInput(new TextAreaInput(2, 1, new TextCallback() {
 				@Override
 				public String[] getCommandPrefixes() {

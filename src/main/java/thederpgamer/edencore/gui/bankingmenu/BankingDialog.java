@@ -176,15 +176,13 @@ public class BankingDialog extends PlayerInput {
 								contentPane.attach(playerInput);
 								playerInput.getPos().y += amountInput.getHeight() + 10;
 								subjectInput = new GUILabeledTextInput(10, 10, getState(), "Subject: ", GUILabeledTextInput.LEFT);
-								subjectInput.setTextBox(true);
 								subjectInput.onInit();
-								subjectInput.setText("Credit Transfer");
+//								subjectInput.setPreText("Credit Transfer");
 								contentPane.addNewTextBox((int) (subjectInput.getHeight() + 2));
 								contentPane.attach(subjectInput);
 								messageInput = new GUILabeledTextInput(10, 30, getState(), "Message: ", GUILabeledTextInput.LEFT);
-								messageInput.setTextBox(true);
 								messageInput.onInit();
-								messageInput.setText("Sent " + amountInput.getText() + " credits to " + playerInput.getText());
+//								messageInput.setPreText("Sent " + amountInput.getText() + " credits to " + playerInput.getText());
 								contentPane.addNewTextBox((int) (messageInput.getHeight() + 2));
 								contentPane.attach(messageInput);
 								super.activate();
@@ -222,7 +220,7 @@ public class BankingDialog extends PlayerInput {
 
 				@Override
 				public boolean isOccluded() {
-					return false;
+					return getState().getController().getPlayerInputs().isEmpty();
 				}
 			}, new GUIActivationHighlightCallback() {
 				@Override

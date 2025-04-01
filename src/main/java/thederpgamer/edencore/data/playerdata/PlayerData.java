@@ -46,12 +46,12 @@ public class PlayerData extends SerializableData {
 	}
 
 	public PlayerData(PacketReadBuffer readBuffer) throws IOException {
-		super(readBuffer);
+		deserializeNetwork(readBuffer);
 		dataType = DataType.PLAYER_DATA;
 	}
 
 	public PlayerData(JSONObject data) {
-		super(data);
+		deserialize(data);
 		dataType = DataType.PLAYER_DATA;
 	}
 
@@ -223,12 +223,12 @@ public class PlayerData extends SerializableData {
 		}
 
 		public PlayerBankTransactionData(PacketReadBuffer readBuffer) throws IOException {
-			super(readBuffer);
+			deserializeNetwork(readBuffer);
 			dataType = DataType.PLAYER_BANKING_TRANSACTION_DATA;
 		}
 
 		public PlayerBankTransactionData(JSONObject data) {
-			super(data);
+			deserialize(data);
 			dataType = DataType.PLAYER_BANKING_TRANSACTION_DATA;
 		}
 
