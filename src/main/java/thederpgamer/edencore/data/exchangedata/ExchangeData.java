@@ -3,10 +3,13 @@ package thederpgamer.edencore.data.exchangedata;
 import api.network.PacketReadBuffer;
 import api.network.PacketWriteBuffer;
 import org.json.JSONObject;
+import org.schema.game.common.data.element.ElementInformation;
+import org.schema.game.common.data.element.ElementKeyMap;
 import org.schema.game.common.data.player.catalog.CatalogPermission;
 import org.schema.game.server.data.blueprintnw.BlueprintClassification;
 import thederpgamer.edencore.data.SerializableData;
 
+import javax.jdo.annotations.IdentityType;
 import java.io.IOException;
 
 /**
@@ -21,7 +24,9 @@ public class ExchangeData extends SerializableData {
 
 	public enum ExchangeDataCategory {
 		SHIP,
-		STATION
+		STATION,
+		ITEM,
+		WEAPON
 	}
 
 	private static final byte VERSION = 0;
@@ -34,6 +39,8 @@ public class ExchangeData extends SerializableData {
 	private ExchangeDataCategory category;
 	private BlueprintClassification classification;
 	private float mass;
+	private short itemId;
+	private int itemCount;
 	
 	public ExchangeData() {
 		
@@ -49,6 +56,13 @@ public class ExchangeData extends SerializableData {
 		this.category = category;
 		this.classification = classification;
 		this.mass = mass;
+	}
+	
+	public ExchangeData(String name, short itemId, int itemCount, ExchangeDataCategory category) {
+		this.name = name;
+		assert category == ExchangeDataCategory.ITEM || category == ExchangeDataCategory.WEAPON : new IllegalArgumentException("ExchangeData of type ITEM or WEAPON must be used for itemId and itemCount");
+		this.itemId = itemId;
+		this.itemCount = itemCount;
 	}
 
 	public ExchangeData(PacketReadBuffer readBuffer) throws IOException {
@@ -74,6 +88,8 @@ public class ExchangeData extends SerializableData {
 		data.put("category", category.name());
 		data.put("classification", classification.name());
 		data.put("mass", mass);
+		data.put("itemId", itemId);
+		data.put("itemCount", itemCount);
 		return data;
 	}
 
@@ -89,6 +105,8 @@ public class ExchangeData extends SerializableData {
 		category = ExchangeDataCategory.valueOf(data.getString("category"));
 		classification = BlueprintClassification.valueOf(data.getString("classification"));
 		mass = (float) data.getDouble("mass");
+		itemId = (short) data.getInt("itemId");
+		itemCount = data.getInt("itemCount");
 	}
 
 	@Override
@@ -103,6 +121,8 @@ public class ExchangeData extends SerializableData {
 		writeBuffer.writeString(category.name());
 		writeBuffer.writeString(classification.name());
 		writeBuffer.writeFloat(mass);
+		writeBuffer.writeShort(itemId);
+		writeBuffer.writeInt(itemCount);
 	}
 
 	@Override
@@ -117,6 +137,8 @@ public class ExchangeData extends SerializableData {
 		category = ExchangeDataCategory.valueOf(readBuffer.readString());
 		classification = BlueprintClassification.valueOf(readBuffer.readString());
 		mass = readBuffer.readFloat();
+		itemId = readBuffer.readShort();
+		itemCount = readBuffer.readInt();
 	}
 	
 	public String getName() {
@@ -177,5 +199,25 @@ public class ExchangeData extends SerializableData {
 	
 	public void setMass(float mass) {
 		this.mass = mass;
+	}
+	
+	public short getItemId() {
+		return itemId;
+	}
+	
+	public void setItemId(short itemId) {
+		this.itemId = itemId;
+	}
+	
+	public int getItemCount() {
+		return itemCount;
+	}
+	
+	public void setItemCount(int itemCount) {
+		this.itemCount = itemCount;
+	}
+	
+	public ElementInformation getItemInfo() {
+		return ElementKeyMap.getInfo(itemId);
 	}
 }

@@ -5,6 +5,7 @@ import api.utils.game.inventory.InventoryUtils;
 import org.schema.common.util.StringTools;
 import org.schema.game.client.controller.PlayerOkCancelInput;
 import org.schema.game.client.data.GameClientState;
+import org.schema.game.client.view.gui.GUIBlockSprite;
 import org.schema.game.common.data.player.BlueprintPlayerHandleRequest;
 import org.schema.game.common.data.player.catalog.CatalogPermission;
 import org.schema.game.common.data.player.inventory.Inventory;
@@ -39,7 +40,7 @@ public class ExchangeItemScrollableList extends ScrollableTableList<ExchangeData
 			BlueprintClassification.SCOUT,
 			BlueprintClassification.SUPPORT
 	};
-	
+
 	private static final BlueprintClassification[] stationClassifications = {
 			BlueprintClassification.DEFENSE_STATION,
 			BlueprintClassification.FACTORY_STATION,
@@ -62,109 +63,136 @@ public class ExchangeItemScrollableList extends ScrollableTableList<ExchangeData
 
 	@Override
 	public void initColumns() {
-		addColumn(Lng.str("Name"), 15.0F, new Comparator<ExchangeData>() {
-			@Override
-			public int compare(ExchangeData o1, ExchangeData o2) {
-				return o1.getName().compareToIgnoreCase(o2.getName());
-			}
-		});
-		addColumn(Lng.str("Producer"), 10.0F, new Comparator<ExchangeData>() {
-			@Override
-			public int compare(ExchangeData o1, ExchangeData o2) {
-				return o1.getProducer().compareToIgnoreCase(o2.getProducer());
-			}
-		});
-		addColumn(Lng.str("Price"), 3.0F, new Comparator<ExchangeData>() {
-			@Override
-			public int compare(ExchangeData o1, ExchangeData o2) {
-				return Integer.compare(o1.getPrice(), o2.getPrice());
-			}
-		});
-		addColumn(Lng.str("Category"), 10.0F, new Comparator<ExchangeData>() {
-			@Override
-			public int compare(ExchangeData o1, ExchangeData o2) {
-				return o1.getCategory().compareTo(o2.getCategory());
-			}
-		});
-		addColumn(Lng.str("Mass"), 5.0F, new Comparator<ExchangeData>() {
-			@Override
-			public int compare(ExchangeData o1, ExchangeData o2) {
-				return Float.compare(o1.getMass(), o2.getMass());
-			}
-		});
+		if(type == ExchangeDialog.SHIPS || type == ExchangeDialog.STATIONS) {
+			addColumn(Lng.str("Name"), 15.0F, new Comparator<ExchangeData>() {
+				@Override
+				public int compare(ExchangeData o1, ExchangeData o2) {
+					return o1.getName().compareToIgnoreCase(o2.getName());
+				}
+			});
+			addColumn(Lng.str("Producer"), 10.0F, new Comparator<ExchangeData>() {
+				@Override
+				public int compare(ExchangeData o1, ExchangeData o2) {
+					return o1.getProducer().compareToIgnoreCase(o2.getProducer());
+				}
+			});
+			addColumn(Lng.str("Price"), 5.0F, new Comparator<ExchangeData>() {
+				@Override
+				public int compare(ExchangeData o1, ExchangeData o2) {
+					return Integer.compare(o1.getPrice(), o2.getPrice());
+				}
+			});
+			addColumn(Lng.str("Category"), 10.0F, new Comparator<ExchangeData>() {
+				@Override
+				public int compare(ExchangeData o1, ExchangeData o2) {
+					return o1.getCategory().compareTo(o2.getCategory());
+				}
+			});
+			addColumn(Lng.str("Mass"), 5.0F, new Comparator<ExchangeData>() {
+				@Override
+				public int compare(ExchangeData o1, ExchangeData o2) {
+					return Float.compare(o1.getMass(), o2.getMass());
+				}
+			});
 
-		addTextFilter(new GUIListFilterText<ExchangeData>() {
-			public boolean isOk(String s, ExchangeData item) {
-				return item.getName().toLowerCase().contains(s.toLowerCase());
+			addTextFilter(new GUIListFilterText<ExchangeData>() {
+				public boolean isOk(String s, ExchangeData item) {
+					return item.getName().toLowerCase().contains(s.toLowerCase());
+				}
+			}, ControllerElement.FilterRowStyle.FULL);
+			addTextFilter(new GUIListFilterText<ExchangeData>() {
+				public boolean isOk(String s, ExchangeData item) {
+					return item.getProducer().toLowerCase().contains(s.toLowerCase());
+				}
+			}, ControllerElement.FilterRowStyle.LEFT);
+			switch(type) {
+				case ExchangeDialog.SHIPS:
+					addDropdownFilter(new GUIListFilterDropdown<ExchangeData, BlueprintClassification>(shipClassifications) {
+						public boolean isOk(BlueprintClassification classification, ExchangeData item) {
+							return item.getClassification() == classification;
+						}
+
+					}, new CreateGUIElementInterface<BlueprintClassification>() {
+						@Override
+						public GUIElement create(BlueprintClassification classification) {
+							GUIAncor anchor = new GUIAncor(getState(), 10.0F, 24.0F);
+							GUITextOverlayTableDropDown dropDown;
+							(dropDown = new GUITextOverlayTableDropDown(10, 10, getState())).setTextSimple(classification.getName().toUpperCase(Locale.ENGLISH));
+							dropDown.setPos(4.0F, 4.0F, 0.0F);
+							anchor.setUserPointer(classification.name().toUpperCase(Locale.ENGLISH));
+							anchor.attach(dropDown);
+							return anchor;
+						}
+
+						@Override
+						public GUIElement createNeutral() {
+							GUIAncor anchor = new GUIAncor(getState(), 10.0F, 24.0F);
+							GUITextOverlayTableDropDown dropDown;
+							(dropDown = new GUITextOverlayTableDropDown(10, 10, getState())).setTextSimple(Lng.str("ALL"));
+							dropDown.setPos(4.0F, 4.0F, 0.0F);
+							anchor.setUserPointer("ALL");
+							anchor.attach(dropDown);
+							return anchor;
+						}
+					}, ControllerElement.FilterRowStyle.RIGHT);
+					break;
+				case ExchangeDialog.STATIONS:
+					addDropdownFilter(new GUIListFilterDropdown<ExchangeData, BlueprintClassification>(BlueprintClassification.stationValues().toArray(stationClassifications)) {
+						public boolean isOk(BlueprintClassification classification, ExchangeData item) {
+							return item.getClassification() == classification;
+						}
+
+					}, new CreateGUIElementInterface<BlueprintClassification>() {
+						@Override
+						public GUIElement create(BlueprintClassification classification) {
+							GUIAncor anchor = new GUIAncor(getState(), 10.0F, 24.0F);
+							GUITextOverlayTableDropDown dropDown;
+							(dropDown = new GUITextOverlayTableDropDown(10, 10, getState())).setTextSimple(classification.getName().toUpperCase(Locale.ENGLISH));
+							dropDown.setPos(4.0F, 4.0F, 0.0F);
+							anchor.setUserPointer(classification.name().toUpperCase(Locale.ENGLISH));
+							anchor.attach(dropDown);
+							return anchor;
+						}
+
+						@Override
+						public GUIElement createNeutral() {
+							GUIAncor anchor = new GUIAncor(getState(), 10.0F, 24.0F);
+							GUITextOverlayTableDropDown dropDown;
+							(dropDown = new GUITextOverlayTableDropDown(10, 10, getState())).setTextSimple(Lng.str("ALL"));
+							dropDown.setPos(4.0F, 4.0F, 0.0F);
+							anchor.setUserPointer("ALL");
+							anchor.attach(dropDown);
+							return anchor;
+						}
+					}, ControllerElement.FilterRowStyle.RIGHT);
+					break;
 			}
-		}, ControllerElement.FilterRowStyle.FULL);
-		addTextFilter(new GUIListFilterText<ExchangeData>() {
-			public boolean isOk(String s, ExchangeData item) {
-				return item.getProducer().toLowerCase().contains(s.toLowerCase());
-			}
-		}, ControllerElement.FilterRowStyle.LEFT);
-		switch(type) {
-			case ExchangeDialog.SHIPS:
-				addDropdownFilter(new GUIListFilterDropdown<ExchangeData, BlueprintClassification>(shipClassifications) {
-					public boolean isOk(BlueprintClassification classification, ExchangeData item) {
-						return item.getClassification() == classification;
-					}
+		} else if(type == ExchangeDialog.ITEMS || type == ExchangeDialog.WEAPONS) {
+			addColumn(Lng.str("Type"), 5.0f, new Comparator<ExchangeData>() {
+				@Override
+				public int compare(ExchangeData o1, ExchangeData o2) {
+					return Short.compare(o1.getItemId(), o2.getItemId());
+				}
+			});
+			addColumn(Lng.str("Name"), 15.0F, new Comparator<ExchangeData>() {
+				@Override
+				public int compare(ExchangeData o1, ExchangeData o2) {
+					return o1.getName().compareToIgnoreCase(o2.getName());
+				}
+			});
+			addColumn(Lng.str("Price"), 5.0f, new Comparator<ExchangeData>() {
+				@Override
+				public int compare(ExchangeData o1, ExchangeData o2) {
+					return Integer.compare(o1.getPrice(), o2.getPrice());
+				}
+			});
 
-				}, new CreateGUIElementInterface<BlueprintClassification>() {
-					@Override
-					public GUIElement create(BlueprintClassification classification) {
-						GUIAncor anchor = new GUIAncor(getState(), 10.0F, 24.0F);
-						GUITextOverlayTableDropDown dropDown;
-						(dropDown = new GUITextOverlayTableDropDown(10, 10, getState())).setTextSimple(classification.getName().toUpperCase(Locale.ENGLISH));
-						dropDown.setPos(4.0F, 4.0F, 0.0F);
-						anchor.setUserPointer(classification.name().toUpperCase(Locale.ENGLISH));
-						anchor.attach(dropDown);
-						return anchor;
-					}
-
-					@Override
-					public GUIElement createNeutral() {
-						GUIAncor anchor = new GUIAncor(getState(), 10.0F, 24.0F);
-						GUITextOverlayTableDropDown dropDown;
-						(dropDown = new GUITextOverlayTableDropDown(10, 10, getState())).setTextSimple(Lng.str("ALL"));
-						dropDown.setPos(4.0F, 4.0F, 0.0F);
-						anchor.setUserPointer("ALL");
-						anchor.attach(dropDown);
-						return anchor;
-					}
-				}, ControllerElement.FilterRowStyle.RIGHT);
-				break;
-			case ExchangeDialog.STATIONS:
-				addDropdownFilter(new GUIListFilterDropdown<ExchangeData, BlueprintClassification>(BlueprintClassification.stationValues().toArray(stationClassifications)) {
-					public boolean isOk(BlueprintClassification classification, ExchangeData item) {
-						return item.getClassification() == classification;
-					}
-
-				}, new CreateGUIElementInterface<BlueprintClassification>() {
-					@Override
-					public GUIElement create(BlueprintClassification classification) {
-						GUIAncor anchor = new GUIAncor(getState(), 10.0F, 24.0F);
-						GUITextOverlayTableDropDown dropDown;
-						(dropDown = new GUITextOverlayTableDropDown(10, 10, getState())).setTextSimple(classification.getName().toUpperCase(Locale.ENGLISH));
-						dropDown.setPos(4.0F, 4.0F, 0.0F);
-						anchor.setUserPointer(classification.name().toUpperCase(Locale.ENGLISH));
-						anchor.attach(dropDown);
-						return anchor;
-					}
-
-					@Override
-					public GUIElement createNeutral() {
-						GUIAncor anchor = new GUIAncor(getState(), 10.0F, 24.0F);
-						GUITextOverlayTableDropDown dropDown;
-						(dropDown = new GUITextOverlayTableDropDown(10, 10, getState())).setTextSimple(Lng.str("ALL"));
-						dropDown.setPos(4.0F, 4.0F, 0.0F);
-						anchor.setUserPointer("ALL");
-						anchor.attach(dropDown);
-						return anchor;
-					}
-				}, ControllerElement.FilterRowStyle.RIGHT);
-				break;
-		}
+			addTextFilter(new GUIListFilterText<ExchangeData>() {
+				public boolean isOk(String s, ExchangeData item) {
+					return item.getName().toLowerCase(Locale.ENGLISH).contains(s.toLowerCase(Locale.ENGLISH)) || item.getItemInfo().getName().toLowerCase(Locale.ENGLISH).contains(s.toLowerCase(Locale.ENGLISH));
+				}
+			}, ControllerElement.FilterRowStyle.FULL);
+		} else throw new IllegalArgumentException("ExchangeItemScrollableList does not support the given type: " + type);
 		activeSortColumnIndex = 0;
 	}
 
@@ -175,6 +203,10 @@ public class ExchangeItemScrollableList extends ScrollableTableList<ExchangeData
 				return ExchangeDialog.getShipList();
 			case ExchangeDialog.STATIONS:
 				return ExchangeDialog.getStationList();
+			case ExchangeDialog.ITEMS:
+				return ExchangeDialog.getItemsList();
+			case ExchangeDialog.WEAPONS:
+				return ExchangeDialog.getWeaponsList();
 			default:
 				return Collections.emptyList();
 		}
@@ -185,31 +217,57 @@ public class ExchangeItemScrollableList extends ScrollableTableList<ExchangeData
 		guiElementList.deleteObservers();
 		guiElementList.addObserver(this);
 		for(ExchangeData data : set) {
-			GUIClippedRow nameRow = getSimpleRow(data.getName(), this);
-			GUIClippedRow producerRow = getSimpleRow(data.getProducer(), this);
-			GUIClippedRow priceRow = getSimpleRow(String.valueOf(data.getPrice()), this);
-			GUIClippedRow categoryRow = getSimpleRow(data.getCategory(), this);
-			GUIClippedRow massRow = getSimpleRow(StringTools.massFormat(data.getMass()), this);
-			ExchangeItemScrollableListRow entryListRow = new ExchangeItemScrollableListRow(getState(), data, nameRow, producerRow, priceRow, categoryRow, massRow);
-			GUIAncor anchor = new GUIAncor(getState(), pane.getWidth() - 28.0f, 28.0f) {
-				@Override
-				public void draw() {
-					super.draw();
-					setWidth(pane.getWidth() - 28.0f);
-				}
-			};
-			GUIHorizontalButtonTablePane buttonTablePane = redrawButtonPane(data, anchor);
-			anchor.attach(buttonTablePane);
-			GUITextOverlayTableInnerDescription description = new GUITextOverlayTableInnerDescription(10, 10, getState());
-			description.onInit();
-			description.setTextSimple(data.getDescription());
-			entryListRow.expanded = new GUIElementList(getState());
-//			entryListRow.expanded.add(new GUIListElement(description, getState()));
-			entryListRow.expanded.add(new GUIListElement(anchor, getState()));
-			entryListRow.onInit();
-			guiElementList.addWithoutUpdate(entryListRow);
+			if(type == ExchangeDialog.SHIPS || type == ExchangeDialog.STATIONS) {
+				GUIClippedRow nameRow = getSimpleRow(data.getName(), this);
+				GUIClippedRow producerRow = getSimpleRow(data.getProducer(), this);
+				GUIClippedRow priceRow = getSimpleRow(String.valueOf(data.getPrice()), this);
+				GUIClippedRow categoryRow = getSimpleRow(data.getCategory(), this);
+				GUIClippedRow massRow = getSimpleRow(StringTools.massFormat(data.getMass()), this);
+				ExchangeItemScrollableListRow entryListRow = new ExchangeItemScrollableListRow(getState(), data, nameRow, producerRow, priceRow, categoryRow, massRow);
+				GUIAncor anchor = new GUIAncor(getState(), pane.getWidth() - 28.0f, 28.0f) {
+					@Override
+					public void draw() {
+						super.draw();
+						setWidth(pane.getWidth() - 28.0f);
+					}
+				};
+				GUIHorizontalButtonTablePane buttonTablePane = redrawButtonPane(data, anchor);
+				anchor.attach(buttonTablePane);
+				GUITextOverlayTableInnerDescription description = new GUITextOverlayTableInnerDescription(10, 10, getState());
+				description.onInit();
+				description.setTextSimple(data.getDescription());
+				entryListRow.expanded = new GUIElementList(getState());
+				entryListRow.expanded.add(new GUIListElement(anchor, getState()));
+				entryListRow.onInit();
+				guiElementList.addWithoutUpdate(entryListRow);
+			} else {
+				GUIClippedRow typeRow = createIconRow(data.getItemId());
+				GUIClippedRow nameRow = getSimpleRow(data.getName(), this);
+				GUIClippedRow priceRow = getSimpleRow(String.valueOf(data.getPrice()), this);
+				ExchangeItemScrollableListRow entryListRow = new ExchangeItemScrollableListRow(getState(), data, typeRow, nameRow, priceRow);
+				GUIAncor anchor = new GUIAncor(getState(), pane.getWidth() - 28.0f, 28.0f) {
+					@Override
+					public void draw() {
+						super.draw();
+						setWidth(pane.getWidth() - 28.0f);
+					}
+				};
+				GUIHorizontalButtonTablePane buttonTablePane = redrawButtonPane(data, anchor);
+				anchor.attach(buttonTablePane);
+				entryListRow.expanded = new GUIElementList(getState());
+				entryListRow.expanded.add(new GUIListElement(anchor, getState()));
+				entryListRow.onInit();
+				guiElementList.addWithoutUpdate(entryListRow);
+			}
 		}
 		guiElementList.updateDim();
+	}
+
+	private ScrollableTableList<ExchangeData>.GUIClippedRow createIconRow(short type) {
+		GUIBlockSprite sprite = new GUIBlockSprite(getState(), type);
+		GUIClippedRow iconRowElement = new GUIClippedRow(getState());
+		iconRowElement.attach(sprite);
+		return iconRowElement;
 	}
 
 	private GUIHorizontalButtonTablePane redrawButtonPane(final ExchangeData data, GUIAncor anchor) {
@@ -292,11 +350,17 @@ public class ExchangeItemScrollableList extends ScrollableTableList<ExchangeData
 
 	public String canBuy(ExchangeData data) {
 		GameClientState state = (GameClientState) getState();
-		if(!hasPermission(data)) return "Selected blueprint is not available or you don't have access to it!";
-		else {
+		if(type == ExchangeDialog.SHIPS || type == ExchangeDialog.STATIONS) {
+			if(!hasPermission(data)) return "Selected blueprint is not available or you don't have access to it!";
+			else {
+				Inventory playerInventory = state.getPlayer().getInventory();
+				int amount = InventoryUtils.getItemAmount(playerInventory, ElementManager.getItem("Bronze Bar").getId());
+				if(amount < data.getPrice()) return "You don't have enough Bronze Bars to buy this blueprint!";
+			}
+		} else {
 			Inventory playerInventory = state.getPlayer().getInventory();
 			int amount = InventoryUtils.getItemAmount(playerInventory, ElementManager.getItem("Bronze Bar").getId());
-			if(amount < data.getPrice()) return "You don't have enough Bronze Bars to buy this blueprint!";
+			if(amount < data.getPrice()) return "You don't have enough Bronze Bars to buy this item!";
 		}
 		return null;
 	}
