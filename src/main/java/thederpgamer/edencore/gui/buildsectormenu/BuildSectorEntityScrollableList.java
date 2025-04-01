@@ -106,7 +106,7 @@ public class BuildSectorEntityScrollableList extends ScrollableTableList<BuildSe
 			GUIClippedRow typeRow = getSimpleRow(entityData.getEntity().getType().getName(), this);
 			GUIClippedRow massRow = getSimpleRow(StringTools.massFormat(entityData.getEntity().getMass()), this);
 			final BuildSectorEntityScrollableListRow entryListRow = new BuildSectorEntityScrollableListRow(getState(), entityData, nameRow, typeRow, massRow);
-			GUIAncor anchor = new GUIAncor(getState(), parent.getWidth() - 28.0f, 28.0f) {
+			GUIAncor anchor = new GUIAncor(getState(), parent.getWidth() - 28.0f, 56.0f) {
 				@Override
 				public void draw() {
 					super.draw();
@@ -125,7 +125,7 @@ public class BuildSectorEntityScrollableList extends ScrollableTableList<BuildSe
 	}
 
 	private void redrawButtonPane(final BuildSectorData.BuildSectorEntityData entityData, GUIAncor anchor) {
-		buttonPane = new GUIHorizontalButtonTablePane(getState(), 5, 1, anchor);
+		buttonPane = new GUIHorizontalButtonTablePane(getState(), 3, 2, anchor);
 		buttonPane.onInit();
 		final String user = ((GameClientState) getState()).getPlayerName();
 
@@ -228,7 +228,7 @@ public class BuildSectorEntityScrollableList extends ScrollableTableList<BuildSe
 				}
 			});
 		}
-		buttonPane.addButton(3, 0, "DELETE", GUIHorizontalArea.HButtonColor.RED, new GUICallback() {
+		buttonPane.addButton(0, 1, "DELETE", GUIHorizontalArea.HButtonColor.RED, new GUICallback() {
 			@Override
 			public void callback(GUIElement guiElement, MouseEvent mouseEvent) {
 				if(mouseEvent.pressedLeftMouse()) {
@@ -253,7 +253,7 @@ public class BuildSectorEntityScrollableList extends ScrollableTableList<BuildSe
 				return buildSectorData.getPermissionForEntityOrGlobal(user, entityData.getEntityUID(), BuildSectorData.PermissionTypes.DELETE_SPECIFIC);
 			}
 		});
-		buttonPane.addButton(4, 0, "DELETE TURRETS", GUIHorizontalArea.HButtonColor.RED, new GUICallback() {
+		buttonPane.addButton(1, 1, "DELETE TURRETS", GUIHorizontalArea.HButtonColor.RED, new GUICallback() {
 			@Override
 			public void callback(GUIElement guiElement, MouseEvent mouseEvent) {
 				if(mouseEvent.pressedLeftMouse()) {
@@ -278,6 +278,32 @@ public class BuildSectorEntityScrollableList extends ScrollableTableList<BuildSe
 				return buildSectorData.getPermissionForEntityOrGlobal(user, entityData.getEntityUID(), BuildSectorData.PermissionTypes.DELETE_SPECIFIC);
 			}
 		});
+		if(entityData.isInvulnerable()) {
+			buttonPane.addButton(2, 1, "SET VULNERABLE", GUIHorizontalArea.HButtonColor.RED, new GUICallback() {
+				@Override
+				public void callback(GUIElement guiElement, MouseEvent mouseEvent) {
+					if(mouseEvent.pressedLeftMouse()) {
+						
+					}
+				}
+
+				@Override
+				public boolean isOccluded() {
+					if(isObscured()) return true;
+					return !buildSectorData.getPermissionForEntityOrGlobal(user, entityData.getEntityUID(), BuildSectorData.PermissionTypes.TOGGLE_DAMAGE_SPECIFIC);
+				}
+			}, new GUIActivationCallback() {
+				@Override
+				public boolean isVisible(InputState inputState) {
+					return true;
+				}
+
+				@Override
+				public boolean isActive(InputState inputState) {
+					return buildSectorData.getPermissionForEntityOrGlobal(user, entityData.getEntityUID(), BuildSectorData.PermissionTypes.TOGGLE_DAMAGE_SPECIFIC);
+				}
+			});
+		}
 	}
 
 	private static boolean isObscured() {

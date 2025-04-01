@@ -259,13 +259,6 @@ public class BuildSectorData extends SerializableData {
 		return false;
 	}
 
-	public static SegmentController getEntityData(String entityUID) {
-		for(Sendable sendable : GameCommon.getGameState().getState().getLocalAndRemoteObjectContainer().getLocalObjects().values()) {
-			if(sendable instanceof SegmentController && ((SegmentController) sendable).getUniqueIdentifier().equals(entityUID)) return (SegmentController) sendable;
-		}
-		return null;
-	}
-
 	public boolean getPermissionForEntityOrGlobal(String user, String entityUID, PermissionTypes type) {
 		SegmentController entity = getEntity(entityUID);
 		switch(type) {
@@ -386,13 +379,10 @@ public class BuildSectorData extends SerializableData {
 					put(PermissionTypes.SPAWN_ENEMIES, true);
 					put(PermissionTypes.DELETE_OWN, true);
 					put(PermissionTypes.DELETE_ANY, true);
-					put(PermissionTypes.DELETE_ALL, true);
 					put(PermissionTypes.TOGGLE_AI_OWN, true);
 					put(PermissionTypes.TOGGLE_AI_ANY, true);
-					put(PermissionTypes.TOGGLE_AI_ALL, true);
 					put(PermissionTypes.TOGGLE_DAMAGE_OWN, true);
 					put(PermissionTypes.TOGGLE_DAMAGE_ANY, true);
-					put(PermissionTypes.TOGGLE_DAMAGE_ALL, true);
 					put(PermissionTypes.INVITE, true);
 					put(PermissionTypes.KICK, true);
 					put(PermissionTypes.EDIT_PERMISSIONS, true);
@@ -406,13 +396,10 @@ public class BuildSectorData extends SerializableData {
 					put(PermissionTypes.SPAWN_ENEMIES, false);
 					put(PermissionTypes.DELETE_OWN, true);
 					put(PermissionTypes.DELETE_ANY, false);
-					put(PermissionTypes.DELETE_ALL, false);
 					put(PermissionTypes.TOGGLE_AI_OWN, true);
 					put(PermissionTypes.TOGGLE_AI_ANY, false);
-					put(PermissionTypes.TOGGLE_AI_ALL, false);
 					put(PermissionTypes.TOGGLE_DAMAGE_OWN, true);
 					put(PermissionTypes.TOGGLE_DAMAGE_ANY, false);
-					put(PermissionTypes.TOGGLE_DAMAGE_ALL, false);
 					put(PermissionTypes.INVITE, true);
 					put(PermissionTypes.KICK, false);
 					put(PermissionTypes.EDIT_PERMISSIONS, false);
@@ -426,13 +413,10 @@ public class BuildSectorData extends SerializableData {
 					put(PermissionTypes.SPAWN_ENEMIES, false);
 					put(PermissionTypes.DELETE_OWN, false);
 					put(PermissionTypes.DELETE_ANY, false);
-					put(PermissionTypes.DELETE_ALL, false);
 					put(PermissionTypes.TOGGLE_AI_OWN, false);
 					put(PermissionTypes.TOGGLE_AI_ANY, false);
-					put(PermissionTypes.TOGGLE_AI_ALL, false);
 					put(PermissionTypes.TOGGLE_DAMAGE_OWN, false);
 					put(PermissionTypes.TOGGLE_DAMAGE_ANY, false);
-					put(PermissionTypes.TOGGLE_DAMAGE_ALL, false);
 					put(PermissionTypes.INVITE, false);
 					put(PermissionTypes.KICK, false);
 					put(PermissionTypes.EDIT_PERMISSIONS, false);
@@ -484,12 +468,14 @@ public class BuildSectorData extends SerializableData {
 		private String entityUID;
 		private EntityType entityType;
 		protected HashMap<String, HashMap<PermissionTypes, Boolean>> permissions = new HashMap<>();
+		private boolean invulnerable = true;
 
 		public BuildSectorEntityData(SegmentController entity) {
 			super(DataType.BUILD_SECTOR_ENTITY_DATA);
 			entityUID = entity.getUniqueIdentifier();
 			entityType = EntityType.fromEntity(entity);
 			setDefaultEntityPerms(entity.getSpawner(), OWNER);
+			setInvulnerable(true, entity.isOnServer());
 		}
 
 		public BuildSectorEntityData(PacketReadBuffer readBuffer) throws IOException {
@@ -519,6 +505,7 @@ public class BuildSectorData extends SerializableData {
 				}
 			}
 			data.put("permissions", permissionsArray);
+			data.put("invulnerable", invulnerable);
 			return data;
 		}
 
@@ -542,6 +529,7 @@ public class BuildSectorData extends SerializableData {
 					}
 				}
 			}
+			invulnerable = data.getBoolean("invulnerable");
 		}
 
 		@Override
@@ -559,6 +547,7 @@ public class BuildSectorData extends SerializableData {
 					writeBuffer.writeBoolean(permission.getValue());
 				}
 			}
+			writeBuffer.writeBoolean(invulnerable);
 		}
 
 		@Override
@@ -584,6 +573,7 @@ public class BuildSectorData extends SerializableData {
 				}
 				permissions.put(name, permissionMap); // Store the permissions for this user
 			}
+			invulnerable = readBuffer.readBoolean(); // Read the invulnerable flag
 		}
 
 		private void setDefaultEntityPerms(String user, int type) {
@@ -710,6 +700,16 @@ public class BuildSectorData extends SerializableData {
 				if(docked.docked.getSegmentController() instanceof Ship) EntityUtils.delete(docked.docked.getSegmentController());
 			}
 		}
+
+		public boolean isInvulnerable() {
+			return invulnerable;
+		}
+		
+		public void setInvulnerable(boolean invulnerable, boolean server) {
+			this.invulnerable = invulnerable;
+			if(getEntity() != null) getEntity().setVulnerable(!invulnerable);
+			BuildSectorDataManager.getInstance(server).updateData(BuildSectorData.this, server);
+		}
 	}
 
 	public enum PermissionTypes {
@@ -721,15 +721,12 @@ public class BuildSectorData extends SerializableData {
 		DELETE_SPECIFIC("Delete Specific Ship", "Whether the player can delete a specific ship."),
 		DELETE_OWN("Delete Own Ships", "Whether the player can delete their own ships."),
 		DELETE_ANY("Delete Other Ships", "Whether the player can delete ships owned by other players."),
-		DELETE_ALL("Delete All Ships", "Whether the player can delete all ships in the sector."),
 		TOGGLE_AI_SPECIFIC("Toggle Specific AI", "Whether the player can toggle AI on a specific ship."),
 		TOGGLE_AI_OWN("Toggle Own AI", "Whether the player can toggle AI on their own ships."),
 		TOGGLE_AI_ANY("Toggle Other AI", "Whether the player can toggle AI on ships owned by other players."),
-		TOGGLE_AI_ALL("Toggle All AI", "Whether the player can toggle AI on all ships in the sector."),
 		TOGGLE_DAMAGE_SPECIFIC("Toggle Specific Damage", "Whether the player can toggle damage on a specific ship."),
 		TOGGLE_DAMAGE_OWN("Toggle Own Damage", "Whether the player can toggle damage on their own ships."),
 		TOGGLE_DAMAGE_ANY("Toggle Other Damage", "Whether the player can toggle damage on ships owned by other players."),
-		TOGGLE_DAMAGE_ALL("Toggle All Damage", "Whether the player can toggle damage on all ships in the sector."),
 		INVITE("Invite Players", "Whether the player can invite other players to the sector."),
 		KICK("Kick Players", "Whether the player can kick other players from the sector."),
 		EDIT_PERMISSIONS("Edit Permissions", "Whether the player can edit permissions for other players."),
@@ -759,13 +756,10 @@ public class BuildSectorData extends SerializableData {
 			values.add(SPAWN_ENEMIES);
 			values.add(DELETE_OWN);
 			values.add(DELETE_ANY);
-			values.add(DELETE_ALL);
 			values.add(TOGGLE_AI_OWN);
 			values.add(TOGGLE_AI_ANY);
-			values.add(TOGGLE_AI_ALL);
 			values.add(TOGGLE_DAMAGE_OWN);
 			values.add(TOGGLE_DAMAGE_ANY);
-			values.add(TOGGLE_DAMAGE_ALL);
 			values.add(INVITE);
 			values.add(KICK);
 			values.add(EDIT_PERMISSIONS);
