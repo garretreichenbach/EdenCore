@@ -190,12 +190,12 @@ public class ExchangeItemScrollableList extends ScrollableTableList<ExchangeData
 			GUIClippedRow priceRow = getSimpleRow(String.valueOf(data.getPrice()), this);
 			GUIClippedRow categoryRow = getSimpleRow(data.getCategory(), this);
 			GUIClippedRow massRow = getSimpleRow(StringTools.massFormat(data.getMass()), this);
-			final ExchangeItemScrollableListRow entryListRow = new ExchangeItemScrollableListRow(getState(), data, nameRow, producerRow, priceRow, categoryRow, massRow);
+			ExchangeItemScrollableListRow entryListRow = new ExchangeItemScrollableListRow(getState(), data, nameRow, producerRow, priceRow, categoryRow, massRow);
 			GUIAncor anchor = new GUIAncor(getState(), pane.getWidth() - 28.0f, 28.0f) {
 				@Override
 				public void draw() {
 					super.draw();
-					setWidth(entryListRow.getWidth());
+					setWidth(pane.getWidth() - 28.0f);
 				}
 			};
 			GUIHorizontalButtonTablePane buttonTablePane = redrawButtonPane(data, anchor);

@@ -65,8 +65,8 @@ public class BuildSectorUserScrollableList extends ScrollableTableList<String> i
 			GUIAncor anchor = new GUIAncor(getState(), parent.getWidth() - 28.0f, 28.0f) {
 				@Override
 				public void draw() {
-					setWidth(entryListRow.getWidth());
 					super.draw();
+					setWidth(parent.getWidth() - 28.0f);
 				}
 			};
 

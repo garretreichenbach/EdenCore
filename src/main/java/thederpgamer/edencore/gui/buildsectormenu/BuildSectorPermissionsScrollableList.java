@@ -108,12 +108,12 @@ public class BuildSectorPermissionsScrollableList extends ScrollableTableList<Pa
 		for(final Pair<BuildSectorData.PermissionTypes, Boolean> permission : set) {
 			GUIClippedRow permissionRow = getSimpleRow(permission.first().getDisplay(), this);
 			GUIClippedRow valueRow = getSimpleRow(permission.second().toString(), this);
-			final BuildSectorPermissionsScrollableListRow entryListRow = new BuildSectorPermissionsScrollableListRow(getState(), permission, permissionRow, valueRow);
+			BuildSectorPermissionsScrollableListRow entryListRow = new BuildSectorPermissionsScrollableListRow(getState(), permission, permissionRow, valueRow);
 			GUIAncor anchor = new GUIAncor(getState(), parent.getWidth() - 28.0f, 28.0f) {
 				@Override
 				public void draw() {
 					super.draw();
-					setWidth(entryListRow.getWidth());
+					setWidth(parent.getWidth() - 28.0f);
 				}
 			};
 			GUIHorizontalButtonTablePane buttonPane = new GUIHorizontalButtonTablePane(getState(), 2, 1, anchor);

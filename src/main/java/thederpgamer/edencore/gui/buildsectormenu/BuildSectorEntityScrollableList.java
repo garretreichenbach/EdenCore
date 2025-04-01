@@ -104,11 +104,11 @@ public class BuildSectorEntityScrollableList extends ScrollableTableList<BuildSe
 			GUIClippedRow typeRow = getSimpleRow(entityData.getEntity().getType().getName(), this);
 			GUIClippedRow massRow = getSimpleRow(StringTools.massFormat(entityData.getEntity().getMass()), this);
 			final BuildSectorEntityScrollableListRow entryListRow = new BuildSectorEntityScrollableListRow(getState(), entityData, nameRow, typeRow, massRow);
-			GUIAncor anchor = new GUIAncor(getState(), parent.getWidth() - 28.0f, 56.0f) {
+			GUIAncor anchor = new GUIAncor(getState(), parent.getWidth() - 28.0f, 28.0f) {
 				@Override
 				public void draw() {
 					super.draw();
-					setWidth(entryListRow.getWidth());
+					setWidth(parent.getWidth() - 28.0f);
 				}
 			};
 			if(buttonPane != null) buttonPane.cleanUp();
@@ -123,7 +123,7 @@ public class BuildSectorEntityScrollableList extends ScrollableTableList<BuildSe
 	}
 
 	private void redrawButtonPane(final BuildSectorData.BuildSectorEntityData entityData, GUIAncor anchor) {
-		buttonPane = new GUIHorizontalButtonTablePane(getState(), 3, 2, anchor);
+		buttonPane = new GUIHorizontalButtonTablePane(getState(), 5, 1, anchor);
 		buttonPane.onInit();
 		final String user = ((GameClientState) getState()).getPlayerName();
 
@@ -140,7 +140,7 @@ public class BuildSectorEntityScrollableList extends ScrollableTableList<BuildSe
 		}, new GUIActivationCallback() {
 			@Override
 			public boolean isVisible(InputState inputState) {
-				return false;
+				return true;
 			}
 
 			@Override
@@ -163,7 +163,7 @@ public class BuildSectorEntityScrollableList extends ScrollableTableList<BuildSe
 		}, new GUIActivationCallback() {
 			@Override
 			public boolean isVisible(InputState inputState) {
-				return false;
+				return true;
 			}
 
 			@Override
@@ -188,7 +188,7 @@ public class BuildSectorEntityScrollableList extends ScrollableTableList<BuildSe
 			}, new GUIActivationCallback() {
 				@Override
 				public boolean isVisible(InputState inputState) {
-					return false;
+					return true;
 				}
 
 				@Override
@@ -213,7 +213,7 @@ public class BuildSectorEntityScrollableList extends ScrollableTableList<BuildSe
 			}, new GUIActivationCallback() {
 				@Override
 				public boolean isVisible(InputState inputState) {
-					return false;
+					return true;
 				}
 
 				@Override
@@ -222,7 +222,7 @@ public class BuildSectorEntityScrollableList extends ScrollableTableList<BuildSe
 				}
 			});
 		}
-		buttonPane.addButton(0, 1, "DELETE", GUIHorizontalArea.HButtonColor.RED, new GUICallback() {
+		buttonPane.addButton(3, 0, "DELETE", GUIHorizontalArea.HButtonColor.RED, new GUICallback() {
 			@Override
 			public void callback(GUIElement guiElement, MouseEvent mouseEvent) {
 				if(mouseEvent.pressedLeftMouse()) {
@@ -238,7 +238,7 @@ public class BuildSectorEntityScrollableList extends ScrollableTableList<BuildSe
 		}, new GUIActivationCallback() {
 			@Override
 			public boolean isVisible(InputState inputState) {
-				return false;
+				return true;
 			}
 
 			@Override
@@ -246,7 +246,7 @@ public class BuildSectorEntityScrollableList extends ScrollableTableList<BuildSe
 				return buildSectorData.getPermissionForEntityOrGlobal(user, entityData.getEntityUID(), BuildSectorData.PermissionTypes.DELETE_SPECIFIC);
 			}
 		});
-		buttonPane.addButton(1, 1, "DELETE TURRETS", GUIHorizontalArea.HButtonColor.RED, new GUICallback() {
+		buttonPane.addButton(4, 0, "DELETE TURRETS", GUIHorizontalArea.HButtonColor.RED, new GUICallback() {
 			@Override
 			public void callback(GUIElement guiElement, MouseEvent mouseEvent) {
 				if(mouseEvent.pressedLeftMouse()) {
@@ -262,7 +262,7 @@ public class BuildSectorEntityScrollableList extends ScrollableTableList<BuildSe
 		}, new GUIActivationCallback() {
 			@Override
 			public boolean isVisible(InputState inputState) {
-				return false;
+				return true;
 			}
 
 			@Override

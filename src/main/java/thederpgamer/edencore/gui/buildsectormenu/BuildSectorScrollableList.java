@@ -53,12 +53,12 @@ public class BuildSectorScrollableList extends ScrollableTableList<BuildSectorDa
 		for(final BuildSectorData buildSectorData : set) {
 			if(buildSectorData == null) throw new IllegalArgumentException("BuildSectorData cannot be null in the set provided to updateListEntries()");
 			GUIClippedRow ownerRow = getSimpleRow(buildSectorData.getOwner(), this);
-			final BuildSectorScrollableListRow row = new BuildSectorScrollableListRow(getState(), buildSectorData, ownerRow);
+			BuildSectorScrollableListRow row = new BuildSectorScrollableListRow(getState(), buildSectorData, ownerRow);
 			GUIAncor anchor = new GUIAncor(getState(), parent.getWidth() - 28.0f, 28.0f) {
 				@Override
 				public void draw() {
-					setWidth(row.getWidth());
 					super.draw();
+					setWidth(parent.getWidth() - 28.0f);
 				}
 			};
 			GUIHorizontalButtonTablePane buttonPane = new GUIHorizontalButtonTablePane(getState(), 1, 1, anchor);

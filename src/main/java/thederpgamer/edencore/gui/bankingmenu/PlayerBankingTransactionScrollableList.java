@@ -72,8 +72,8 @@ public class PlayerBankingTransactionScrollableList extends ScrollableTableList<
 			GUIAncor anchor = new GUIAncor(getState(), parent.getWidth() - 28.0f, 52.0f) {
 				@Override
 				public void draw() {
-					setWidth(row.getWidth());
 					super.draw();
+					setWidth(parent.getWidth() - 28.0f);
 				}
 			};
 			GUITextOverlay messageText = new GUITextOverlay(10, 10, getState());

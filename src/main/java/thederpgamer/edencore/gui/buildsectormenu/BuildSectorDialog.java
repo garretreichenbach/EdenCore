@@ -55,7 +55,7 @@ public class BuildSectorDialog extends PlayerInput {
 		private GUITabbedContent tabbedContent;
 
 		public BuildSectorPanel(InputState state, GUICallback guiCallback) {
-			super("BuildSectorPanel", state, 800, 500, guiCallback, "", "");
+			super("BuildSectorPanel", state, 850, 500, guiCallback, "", "");
 		}
 
 		@Override
