@@ -366,7 +366,7 @@ public class BankingDialog extends PlayerInput {
 		@Override
 		public void draw() {
 			super.draw();
-			storedCreditsText.setTextSimple(playerData.getStoredCredits());
+			storedCreditsText.setTextSimple("Stored Credits: " + playerData.getStoredCredits());
 		}
 	}
 }
