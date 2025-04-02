@@ -49,6 +49,7 @@ public class PlayerActionManager {
 				case ENTER_BUILD_SECTOR:
 					playerState = GameCommon.getPlayerFromName(args[0]);
 					playerState.getControllerState().forcePlayerOutOfSegmentControllers();
+					playerState.getControllerState().forcePlayerOutOfShips();
 					playerData = PlayerDataManager.getInstance(playerState.isOnServer()).getFromName(playerState.getName(), playerState.isOnServer());
 					BuildSectorData data = BuildSectorDataManager.getInstance(playerState.isOnServer()).getFromUUID(args[1], playerState.isOnServer());
 					playerData.setLastRealSector(playerState.getCurrentSector());
@@ -65,6 +66,7 @@ public class PlayerActionManager {
 				case LEAVE_BUILD_SECTOR:
 					playerState = GameCommon.getPlayerFromName(args[0]);
 					playerState.getControllerState().forcePlayerOutOfSegmentControllers();
+					playerState.getControllerState().forcePlayerOutOfShips();
 					playerData = PlayerDataManager.getInstance(playerState.isOnServer()).getFromName(playerState.getName(), playerState.isOnServer());
 					Vector3i lastRealSector = playerData.getLastRealSector();
 					Transform lastRealTransform1 = playerData.getLastRealTransform();

@@ -51,7 +51,7 @@ public class ECCatalogScrollableListNew extends CatalogScrollableListNew {
 	private final int mode;
 	private boolean spawnDocked;
 	private boolean useOwnFaction;
-	private GUIElement p;
+	private final GUIElement p;
 
 	public ECCatalogScrollableListNew(InputState state, GUIElement p, int personalOnly, boolean showPrice, boolean selectSingle) {
 		super(state, p, personalOnly, showPrice, selectSingle);
@@ -123,7 +123,7 @@ public class ECCatalogScrollableListNew extends CatalogScrollableListNew {
 				GUIAncor descriptionAnchor = new GUIAncor(getState(), 100, Math.max(112, description.getTextHeight() + 12)) {
 					@Override
 					public void draw() {
-						setWidth(row.l.getInnerTextbox().getWidth());
+						setWidth(p.getWidth() - 28.0f);
 						if(description.getTextHeight() != getHeight()) {
 							setChanged();
 							notifyObservers();
@@ -140,7 +140,7 @@ public class ECCatalogScrollableListNew extends CatalogScrollableListNew {
 					final GUIAncor statsAnchor = new GUIAncor(getState(), 100, 128) {
 						@Override
 						public void draw() {
-							setWidth(row.l.getInnerTextbox().getWidth());
+							setWidth(p.getWidth() - 28.0f);
 							super.draw();
 						}
 					};
@@ -161,7 +161,7 @@ public class ECCatalogScrollableListNew extends CatalogScrollableListNew {
 					row.expanded.add(new GUIListElement(statsAnchor, statsAnchor, getState()));
 				}
 
-				GUIAncor buttonAnchor = new GUIAncor(getState(), p.getWidth() - 28.0f, height) {
+				GUIAncor buttonAnchor = new GUIAncor(getState(), 100.0f, 28.0f) {
 					@Override
 					public void draw() {
 						setWidth(p.getWidth() - 28.0f);
@@ -172,10 +172,7 @@ public class ECCatalogScrollableListNew extends CatalogScrollableListNew {
 				final BuildSectorData buildSectorData = BuildSectorDataManager.getInstance(false).getCurrentBuildSector(((GameClientState) getState()).getPlayer());
 				boolean canSpawn = isPlayerAdmin() || (buildSectorData != null && buildSectorData.getPermission(((GameClientState) getState()).getPlayer().getName(), BuildSectorData.PermissionTypes.SPAWN));
 				int columns = 2;
-				if(isPlayerAdmin() || buildSectorData != null) {
-					if(isPlayerAdmin()) columns += 2;
-					else columns++;
-				}
+				if(isPlayerAdmin() || buildSectorData != null) columns++;
 				if(canEdit(f)) columns += 4;
 
 				GUIHorizontalButtonTablePane buttonPane = new GUIHorizontalButtonTablePane(getState(), columns, 1, buttonAnchor);

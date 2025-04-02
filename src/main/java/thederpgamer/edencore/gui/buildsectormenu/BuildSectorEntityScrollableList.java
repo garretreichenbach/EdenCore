@@ -2,7 +2,6 @@ package thederpgamer.edencore.gui.buildsectormenu;
 
 import api.common.GameClient;
 import org.schema.common.util.StringTools;
-import org.schema.game.client.controller.PlayerInput;
 import org.schema.game.client.data.GameClientState;
 import org.schema.schine.graphicsengine.core.MouseEvent;
 import org.schema.schine.graphicsengine.forms.gui.*;
@@ -63,11 +62,11 @@ public class BuildSectorEntityScrollableList extends ScrollableTableList<BuildSe
 				return s.trim().isEmpty() || buildSectorEntityData.getEntity().getName().toLowerCase(Locale.ENGLISH).contains(s.trim().toLowerCase(Locale.ENGLISH));
 			}
 		}, ControllerElement.FilterRowStyle.LEFT);
-		addDropdownFilter(new GUIListFilterDropdown<BuildSectorData.BuildSectorEntityData, BuildSectorData.EntityType>() {
+		addDropdownFilter(new GUIListFilterDropdown<BuildSectorData.BuildSectorEntityData, BuildSectorData.EntityType>(BuildSectorData.EntityType.values()) {
 
 			@Override
 			public boolean isOk(BuildSectorData.EntityType entityType, BuildSectorData.BuildSectorEntityData buildSectorEntityData) {
-				return entityType == null || entityType == buildSectorEntityData.getEntityType();
+				return entityType == null || buildSectorEntityData.getEntityType() == entityType;
 			}
 		}, new CreateGUIElementInterface<BuildSectorData.EntityType>() {
 			@Override
@@ -101,10 +100,10 @@ public class BuildSectorEntityScrollableList extends ScrollableTableList<BuildSe
 		guiElementList.addObserver(this);
 		for(BuildSectorData.BuildSectorEntityData entityData : set) {
 			GUIClippedRow nameRow = getSimpleRow(entityData.getEntity().getName(), this);
-			GUIClippedRow typeRow = getSimpleRow(entityData.getEntity().getType().getName(), this);
+			GUIClippedRow typeRow = getSimpleRow(entityData.getEntityType().name(), this);
 			GUIClippedRow massRow = getSimpleRow(StringTools.massFormat(entityData.getEntity().getMass()), this);
-			final BuildSectorEntityScrollableListRow entryListRow = new BuildSectorEntityScrollableListRow(getState(), entityData, nameRow, typeRow, massRow);
-			GUIAncor anchor = new GUIAncor(getState(), parent.getWidth() - 28.0f, 56.0f) {
+			BuildSectorEntityScrollableListRow entryListRow = new BuildSectorEntityScrollableListRow(getState(), entityData, nameRow, typeRow, massRow);
+			GUIAncor anchor = new GUIAncor(getState(), parent.getWidth() - 28.0f, 53.0f) {
 				@Override
 				public void draw() {
 					super.draw();
@@ -281,7 +280,32 @@ public class BuildSectorEntityScrollableList extends ScrollableTableList<BuildSe
 				@Override
 				public void callback(GUIElement guiElement, MouseEvent mouseEvent) {
 					if(mouseEvent.pressedLeftMouse()) {
-						
+						entityData.setInvulnerable(false, false);
+					}
+				}
+
+				@Override
+				public boolean isOccluded() {
+					if(isObscured()) return true;
+					return !buildSectorData.getPermissionForEntityOrGlobal(user, entityData.getEntityUID(), BuildSectorData.PermissionTypes.TOGGLE_DAMAGE_SPECIFIC);
+				}
+			}, new GUIActivationCallback() {
+				@Override
+				public boolean isVisible(InputState inputState) {
+					return true;
+				}
+
+				@Override
+				public boolean isActive(InputState inputState) {
+					return buildSectorData.getPermissionForEntityOrGlobal(user, entityData.getEntityUID(), BuildSectorData.PermissionTypes.TOGGLE_DAMAGE_SPECIFIC);
+				}
+			});
+		} else {
+			buttonPane.addButton(2, 1, "SET INVULNERABLE", GUIHorizontalArea.HButtonColor.GREEN, new GUICallback() {
+				@Override
+				public void callback(GUIElement guiElement, MouseEvent mouseEvent) {
+					if(mouseEvent.pressedLeftMouse()) {
+						entityData.setInvulnerable(true, false);
 					}
 				}
 
