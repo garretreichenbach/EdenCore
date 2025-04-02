@@ -159,7 +159,7 @@ public class ECCatalogScrollableListNew extends CatalogScrollableListNew {
 					row.expanded.add(new GUIListElement(statsAnchor, statsAnchor, getState()));
 				}
 
-				GUIAncor buttonAnchor = new GUIAncor(getState(), row.l.getInnerTextbox().getWidth(), height) {
+				GUIAncor buttonAnchor = new GUIAncor(getState(), 100, height) {
 					@Override
 					public void draw() {
 						setWidth(row.l.getInnerTextbox().getWidth());
