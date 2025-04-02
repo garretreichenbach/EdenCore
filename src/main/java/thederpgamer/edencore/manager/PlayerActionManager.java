@@ -2,11 +2,13 @@ package thederpgamer.edencore.manager;
 
 import api.common.GameCommon;
 import api.common.GameServer;
+import api.utils.game.PlayerUtils;
 import api.utils.gui.ModGUIHandler;
 import com.bulletphysics.linearmath.Transform;
 import org.schema.common.util.linAlg.Vector3i;
 import org.schema.game.common.controller.SegmentController;
 import org.schema.game.common.data.player.PlayerState;
+import org.schema.game.server.controller.SectorSwitch;
 import org.schema.schine.network.objects.Sendable;
 import thederpgamer.edencore.EdenCore;
 import thederpgamer.edencore.data.buildsectordata.BuildSectorData;
@@ -48,8 +50,6 @@ public class PlayerActionManager {
 					break;
 				case ENTER_BUILD_SECTOR:
 					playerState = GameCommon.getPlayerFromName(args[0]);
-					playerState.getControllerState().forcePlayerOutOfSegmentControllers();
-					playerState.getControllerState().forcePlayerOutOfShips();
 					playerData = PlayerDataManager.getInstance(playerState.isOnServer()).getFromName(playerState.getName(), playerState.isOnServer());
 					BuildSectorData data = BuildSectorDataManager.getInstance(playerState.isOnServer()).getFromUUID(args[1], playerState.isOnServer());
 					playerData.setLastRealSector(playerState.getCurrentSector());
@@ -59,20 +59,26 @@ public class PlayerActionManager {
 					else lastRealTransform.origin.set(playerState.getBuildModePosition().getWorldTransform().origin);
 					playerData.setLastRealTransform(lastRealTransform);
 					Vector3i sector = data.getSector();
-					GameServer.executeAdminCommand("change_sector_for " + playerState.getName() + " " + sector.x + " " + sector.y + " " + sector.z);
+					if(playerState.getFirstControlledTransformableWOExc() instanceof SegmentController) {
+						PlayerUtils.sendMessage(playerState, "You cannot enter a build sector while piloting a ship. Please leave the ship first.");
+						return;
+					}
+					GameServer.getServerState().getController().queueSectorSwitch(playerState.getFirstControlledTransformableWOExc(), sector, SectorSwitch.TRANS_JUMP, false, true, true);
 					playerState.setHasCreativeMode(true);
 					playerState.setUseCreativeMode(true);
 					break;
 				case LEAVE_BUILD_SECTOR:
 					playerState = GameCommon.getPlayerFromName(args[0]);
-					playerState.getControllerState().forcePlayerOutOfSegmentControllers();
-					playerState.getControllerState().forcePlayerOutOfShips();
 					playerData = PlayerDataManager.getInstance(playerState.isOnServer()).getFromName(playerState.getName(), playerState.isOnServer());
 					Vector3i lastRealSector = playerData.getLastRealSector();
 					Transform lastRealTransform1 = playerData.getLastRealTransform();
 					playerState.setHasCreativeMode(false);
 					playerState.setUseCreativeMode(false);
-					GameServer.executeAdminCommand("change_sector_for " + playerState.getName() + " " + lastRealSector.x + " " + lastRealSector.y + " " + lastRealSector.z);
+					if(playerState.getFirstControlledTransformableWOExc() instanceof SegmentController) {
+						PlayerUtils.sendMessage(playerState, "You cannot exit a build sector while piloting a ship. Please leave the ship first.");
+						return;
+					}
+					GameServer.getServerState().getController().queueSectorSwitch(playerState.getFirstControlledTransformableWOExc(), lastRealSector, SectorSwitch.TRANS_JUMP, false, true, true);
 					playerState.getAssingedPlayerCharacter().warpTransformable(lastRealTransform1, true, false, null);
 					break;
 			}
