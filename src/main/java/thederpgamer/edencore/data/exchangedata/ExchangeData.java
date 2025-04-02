@@ -59,6 +59,7 @@ public class ExchangeData extends SerializableData {
 	}
 	
 	public ExchangeData(String name, short itemId, int itemCount, ExchangeDataCategory category) {
+		super(DataType.EXCHANGE_DATA);
 		this.name = name;
 		assert category == ExchangeDataCategory.ITEM || category == ExchangeDataCategory.WEAPON : new IllegalArgumentException("ExchangeData of type ITEM or WEAPON must be used for itemId and itemCount");
 		this.itemId = itemId;
