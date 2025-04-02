@@ -98,32 +98,6 @@ public class EventManager {
 							modTab.getContent(0).attach(scrollableList);
 						}
 					}
-				} else if(event.getWindow().activeInterface instanceof CatalogPanelNew) {
-					try {
-						CatalogPanelNew panel = (CatalogPanelNew) event.getWindow().activeInterface;
-						CatalogScrollableListNew availList = (CatalogScrollableListNew) ClassUtils.getField(panel, "availList");
-						if(!(availList instanceof ECCatalogScrollableListNew)) {
-							availList.cleanUp();
-							CatalogOptionsButtonPanel c = new CatalogOptionsButtonPanel(GameClient.getClientState(), panel);
-							c.onInit();
-							event.getPane().setContent(0, c);
-							if(!CatalogOptionsButtonPanel.areMultiplayerButtonVisible()) {
-								event.getPane().setTextBoxHeightLast(58);
-								event.getPane().addNewTextBox(10);
-							} else {
-								event.getPane().setTextBoxHeightLast(82);
-								event.getPane().addNewTextBox(10);
-							}
-							int mode = (int) ClassUtils.getField(availList, "mode");
-							boolean showPrice = (boolean) ClassUtils.getField(availList, "showPrice");
-							boolean selectSingle = (boolean) ClassUtils.getField(availList, "selectSingle");
-							availList = new ECCatalogScrollableListNew(GameClient.getClientState(), event.getPane().getContent(1), mode, showPrice, selectSingle);
-							availList.onInit();
-							event.getPane().getContent(1).attach(availList);
-						}
-					} catch(Exception exception) {
-						instance.logException("Failed to create Available Catalog Pane", exception);
-					}
 				}
 
 				if(BuildSectorDataManager.getInstance(false).isPlayerInAnyBuildSector(GameClient.getClientPlayerState())) {

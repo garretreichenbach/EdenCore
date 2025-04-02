@@ -13,6 +13,7 @@ import api.utils.textures.StarLoaderTexture;
 import glossar.GlossarCategory;
 import glossar.GlossarEntry;
 import glossar.GlossarInit;
+import org.apache.commons.io.IOUtils;
 import org.schema.game.common.data.player.PlayerState;
 import thederpgamer.edencore.commands.GuideCommand;
 import thederpgamer.edencore.data.misc.ControlBindingData;
@@ -24,7 +25,11 @@ import thederpgamer.edencore.network.PlayerActionCommandPacket;
 import thederpgamer.edencore.network.SendDataPacket;
 import thederpgamer.edencore.network.SyncRequestPacket;
 
+import java.io.IOException;
+import java.nio.file.Files;
 import java.util.Arrays;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipInputStream;
 
 /**
  * Main class for EdenCore mod.
@@ -47,6 +52,8 @@ public class EdenCore extends StarMod {
 		return instance;
 	}
 
+	private final String[] overwrites = {"CatalogPanelNew"};
+
 	@Override
 	public void onEnable() {
 		instance = this;
@@ -54,6 +61,14 @@ public class EdenCore extends StarMod {
 		EventManager.initialize(this);
 		registerPackets();
 		registerCommands();
+	}
+
+	@Override
+	public byte[] onClassTransform(String className, byte[] byteCode) {
+		for(String name : overwrites) {
+			if(className.endsWith(name)) return overwriteClass(className, byteCode);
+		}
+		return super.onClassTransform(className, byteCode);
 	}
 
 	@Override
@@ -149,5 +164,22 @@ public class EdenCore extends StarMod {
 		ControlBindingData.registerBinding(this, "Open Exchange Menu", "Opens the Exchange Menu", 74);
 		ControlBindingData.registerBinding(this, "Open Build Sector Menu", "Opens the Build Sector Menu", 55);
 		logInfo("Registered Bindings");
+	}
+
+	private byte[] overwriteClass(String className, byte[] byteCode) {
+		byte[] bytes = null;
+		try {
+			ZipInputStream file = new ZipInputStream(Files.newInputStream(getSkeleton().getJarFile().toPath()));
+			while(true) {
+				ZipEntry nextEntry = file.getNextEntry();
+				if(nextEntry == null) break;
+				if(nextEntry.getName().endsWith(className + ".class")) bytes = IOUtils.toByteArray(file);
+			}
+			file.close();
+		} catch(IOException exception) {
+			logException("Failed to overwrite class: " + className, exception);
+		}
+		if(bytes != null) return bytes;
+		else return byteCode;
 	}
 }
