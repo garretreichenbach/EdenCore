@@ -21,9 +21,6 @@ import api.utils.game.PlayerUtils;
 import api.utils.game.inventory.InventoryUtils;
 import api.utils.gui.ModGUIHandler;
 import org.schema.common.util.linAlg.Vector3i;
-import org.schema.game.client.view.gui.catalog.newcatalog.CatalogOptionsButtonPanel;
-import org.schema.game.client.view.gui.catalog.newcatalog.CatalogPanelNew;
-import org.schema.game.client.view.gui.catalog.newcatalog.CatalogScrollableListNew;
 import org.schema.game.client.view.gui.newgui.GUITopBar;
 import org.schema.game.common.data.player.AbstractOwnerState;
 import org.schema.game.common.data.player.PlayerState;
@@ -50,7 +47,6 @@ import thederpgamer.edencore.element.ElementManager;
 import thederpgamer.edencore.gui.bankingmenu.BankingDialog;
 import thederpgamer.edencore.gui.buildsectormenu.BuildSectorDialog;
 import thederpgamer.edencore.gui.controls.ControlBindingsScrollableList;
-import thederpgamer.edencore.gui.elements.ECCatalogScrollableListNew;
 import thederpgamer.edencore.gui.exchangemenu.ExchangeDialog;
 import thederpgamer.edencore.utils.ClassUtils;
 
