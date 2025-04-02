@@ -98,30 +98,28 @@ public class EventManager {
 							modTab.getContent(0).attach(scrollableList);
 						}
 					}
-				} else if(event.getTitleAsString().equals(Lng.str("BLUEPRINTS"))) {
+				} else if(event.getWindow().activeInterface instanceof CatalogPanelNew) {
 					try {
-						if(event.getWindow().activeInterface instanceof CatalogPanelNew) {
-							CatalogPanelNew panel = (CatalogPanelNew) event.getWindow().activeInterface;
-							CatalogScrollableListNew availList = (CatalogScrollableListNew) ClassUtils.getField(panel, "availList");
-							if(!(availList instanceof ECCatalogScrollableListNew)) {
-								availList.cleanUp();
-								CatalogOptionsButtonPanel c = new CatalogOptionsButtonPanel(GameClient.getClientState(), panel);
-								c.onInit();
-								event.getPane().setContent(0, c);
-								if(!CatalogOptionsButtonPanel.areMultiplayerButtonVisible()) {
-									event.getPane().setTextBoxHeightLast(58);
-									event.getPane().addNewTextBox(10);
-								} else {
-									event.getPane().setTextBoxHeightLast(82);
-									event.getPane().addNewTextBox(10);
-								}
-								int mode = (int) ClassUtils.getField(availList, "mode");
-								boolean showPrice = (boolean) ClassUtils.getField(availList, "showPrice");
-								boolean selectSingle = (boolean) ClassUtils.getField(availList, "selectSingle");
-								availList = new ECCatalogScrollableListNew(GameClient.getClientState(), event.getPane().getContent(1), mode, showPrice, selectSingle);
-								availList.onInit();
-								event.getPane().getContent(1).attach(availList);
+						CatalogPanelNew panel = (CatalogPanelNew) event.getWindow().activeInterface;
+						CatalogScrollableListNew availList = (CatalogScrollableListNew) ClassUtils.getField(panel, "availList");
+						if(!(availList instanceof ECCatalogScrollableListNew)) {
+							availList.cleanUp();
+							CatalogOptionsButtonPanel c = new CatalogOptionsButtonPanel(GameClient.getClientState(), panel);
+							c.onInit();
+							event.getPane().setContent(0, c);
+							if(!CatalogOptionsButtonPanel.areMultiplayerButtonVisible()) {
+								event.getPane().setTextBoxHeightLast(58);
+								event.getPane().addNewTextBox(10);
+							} else {
+								event.getPane().setTextBoxHeightLast(82);
+								event.getPane().addNewTextBox(10);
 							}
+							int mode = (int) ClassUtils.getField(availList, "mode");
+							boolean showPrice = (boolean) ClassUtils.getField(availList, "showPrice");
+							boolean selectSingle = (boolean) ClassUtils.getField(availList, "selectSingle");
+							availList = new ECCatalogScrollableListNew(GameClient.getClientState(), event.getPane().getContent(1), mode, showPrice, selectSingle);
+							availList.onInit();
+							event.getPane().getContent(1).attach(availList);
 						}
 					} catch(Exception exception) {
 						instance.logException("Failed to create Available Catalog Pane", exception);
@@ -138,7 +136,7 @@ public class EventManager {
 				}
 			}
 		}, instance);
-		
+
 		StarLoader.registerListener(PlayerSpawnEvent.class, new Listener<PlayerSpawnEvent>() {
 			@Override
 			public void onEvent(PlayerSpawnEvent event) {
@@ -148,7 +146,7 @@ public class EventManager {
 				}
 			}
 		}, instance);
-		
+
 		StarLoader.registerListener(PlayerDeathEvent.class, new Listener<PlayerDeathEvent>() {
 			@Override
 			public void onEvent(PlayerDeathEvent event) {
@@ -158,7 +156,7 @@ public class EventManager {
 				}
 			}
 		}, instance);
-		
+
 		StarLoader.registerListener(PlayerChangeSectorEvent.class, new Listener<PlayerChangeSectorEvent>() {
 			@Override
 			public void onEvent(PlayerChangeSectorEvent event) {

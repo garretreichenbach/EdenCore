@@ -1,15 +1,17 @@
 package thederpgamer.edencore.gui.exchangemenu;
 
 import api.common.GameClient;
+import it.unimi.dsi.fastutil.objects.ObjectArrayList;
+import org.schema.game.client.controller.PlayerBlockTypeDropdownInputNew;
 import org.schema.game.client.controller.PlayerGameDropDownInput;
 import org.schema.game.client.controller.PlayerInput;
 import org.schema.game.client.controller.manager.ingame.catalog.CatalogControlManager;
 import org.schema.game.client.data.GameClientState;
+import org.schema.game.client.view.gui.GUIBlockSprite;
 import org.schema.game.client.view.gui.GUIInputPanel;
-import org.schema.game.client.view.gui.advanced.tools.BlockDisplayResult;
-import org.schema.game.client.view.gui.advanced.tools.BlockSelectCallback;
-import org.schema.game.client.view.gui.advanced.tools.GUIAdvBlockDisplay;
+import org.schema.game.common.data.element.ElementInformation;
 import org.schema.game.common.data.element.ElementKeyMap;
+import org.schema.game.common.data.element.meta.MetaObject;
 import org.schema.game.common.data.element.meta.weapon.Weapon;
 import org.schema.game.common.data.player.catalog.CatalogPermission;
 import org.schema.game.server.data.blueprintnw.BlueprintType;
@@ -25,9 +27,7 @@ import org.schema.schine.input.InputState;
 import thederpgamer.edencore.data.DataManager;
 import thederpgamer.edencore.data.exchangedata.ExchangeData;
 import thederpgamer.edencore.data.exchangedata.ExchangeDataManager;
-import thederpgamer.edencore.gui.elements.GUIAdvMetaItemDisplay;
-import thederpgamer.edencore.gui.elements.MetaItemDisplayResult;
-import thederpgamer.edencore.gui.elements.MetaItemSelectCallback;
+import thederpgamer.edencore.utils.ItemUtils;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -96,7 +96,7 @@ public class AddExchangeItemDialog extends PlayerInput {
 		private GUIActivatableTextBar descriptionInput;
 		private GUIActivatableTextBar priceInput;
 		private GUIActivatableTextBar countInput;
-		private GUIElement itemDisplay;
+		private PlayerBlockTypeDropdownInputNew itemDisplay;
 
 		public AddExchangeBlueprintPanel(InputState state, GUICallback guiCallback) {
 			super("Add_Exchange_Blueprint_Panel", state, 500, 500, guiCallback, Lng.str("Add Blueprint"), "");
@@ -460,67 +460,120 @@ public class AddExchangeItemDialog extends PlayerInput {
 				contentPane.getContent(0).attach(countInput);
 
 				if(mode == ExchangeDialog.ITEMS) {
-					GUIAncor anchor = new GUIAncor(getState(), 64, 64);
-					itemDisplay = new GUIAdvBlockDisplay(getState(), anchor, new BlockDisplayResult() {
+					GUIHorizontalButtonTablePane buttonPane = new GUIHorizontalButtonTablePane(getState(), 1, 1, contentPane.getContent(0));
+					buttonPane.onInit();
+					buttonPane.addButton(0, 0, Lng.str("SELECT ITEM"), GUIHorizontalArea.HButtonColor.BLUE, new GUICallback() {
 						@Override
-						public short getCurrentValue() {
-							return exchangeData.getItemId();
+						public void callback(GUIElement guiElement, MouseEvent mouseEvent) {
+							if(mouseEvent.pressedLeftMouse()) {
+								(itemDisplay = new PlayerBlockTypeDropdownInputNew("Add_Exchange_Item_Dialog_Select_Item", (GameClientState) getState(), Lng.str("Select Item"), new ObjectArrayList<GUIElement>(), 1, 1, false) {
+									@Override
+									public void onAdditionalElementOk(Object o) {
+
+									}
+
+									@Override
+									public void onOk(ElementInformation elementInformation) {
+										if(elementInformation != null) {
+											exchangeData.setItemId(elementInformation.getId());
+											exchangeData.setItemCount(1);
+											countInput.setText(itemDisplay.getNumberValue() + "");
+											nameInput.setText(elementInformation.getName());
+											descriptionInput.setText(elementInformation.getDescription());
+										}
+										deactivate();
+									}
+
+									@Override
+									public void onOkMeta(MetaObject metaObject) {
+
+									}
+								}).activate();
+							}
 						}
 
 						@Override
-						public short getDefault() {
-							return ElementKeyMap.CORE_ID;
+						public boolean isOccluded() {
+							return itemDisplay != null && itemDisplay.isActive();
+						}
+					}, new GUIActivationCallback() {
+						@Override
+						public boolean isVisible(InputState inputState) {
+							return true;
 						}
 
 						@Override
-						public BlockSelectCallback initCallback() {
-							return new BlockSelectCallback() {
-								@Override
-								public void onTypeChanged(short i) {
-									if(ElementKeyMap.isValidType(i)) exchangeData.setItemId(i);
-								}
-							};
-						}
-
-						@Override
-						public String getToolTipText() {
-							return Lng.str("Select Block");
+						public boolean isActive(InputState inputState) {
+							return itemDisplay == null || !itemDisplay.isActive();
 						}
 					});
-					anchor.attach(itemDisplay);
-					anchor.setPos(0, countInput.getPos().y + countInput.getHeight() + 2, 0);
-					contentPane.getContent(0).attach(anchor);
-				} else {
-					GUIAncor anchor = new GUIAncor(getState(), 64, 64);
-					itemDisplay = new GUIAdvMetaItemDisplay(getState(), anchor, new MetaItemDisplayResult() {
+				} else if(mode == ExchangeDialog.WEAPONS) {
+					GUIHorizontalButtonTablePane buttonPane = new GUIHorizontalButtonTablePane(getState(), 1, 1, contentPane.getContent(0));
+					buttonPane.onInit();
+					buttonPane.addButton(0, 0, Lng.str("SELECT ITEM"), GUIHorizontalArea.HButtonColor.BLUE, new GUICallback() {
 						@Override
-						public short getCurrentValue() {
-							return exchangeData.getItemId();
+						public void callback(GUIElement guiElement, MouseEvent mouseEvent) {
+							if(mouseEvent.pressedLeftMouse()) {
+								(itemDisplay = new PlayerBlockTypeDropdownInputNew("Add_Exchange_Item_Dialog_Select_Item", (GameClientState) getState(), Lng.str("Select Item"), new ObjectArrayList<GUIElement>(), 1, 1, true) {
+									@Override
+									public void onAdditionalElementOk(Object o) {
+
+									}
+
+									@Override
+									public void onOk(ElementInformation elementInformation) {
+
+									}
+
+									@Override
+									public void onOkMeta(MetaObject metaObject) {
+										if(metaObject instanceof Weapon) {
+											exchangeData.setItemId(metaObject.getSubObjectId());
+											exchangeData.setItemCount(1);
+											countInput.setText(itemDisplay.getNumberValue() + "");
+											nameInput.setText(metaObject.getName());
+										}
+										deactivate();
+									}
+
+									@Override
+									public ObjectArrayList<GUIElement> getElements(GameClientState state, String contain, ObjectArrayList<GUIElement> additionalElements) {
+										ObjectArrayList<GUIElement> elements = new ObjectArrayList<>();
+										for(Weapon.WeaponSubType weaponSubType : Weapon.WeaponSubType.values()) {
+											GUIAncor guiAncor = new GUIAncor(state, 800, 32);
+											elements.add(guiAncor);
+											GUITextOverlay t = new GUITextOverlay(100, 32, FontLibrary.getBoldArial12White(), state);
+											t.setTextSimple(ItemUtils.getSubTypeName(weaponSubType));
+											guiAncor.setUserPointer(weaponSubType.type);
+											GUIBlockSprite b = new GUIBlockSprite(state, weaponSubType.type);
+											b.setLayer(-1);
+											b.getScale().set(0.5f, 0.5f, 0.5f);
+											guiAncor.attach(b);
+											t.getPos().x = 50;
+											t.getPos().y = 7;
+											guiAncor.attach(t);
+										}
+										return elements;
+									}
+								}).activate();
+							}
 						}
 
 						@Override
-						public short getDefault() {
-							return Weapon.WeaponSubType.LASER.type;
+						public boolean isOccluded() {
+							return itemDisplay != null && itemDisplay.isActive();
+						}
+					}, new GUIActivationCallback() {
+						@Override
+						public boolean isVisible(InputState inputState) {
+							return true;
 						}
 
 						@Override
-						public MetaItemSelectCallback initCallback() {
-							return new MetaItemSelectCallback() {
-								@Override
-								public void onTypeChanged(short i) {
-									exchangeData.setItemId(i);
-								}
-							};
-						}
-
-						@Override
-						public String getToolTipText() {
-							return Lng.str("Select Weapon");
+						public boolean isActive(InputState inputState) {
+							return itemDisplay == null || !itemDisplay.isActive();
 						}
 					});
-					anchor.attach(itemDisplay);
-					anchor.setPos(0, countInput.getPos().y + countInput.getHeight() + 2, 0);
-					contentPane.getContent(0).attach(anchor);
 				}
 			}
 		}

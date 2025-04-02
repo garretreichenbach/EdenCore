@@ -34,4 +34,28 @@ public class ItemUtils {
 				return -1;
 		}
 	}
+
+	public static String getSubTypeName(Weapon.WeaponSubType weaponSubType) {
+		switch(weaponSubType) {
+			case LASER:
+				return "Laser Weapon";
+			case HEAL:
+				return "Heal Beam";
+			case MARKER:
+				return "Marker Beam";
+			case POWER_SUPPLY:
+				return "Power Supply Beam";
+			case ROCKET_LAUNCHER:
+				return "Rocket Launcher";
+			case SNIPER_RIFLE:
+				return "Sniper Rifle";
+			case GRAPPLE:
+				return "Grapple Beam";
+			case TORCH:
+				return "Torch";
+			case TRANSPORTER_MARKER:
+				return "Transporter Beacon";
+		}
+		return null;
+	}
 }

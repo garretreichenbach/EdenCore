@@ -43,7 +43,7 @@ public class ExchangeData extends SerializableData {
 	private int itemCount;
 	
 	public ExchangeData() {
-		
+		super(DataType.EXCHANGE_DATA);
 	}
 	
 	public ExchangeData(String name, String catalogName, String description, String producer, int price, ExchangeDataCategory category, BlueprintClassification classification, float mass) {
