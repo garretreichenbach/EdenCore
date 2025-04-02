@@ -54,7 +54,9 @@ import thederpgamer.edencore.gui.elements.ECCatalogScrollableListNew;
 import thederpgamer.edencore.gui.exchangemenu.ExchangeDialog;
 import thederpgamer.edencore.utils.ClassUtils;
 
+import java.awt.*;
 import java.lang.reflect.Field;
+import java.net.URI;
 import java.util.ArrayList;
 import java.util.Locale;
 
@@ -305,6 +307,46 @@ public class EventManager {
 							GameClient.getClientState().getController().queueUIAudio("0022_menu_ui - enter");
 							GameClient.getClientState().getGlobalGameControlManager().getIngameControlManager().getPlayerGameControlManager().deactivateAll();
 							(new ExchangeDialog()).activate();
+						}
+					}
+
+					@Override
+					public boolean isOccluded() {
+						return false;
+					}
+				}, new GUIActivationHighlightCallback() {
+					@Override
+					public boolean isHighlighted(InputState inputState) {
+						return false;
+					}
+
+					@Override
+					public boolean isVisible(InputState inputState) {
+						return true;
+					}
+
+					@Override
+					public boolean isActive(InputState inputState) {
+						return true;
+					}
+				});
+				dropDownButton.addExpandedButton("DISCORD", new GUICallback() {
+					@Override
+					public void callback(GUIElement guiElement, MouseEvent mouseEvent) {
+						if(mouseEvent.pressedLeftMouse()) {
+							GameClient.getClientState().getController().queueUIAudio("0022_menu_ui - enter");
+							try {
+								String discordURL = ConfigManager.getMainConfig().getConfigurableValue("discord_link", "https://discord.gg/kcb84yRwHU");
+								//Open in the default browser
+								if(discordURL != null && !discordURL.isEmpty()) {
+									Desktop.getDesktop().browse(URI.create(discordURL));
+								} else {
+									GameClient.getClientState().getController().queueUIAudio("0022_menu_ui - error");
+									PlayerUtils.sendMessage(GameClient.getClientPlayerState(), "Discord link is not set in the config file! Notify an admin!");
+								}
+							} catch(Exception exception) {
+								instance.logException("Failed to open Discord link", exception);
+							}
 						}
 					}
 
