@@ -51,11 +51,13 @@ public class ECCatalogScrollableListNew extends CatalogScrollableListNew {
 	private final int mode;
 	private boolean spawnDocked;
 	private boolean useOwnFaction;
+	private GUIElement p;
 
 	public ECCatalogScrollableListNew(InputState state, GUIElement p, int personalOnly, boolean showPrice, boolean selectSingle) {
 		super(state, p, personalOnly, showPrice, selectSingle);
 		this.showPrice = showPrice;
 		this.selectSingle = selectSingle;
+		this.p = p;
 		mode = personalOnly;
 		useOwnFaction = ((GameClientState) getState()).getPlayer().getFactionId() > 0;
 		((GameClientState) getState()).getCatalogManager().addObserver(this);
@@ -159,10 +161,10 @@ public class ECCatalogScrollableListNew extends CatalogScrollableListNew {
 					row.expanded.add(new GUIListElement(statsAnchor, statsAnchor, getState()));
 				}
 
-				GUIAncor buttonAnchor = new GUIAncor(getState(), 100, height) {
+				GUIAncor buttonAnchor = new GUIAncor(getState(), p.getWidth() - 28.0f, height) {
 					@Override
 					public void draw() {
-						setWidth(row.l.getInnerTextbox().getWidth());
+						setWidth(p.getWidth() - 28.0f);
 						super.draw();
 					}
 				};
