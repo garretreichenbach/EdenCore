@@ -1,5 +1,6 @@
 package thederpgamer.edencore.gui.elements;
 
+import api.common.GameClient;
 import it.unimi.dsi.fastutil.objects.ObjectArrayList;
 import org.schema.common.util.StringTools;
 import org.schema.game.client.controller.PlayerGameOkCancelInput;
@@ -170,7 +171,7 @@ public class ECCatalogScrollableListNew extends CatalogScrollableListNew {
 				};
 
 				final BuildSectorData buildSectorData = BuildSectorDataManager.getInstance(false).getCurrentBuildSector(((GameClientState) getState()).getPlayer());
-				boolean canSpawn = isPlayerAdmin() || (buildSectorData != null && buildSectorData.getPermission(((GameClientState) getState()).getPlayer().getName(), BuildSectorData.PermissionTypes.SPAWN));
+				final boolean canSpawn = isPlayerAdmin() || (buildSectorData != null && buildSectorData.getPermission(((GameClientState) getState()).getPlayer().getName(), BuildSectorData.PermissionTypes.SPAWN));
 				int columns = 2;
 				if(isPlayerAdmin() || buildSectorData != null) columns++;
 				if(canEdit(f)) columns += 4;
@@ -373,7 +374,7 @@ public class ECCatalogScrollableListNew extends CatalogScrollableListNew {
 						@Override
 						public void callback(GUIElement guiElement, MouseEvent mouseEvent) {
 							if(mouseEvent.pressedLeftMouse()) {
-								if(buildSectorData != null) {
+								if(buildSectorData != null && buildSectorData.getSector().equals(GameClient.getClientPlayerState().getCurrentSector())) {
 									final BlueprintEntry entry = EntityUtils.getFromCatalog(f);
 									String description = Lng.str("Please type in a name for your new Ship!");
 									PlayerGameTextInput pp = new PlayerGameTextInput("CatalogScrollableListNew_f_load", (GameClientState) getState(), 400, 240, 50, Lng.str("New Ship"), description, f.getUid() + "_" + System.currentTimeMillis()) {
@@ -489,7 +490,7 @@ public class ECCatalogScrollableListNew extends CatalogScrollableListNew {
 
 						@Override
 						public boolean isOccluded() {
-							return !isActive();
+							return !isActive() || !canSpawn;
 						}
 					}, new GUIActivationCallback() {
 						@Override
@@ -499,7 +500,7 @@ public class ECCatalogScrollableListNew extends CatalogScrollableListNew {
 
 						@Override
 						public boolean isActive(InputState inputState) {
-							return true;
+							return canSpawn;
 						}
 					});
 					x++;
