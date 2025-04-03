@@ -120,7 +120,7 @@ public class ExchangeItemScrollableList extends ScrollableTableList<ExchangeData
 							GUITextOverlayTableDropDown dropDown;
 							(dropDown = new GUITextOverlayTableDropDown(10, 10, getState())).setTextSimple(classification.getName().toUpperCase(Locale.ENGLISH));
 							dropDown.setPos(4.0F, 4.0F, 0.0F);
-							anchor.setUserPointer(classification.name().toUpperCase(Locale.ENGLISH));
+							anchor.setUserPointer(classification);
 							anchor.attach(dropDown);
 							return anchor;
 						}
@@ -140,7 +140,7 @@ public class ExchangeItemScrollableList extends ScrollableTableList<ExchangeData
 				case ExchangeDialog.STATIONS:
 					addDropdownFilter(new GUIListFilterDropdown<ExchangeData, BlueprintClassification>(BlueprintClassification.stationValues().toArray(stationClassifications)) {
 						public boolean isOk(BlueprintClassification classification, ExchangeData item) {
-							return item.getClassification() == classification;
+							return classification == null || item.getClassification() == classification;
 						}
 
 					}, new CreateGUIElementInterface<BlueprintClassification>() {
@@ -150,7 +150,7 @@ public class ExchangeItemScrollableList extends ScrollableTableList<ExchangeData
 							GUITextOverlayTableDropDown dropDown;
 							(dropDown = new GUITextOverlayTableDropDown(10, 10, getState())).setTextSimple(classification.getName().toUpperCase(Locale.ENGLISH));
 							dropDown.setPos(4.0F, 4.0F, 0.0F);
-							anchor.setUserPointer(classification.name().toUpperCase(Locale.ENGLISH));
+							anchor.setUserPointer(classification);
 							anchor.attach(dropDown);
 							return anchor;
 						}
@@ -161,7 +161,7 @@ public class ExchangeItemScrollableList extends ScrollableTableList<ExchangeData
 							GUITextOverlayTableDropDown dropDown;
 							(dropDown = new GUITextOverlayTableDropDown(10, 10, getState())).setTextSimple(Lng.str("ALL"));
 							dropDown.setPos(4.0F, 4.0F, 0.0F);
-							anchor.setUserPointer("ALL");
+							anchor.setUserPointer(null);
 							anchor.attach(dropDown);
 							return anchor;
 						}
@@ -187,7 +187,6 @@ public class ExchangeItemScrollableList extends ScrollableTableList<ExchangeData
 					return Integer.compare(o1.getPrice(), o2.getPrice());
 				}
 			});
-
 			addTextFilter(new GUIListFilterText<ExchangeData>() {
 				public boolean isOk(String s, ExchangeData item) {
 					return item.getName().toLowerCase(Locale.ENGLISH).contains(s.toLowerCase(Locale.ENGLISH)) || item.getItemInfo().getName().toLowerCase(Locale.ENGLISH).contains(s.toLowerCase(Locale.ENGLISH));
