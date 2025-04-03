@@ -23,6 +23,7 @@ import org.schema.schine.graphicsengine.forms.font.FontLibrary;
 import org.schema.schine.graphicsengine.forms.gui.*;
 import org.schema.schine.graphicsengine.forms.gui.newgui.*;
 import org.schema.schine.input.InputState;
+import thederpgamer.edencore.EdenCore;
 import thederpgamer.edencore.data.DataManager;
 import thederpgamer.edencore.data.exchangedata.ExchangeData;
 import thederpgamer.edencore.data.exchangedata.ExchangeDataManager;
@@ -54,15 +55,19 @@ public class AddExchangeItemDialog extends PlayerInput {
 				case "OK":
 					ExchangeData data = panel.getExchangeData();
 					if(data != null) {
-						if(ExchangeDataManager.getInstance(false).existsName(data.getName())) {
-							GameClient.showPopupMessage(Lng.str("An item by that name already exists!"), 0);
-							deactivate();
-							return;
+						try {
+							if(ExchangeDataManager.getInstance(false).existsName(data.getName())) {
+								GameClient.showPopupMessage(Lng.str("An item by that name already exists!"), 0);
+								deactivate();
+								return;
+							}
+							data.setCategory(mode);
+							data.setProducer(GameClient.getClientPlayerState().getFactionName());
+							ExchangeDataManager.getInstance(false).addData(data, false);
+							ExchangeDataManager.getInstance(false).sendPacket(data, DataManager.ADD_DATA, true);
+						} catch(Exception exception) {
+							EdenCore.getInstance().logException("Failed to add exchange data due to an error", exception);	
 						}
-						data.setCategory(mode);
-						data.setProducer(GameClient.getClientPlayerState().getFactionName());
-						ExchangeDataManager.getInstance(false).addData(data, false);
-						ExchangeDataManager.getInstance(false).sendPacket(data, DataManager.ADD_DATA, true);
 						deactivate();
 					}
 					break;
