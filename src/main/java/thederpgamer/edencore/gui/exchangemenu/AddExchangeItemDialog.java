@@ -107,8 +107,9 @@ public class AddExchangeItemDialog extends PlayerInput {
 			super.onInit();
 			GUIContentPane contentPane = ((GUIDialogWindow) background).getMainContentPane();
 			exchangeData = new ExchangeData();
+			GUIHorizontalButtonTablePane buttonPane = null;
 			if(mode == ExchangeDialog.SHIPS || mode == ExchangeDialog.STATIONS) {
-				GUIHorizontalButtonTablePane buttonPane = new GUIHorizontalButtonTablePane(getState(), 1, 1, contentPane.getContent(0));
+				buttonPane = new GUIHorizontalButtonTablePane(getState(), 1, 1, contentPane.getContent(0));
 				buttonPane.onInit();
 				buttonPane.addButton(0, 0, Lng.str("SELECT ENTRY"), GUIHorizontalArea.HButtonColor.GREEN, new GUICallback() {
 					@Override
@@ -246,7 +247,6 @@ public class AddExchangeItemDialog extends PlayerInput {
 
 					}
 				};
-
 				nameInput.setPos(0, buttonPane.getPos().y + buttonPane.getHeight() + 2, 0);
 				nameInput.setText(exchangeData.getName());
 				contentPane.getContent(0).attach(nameInput);
@@ -295,6 +295,7 @@ public class AddExchangeItemDialog extends PlayerInput {
 					}
 				};
 				priceInput.setPos(0, nameInput.getPos().y + nameInput.getHeight() + 2, 0);
+				priceInput.setText("1");
 				contentPane.getContent(0).attach(priceInput);
 
 				descriptionInput = new GUIActivatableTextBar(getState(), FontLibrary.FontSize.SMALL, 512, 2, "Description", contentPane.getContent(0), new TextCallback() {
@@ -335,144 +336,9 @@ public class AddExchangeItemDialog extends PlayerInput {
 					}
 				};
 				descriptionInput.setPos(0, priceInput.getPos().y + priceInput.getHeight() + 2, 0);
-				descriptionInput.setText(exchangeData.getDescription());
-				contentPane.getContent(0).attach(descriptionInput);
 			} else {
-				nameInput = new GUIActivatableTextBar(getState(), FontLibrary.FontSize.SMALL, 64, 1, "Name", contentPane.getContent(0), new TextCallback() {
-					@Override
-					public String[] getCommandPrefixes() {
-						return new String[0];
-					}
-
-					@Override
-					public String handleAutoComplete(String s, TextCallback callback, String prefix) throws PrefixNotFoundException {
-						return "";
-					}
-
-					@Override
-					public void onFailedTextCheck(String msg) {
-
-					}
-
-					@Override
-					public void onTextEnter(String entry, boolean send, boolean onAutoComplete) {
-
-					}
-
-					@Override
-					public void newLine() {
-
-					}
-				}, contentPane.getTextboxes().get(0), new OnInputChangedCallback() {
-					@Override
-					public String onInputChanged(String s) {
-						exchangeData.setName(s); // Set the name in the exchange data object
-						return s; // Return the current string to be displayed in the text box
-					}
-				}) {
-					@Override
-					public void cleanUp() {
-
-					}
-				};
-
-				nameInput.setText(exchangeData.getName());
-				contentPane.getContent(0).attach(nameInput);
-
-				priceInput = new GUIActivatableTextBar(getState(), FontLibrary.FontSize.SMALL, 3, 1, "Price (In Bars)", contentPane.getContent(0), new TextCallback() {
-					@Override
-					public String[] getCommandPrefixes() {
-						return new String[0];
-					}
-
-					@Override
-					public String handleAutoComplete(String s, TextCallback callback, String prefix) throws PrefixNotFoundException {
-						return "";
-					}
-
-					@Override
-					public void onFailedTextCheck(String msg) {
-
-					}
-
-					@Override
-					public void onTextEnter(String entry, boolean send, boolean onAutoComplete) {
-
-					}
-
-					@Override
-					public void newLine() {
-
-					}
-				}, contentPane.getTextboxes().get(0), new OnInputChangedCallback() {
-					@Override
-					public String onInputChanged(String s) {
-						try {
-							int price = Integer.parseInt(s.trim());
-							if(price < 1) price = 1; // Ensure price is at least 1
-							exchangeData.setPrice(price); // Set the price in the exchange data object
-						} catch(NumberFormatException e) {
-							exchangeData.setPrice(1); // Default to 1 if parsing fails
-						}
-						return String.valueOf(exchangeData.getPrice());
-					}
-				}) {
-					@Override
-					public void cleanUp() {
-
-					}
-				};
-				priceInput.setPos(0, nameInput.getPos().y + nameInput.getHeight() + 2, 0);
-				contentPane.getContent(0).attach(priceInput);
-
-				countInput = new GUIActivatableTextBar(getState(), FontLibrary.FontSize.SMALL, 10, 1, "Count", contentPane.getContent(0), new TextCallback() {
-					@Override
-					public String[] getCommandPrefixes() {
-						return new String[0];
-					}
-
-					@Override
-					public String handleAutoComplete(String s, TextCallback callback, String prefix) throws PrefixNotFoundException {
-						return "";
-					}
-
-					@Override
-					public void onFailedTextCheck(String msg) {
-
-					}
-
-					@Override
-					public void onTextEnter(String entry, boolean send, boolean onAutoComplete) {
-
-					}
-
-					@Override
-					public void newLine() {
-
-					}
-				}, contentPane.getTextboxes().get(0), new OnInputChangedCallback() {
-					@Override
-					public String onInputChanged(String s) {
-						try {
-							int count = Integer.parseInt(s.trim());
-							if(count < 1) count = 1; // Ensure count is at least 1
-							exchangeData.setItemCount(count); // Set the item count in the exchange data object
-						} catch(NumberFormatException e) {
-							exchangeData.setItemCount(1); // Default to 1 if parsing fails
-						}
-						return String.valueOf(exchangeData.getItemCount());
-					}
-				}) {
-					@Override
-					public void cleanUp() {
-
-					}
-				};
-				countInput.setPos(0, priceInput.getPos().y + priceInput.getHeight() + 2, 0);
-				contentPane.getContent(0).attach(countInput);
-
 				if(mode == ExchangeDialog.ITEMS) {
-					GUIHorizontalButtonTablePane buttonPane = new GUIHorizontalButtonTablePane(getState(), 1, 1, contentPane.getContent(0));
+					buttonPane = new GUIHorizontalButtonTablePane(getState(), 1, 1, contentPane.getContent(0));
 					buttonPane.onInit();
 					buttonPane.addButton(0, 0, Lng.str("SELECT ITEM"), GUIHorizontalArea.HButtonColor.BLUE, new GUICallback() {
 						@Override
@@ -519,8 +385,9 @@ public class AddExchangeItemDialog extends PlayerInput {
 							return itemDisplay == null || !itemDisplay.isActive();
 						}
 					});
+					contentPane.getContent(0).attach(buttonPane);
 				} else if(mode == ExchangeDialog.WEAPONS) {
-					GUIHorizontalButtonTablePane buttonPane = new GUIHorizontalButtonTablePane(getState(), 1, 1, contentPane.getContent(0));
+					buttonPane = new GUIHorizontalButtonTablePane(getState(), 1, 1, contentPane.getContent(0));
 					buttonPane.onInit();
 					buttonPane.addButton(0, 0, Lng.str("SELECT ITEM"), GUIHorizontalArea.HButtonColor.BLUE, new GUICallback() {
 						@Override
@@ -586,8 +453,184 @@ public class AddExchangeItemDialog extends PlayerInput {
 							return itemDisplay == null || !itemDisplay.isActive();
 						}
 					});
+					contentPane.getContent(0).attach(buttonPane);
 				}
+				nameInput = new GUIActivatableTextBar(getState(), FontLibrary.FontSize.SMALL, 64, 1, "Name", contentPane.getContent(0), new TextCallback() {
+					@Override
+					public String[] getCommandPrefixes() {
+						return new String[0];
+					}
+
+					@Override
+					public String handleAutoComplete(String s, TextCallback callback, String prefix) throws PrefixNotFoundException {
+						return "";
+					}
+
+					@Override
+					public void onFailedTextCheck(String msg) {
+
+					}
+
+					@Override
+					public void onTextEnter(String entry, boolean send, boolean onAutoComplete) {
+
+					}
+
+					@Override
+					public void newLine() {
+
+					}
+				}, contentPane.getTextboxes().get(0), new OnInputChangedCallback() {
+					@Override
+					public String onInputChanged(String s) {
+						exchangeData.setName(s); // Set the name in the exchange data object
+						return s; // Return the current string to be displayed in the text box
+					}
+				}) {
+					@Override
+					public void cleanUp() {
+
+					}
+				};
+				nameInput.setText(exchangeData.getName());
+				nameInput.setPos(0, buttonPane.getPos().y + buttonPane.getHeight() + 2, 0);
+				contentPane.getContent(0).attach(nameInput);
+				
+				priceInput = new GUIActivatableTextBar(getState(), FontLibrary.FontSize.SMALL, 3, 1, "Price (In Bars)", contentPane.getContent(0), new TextCallback() {
+					@Override
+					public String[] getCommandPrefixes() {
+						return new String[0];
+					}
+
+					@Override
+					public String handleAutoComplete(String s, TextCallback callback, String prefix) throws PrefixNotFoundException {
+						return "";
+					}
+
+					@Override
+					public void onFailedTextCheck(String msg) {
+
+					}
+
+					@Override
+					public void onTextEnter(String entry, boolean send, boolean onAutoComplete) {
+
+					}
+
+					@Override
+					public void newLine() {
+
+					}
+				}, contentPane.getTextboxes().get(0), new OnInputChangedCallback() {
+					@Override
+					public String onInputChanged(String s) {
+						try {
+							int price = Integer.parseInt(s.trim());
+							if(price < 1) price = 1; // Ensure price is at least 1
+							exchangeData.setPrice(price); // Set the price in the exchange data object
+						} catch(NumberFormatException e) {
+							exchangeData.setPrice(1); // Default to 1 if parsing fails
+						}
+						return String.valueOf(exchangeData.getPrice());
+					}
+				}) {
+					@Override
+					public void cleanUp() {
+
+					}
+				};
+				priceInput.setPos(0, nameInput.getPos().y + nameInput.getHeight() + 2, 0);
+				priceInput.setText("1");
+				contentPane.getContent(0).attach(priceInput);
+
+				countInput = new GUIActivatableTextBar(getState(), FontLibrary.FontSize.SMALL, 10, 1, "Count", contentPane.getContent(0), new TextCallback() {
+					@Override
+					public String[] getCommandPrefixes() {
+						return new String[0];
+					}
+
+					@Override
+					public String handleAutoComplete(String s, TextCallback callback, String prefix) throws PrefixNotFoundException {
+						return "";
+					}
+
+					@Override
+					public void onFailedTextCheck(String msg) {
+
+					}
+
+					@Override
+					public void onTextEnter(String entry, boolean send, boolean onAutoComplete) {
+
+					}
+
+					@Override
+					public void newLine() {
+
+					}
+				}, contentPane.getTextboxes().get(0), new OnInputChangedCallback() {
+					@Override
+					public String onInputChanged(String s) {
+						try {
+							int count = Integer.parseInt(s.trim());
+							if(count < 1) count = 1; // Ensure count is at least 1
+							exchangeData.setItemCount(count); // Set the item count in the exchange data object
+						} catch(NumberFormatException e) {
+							exchangeData.setItemCount(1); // Default to 1 if parsing fails
+						}
+						return String.valueOf(exchangeData.getItemCount());
+					}
+				}) {
+					@Override
+					public void cleanUp() {
+
+					}
+				};
+				countInput.setPos(0, priceInput.getPos().y + priceInput.getHeight() + 2, 0);
+				countInput.setText("1");
+				contentPane.getContent(0).attach(countInput);
+				
+				descriptionInput = new GUIActivatableTextBar(getState(), FontLibrary.FontSize.SMALL, 512, 2, "Description", contentPane.getContent(0), new TextCallback() {
+					@Override
+					public String[] getCommandPrefixes() {
+						return new String[0];
+					}
+
+					@Override
+					public String handleAutoComplete(String s, TextCallback callback, String prefix) throws PrefixNotFoundException {
+						return "";
+					}
+
+					@Override
+					public void onFailedTextCheck(String msg) {
+
+					}
+
+					@Override
+					public void onTextEnter(String entry, boolean send, boolean onAutoComplete) {
+
+					}
+
+					@Override
+					public void newLine() {
+
+					}
+				}, contentPane.getTextboxes().get(0), new OnInputChangedCallback() {
+					@Override
+					public String onInputChanged(String s) {
+						exchangeData.setDescription(s); // Set the description in the exchange data object
+						return s; // Return the current string to be displayed in the text box
+					}
+				}) {
+					@Override
+					public void cleanUp() {
+
+					}
+				};
+				descriptionInput.setPos(0, countInput.getPos().y + countInput.getHeight() + 2, 0);
 			}
+			descriptionInput.setText(exchangeData.getDescription());
+			contentPane.getContent(0).attach(descriptionInput);
 		}
 
 		private boolean isValid() {
