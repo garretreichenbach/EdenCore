@@ -59,6 +59,7 @@ public class AddExchangeItemDialog extends PlayerInput {
 							deactivate();
 							return;
 						}
+						data.setCategory(mode);
 						data.setProducer(GameClient.getClientPlayerState().getFactionName());
 						ExchangeDataManager.getInstance(false).addData(data, false);
 						ExchangeDataManager.getInstance(false).sendPacket(data, DataManager.ADD_DATA, true);
@@ -134,7 +135,7 @@ public class AddExchangeItemDialog extends PlayerInput {
 								public ObjectArrayList<GUIElement> filterElements(String text) {
 									ObjectArrayList<GUIElement> elements = new ObjectArrayList<>();
 									for(GUIElement element : this.elements) {
-										if(element.getUserPointer() instanceof CatalogPermission && ((CatalogPermission) element.getUserPointer()).getUid().toLowerCase().contains(text.toLowerCase())) {
+										if(text.isEmpty() || (element.getUserPointer() instanceof CatalogPermission && ((CatalogPermission) element.getUserPointer()).getUid().toLowerCase().contains(text.toLowerCase()))) {
 											elements.add(element);
 										}
 									}
@@ -247,7 +248,7 @@ public class AddExchangeItemDialog extends PlayerInput {
 
 					}
 				};
-				nameInput.setPos(0, buttonPane.getPos().y + buttonPane.getHeight() + 2, 0);
+				nameInput.setPos(0, buttonPane.getPos().y + buttonPane.getHeight(), 0);
 				nameInput.setText(exchangeData.getName());
 				contentPane.getContent(0).attach(nameInput);
 
@@ -281,7 +282,6 @@ public class AddExchangeItemDialog extends PlayerInput {
 					public String onInputChanged(String s) {
 						try {
 							int price = Integer.parseInt(s.trim());
-							if(price < 1) price = 1; // Ensure price is at least 1
 							exchangeData.setPrice(price); // Set the price in the exchange data object
 						} catch(NumberFormatException e) {
 							exchangeData.setPrice(1); // Default to 1 if parsing fails
@@ -295,7 +295,6 @@ public class AddExchangeItemDialog extends PlayerInput {
 					}
 				};
 				priceInput.setPos(0, nameInput.getPos().y + nameInput.getHeight() + 2, 0);
-				priceInput.setText("1");
 				contentPane.getContent(0).attach(priceInput);
 
 				descriptionInput = new GUIActivatableTextBar(getState(), FontLibrary.FontSize.SMALL, 512, 2, "Description", contentPane.getContent(0), new TextCallback() {
@@ -340,7 +339,7 @@ public class AddExchangeItemDialog extends PlayerInput {
 				if(mode == ExchangeDialog.ITEMS) {
 					buttonPane = new GUIHorizontalButtonTablePane(getState(), 1, 1, contentPane.getContent(0));
 					buttonPane.onInit();
-					buttonPane.addButton(0, 0, Lng.str("SELECT ITEM"), GUIHorizontalArea.HButtonColor.BLUE, new GUICallback() {
+					buttonPane.addButton(0, 0, Lng.str("SELECT ITEM"), GUIHorizontalArea.HButtonColor.GREEN, new GUICallback() {
 						@Override
 						public void callback(GUIElement guiElement, MouseEvent mouseEvent) {
 							if(mouseEvent.pressedLeftMouse()) {
@@ -389,7 +388,7 @@ public class AddExchangeItemDialog extends PlayerInput {
 				} else if(mode == ExchangeDialog.WEAPONS) {
 					buttonPane = new GUIHorizontalButtonTablePane(getState(), 1, 1, contentPane.getContent(0));
 					buttonPane.onInit();
-					buttonPane.addButton(0, 0, Lng.str("SELECT ITEM"), GUIHorizontalArea.HButtonColor.BLUE, new GUICallback() {
+					buttonPane.addButton(0, 0, Lng.str("SELECT ITEM"), GUIHorizontalArea.HButtonColor.GREEN, new GUICallback() {
 						@Override
 						public void callback(GUIElement guiElement, MouseEvent mouseEvent) {
 							if(mouseEvent.pressedLeftMouse()) {
@@ -493,7 +492,7 @@ public class AddExchangeItemDialog extends PlayerInput {
 					}
 				};
 				nameInput.setText(exchangeData.getName());
-				nameInput.setPos(0, buttonPane.getPos().y + buttonPane.getHeight() + 2, 0);
+				nameInput.setPos(0, buttonPane.getPos().y + buttonPane.getHeight(), 0);
 				contentPane.getContent(0).attach(nameInput);
 				
 				priceInput = new GUIActivatableTextBar(getState(), FontLibrary.FontSize.SMALL, 3, 1, "Price (In Bars)", contentPane.getContent(0), new TextCallback() {
@@ -526,7 +525,6 @@ public class AddExchangeItemDialog extends PlayerInput {
 					public String onInputChanged(String s) {
 						try {
 							int price = Integer.parseInt(s.trim());
-							if(price < 1) price = 1; // Ensure price is at least 1
 							exchangeData.setPrice(price); // Set the price in the exchange data object
 						} catch(NumberFormatException e) {
 							exchangeData.setPrice(1); // Default to 1 if parsing fails
@@ -540,7 +538,6 @@ public class AddExchangeItemDialog extends PlayerInput {
 					}
 				};
 				priceInput.setPos(0, nameInput.getPos().y + nameInput.getHeight() + 2, 0);
-				priceInput.setText("1");
 				contentPane.getContent(0).attach(priceInput);
 
 				countInput = new GUIActivatableTextBar(getState(), FontLibrary.FontSize.SMALL, 10, 1, "Count", contentPane.getContent(0), new TextCallback() {

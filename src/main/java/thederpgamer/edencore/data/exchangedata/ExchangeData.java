@@ -8,8 +8,8 @@ import org.schema.game.common.data.element.ElementKeyMap;
 import org.schema.game.common.data.player.catalog.CatalogPermission;
 import org.schema.game.server.data.blueprintnw.BlueprintClassification;
 import thederpgamer.edencore.data.SerializableData;
+import thederpgamer.edencore.gui.exchangemenu.ExchangeDialog;
 
-import javax.jdo.annotations.IdentityType;
 import java.io.IOException;
 
 /**
@@ -30,7 +30,7 @@ public class ExchangeData extends SerializableData {
 	}
 
 	private static final byte VERSION = 0;
-	
+
 	private String name = "";
 	private String catalogName = "";
 	private String description = "";
@@ -41,11 +41,11 @@ public class ExchangeData extends SerializableData {
 	private float mass;
 	private short itemId;
 	private int itemCount;
-	
+
 	public ExchangeData() {
 		super(DataType.EXCHANGE_DATA);
 	}
-	
+
 	public ExchangeData(String name, String catalogName, String description, String producer, int price, ExchangeDataCategory category, BlueprintClassification classification, float mass) {
 		super(DataType.EXCHANGE_DATA);
 		this.name = name;
@@ -57,7 +57,7 @@ public class ExchangeData extends SerializableData {
 		this.classification = classification;
 		this.mass = mass;
 	}
-	
+
 	public ExchangeData(String name, short itemId, int itemCount, ExchangeDataCategory category) {
 		super(DataType.EXCHANGE_DATA);
 		this.name = name;
@@ -141,83 +141,104 @@ public class ExchangeData extends SerializableData {
 		itemId = readBuffer.readShort();
 		itemCount = readBuffer.readInt();
 	}
-	
+
 	public String getName() {
 		return name;
 	}
-	
+
 	public void setName(String name) {
 		this.name = name;
 	}
-	
+
 	public String getCatalogName() {
 		return catalogName;
 	}
-	
+
 	public void setCatalogName(String catalogName) {
 		this.catalogName = catalogName;
 	}
-	
+
 	public String getDescription() {
 		return description;
 	}
-	
+
 	public void setDescription(String description) {
 		this.description = description;
 	}
-	
+
 	public String getProducer() {
 		return producer;
 	}
-	
+
 	public void setProducer(String producer) {
 		this.producer = producer;
 	}
-	
+
 	public int getPrice() {
 		return price;
 	}
-	
+
 	public void setPrice(int price) {
 		this.price = price;
 	}
-	
+
 	public ExchangeDataCategory getCategory() {
 		return category;
 	}
-	
+
+	public void setCategory(ExchangeDataCategory category) {
+		this.category = category;
+	}
+
+	public void setCategory(int category) {
+		switch(category) {
+			case ExchangeDialog.SHIPS:
+				this.category = ExchangeDataCategory.SHIP;
+				break;
+			case ExchangeDialog.STATIONS:
+				this.category = ExchangeDataCategory.STATION;
+				break;
+			case ExchangeDialog.WEAPONS:
+				this.category = ExchangeDataCategory.WEAPON;
+				break;
+			case ExchangeDialog.ITEMS:
+				this.category = ExchangeDataCategory.ITEM;
+				break;
+		}
+	}
+
 	public BlueprintClassification getClassification() {
 		return classification;
 	}
-	
+
 	public void setClassification(BlueprintClassification classification) {
 		this.classification = classification;
 	}
-	
+
 	public float getMass() {
 		return mass;
 	}
-	
+
 	public void setMass(float mass) {
 		this.mass = mass;
 	}
-	
+
 	public short getItemId() {
 		return itemId;
 	}
-	
+
 	public void setItemId(short itemId) {
 		this.itemId = itemId;
 	}
-	
+
 	public int getItemCount() {
 		return itemCount;
 	}
-	
+
 	public void setItemCount(int itemCount) {
 		this.itemCount = itemCount;
 	}
-	
+
 	public ElementInformation getItemInfo() {
 		return ElementKeyMap.getInfo(itemId);
 	}

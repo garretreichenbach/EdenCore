@@ -23,7 +23,7 @@ public abstract class PlayerSearchableDropdownInput extends PlayerGameDropDownIn
 	protected final ObjectArrayList<GUIElement> elements;
 
 	protected PlayerSearchableDropdownInput(String windowId, GameClientState state, Object info, ObjectArrayList<GUIElement> elements) {
-		super(windowId, state, 480, 180 * 30, info, 32);
+		super(windowId, state, 480, 180, info, 32);
 		this.info = info;
 		this.elements = elements;
 		searchBar = new GUISearchBar(state, Lng.str("FILTER DROPDOWN"), ((GUIDialogWindow) getInputPanel().getBackground()).getMainContentPane().getContent(0), new TextCallback() {
