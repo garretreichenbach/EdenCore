@@ -110,7 +110,7 @@ public class ExchangeItemScrollableList extends ScrollableTableList<ExchangeData
 				case ExchangeDialog.SHIPS:
 					addDropdownFilter(new GUIListFilterDropdown<ExchangeData, BlueprintClassification>(shipClassifications) {
 						public boolean isOk(BlueprintClassification classification, ExchangeData item) {
-							return item.getClassification() == classification;
+							return classification == null || item.getClassification() == classification;
 						}
 
 					}, new CreateGUIElementInterface<BlueprintClassification>() {
@@ -131,7 +131,7 @@ public class ExchangeItemScrollableList extends ScrollableTableList<ExchangeData
 							GUITextOverlayTableDropDown dropDown;
 							(dropDown = new GUITextOverlayTableDropDown(10, 10, getState())).setTextSimple(Lng.str("ALL"));
 							dropDown.setPos(4.0F, 4.0F, 0.0F);
-							anchor.setUserPointer("ALL");
+							anchor.setUserPointer(null);
 							anchor.attach(dropDown);
 							return anchor;
 						}
