@@ -62,8 +62,8 @@ public class AddExchangeItemDialog extends PlayerInput {
 						data.setProducer(GameClient.getClientPlayerState().getFactionName());
 						ExchangeDataManager.getInstance(false).addData(data, false);
 						ExchangeDataManager.getInstance(false).sendPacket(data, DataManager.ADD_DATA, true);
+						deactivate();
 					}
-					deactivate();
 					break;
 				case "CANCEL":
 				case "X":
@@ -281,10 +281,10 @@ public class AddExchangeItemDialog extends PlayerInput {
 					public String onInputChanged(String s) {
 						try {
 							int price = Integer.parseInt(s.trim());
-							if(price < 0) price = 0; // Ensure price is non-negative
+							if(price < 1) price = 1; // Ensure price is at least 1
 							exchangeData.setPrice(price); // Set the price in the exchange data object
 						} catch(NumberFormatException e) {
-							exchangeData.setPrice(0); // Default to 0 if parsing fails
+							exchangeData.setPrice(1); // Default to 1 if parsing fails
 						}
 						return String.valueOf(exchangeData.getPrice());
 					}
@@ -409,10 +409,10 @@ public class AddExchangeItemDialog extends PlayerInput {
 					public String onInputChanged(String s) {
 						try {
 							int price = Integer.parseInt(s.trim());
-							if(price < 0) price = 0; // Ensure price is non-negative
+							if(price < 1) price = 1; // Ensure price is at least 1
 							exchangeData.setPrice(price); // Set the price in the exchange data object
 						} catch(NumberFormatException e) {
-							exchangeData.setPrice(0); // Default to 0 if parsing fails
+							exchangeData.setPrice(1); // Default to 1 if parsing fails
 						}
 						return String.valueOf(exchangeData.getPrice());
 					}
@@ -591,7 +591,17 @@ public class AddExchangeItemDialog extends PlayerInput {
 		}
 
 		private boolean isValid() {
-			return !exchangeData.getName().isEmpty() && !exchangeData.getDescription().isEmpty() && exchangeData.getPrice() > 0 && ((mode == ExchangeDialog.SHIPS || mode == ExchangeDialog.STATIONS) || ((mode == ExchangeDialog.ITEMS || mode == ExchangeDialog.WEAPONS) && exchangeData.getItemCount() > 0 && ElementKeyMap.isValidType(exchangeData.getItemId())));
+			if(exchangeData != null) {
+				switch(mode) {
+					case ExchangeDialog.SHIPS:
+					case ExchangeDialog.STATIONS:
+						return !exchangeData.getName().isEmpty() && !exchangeData.getDescription().isEmpty() && exchangeData.getPrice() > 0;
+					case ExchangeDialog.WEAPONS:
+					case ExchangeDialog.ITEMS:
+						return !exchangeData.getName().isEmpty() && !exchangeData.getDescription().isEmpty() && exchangeData.getPrice() > 0 && exchangeData.getItemCount() > 0 && ElementKeyMap.isValidType(exchangeData.getItemId());
+				}
+			}
+			return false;
 		}
 
 		public ExchangeData getExchangeData() {
