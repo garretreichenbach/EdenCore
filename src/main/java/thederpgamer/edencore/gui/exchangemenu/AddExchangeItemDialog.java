@@ -31,6 +31,7 @@ import thederpgamer.edencore.gui.elements.PlayerSearchableDropdownInput;
 import thederpgamer.edencore.utils.ItemUtils;
 
 import java.util.HashSet;
+import java.util.Objects;
 
 /**
  * [Description]
@@ -62,11 +63,10 @@ public class AddExchangeItemDialog extends PlayerInput {
 								return;
 							}
 							data.setCategory(mode);
-							data.setProducer(GameClient.getClientPlayerState().getFactionName());
 							ExchangeDataManager.getInstance(false).addData(data, false);
 							ExchangeDataManager.getInstance(false).sendPacket(data, DataManager.ADD_DATA, true);
 						} catch(Exception exception) {
-							EdenCore.getInstance().logException("Failed to add exchange data due to an error", exception);	
+							EdenCore.getInstance().logException("Failed to add exchange data due to an error", exception);
 						}
 						deactivate();
 					}
@@ -358,8 +358,7 @@ public class AddExchangeItemDialog extends PlayerInput {
 									public void onOk(ElementInformation elementInformation) {
 										if(elementInformation != null) {
 											exchangeData.setItemId(elementInformation.getId());
-											exchangeData.setItemCount(1);
-											countInput.setText(itemDisplay.getNumberValue() + "");
+											exchangeData.setItemCount(itemDisplay.getNumberValue());
 											nameInput.setText(elementInformation.getName());
 											descriptionInput.setText(elementInformation.getDescription());
 										}
@@ -412,8 +411,7 @@ public class AddExchangeItemDialog extends PlayerInput {
 									public void onOkMeta(MetaObject metaObject) {
 										if(metaObject instanceof Weapon) {
 											exchangeData.setItemId(metaObject.getSubObjectId());
-											exchangeData.setItemCount(1);
-											countInput.setText(itemDisplay.getNumberValue() + "");
+											exchangeData.setItemCount(itemDisplay.getNumberValue());
 											nameInput.setText(metaObject.getName());
 										}
 										deactivate();
@@ -499,7 +497,7 @@ public class AddExchangeItemDialog extends PlayerInput {
 				nameInput.setText(exchangeData.getName());
 				nameInput.setPos(0, buttonPane.getPos().y + buttonPane.getHeight(), 0);
 				contentPane.getContent(0).attach(nameInput);
-				
+
 				priceInput = new GUIActivatableTextBar(getState(), FontLibrary.FontSize.SMALL, 3, 1, "Price (In Bars)", contentPane.getContent(0), new TextCallback() {
 					@Override
 					public String[] getCommandPrefixes() {
@@ -545,53 +543,6 @@ public class AddExchangeItemDialog extends PlayerInput {
 				priceInput.setPos(0, nameInput.getPos().y + nameInput.getHeight() + 2, 0);
 				contentPane.getContent(0).attach(priceInput);
 
-				countInput = new GUIActivatableTextBar(getState(), FontLibrary.FontSize.SMALL, 10, 1, "Count", contentPane.getContent(0), new TextCallback() {
-					@Override
-					public String[] getCommandPrefixes() {
-						return new String[0];
-					}
-
-					@Override
-					public String handleAutoComplete(String s, TextCallback callback, String prefix) throws PrefixNotFoundException {
-						return "";
-					}
-
-					@Override
-					public void onFailedTextCheck(String msg) {
-
-					}
-
-					@Override
-					public void onTextEnter(String entry, boolean send, boolean onAutoComplete) {
-
-					}
-
-					@Override
-					public void newLine() {
-
-					}
-				}, contentPane.getTextboxes().get(0), new OnInputChangedCallback() {
-					@Override
-					public String onInputChanged(String s) {
-						try {
-							int count = Integer.parseInt(s.trim());
-							if(count < 1) count = 1; // Ensure count is at least 1
-							exchangeData.setItemCount(count); // Set the item count in the exchange data object
-						} catch(NumberFormatException e) {
-							exchangeData.setItemCount(1); // Default to 1 if parsing fails
-						}
-						return String.valueOf(exchangeData.getItemCount());
-					}
-				}) {
-					@Override
-					public void cleanUp() {
-
-					}
-				};
-				countInput.setPos(0, priceInput.getPos().y + priceInput.getHeight() + 2, 0);
-				countInput.setText("1");
-				contentPane.getContent(0).attach(countInput);
-				
 				descriptionInput = new GUIActivatableTextBar(getState(), FontLibrary.FontSize.SMALL, 512, 2, "Description", contentPane.getContent(0), new TextCallback() {
 					@Override
 					public String[] getCommandPrefixes() {
@@ -629,7 +580,7 @@ public class AddExchangeItemDialog extends PlayerInput {
 
 					}
 				};
-				descriptionInput.setPos(0, countInput.getPos().y + countInput.getHeight() + 2, 0);
+				descriptionInput.setPos(0, priceInput.getPos().y + priceInput.getHeight() + 2, 0);
 			}
 			descriptionInput.setText(exchangeData.getDescription());
 			contentPane.getContent(0).attach(descriptionInput);
@@ -640,10 +591,10 @@ public class AddExchangeItemDialog extends PlayerInput {
 				switch(mode) {
 					case ExchangeDialog.SHIPS:
 					case ExchangeDialog.STATIONS:
-						return !exchangeData.getName().isEmpty() && !exchangeData.getDescription().isEmpty() && exchangeData.getPrice() > 0;
+						return !Objects.equals(exchangeData.getProducer(), "NO FACTION") && !exchangeData.getName().isEmpty() && !exchangeData.getDescription().isEmpty() && exchangeData.getPrice() > 0;
 					case ExchangeDialog.WEAPONS:
 					case ExchangeDialog.ITEMS:
-						return !exchangeData.getName().isEmpty() && !exchangeData.getDescription().isEmpty() && exchangeData.getPrice() > 0 && exchangeData.getItemCount() > 0 && ElementKeyMap.isValidType(exchangeData.getItemId());
+						return !Objects.equals(exchangeData.getProducer(), "NO FACTION") && !exchangeData.getName().isEmpty() && !exchangeData.getDescription().isEmpty() && exchangeData.getPrice() > 0 && exchangeData.getItemCount() > 0 && ElementKeyMap.isValidType(exchangeData.getItemId());
 				}
 			}
 			return false;

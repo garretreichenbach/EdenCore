@@ -79,7 +79,7 @@ public class ExchangeDialog extends PlayerInput {
 			for(DialogInterface dialogInterface : GameClient.getClientController().getPlayerInputs()) {
 				if(dialogInterface instanceof AddExchangeItemDialog) return true;
 			}
-			return false;
+			return GameClient.getClientPlayerState().getFactionId() == 0 && !GameClient.getClientPlayerState().isAdmin();
 		}
 
 		@Override

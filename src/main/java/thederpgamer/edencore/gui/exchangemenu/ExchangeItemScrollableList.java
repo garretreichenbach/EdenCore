@@ -54,7 +54,7 @@ public class ExchangeItemScrollableList extends ScrollableTableList<ExchangeData
 	};
 
 	private final GUIAncor pane;
-	private final int type;
+	protected final int type;
 
 	public ExchangeItemScrollableList(InputState state, GUIAncor pane, int type) {
 		super(state, 10, 10, pane);
@@ -192,6 +192,7 @@ public class ExchangeItemScrollableList extends ScrollableTableList<ExchangeData
 					return item.getName().toLowerCase(Locale.ENGLISH).contains(s.toLowerCase(Locale.ENGLISH)) || item.getItemInfo().getName().toLowerCase(Locale.ENGLISH).contains(s.toLowerCase(Locale.ENGLISH));
 				}
 			}, ControllerElement.FilterRowStyle.FULL);
+			columnsHeight = 52;
 		} else throw new IllegalArgumentException("ExchangeItemScrollableList does not support the given type: " + type);
 		activeSortColumnIndex = 0;
 	}
@@ -279,15 +280,15 @@ public class ExchangeItemScrollableList extends ScrollableTableList<ExchangeData
 	}
 
 	private GUIHorizontalButtonTablePane redrawButtonPane(final ExchangeData data, GUIAncor anchor) {
-		boolean isOwner = GameClient.getClientPlayerState().getFactionName().equals(data.getProducer());
+		boolean isOwner = GameClient.getClientPlayerState().getName().equals(data.getProducer()) && (type == ExchangeDialog.SHIPS || type == ExchangeDialog.STATIONS);
 		GUIHorizontalButtonTablePane buttonPane = new GUIHorizontalButtonTablePane(getState(), 1, 1, anchor);
 		buttonPane.onInit();
-		if(isOwner) {
+		if(isOwner || GameClient.getClientPlayerState().isAdmin()) {
 			buttonPane.addButton(0, 0, Lng.str("REMOVE"), GUIHorizontalArea.HButtonColor.RED, new GUICallback() {
 				@Override
 				public void callback(GUIElement guiElement, MouseEvent mouseEvent) {
 					if(mouseEvent.pressedLeftMouse()) {
-						(new PlayerOkCancelInput("Confirm", getState(), Lng.str("Confirm"), Lng.str("Do you want to remove this Blueprint?")) {
+						(new PlayerOkCancelInput("Confirm", getState(), Lng.str("Confirm"), Lng.str("Do you want to remove this item?")) {
 							@Override
 							public void onDeactivate() {
 
@@ -297,6 +298,8 @@ public class ExchangeItemScrollableList extends ScrollableTableList<ExchangeData
 							public void pressedOK() {
 								ExchangeDataManager.getInstance(false).removeData(data, false);
 								ExchangeDataManager.getInstance(false).sendPacket(data, DataManager.REMOVE_DATA, true);
+								deactivate();
+								flagDirty();
 							}
 						}).activate();
 					}
@@ -322,7 +325,7 @@ public class ExchangeItemScrollableList extends ScrollableTableList<ExchangeData
 				@Override
 				public void callback(GUIElement guiElement, MouseEvent mouseEvent) {
 					if(mouseEvent.pressedLeftMouse()) {
-						(new PlayerOkCancelInput("Confirm", getState(), Lng.str("Confirm"), Lng.str("Do you want to buy this Blueprint?")) {
+						(new PlayerOkCancelInput("Confirm", getState(), Lng.str("Confirm"), Lng.str("Do you want to buy this item?")) {
 							@Override
 							public void onDeactivate() {
 
