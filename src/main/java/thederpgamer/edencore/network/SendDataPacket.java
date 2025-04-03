@@ -18,8 +18,7 @@ public class SendDataPacket extends Packet {
 	private SerializableData data;
 	private int type;
 
-	public SendDataPacket() {
-	}
+	public SendDataPacket() {}
 
 	public SendDataPacket(SerializableData data, int type) {
 		this.data = data;

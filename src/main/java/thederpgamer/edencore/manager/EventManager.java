@@ -332,9 +332,9 @@ public class EventManager {
 						if(mouseEvent.pressedLeftMouse()) {
 							GameClient.getClientState().getController().queueUIAudio("0022_menu_ui - enter");
 							try {
-								String discordURL = ConfigManager.getMainConfig().getConfigurableValue("discord_link", "https://discord.gg/kcb84yRwHU");
+								String discordURL = "https://discord.gg/" + ConfigManager.getMainConfig().getConfigurableValue("discord_invite_code", "kcb84yRwHU");
 								//Open in the default browser
-								if(discordURL != null && !discordURL.isEmpty()) {
+								if(!discordURL.isEmpty()) {
 									Desktop.getDesktop().browse(URI.create(discordURL));
 								} else {
 									GameClient.getClientState().getController().queueUIAudio("0022_menu_ui - error");

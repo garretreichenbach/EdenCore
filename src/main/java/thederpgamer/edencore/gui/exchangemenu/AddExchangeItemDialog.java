@@ -3,7 +3,6 @@ package thederpgamer.edencore.gui.exchangemenu;
 import api.common.GameClient;
 import it.unimi.dsi.fastutil.objects.ObjectArrayList;
 import org.schema.game.client.controller.PlayerBlockTypeDropdownInputNew;
-import org.schema.game.client.controller.PlayerGameDropDownInput;
 import org.schema.game.client.controller.PlayerInput;
 import org.schema.game.client.controller.manager.ingame.catalog.CatalogControlManager;
 import org.schema.game.client.data.GameClientState;
@@ -27,10 +26,10 @@ import org.schema.schine.input.InputState;
 import thederpgamer.edencore.data.DataManager;
 import thederpgamer.edencore.data.exchangedata.ExchangeData;
 import thederpgamer.edencore.data.exchangedata.ExchangeDataManager;
+import thederpgamer.edencore.gui.elements.PlayerSearchableDropdownInput;
 import thederpgamer.edencore.utils.ItemUtils;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.util.HashSet;
 
 /**
  * [Description]
@@ -97,6 +96,7 @@ public class AddExchangeItemDialog extends PlayerInput {
 		private GUIActivatableTextBar priceInput;
 		private GUIActivatableTextBar countInput;
 		private PlayerBlockTypeDropdownInputNew itemDisplay;
+		private PlayerSearchableDropdownInput catalogSelectInput;
 
 		public AddExchangeBlueprintPanel(InputState state, GUICallback guiCallback) {
 			super("Add_Exchange_Blueprint_Panel", state, 500, 500, guiCallback, Lng.str("Add Blueprint"), "");
@@ -114,19 +114,31 @@ public class AddExchangeItemDialog extends PlayerInput {
 					@Override
 					public void callback(GUIElement callingGuiElement, MouseEvent event) {
 						if(event.pressedLeftMouse()) {
-							List<CatalogPermission> catalogEntries = getCatalogEntries();
-							GUIAncor[] entries = new GUIAncor[catalogEntries.size()];
-							for(int i = 0; i < entries.length; i++) {
-								entries[i] = new GUIAncor(getState(), 300, 22);
-								entries[i].setUserPointer(catalogEntries.get(i));
+							HashSet<CatalogPermission> catalogEntries = getCatalogEntries();
+							ObjectArrayList<GUIElement> entries = new ObjectArrayList<>();
+							for(CatalogPermission permission : catalogEntries) {
+								GUIAncor guiAncor = new GUIAncor(getState(), 300, 22);
+								guiAncor.setUserPointer(permission);
 								GUITextOverlay t = new GUITextOverlay(30, 10, FontLibrary.FontSize.SMALL, getState());
-								t.setTextSimple(catalogEntries.get(i).getUid());
+								t.setTextSimple(permission.getUid());
 								t.setPos(2, 2, 0);
-								t.setUserPointer(catalogEntries.get(i));
-								entries[i].attach(t);
+								t.setUserPointer(permission);
+								guiAncor.attach(t);
+								entries.add(guiAncor);
 							}
 
-							(new PlayerGameDropDownInput("Add_Blueprint_Dialog_Select_Entry", (GameClientState) getState(), Lng.str("Select Blueprint"), 22, Lng.str("Select Blueprint"), entries) {
+							(catalogSelectInput = new PlayerSearchableDropdownInput("Add_Blueprint_Dialog_Select_Entry", (GameClientState) getState(), Lng.str("Select Blueprint"), entries) {
+
+								@Override
+								public ObjectArrayList<GUIElement> filterElements(String text) {
+									ObjectArrayList<GUIElement> elements = new ObjectArrayList<>();
+									for(GUIElement element : this.elements) {
+										if(element.getUserPointer() instanceof CatalogPermission && ((CatalogPermission) element.getUserPointer()).getUid().toLowerCase().contains(text.toLowerCase())) {
+											elements.add(element);
+										}
+									}
+									return elements;
+								}
 
 								public CatalogControlManager getPlayerCatalogControlManager() {
 									return getState().getGlobalGameControlManager().getIngameControlManager().getPlayerGameControlManager().getCatalogControlManager();
@@ -150,7 +162,7 @@ public class AddExchangeItemDialog extends PlayerInput {
 											exchangeData.setFromCatalogEntry(permission);
 											nameInput.setText(permission.getUid());
 											descriptionInput.setText(permission.description);
-											priceInput.setText(String.valueOf(permission.price));
+											priceInput.setText(String.valueOf(1));
 											exchangeData.setClassification(permission.getClassification());
 										}
 									}
@@ -160,8 +172,8 @@ public class AddExchangeItemDialog extends PlayerInput {
 						}
 					}
 
-					private List<CatalogPermission> getCatalogEntries() {
-						List<CatalogPermission> catalogEntries = new ArrayList<>();
+					private HashSet<CatalogPermission> getCatalogEntries() {
+						HashSet<CatalogPermission> catalogEntries = new HashSet<>();
 						if(mode == ExchangeDialog.SHIPS) {
 							for(CatalogPermission permission : GameClient.getClientPlayerState().getCatalog().getPersonalCatalog()) {
 								if(permission.type == BlueprintType.SHIP) {
@@ -182,7 +194,7 @@ public class AddExchangeItemDialog extends PlayerInput {
 
 					@Override
 					public boolean isOccluded() {
-						return false;
+						return catalogSelectInput != null && catalogSelectInput.isActive();
 					}
 				}, new GUIActivationCallback() {
 					@Override
@@ -192,7 +204,7 @@ public class AddExchangeItemDialog extends PlayerInput {
 
 					@Override
 					public boolean isActive(InputState state) {
-						return true;
+						return catalogSelectInput == null || !catalogSelectInput.isActive();
 					}
 				});
 				contentPane.getContent(0).attach(buttonPane);
@@ -239,7 +251,7 @@ public class AddExchangeItemDialog extends PlayerInput {
 				nameInput.setText(exchangeData.getName());
 				contentPane.getContent(0).attach(nameInput);
 
-				priceInput = new GUIActivatableTextBar(getState(), FontLibrary.FontSize.SMALL, 10, 1, "Price", contentPane.getContent(0), new TextCallback() {
+				priceInput = new GUIActivatableTextBar(getState(), FontLibrary.FontSize.SMALL, 3, 1, "Price (In Bars)", contentPane.getContent(0), new TextCallback() {
 					@Override
 					public String[] getCommandPrefixes() {
 						return new String[0];
@@ -367,7 +379,7 @@ public class AddExchangeItemDialog extends PlayerInput {
 				nameInput.setText(exchangeData.getName());
 				contentPane.getContent(0).attach(nameInput);
 
-				priceInput = new GUIActivatableTextBar(getState(), FontLibrary.FontSize.SMALL, 2, 1, "Price", contentPane.getContent(0), new TextCallback() {
+				priceInput = new GUIActivatableTextBar(getState(), FontLibrary.FontSize.SMALL, 3, 1, "Price (In Bars)", contentPane.getContent(0), new TextCallback() {
 					@Override
 					public String[] getCommandPrefixes() {
 						return new String[0];

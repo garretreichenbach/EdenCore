@@ -18,7 +18,7 @@ public class ConfigManager {
 			"build_sector_distance_offset: 1000000",
 			"player_login_reward_timer: 900000",
 			"tip_interval: 600000",
-			"discord_link: https://discord.gg/kcb84yRwHU",
+			"discord_invite_code: kcb84yRwHU",
 	};
 	private static final String[] defaultTipsConfig = {
 			"Tip: You can access the in-game Guide by pressing the GUIDE button underneath the PLAYER dropdown in the top right corner of the screen or by using the /guide command.",

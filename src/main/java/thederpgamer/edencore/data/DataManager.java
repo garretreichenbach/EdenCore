@@ -51,7 +51,7 @@ public abstract class DataManager<E extends SerializableData> {
 	}
 
 	public void sendPacket(SerializableData data, int type, boolean toServer) {
-		EdenCore.getInstance().logInfo((toServer ? "[CLIENT]" : "[SERVER]") + " Sending " + data.getUUID() + " " + data.getUUID() + " with type " + getTypeString(type) + ".");
+		EdenCore.getInstance().logInfo((toServer ? "[CLIENT]" : "[SERVER]") + " Sending " + data.getDataType().name() + " " + data.getUUID() + " with type " + getTypeString(type) + ".");
 		if(toServer) PacketUtil.sendPacketToServer(new SendDataPacket(data, type));
 		else sendDataToAllPlayers(data, type);
 	}

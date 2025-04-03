@@ -296,6 +296,7 @@ public class ExchangeItemScrollableList extends ScrollableTableList<ExchangeData
 
 							@Override
 							public void pressedOK() {
+								ExchangeDataManager.getInstance(false).removeData(data, false);
 								ExchangeDataManager.getInstance(false).sendPacket(data, DataManager.REMOVE_DATA, true);
 							}
 						}).activate();
