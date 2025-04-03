@@ -190,8 +190,8 @@ public class EventManager {
 										inventory = (Inventory) infiniteField.get(playerState);
 									}
 									int prizeBarCount = 1; //Todo: Donators get extra bars
-									InventoryUtils.addItem(inventory, ElementManager.getItem("Bronze Bar").getId(), prizeBarCount);
-									PlayerUtils.sendMessage(playerState, "You have received " + prizeBarCount + " Bronze Bars for logging in today! Thanks for playing!");
+									InventoryUtils.addItem(inventory, ElementManager.getItem("Gold Bar").getId(), prizeBarCount);
+									PlayerUtils.sendMessage(playerState, "You have received " + prizeBarCount + " Gold Bars for logging in today! Thanks for playing!");
 								}
 							} catch(Exception exception) {
 								instance.logException("Failed to start player login reward timer for player " + event.getPlayerState().getName(), exception);

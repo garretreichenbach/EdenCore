@@ -367,13 +367,13 @@ public class ExchangeItemScrollableList extends ScrollableTableList<ExchangeData
 			if(!hasPermission(data)) return "Selected blueprint is not available or you don't have access to it!";
 			else {
 				Inventory playerInventory = state.getPlayer().getInventory();
-				int amount = InventoryUtils.getItemAmount(playerInventory, ElementManager.getItem("Bronze Bar").getId());
-				if(amount < data.getPrice()) return "You don't have enough Bronze Bars to buy this blueprint!";
+				int amount = InventoryUtils.getItemAmount(playerInventory, ElementManager.getItem("Gold Bar").getId());
+				if(amount < data.getPrice()) return "You don't have enough Gold Bars to buy this blueprint!";
 			}
 		} else {
 			Inventory playerInventory = state.getPlayer().getInventory();
-			int amount = InventoryUtils.getItemAmount(playerInventory, ElementManager.getItem("Bronze Bar").getId());
-			if(amount < data.getPrice()) return "You don't have enough Bronze Bars to buy this item!";
+			int amount = InventoryUtils.getItemAmount(playerInventory, ElementManager.getItem("Gold Bar").getId());
+			if(amount < data.getPrice()) return "You don't have enough Gold Bars to buy this item!";
 		}
 		return null;
 	}
@@ -393,7 +393,7 @@ public class ExchangeItemScrollableList extends ScrollableTableList<ExchangeData
 		req.toSaveShip = -1;
 		req.directBuy = true;
 		((GameClientState) getState()).getPlayer().getNetworkObject().catalogPlayerHandleBuffer.add(new RemoteBlueprintPlayerRequest(req, false));
-		InventoryUtils.consumeItems(((GameClientState) getState()).getPlayer().getInventory(), ElementManager.getItem("Bronze Bar").getId(), data.getPrice());
+		InventoryUtils.consumeItems(((GameClientState) getState()).getPlayer().getInventory(), ElementManager.getItem("Gold Bar").getId(), data.getPrice());
 	}
 
 	public class ExchangeItemScrollableListRow extends ScrollableTableList<ExchangeData>.Row {
