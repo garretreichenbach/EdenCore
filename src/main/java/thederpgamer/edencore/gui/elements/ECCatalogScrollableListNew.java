@@ -184,7 +184,7 @@ public class ECCatalogScrollableListNew extends CatalogScrollableListNew {
 				buttonPane.addButton(x, 0, Lng.str("BUY"), GUIHorizontalArea.HButtonColor.GREEN, new GUICallback() {
 					@Override
 					public void callback(GUIElement guiElement, MouseEvent mouseEvent) {
-						if(mouseEvent.pressedLeftMouse() && canBuy(f)) {
+						if(mouseEvent.pressedLeftMouse()) {
 							if(((GameClientState) getState()).getGameState().isBuyBBWithCredits()) buyEntry(f);
 							else buyEntryAsMeta(f);
 						}
@@ -192,14 +192,9 @@ public class ECCatalogScrollableListNew extends CatalogScrollableListNew {
 
 					@Override
 					public boolean isOccluded() {
-						return !isActive() || !canBuy(f);
+						return false;
 					}
-				}, new GUIActivationHighlightCallback() {
-					@Override
-					public boolean isHighlighted(InputState inputState) {
-						return player.getCredits() >= f.price;
-					}
-
+				}, new GUIActivationCallback() {
 					@Override
 					public boolean isVisible(InputState inputState) {
 						return true;
@@ -207,7 +202,7 @@ public class ECCatalogScrollableListNew extends CatalogScrollableListNew {
 
 					@Override
 					public boolean isActive(InputState inputState) {
-						return canBuy(f);
+						return true;
 					}
 				});
 				x++;
@@ -482,8 +477,7 @@ public class ECCatalogScrollableListNew extends CatalogScrollableListNew {
 									((GUIDialogWindow) pp.getInputPanel().background).getMainContentPane().getContent(0).attach(useSpawnDocked);
 									pp.activate();
 								} else {
-									if(((GameClientState) getState()).getGameState().isBuyBBWithCredits()) load(f);
-									else load(f);
+									load(f);
 								}
 							}
 						}
@@ -563,10 +557,6 @@ public class ECCatalogScrollableListNew extends CatalogScrollableListNew {
 			}
 			mainList.updateDim();
 		}
-	}
-
-	private boolean canBuy(CatalogPermission permission) {
-		return ((GameClientState) getState()).getPlayer().getCredits() >= permission.price || isPlayerAdmin();
 	}
 
 	private void changeOwner(final CatalogPermission permission) {
