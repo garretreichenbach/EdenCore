@@ -64,8 +64,8 @@ public class PlayerActionManager {
 					playerData.setLastRealTransform(lastRealTransform);
 					Vector3i sector = data.getSector();
 					GameServer.getServerState().getController().queueSectorSwitch(playerState.getFirstControlledTransformableWOExc(), sector, SectorSwitch.TRANS_JUMP, false, true, true);
-					playerState.setHasCreativeMode(true);
-					playerState.setUseCreativeMode(true);
+					playerState.setHasCreativeMode(false);
+					playerState.setUseCreativeMode(false);
 					break;
 				case LEAVE_BUILD_SECTOR:
 					playerState = GameCommon.getPlayerFromName(args[0]);
@@ -75,12 +75,12 @@ public class PlayerActionManager {
 					}
 					playerData = PlayerDataManager.getInstance(playerState.isOnServer()).getFromName(playerState.getName(), playerState.isOnServer());
 					Vector3i lastRealSector = playerData.getLastRealSector();
+					if(lastRealSector.equals(playerState.getCurrentSector())) lastRealSector.set(playerState.spawnData.getSpawnSector(playerState.spawnedOnce).pos);
 					Transform lastRealTransform1 = playerData.getLastRealTransform();
 					playerState.setHasCreativeMode(false);
 					playerState.setUseCreativeMode(false);
-					
 					GameServer.getServerState().getController().queueSectorSwitch(playerState.getFirstControlledTransformableWOExc(), lastRealSector, SectorSwitch.TRANS_JUMP, false, true, true);
-					playerState.getAssingedPlayerCharacter().warpTransformable(lastRealTransform1, true, false, null);
+					playerState.getAssingedPlayerCharacter().warpTransformable(lastRealTransform1, false, true, null);
 					break;
 			}
 		} catch(Exception exception) {

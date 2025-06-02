@@ -170,7 +170,7 @@ public class ECCatalogScrollableListNew extends CatalogScrollableListNew {
 					}
 				};
 
-				final BuildSectorData buildSectorData = BuildSectorDataManager.getInstance(false).getCurrentBuildSector(((GameClientState) getState()).getPlayer());
+				BuildSectorData buildSectorData = BuildSectorDataManager.getInstance(false).getCurrentBuildSector(((GameClientState) getState()).getPlayer());
 				final boolean canSpawn = isPlayerAdmin() || (buildSectorData != null && buildSectorData.getPermission(((GameClientState) getState()).getPlayer().getName(), BuildSectorData.PermissionTypes.SPAWN));
 				int columns = 2;
 				if(isPlayerAdmin() || buildSectorData != null) columns++;
@@ -178,7 +178,7 @@ public class ECCatalogScrollableListNew extends CatalogScrollableListNew {
 
 				GUIHorizontalButtonTablePane buttonPane = new GUIHorizontalButtonTablePane(getState(), columns, 1, buttonAnchor);
 				buttonPane.onInit();
-				final PlayerState player = ((GameClientState) getState()).getPlayer();
+				PlayerState player = ((GameClientState) getState()).getPlayer();
 
 				int x = 0;
 				buttonPane.addButton(x, 0, Lng.str("BUY"), GUIHorizontalArea.HButtonColor.GREEN, new GUICallback() {
@@ -369,122 +369,13 @@ public class ECCatalogScrollableListNew extends CatalogScrollableListNew {
 						@Override
 						public void callback(GUIElement guiElement, MouseEvent mouseEvent) {
 							if(mouseEvent.pressedLeftMouse()) {
-								if(buildSectorData != null && buildSectorData.getSector().equals(GameClient.getClientPlayerState().getCurrentSector())) {
-									final BlueprintEntry entry = EntityUtils.getFromCatalog(f);
-									String description = Lng.str("Please type in a name for your new Ship!");
-									PlayerGameTextInput pp = new PlayerGameTextInput("CatalogScrollableListNew_f_load", (GameClientState) getState(), 400, 240, 50, Lng.str("New Ship"), description, f.getUid() + "_" + System.currentTimeMillis()) {
-										@Override
-										public String[] getCommandPrefixes() {
-											return null;
-										}
-
-										@Override
-										public String handleAutoComplete(String s, TextCallback callback, String prefix) {
-											return s;
-										}
-
-										@Override
-										public boolean isOccluded() {
-											return getState().getController().getPlayerInputs().indexOf(this) != getState().getController().getPlayerInputs().size() - 1;
-										}
-
-										@Override
-										public void onDeactivate() {
-										}
-
-										@Override
-										public void onFailedTextCheck(String msg) {
-											setErrorMessage(Lng.str("SHIPNAME INVALID:") + " " + msg);
-										}
-
-										@Override
-										public boolean onInput(String s) {
-											if(getState().getCharacter() == null || getState().getCharacter().getPhysicsDataContainer() == null || !getState().getCharacter().getPhysicsDataContainer().isInitialized()) {
-												System.err.println("[ERROR] Character might not have been initialized");
-												return false;
-											}
-											System.err.println("[CLIENT] BUYING CATALOG ENTRY: " + f.getUid() + " FOR " + getState().getPlayer().getNetworkObject());
-											if(s != null && !s.trim().isEmpty()) {
-												int factionId = useOwnFaction ? getState().getPlayer().getFactionId() : 0;
-												buildSectorData.spawnEntity(entry, getState().getPlayer(), spawnDocked, s.trim(), factionId);
-											}
-											return true;
-										}
-									};
-
-									pp.setInputChecker(new InputChecker() {
-										@Override
-										public boolean check(String s, TextCallback textCallback) {
-											if(EntityRequest.isShipNameValid(s)) return true;
-											else {
-												textCallback.onFailedTextCheck(Lng.str("Must only contain letters or numbers or (_-)!"));
-												return false;
-											}
-										}
-									});
-									pp.getInputPanel().onInit();
-									GUICheckBoxTextPair useFact = new GUICheckBoxTextPair(getState(), Lng.str("Set as own Faction (needs faction block)"), 280, FontLibrary.getBlenderProMedium14(), 24) {
-										@Override
-										public boolean isActivated() {
-											return useOwnFaction;
-										}
-
-										@Override
-										public void deactivate() {
-											useOwnFaction = false;
-										}
-
-										@Override
-										public void activate() {
-											if(((GameClientState) getState()).getPlayer().getFactionId() > 0) useOwnFaction = true;
-											else {
-												((GameClientState) getState()).getController().popupAlertTextMessage(Lng.str("You are not in a faction!"), 0);
-												useOwnFaction = false;
-											}
-										}
-									};
-									useFact.setPos(3, 35, 0);
-									((GUIDialogWindow) pp.getInputPanel().background).getMainContentPane().getContent(0).attach(useFact);
-									GUICheckBoxTextPair useSpawnDocked = new GUICheckBoxTextPair(getState(), new Object() {
-										@Override
-										public String toString() {
-											if(BuildModeDrawer.currentPiece != null && BuildModeDrawer.currentPiece.isValid() && BuildModeDrawer.currentPiece.getInfo().isRailDockable()) return Lng.str("Spawn docked");
-											else return Lng.str("Spawn docked (must be aiming at a rail block)");
-										}
-									}, 280, FontLibrary.getBlenderProMedium14(), 24) {
-										@Override
-										public boolean isActivated() {
-											return spawnDocked;
-										}
-
-										@Override
-										public void deactivate() {
-											spawnDocked = false;
-										}
-
-										@Override
-										public void activate() {
-											System.err.println("LOAD DOCKED: " + BuildModeDrawer.currentPiece);
-											if((BuildModeDrawer.currentPiece != null && BuildModeDrawer.currentPiece.isValid() && BuildModeDrawer.currentPiece.getInfo().isRailDockable())) {
-												spawnDocked = true;
-											} else {
-												((GameClientState) getState()).getController().popupAlertTextMessage(Lng.str("Must be aiming at a rail block!"), 0);
-												spawnDocked = false;
-											}
-										}
-									};
-									useSpawnDocked.setPos(3, 65, 0);
-									((GUIDialogWindow) pp.getInputPanel().background).getMainContentPane().getContent(0).attach(useSpawnDocked);
-									pp.activate();
-								} else {
-									load(f);
-								}
+								load(f);
 							}
 						}
 
 						@Override
 						public boolean isOccluded() {
-							return !isActive() || !canSpawn;
+							return !isActive();
 						}
 					}, new GUIActivationCallback() {
 						@Override
@@ -797,7 +688,7 @@ public class ECCatalogScrollableListNew extends CatalogScrollableListNew {
 					req.spawnOnId = BuildModeDrawer.currentPiece.getSegmentController().getId();
 					req.spawnOnBlock = BuildModeDrawer.currentPiece.getAbsoluteIndex();
 				}
-				getState().getPlayer().getNetworkObject().catalogPlayerHandleBuffer.add(new RemoteBlueprintPlayerRequest(req, false));
+				getState().getPlayer().getNetworkObject().catalogPlayerHandleBuffer.add(new RemoteBlueprintPlayerRequest(req, true));
 				deactivate();
 			}
 

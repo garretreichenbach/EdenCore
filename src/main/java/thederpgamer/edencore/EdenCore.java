@@ -52,7 +52,7 @@ public class EdenCore extends StarMod {
 		return instance;
 	}
 
-	private final String[] overwrites = {"CatalogPanelNew"};
+	private final String[] overwrites = {"CatalogPanelNew", "PlayerState"};
 
 	@Override
 	public void onEnable() {
