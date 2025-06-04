@@ -280,7 +280,7 @@ public class ExchangeItemScrollableList extends ScrollableTableList<ExchangeData
 	}
 
 	private GUIHorizontalButtonTablePane redrawButtonPane(final ExchangeData data, GUIAncor anchor) {
-		boolean isOwner = GameClient.getClientPlayerState().getName().equals(data.getProducer()) && (type == ExchangeDialog.SHIPS || type == ExchangeDialog.STATIONS);
+		boolean isOwner = GameClient.getClientPlayerState().getFactionName().equals(data.getProducer()) && (type == ExchangeDialog.SHIPS || type == ExchangeDialog.STATIONS);
 		GUIHorizontalButtonTablePane buttonPane = new GUIHorizontalButtonTablePane(getState(), 1, 1, anchor);
 		buttonPane.onInit();
 		if(isOwner || GameClient.getClientPlayerState().isAdmin()) {

@@ -31,6 +31,7 @@ import thederpgamer.edencore.gui.elements.PlayerSearchableDropdownInput;
 import thederpgamer.edencore.utils.ItemUtils;
 
 import java.util.HashSet;
+import java.util.Locale;
 import java.util.Objects;
 
 /**
@@ -171,6 +172,7 @@ public class AddExchangeItemDialog extends PlayerInput {
 											descriptionInput.setText(permission.description);
 											priceInput.setText(String.valueOf(1));
 											exchangeData.setClassification(permission.getClassification());
+											exchangeData.setProducer(GameClient.getClientPlayerState().getFactionName());
 										}
 									}
 									deactivate();
@@ -591,10 +593,10 @@ public class AddExchangeItemDialog extends PlayerInput {
 				switch(mode) {
 					case ExchangeDialog.SHIPS:
 					case ExchangeDialog.STATIONS:
-						return !Objects.equals(exchangeData.getProducer(), "NO FACTION") && !exchangeData.getName().isEmpty() && !exchangeData.getDescription().isEmpty() && exchangeData.getPrice() > 0;
+						return !Objects.equals(exchangeData.getProducer().toUpperCase(Locale.ENGLISH), "NO FACTION") && !exchangeData.getName().isEmpty() && !exchangeData.getDescription().isEmpty() && exchangeData.getPrice() > 0;
 					case ExchangeDialog.WEAPONS:
 					case ExchangeDialog.ITEMS:
-						return !Objects.equals(exchangeData.getProducer(), "NO FACTION") && !exchangeData.getName().isEmpty() && !exchangeData.getDescription().isEmpty() && exchangeData.getPrice() > 0 && exchangeData.getItemCount() > 0 && ElementKeyMap.isValidType(exchangeData.getItemId());
+						return !Objects.equals(exchangeData.getProducer().toUpperCase(Locale.ENGLISH), "NO FACTION") && !exchangeData.getName().isEmpty() && !exchangeData.getDescription().isEmpty() && exchangeData.getPrice() > 0 && exchangeData.getItemCount() > 0;
 				}
 			}
 			return false;
