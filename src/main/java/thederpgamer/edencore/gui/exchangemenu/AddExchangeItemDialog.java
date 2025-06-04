@@ -172,7 +172,7 @@ public class AddExchangeItemDialog extends PlayerInput {
 											descriptionInput.setText(permission.description);
 											priceInput.setText(String.valueOf(1));
 											exchangeData.setClassification(permission.getClassification());
-											exchangeData.setProducer(GameClient.getClientPlayerState().getFactionName());
+											exchangeData.setProducer(GameClient.getClientPlayerState().getName());
 										}
 									}
 									deactivate();
