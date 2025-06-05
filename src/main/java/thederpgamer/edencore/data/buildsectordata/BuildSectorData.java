@@ -263,6 +263,7 @@ public class BuildSectorData extends SerializableData {
 
 	public boolean getPermissionForEntityOrGlobal(String user, String entityUID, PermissionTypes type) {
 		SegmentController entity = getEntity(entityUID);
+		if(entity == null || !entity.existsInState()) return false; // Entity does not exist
 		switch(type) {
 			case EDIT_SPECIFIC:
 				return getPermissionForEntity(user, entityUID, PermissionTypes.EDIT_SPECIFIC, PermissionTypes.EDIT_ANY) || (getPermission(user, PermissionTypes.EDIT_OWN) && entity.getSpawner().equals(user));
