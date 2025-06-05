@@ -40,12 +40,18 @@ public class BuildSectorEntityScrollableList extends ScrollableTableList<BuildSe
 		addColumn("Name", 7.0f, new Comparator<BuildSectorData.BuildSectorEntityData>() {
 			@Override
 			public int compare(BuildSectorData.BuildSectorEntityData o1, BuildSectorData.BuildSectorEntityData o2) {
+				if(o1.getEntity() == null || o2.getEntity() == null) {
+					return 0; // Handle null entities gracefully
+				}
 				return o1.getEntity().getName().compareToIgnoreCase(o2.getEntity().getName());
 			}
 		});
 		addColumn("Type", 5.0f, new Comparator<BuildSectorData.BuildSectorEntityData>() {
 			@Override
 			public int compare(BuildSectorData.BuildSectorEntityData o1, BuildSectorData.BuildSectorEntityData o2) {
+				if(o1.getEntity() == null || o2.getEntity() == null) {
+					return 0; // Handle null entities gracefully
+				}
 				return o1.getEntity().getType().getName().compareToIgnoreCase(o2.getEntity().getType().getName());
 			}
 		});
@@ -53,12 +59,18 @@ public class BuildSectorEntityScrollableList extends ScrollableTableList<BuildSe
 			@Override
 			public int compare(BuildSectorData.BuildSectorEntityData o1, BuildSectorData.BuildSectorEntityData o2) {
 				// Compare the mass of the entities
+				if(o1.getEntity() == null || o2.getEntity() == null) {
+					return 0; // Handle null entities gracefully
+				}
 				return Double.compare(o1.getEntity().getMass(), o2.getEntity().getMass());
 			}
 		});
 		addTextFilter(new GUIListFilterText<BuildSectorData.BuildSectorEntityData>() {
 			@Override
 			public boolean isOk(String s, BuildSectorData.BuildSectorEntityData buildSectorEntityData) {
+				if(buildSectorEntityData.getEntity() == null) {
+					return false; // Handle null entities gracefully
+				}
 				return s.trim().isEmpty() || buildSectorEntityData.getEntity().getName().toLowerCase(Locale.ENGLISH).contains(s.trim().toLowerCase(Locale.ENGLISH));
 			}
 		}, ControllerElement.FilterRowStyle.LEFT);
@@ -99,6 +111,7 @@ public class BuildSectorEntityScrollableList extends ScrollableTableList<BuildSe
 		guiElementList.deleteObservers();
 		guiElementList.addObserver(this);
 		for(BuildSectorData.BuildSectorEntityData entityData : set) {
+			if(entityData.getEntity() == null) continue; // Skip if entity is null
 			GUIClippedRow nameRow = getSimpleRow(entityData.getEntity().getName(), this);
 			GUIClippedRow typeRow = getSimpleRow(entityData.getEntityType().name(), this);
 			GUIClippedRow massRow = getSimpleRow(StringTools.massFormat(entityData.getEntity().getMass()), this);
@@ -231,6 +244,7 @@ public class BuildSectorEntityScrollableList extends ScrollableTableList<BuildSe
 			@Override
 			public void callback(GUIElement guiElement, MouseEvent mouseEvent) {
 				if(mouseEvent.pressedLeftMouse()) {
+					if(entityData.getEntity() == null) return; // Ensure entity is not null
 					buildSectorData.removeEntity(entityData.getEntity(), false);
 					clear();
 				}

@@ -44,6 +44,7 @@ public class EntityUtils {
 
 	public static void warpPlayerIntoEntity(SegmentController entity) {
 		SegmentPiece toEnter = null;
+		if(entity == null || entity.getSegmentBuffer() == null) return; // No segment controller or segment buffer
 		if(entity.getType() == SimpleTransformableSendableObject.EntityType.SHIP) toEnter = entity.getSegmentBuffer().getPointUnsave(Ship.core);
 		else if(entity.getType() == SimpleTransformableSendableObject.EntityType.SPACE_STATION) toEnter = getAvailableBuildBlock(entity);
 		if(toEnter != null) {

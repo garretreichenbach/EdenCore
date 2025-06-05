@@ -328,6 +328,7 @@ public class BuildSectorData extends SerializableData {
 		if(entities == null) entities = new HashSet<>();
 		BuildSectorEntityData toRemove = null;
 		for(BuildSectorEntityData entityData : entities) {
+			if(entityData.getEntity() == null) continue; // Skip if entity is null
 			if(entityData.getEntity().equals(entity)) {
 				toRemove = entityData;
 				entityData.delete(); // Clean up the entity if needed
@@ -590,6 +591,19 @@ public class BuildSectorData extends SerializableData {
 						put(PermissionTypes.TOGGLE_AI_SPECIFIC, true);
 						put(PermissionTypes.TOGGLE_DAMAGE_SPECIFIC, true);
 						put(PermissionTypes.EDIT_ENTITY_PERMISSIONS, true);
+						put(PermissionTypes.EDIT_OWN, true);
+						put(PermissionTypes.EDIT_ANY, true);
+						put(PermissionTypes.SPAWN, true);
+						put(PermissionTypes.SPAWN_ENEMIES, true);
+						put(PermissionTypes.DELETE_OWN, true);
+						put(PermissionTypes.DELETE_ANY, true);
+						put(PermissionTypes.TOGGLE_AI_OWN, true);
+						put(PermissionTypes.TOGGLE_AI_ANY, true);
+						put(PermissionTypes.TOGGLE_DAMAGE_OWN, true);
+						put(PermissionTypes.TOGGLE_DAMAGE_ANY, true);
+						put(PermissionTypes.INVITE, true);
+						put(PermissionTypes.KICK, true);
+						put(PermissionTypes.EDIT_PERMISSIONS, true);
 					}});
 					break;
 				case FRIEND:
@@ -599,6 +613,19 @@ public class BuildSectorData extends SerializableData {
 						put(PermissionTypes.TOGGLE_AI_SPECIFIC, true);
 						put(PermissionTypes.TOGGLE_DAMAGE_SPECIFIC, true);
 						put(PermissionTypes.EDIT_ENTITY_PERMISSIONS, false);
+						put(PermissionTypes.EDIT_OWN, true);
+						put(PermissionTypes.EDIT_ANY, true);
+						put(PermissionTypes.SPAWN, true);
+						put(PermissionTypes.SPAWN_ENEMIES, false);
+						put(PermissionTypes.DELETE_OWN, true);
+						put(PermissionTypes.DELETE_ANY, false);
+						put(PermissionTypes.TOGGLE_AI_OWN, true);
+						put(PermissionTypes.TOGGLE_AI_ANY, false);
+						put(PermissionTypes.TOGGLE_DAMAGE_OWN, true);
+						put(PermissionTypes.TOGGLE_DAMAGE_ANY, false);
+						put(PermissionTypes.INVITE, true);
+						put(PermissionTypes.KICK, false);
+						put(PermissionTypes.EDIT_PERMISSIONS, false);
 					}});
 					break;
 				case OTHER:
@@ -608,6 +635,19 @@ public class BuildSectorData extends SerializableData {
 						put(PermissionTypes.TOGGLE_AI_SPECIFIC, false);
 						put(PermissionTypes.TOGGLE_DAMAGE_SPECIFIC, false);
 						put(PermissionTypes.EDIT_ENTITY_PERMISSIONS, false);
+						put(PermissionTypes.EDIT_OWN, true);
+						put(PermissionTypes.EDIT_ANY, false);
+						put(PermissionTypes.SPAWN, true);
+						put(PermissionTypes.SPAWN_ENEMIES, false);
+						put(PermissionTypes.DELETE_OWN, false);
+						put(PermissionTypes.DELETE_ANY, false);
+						put(PermissionTypes.TOGGLE_AI_OWN, false);
+						put(PermissionTypes.TOGGLE_AI_ANY, false);
+						put(PermissionTypes.TOGGLE_DAMAGE_OWN, false);
+						put(PermissionTypes.TOGGLE_DAMAGE_ANY, false);
+						put(PermissionTypes.INVITE, false);
+						put(PermissionTypes.KICK, false);
+						put(PermissionTypes.EDIT_PERMISSIONS, false);
 					}});
 					break;
 			}
@@ -618,10 +658,7 @@ public class BuildSectorData extends SerializableData {
 		}
 
 		public SegmentController getEntity() {
-			for(Sendable sendable : GameCommon.getGameState().getState().getLocalAndRemoteObjectContainer().getLocalObjects().values()) {
-				if(sendable instanceof SegmentController && ((SegmentController) sendable).getUniqueIdentifier().equals(entityUID)) return (SegmentController) sendable;
-			}
-			return null;
+			return BuildSectorData.getEntity(entityUID);
 		}
 
 		public EntityType getEntityType() {
