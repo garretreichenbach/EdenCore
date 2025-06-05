@@ -250,6 +250,8 @@ public class BuildSectorData extends SerializableData {
 	}
 
 	public boolean getPermissionForEntity(String user, String entityUID, PermissionTypes... types) {
+		SegmentController entity = getEntity(entityUID);
+		if(entity == null || !entity.existsInState()) return false; // Entity does not exist
 		BuildSectorEntityData entityData = getEntityData(getEntity(entityUID));
 		if(entityData != null) {
 			for(PermissionTypes type : types) {
