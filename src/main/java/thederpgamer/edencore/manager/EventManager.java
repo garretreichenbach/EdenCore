@@ -266,36 +266,36 @@ public class EventManager {
 						return true;
 					}
 				});
-//				dropDownButton.addExpandedButton("BUILD SECTOR", new GUICallback() {
-//					@Override
-//					public void callback(GUIElement guiElement, MouseEvent mouseEvent) {
-//						if(mouseEvent.pressedLeftMouse()) {
-//							GameClient.getClientState().getController().queueUIAudio("0022_menu_ui - enter");
-//							GameClient.getClientState().getGlobalGameControlManager().getIngameControlManager().getPlayerGameControlManager().deactivateAll();
-//							(new BuildSectorDialog()).activate();
-//						}
-//					}
-//
-//					@Override
-//					public boolean isOccluded() {
-//						return false;
-//					}
-//				}, new GUIActivationHighlightCallback() {
-//					@Override
-//					public boolean isHighlighted(InputState inputState) {
-//						return false;
-//					}
-//
-//					@Override
-//					public boolean isVisible(InputState inputState) {
-//						return true;
-//					}
-//
-//					@Override
-//					public boolean isActive(InputState inputState) {
-//						return true;
-//					}
-//				});
+				dropDownButton.addExpandedButton("BUILD SECTOR", new GUICallback() {
+					@Override
+					public void callback(GUIElement guiElement, MouseEvent mouseEvent) {
+						if(mouseEvent.pressedLeftMouse()) {
+							GameClient.getClientState().getController().queueUIAudio("0022_menu_ui - enter");
+							GameClient.getClientState().getGlobalGameControlManager().getIngameControlManager().getPlayerGameControlManager().deactivateAll();
+							(new BuildSectorDialog()).activate();
+						}
+					}
+
+					@Override
+					public boolean isOccluded() {
+						return false;
+					}
+				}, new GUIActivationHighlightCallback() {
+					@Override
+					public boolean isHighlighted(InputState inputState) {
+						return false;
+					}
+
+					@Override
+					public boolean isVisible(InputState inputState) {
+						return true;
+					}
+
+					@Override
+					public boolean isActive(InputState inputState) {
+						return true;
+					}
+				});
 				dropDownButton.addExpandedButton("EXCHANGE", new GUICallback() {
 					@Override
 					public void callback(GUIElement guiElement, MouseEvent mouseEvent) {
@@ -392,9 +392,9 @@ public class EventManager {
 									(new ExchangeDialog()).activate();
 									return;
 								case "Open Build Sector Menu":
-//									GameClient.getClientState().getController().queueUIAudio("0022_menu_ui - enter");
-//									GameClient.getClientState().getGlobalGameControlManager().getIngameControlManager().getPlayerGameControlManager().deactivateAll();
-//									(new BuildSectorDialog()).activate();
+									GameClient.getClientState().getController().queueUIAudio("0022_menu_ui - enter");
+									GameClient.getClientState().getGlobalGameControlManager().getIngameControlManager().getPlayerGameControlManager().deactivateAll();
+									(new BuildSectorDialog()).activate();
 									return;
 							}
 						}

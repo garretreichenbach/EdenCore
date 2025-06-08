@@ -60,12 +60,13 @@ public class PlayerActionManager {
 					Transform lastRealTransform = new Transform();
 					lastRealTransform.setIdentity();
 					if(playerState.getFirstControlledTransformableWOExc() instanceof SegmentController) lastRealTransform.origin.set(playerState.getFirstControlledTransformableWOExc().getWorldTransform().origin);
-					else lastRealTransform.origin.set(playerState.getBuildModePosition().getWorldTransform().origin);
+					else lastRealTransform.origin.set(playerState.getAssingedPlayerCharacter().getWorldTransform().origin);
 					playerData.setLastRealTransform(lastRealTransform);
 					Vector3i sector = data.getSector();
 					GameServer.getServerState().getController().queueSectorSwitch(playerState.getFirstControlledTransformableWOExc(), sector, SectorSwitch.TRANS_JUMP, false, true, true);
 					playerState.setHasCreativeMode(false);
 					playerState.setUseCreativeMode(false);
+					playerState.removeBadItems();
 					break;
 				case LEAVE_BUILD_SECTOR:
 					playerState = GameCommon.getPlayerFromName(args[0]);
@@ -81,6 +82,7 @@ public class PlayerActionManager {
 					playerState.setUseCreativeMode(false);
 					GameServer.getServerState().getController().queueSectorSwitch(playerState.getFirstControlledTransformableWOExc(), lastRealSector, SectorSwitch.TRANS_JUMP, false, true, true);
 					playerState.getAssingedPlayerCharacter().warpTransformable(lastRealTransform1, false, true, null);
+					playerState.removeBadItems();
 					break;
 			}
 		} catch(Exception exception) {

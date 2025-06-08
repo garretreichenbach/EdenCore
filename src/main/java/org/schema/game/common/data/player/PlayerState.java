@@ -306,6 +306,8 @@ public final class PlayerState extends AbstractOwnerState implements Sendable, D
 
 	@Override
 	public Inventory getInventory() {
+		removeBadItems();
+		if(BuildSectorDataManager.getInstance(onServer).isPlayerInAnyBuildSector(this)) return virtualCreativeInventory;
 		Inventory cargoInv;
 		if((cargoInv = getCargoInventoryIfActive()) != null) {
 			return cargoInv;
@@ -313,8 +315,22 @@ public final class PlayerState extends AbstractOwnerState implements Sendable, D
 			return creativeInventory;
 		} else if(getFirstControlledTransformableWOExc() != null && getFirstControlledTransformableWOExc() instanceof SegmentController && ((SegmentController) getFirstControlledTransformableWOExc()).isVirtualBlueprint()) {
 			return virtualCreativeInventory;
-		} else if(BuildSectorDataManager.getInstance(isOnServer()).isPlayerInAnyBuildSector(this)) return virtualCreativeInventory;
+		}
 		return inventory;
+	}
+
+	/**
+	 * Checks the player's inventory for any illegal items (i.e. infinite stacks) and removes them.
+	 */
+	public void removeBadItems() {
+		if(useCreativeMode) return;
+		for(Integer slotId : inventory.getAllSlots()) {
+			InventorySlot slot = inventory.getMap().get(slotId);
+			if(slot != null && !slot.isEmpty()) {
+				if(slot.isInfinite() || slot.count() >= 999999999) inventory.removeSlot(slotId, false);
+			}
+		}
+		inventory.sendAll();
 	}
 
 	public int getSelectedEntityId() {
