@@ -19,6 +19,7 @@ import java.util.*;
  */
 public class BuildSectorEntityScrollableList extends ScrollableTableList<BuildSectorData.BuildSectorEntityData> implements GUIActiveInterface {
 
+	private static BuildSectorEntityScrollableList instance;
 	private final GUIElement parent;
 	protected final BuildSectorData buildSectorData;
 	private GUIHorizontalButtonTablePane buttonPane;
@@ -27,6 +28,11 @@ public class BuildSectorEntityScrollableList extends ScrollableTableList<BuildSe
 		super(state, 100, 100, parent);
 		this.parent = parent;
 		this.buildSectorData = buildSectorData;
+		instance = this;
+	}
+
+	public static void update() {
+		instance.flagDirty();
 	}
 
 	@Override

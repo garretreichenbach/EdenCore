@@ -98,7 +98,7 @@ public class EventManager {
 					}
 				}
 
-				if(BuildSectorDataManager.getInstance(false).isPlayerInAnyBuildSector(GameClient.getClientPlayerState())) {
+				if(GameClient.getClientPlayerState() != null && BuildSectorDataManager.getInstance(false).isPlayerInAnyBuildSector(GameClient.getClientPlayerState())) {
 					for(String disabledTab : disabledTabs) {
 						if(event.getTitleAsString().equals(Lng.str(disabledTab))) {
 							event.setCanceled(true);
@@ -112,19 +112,10 @@ public class EventManager {
 		StarLoader.registerListener(PlayerSpawnEvent.class, new Listener<PlayerSpawnEvent>() {
 			@Override
 			public void onEvent(PlayerSpawnEvent event) {
-				if(!BuildSectorDataManager.getInstance(event.getPlayer().isOnServer()).isBuildSector(event.getSector())) {
-					if(!event.getPlayer().getOwnerState().isAdmin()) event.getPlayer().getOwnerState().setHasCreativeMode(false);
-					event.getPlayer().getOwnerState().setUseCreativeMode(false);
-				}
-			}
-		}, instance);
-
-		StarLoader.registerListener(PlayerDeathEvent.class, new Listener<PlayerDeathEvent>() {
-			@Override
-			public void onEvent(PlayerDeathEvent event) {
-				if(!BuildSectorDataManager.getInstance(event.getPlayer().isOnServer()).isBuildSector(event.getPlayer().getCurrentSector())) {
-					if(!event.getPlayer().isAdmin()) event.getPlayer().setHasCreativeMode(false);
-					event.getPlayer().setUseCreativeMode(false);
+				if(event.getPlayer().isOnServer()) {
+					PlayerDataManager.getInstance(event.getPlayer().isOnServer()).sendAllDataToPlayer(event.getPlayer().getOwnerState());
+					BuildSectorDataManager.getInstance(event.getPlayer().isOnServer()).sendAllDataToPlayer(event.getPlayer().getOwnerState());
+					ExchangeDataManager.getInstance(event.getPlayer().isOnServer()).sendAllDataToPlayer(event.getPlayer().getOwnerState());
 				}
 			}
 		}, instance);
@@ -141,6 +132,8 @@ public class EventManager {
 						RemoteSector newSector = (RemoteSector) event.getPlayerState().getState().getLocalAndRemoteObjectContainer().getLocalObjects().get(newSectorId);
 						if(oldSector == null || newSector == null) return;
 						if(BuildSectorDataManager.getInstance(false).isBuildSector(oldSector.clientPos())) {
+							event.getPlayerState().getControllerState().forcePlayerOutOfSegmentControllers();
+							event.getPlayerState().getControllerState().forcePlayerOutOfShips();
 							if(!event.getPlayerState().isAdmin()) event.getPlayerState().setHasCreativeMode(false);
 							event.getPlayerState().setUseCreativeMode(false);
 						}
@@ -149,6 +142,8 @@ public class EventManager {
 						Sector newSector = GameServer.getServerState().getUniverse().getSector(newSectorId);
 						if(oldSector == null || newSector == null) return;
 						if(BuildSectorDataManager.getInstance(true).isBuildSector(oldSector.pos)) {
+							event.getPlayerState().getControllerState().forcePlayerOutOfSegmentControllers();
+							event.getPlayerState().getControllerState().forcePlayerOutOfShips();
 							if(!event.getPlayerState().isAdmin()) event.getPlayerState().setHasCreativeMode(false);
 							event.getPlayerState().setUseCreativeMode(false);
 						}

@@ -1,6 +1,5 @@
 package thederpgamer.edencore.gui.elements;
 
-import api.common.GameClient;
 import it.unimi.dsi.fastutil.objects.ObjectArrayList;
 import org.schema.common.util.StringTools;
 import org.schema.game.client.controller.PlayerGameOkCancelInput;
@@ -20,7 +19,6 @@ import org.schema.game.common.data.player.catalog.CatalogPermission;
 import org.schema.game.network.objects.remote.RemoteBlueprintPlayerRequest;
 import org.schema.game.server.data.EntityRequest;
 import org.schema.game.server.data.admin.AdminCommands;
-import org.schema.game.server.data.blueprintnw.BlueprintEntry;
 import org.schema.game.server.data.blueprintnw.BlueprintType;
 import org.schema.schine.common.InputChecker;
 import org.schema.schine.common.TextCallback;
@@ -33,7 +31,6 @@ import org.schema.schine.graphicsengine.forms.gui.newgui.config.GuiDateFormats;
 import org.schema.schine.input.InputState;
 import thederpgamer.edencore.data.buildsectordata.BuildSectorData;
 import thederpgamer.edencore.data.buildsectordata.BuildSectorDataManager;
-import thederpgamer.edencore.utils.EntityUtils;
 
 import java.util.List;
 import java.util.Locale;
@@ -256,7 +253,7 @@ public class ECCatalogScrollableListNew extends CatalogScrollableListNew {
 
 						@Override
 						public boolean isOccluded() {
-							return !isActive();
+							return !canEdit(f);
 						}
 					}, new GUIActivationCallback() {
 						@Override
@@ -278,7 +275,7 @@ public class ECCatalogScrollableListNew extends CatalogScrollableListNew {
 
 						@Override
 						public boolean isOccluded() {
-							return !isActive();
+							return !canEdit(f);
 						}
 					}, new GUIActivationCallback() {
 						@Override
@@ -375,7 +372,7 @@ public class ECCatalogScrollableListNew extends CatalogScrollableListNew {
 
 						@Override
 						public boolean isOccluded() {
-							return !isActive();
+							return !canSpawn;
 						}
 					}, new GUIActivationCallback() {
 						@Override
@@ -401,7 +398,7 @@ public class ECCatalogScrollableListNew extends CatalogScrollableListNew {
 
 						@Override
 						public boolean isOccluded() {
-							return !isActive();
+							return !canEdit(f);
 						}
 					}, new GUIActivationCallback() {
 						@Override
@@ -425,7 +422,7 @@ public class ECCatalogScrollableListNew extends CatalogScrollableListNew {
 
 						@Override
 						public boolean isOccluded() {
-							return !isActive();
+							return !isPlayerAdmin() && !canEdit(f);
 						}
 					}, new GUIActivationCallback() {
 						@Override

@@ -54,6 +54,8 @@ public class PlayerActionManager {
 						PlayerUtils.sendMessage(playerState, "You cannot enter a build sector while piloting a ship. Please leave the ship first.");
 						return;
 					}
+					playerState.getControllerState().forcePlayerOutOfSegmentControllers();
+					playerState.getControllerState().forcePlayerOutOfShips();
 					playerData = PlayerDataManager.getInstance(playerState.isOnServer()).getFromName(playerState.getName(), playerState.isOnServer());
 					BuildSectorData data = BuildSectorDataManager.getInstance(playerState.isOnServer()).getFromUUID(args[1], playerState.isOnServer());
 					playerData.setLastRealSector(playerState.getCurrentSector());
@@ -66,7 +68,7 @@ public class PlayerActionManager {
 					GameServer.getServerState().getController().queueSectorSwitch(playerState.getFirstControlledTransformableWOExc(), sector, SectorSwitch.TRANS_JUMP, false, true, true);
 					playerState.setHasCreativeMode(false);
 					playerState.setUseCreativeMode(false);
-					playerState.removeBadItems();
+					playerState.updateInventory();
 					break;
 				case LEAVE_BUILD_SECTOR:
 					playerState = GameCommon.getPlayerFromName(args[0]);
@@ -74,6 +76,8 @@ public class PlayerActionManager {
 						PlayerUtils.sendMessage(playerState, "You cannot exit a build sector while piloting a ship. Please leave the ship first.");
 						return;
 					}
+					playerState.getControllerState().forcePlayerOutOfSegmentControllers();
+					playerState.getControllerState().forcePlayerOutOfShips();
 					playerData = PlayerDataManager.getInstance(playerState.isOnServer()).getFromName(playerState.getName(), playerState.isOnServer());
 					Vector3i lastRealSector = playerData.getLastRealSector();
 					if(lastRealSector.equals(playerState.getCurrentSector())) lastRealSector.set(playerState.spawnData.getSpawnSector(playerState.spawnedOnce).pos);
@@ -82,7 +86,7 @@ public class PlayerActionManager {
 					playerState.setUseCreativeMode(false);
 					GameServer.getServerState().getController().queueSectorSwitch(playerState.getFirstControlledTransformableWOExc(), lastRealSector, SectorSwitch.TRANS_JUMP, false, true, true);
 					playerState.getAssingedPlayerCharacter().warpTransformable(lastRealTransform1, false, true, null);
-					playerState.removeBadItems();
+					playerState.updateInventory();
 					break;
 			}
 		} catch(Exception exception) {

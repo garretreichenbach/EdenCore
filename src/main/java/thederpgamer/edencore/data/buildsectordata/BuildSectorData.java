@@ -24,6 +24,7 @@ import thederpgamer.edencore.EdenCore;
 import thederpgamer.edencore.data.SerializableData;
 import thederpgamer.edencore.data.playerdata.PlayerData;
 import thederpgamer.edencore.data.playerdata.PlayerDataManager;
+import thederpgamer.edencore.gui.buildsectormenu.BuildSectorEntityScrollableList;
 import thederpgamer.edencore.utils.EntityUtils;
 import thederpgamer.edencore.utils.PlayerUtils;
 
@@ -51,7 +52,7 @@ public class BuildSectorData extends SerializableData {
 		super(DataType.BUILD_SECTOR_DATA);
 		this.owner = owner;
 		sector = BuildSectorDataManager.calculateRandomSector();
-		setDefaultPerms(owner, OWNER);
+		addPlayer(owner, OWNER, true);
 	}
 
 	public BuildSectorData(PacketReadBuffer readBuffer) throws IOException {
@@ -297,13 +298,16 @@ public class BuildSectorData extends SerializableData {
 	}
 
 	public void prune() {
+		boolean hasDirty = false;
 		ObjectArrayList<BuildSectorEntityData> toRemove = new ObjectArrayList<>();
 		for(BuildSectorEntityData entityData : entities) {
 			if(entityData.getEntity() == null || !entityData.getEntity().getSector(new Vector3i()).equals(sector)) {
 				toRemove.add(entityData);
+				hasDirty = true;
 			}
 		}
 		for(BuildSectorEntityData entityData : toRemove) entities.remove(entityData); //Prevent concurrency issues
+		if(hasDirty) BuildSectorEntityScrollableList.update();
 	}
 
 	public BuildSectorEntityData getEntityData(SegmentController entity) {

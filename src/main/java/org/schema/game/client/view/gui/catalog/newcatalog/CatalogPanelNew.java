@@ -48,7 +48,7 @@ public class CatalogPanelNew extends GUIElement implements GUIActiveInterface {
 		if(catalogPanel != null) {
 			catalogPanel.cleanUp();
 		}
-		catalogPanel = new GUIMainWindow(getState(), 750, 550, "CatalogPanelNew");
+		catalogPanel = new GUIMainWindow(getState(), 1000, 700, "CatalogPanelNew");
 		catalogPanel.onInit();
 
 		catalogPanel.setCloseCallback(new GUICallback() {

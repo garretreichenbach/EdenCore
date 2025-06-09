@@ -97,6 +97,7 @@ public class BuildSectorDataManager extends DataManager<BuildSectorData> {
 	}
 
 	public boolean isPlayerInAnyBuildSector(PlayerState playerState) {
+		if(playerState == null) return false;
 		doBoundsCheck(playerState);
 		return getCurrentBuildSector(playerState) != null;
 	}
@@ -170,11 +171,13 @@ public class BuildSectorDataManager extends DataManager<BuildSectorData> {
 	public void enterBuildSector(PlayerState playerState, BuildSectorData buildSectorData) {
 		if(playerState.isOnServer()) PacketUtil.sendPacket(playerState, new PlayerActionCommandPacket(PlayerActionManager.ENTER_BUILD_SECTOR, playerState.getName(), buildSectorData.getUUID()));
 		else PacketUtil.sendPacketToServer(new PlayerActionCommandPacket(PlayerActionManager.ENTER_BUILD_SECTOR, playerState.getName(), buildSectorData.getUUID()));
+		playerState.updateInventory();
 	}
 
 	public void leaveBuildSector(PlayerState playerState) {
 		if(playerState.isOnServer()) PacketUtil.sendPacket(playerState, new PlayerActionCommandPacket(PlayerActionManager.LEAVE_BUILD_SECTOR, playerState.getName()));
 		else PacketUtil.sendPacketToServer(new PlayerActionCommandPacket(PlayerActionManager.LEAVE_BUILD_SECTOR, playerState.getName()));
+		playerState.updateInventory();
 	}
 
 	public boolean dataExistsForPlayer(String playerName, boolean server) {
