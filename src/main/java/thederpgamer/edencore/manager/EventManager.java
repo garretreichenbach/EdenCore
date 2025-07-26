@@ -261,7 +261,7 @@ public class EventManager {
 						return true;
 					}
 				});
-				dropDownButton.addExpandedButton("BUILD SECTOR", new GUICallback() {
+				/*dropDownButton.addExpandedButton("BUILD SECTOR", new GUICallback() {
 					@Override
 					public void callback(GUIElement guiElement, MouseEvent mouseEvent) {
 						if(mouseEvent.pressedLeftMouse()) {
@@ -290,7 +290,7 @@ public class EventManager {
 					public boolean isActive(InputState inputState) {
 						return true;
 					}
-				});
+				});*/
 				dropDownButton.addExpandedButton("EXCHANGE", new GUICallback() {
 					@Override
 					public void callback(GUIElement guiElement, MouseEvent mouseEvent) {
@@ -386,11 +386,11 @@ public class EventManager {
 									GameClient.getClientState().getGlobalGameControlManager().getIngameControlManager().getPlayerGameControlManager().deactivateAll();
 									(new ExchangeDialog()).activate();
 									return;
-								case "Open Build Sector Menu":
+								/*case "Open Build Sector Menu":
 									GameClient.getClientState().getController().queueUIAudio("0022_menu_ui - enter");
 									GameClient.getClientState().getGlobalGameControlManager().getIngameControlManager().getPlayerGameControlManager().deactivateAll();
 									(new BuildSectorDialog()).activate();
-									return;
+									return;*/
 							}
 						}
 					}

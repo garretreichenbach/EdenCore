@@ -138,7 +138,7 @@ public class EdenCore extends StarMod {
 				rules.addEntry(new GlossarEntry("Rules", "1) Be polite and respectful in chat.\n" + "2) Do not spam chat or advertise links to other servers.\n" + "3) Do not use any cheats, glitches, exploits, etc. that give you an unfair advantage over other players. If you find a bug, please report it to a staff member.\n" + "4) Keep politics at an absolute minimum. This is a starmade server, not a political forum.\n" + "5) Hate speech and hate symbols are not tolerated. This includes racism, sexism, homophobia, etc.\n" + "6) Do not intentionally create server lag. If your entity is lagging the server, it may be deleted by staff without compensation.\n" + "7) Do not create home-bases on planets.\n" + "8) Do not attempt to attack or capture public infrastructure such as warpgates.\n" + "9) Use common sense. If you are unsure about something, ask a staff member.\n" + "10) Repeated or serious violations of any of the server rules can result in bans of the offenders, deletion of ships/stations, and penalties to anyone involved or associated."));
 				GlossarInit.addCategory(rules);
 				GlossarCategory edenCore = new GlossarCategory("Eden Core");
-				edenCore.addEntry(new GlossarEntry("Build Sectors", "Build Sectors are special sectors unique to each player where you can build freely in creative mode. They are protected from other players and hostiles.\n" + "You can invite other players to your Build Sector, set permissions, spawn entities, and more using the Build Sector menu.\nTo access the Build Sector menu, look in the top right menu bar under PLAYER.\n"));
+//				edenCore.addEntry(new GlossarEntry("Build Sectors", "Build Sectors are special sectors unique to each player where you can build freely in creative mode. They are protected from other players and hostiles.\n" + "You can invite other players to your Build Sector, set permissions, spawn entities, and more using the Build Sector menu.\nTo access the Build Sector menu, look in the top right menu bar under PLAYER.\n"));
 				GlossarInit.addCategory(edenCore);
 				logInfo("Initialized Glossary");
 			}
@@ -162,7 +162,7 @@ public class EdenCore extends StarMod {
 		ControlBindingData.registerBinding(this, "Open Guide", "Opens the Guide Menu", 181);
 		ControlBindingData.registerBinding(this, "Open Banking Menu", "Opens the Banking Menu", 78);
 		ControlBindingData.registerBinding(this, "Open Exchange Menu", "Opens the Exchange Menu", 74);
-		ControlBindingData.registerBinding(this, "Open Build Sector Menu", "Opens the Build Sector Menu", 55);
+//		ControlBindingData.registerBinding(this, "Open Build Sector Menu", "Opens the Build Sector Menu", 55);
 		logInfo("Registered Bindings");
 	}
 
