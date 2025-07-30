@@ -104,7 +104,8 @@ public class BuildSectorDataManager extends DataManager<BuildSectorData> {
 	}
 
 	private void doBoundsCheck(PlayerState playerState) {
-		if(playerState.isOnServer()) {
+		return;
+	/*	if(playerState.isOnServer()) {
 			Vector3i playerSector = playerState.getCurrentSector();
 			int distanceMod = ConfigManager.getMainConfig().getInt("build_sector_distance_offset");
 			int xAbs = Math.abs(playerSector.x);
@@ -120,7 +121,7 @@ public class BuildSectorDataManager extends DataManager<BuildSectorData> {
 				GameServer.executeAdminCommand("change_sector " + spawnX + " " + spawnY + " " + spawnZ);
 				PlayerUtils.sendMessage(playerState, "[WARNING] You are outside the universe bounds, yet there is no Build Sector at your current location. You have been teleported to spawn to prevent errors.");
 			}
-		}
+		}*/
 	}
 
 	public BuildSectorData getCurrentBuildSector(PlayerState playerState) {
