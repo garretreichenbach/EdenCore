@@ -97,9 +97,10 @@ public class BuildSectorDataManager extends DataManager<BuildSectorData> {
 	}
 
 	public boolean isPlayerInAnyBuildSector(PlayerState playerState) {
-		if(playerState == null) return false;
+		return false;
+		/*if(playerState == null) return false;
 		doBoundsCheck(playerState);
-		return getCurrentBuildSector(playerState) != null;
+		return getCurrentBuildSector(playerState) != null;*/
 	}
 
 	private void doBoundsCheck(PlayerState playerState) {
@@ -169,15 +170,15 @@ public class BuildSectorDataManager extends DataManager<BuildSectorData> {
 	}
 
 	public void enterBuildSector(PlayerState playerState, BuildSectorData buildSectorData) {
-		if(playerState.isOnServer()) PacketUtil.sendPacket(playerState, new PlayerActionCommandPacket(PlayerActionManager.ENTER_BUILD_SECTOR, playerState.getName(), buildSectorData.getUUID()));
+	/*	if(playerState.isOnServer()) PacketUtil.sendPacket(playerState, new PlayerActionCommandPacket(PlayerActionManager.ENTER_BUILD_SECTOR, playerState.getName(), buildSectorData.getUUID()));
 		else PacketUtil.sendPacketToServer(new PlayerActionCommandPacket(PlayerActionManager.ENTER_BUILD_SECTOR, playerState.getName(), buildSectorData.getUUID()));
-		playerState.updateInventory();
+		playerState.updateInventory();*/
 	}
 
 	public void leaveBuildSector(PlayerState playerState) {
-		if(playerState.isOnServer()) PacketUtil.sendPacket(playerState, new PlayerActionCommandPacket(PlayerActionManager.LEAVE_BUILD_SECTOR, playerState.getName()));
+		/*if(playerState.isOnServer()) PacketUtil.sendPacket(playerState, new PlayerActionCommandPacket(PlayerActionManager.LEAVE_BUILD_SECTOR, playerState.getName()));
 		else PacketUtil.sendPacketToServer(new PlayerActionCommandPacket(PlayerActionManager.LEAVE_BUILD_SECTOR, playerState.getName()));
-		playerState.updateInventory();
+		playerState.updateInventory();*/
 	}
 
 	public boolean dataExistsForPlayer(String playerName, boolean server) {
