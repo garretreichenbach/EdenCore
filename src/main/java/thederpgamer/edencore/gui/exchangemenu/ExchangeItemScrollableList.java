@@ -334,8 +334,12 @@ public class ExchangeItemScrollableList extends ScrollableTableList<ExchangeData
 							@Override
 							public void pressedOK() {
 								String error = canBuy(data);
-								if(error != null) ((GameClientState) getState()).getPlayer().sendServerMessagePlayerError(new Object[]{error});
-								else buyBlueprint(data);
+								if(error != null) {
+									((GameClientState) getState()).getController().popupAlertTextMessage(error);
+								} else{
+									buyBlueprint(data);
+									deactivate();
+								}
 							}
 						}).activate();
 					}
