@@ -20,6 +20,12 @@ import java.io.IOException;
 public class ExchangeData extends SerializableData {
 
 	public void setFromCatalogEntry(CatalogPermission permission) {
+		name = permission.getUid();
+		catalogName = permission.getUid();
+		description = permission.description;
+		producer = permission.ownerUID;
+		mass = permission.mass;
+		dataType = DataType.EXCHANGE_DATA;
 	}
 
 	public enum ExchangeDataCategory {

@@ -396,9 +396,10 @@ public class ExchangeItemScrollableList extends ScrollableTableList<ExchangeData
 	}
 
 	private boolean hasPermission(ExchangeData data) {
-		for(CatalogPermission permission : ((GameClientState) getState()).getCatalog().getAllCatalog()) {
-			if(permission.getUid().toLowerCase(Locale.ENGLISH).equals(data.getCatalogName().toLowerCase(Locale.ENGLISH)) && permission.others())
+		for(CatalogPermission permission : ((GameClientState) getState()).getCatalog().getAvailableCatalog()) {
+			if(permission.getUid().toLowerCase(Locale.ENGLISH).equals(data.getCatalogName().toLowerCase(Locale.ENGLISH)) && permission.others()) {
 				return true;
+			}
 		}
 		return false;
 	}
