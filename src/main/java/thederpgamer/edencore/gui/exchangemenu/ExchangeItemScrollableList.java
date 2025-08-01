@@ -1,15 +1,19 @@
 package thederpgamer.edencore.gui.exchangemenu;
 
 import api.common.GameClient;
+import api.network.packets.PacketUtil;
+import api.utils.game.PlayerUtils;
 import api.utils.game.inventory.InventoryUtils;
 import org.schema.common.util.StringTools;
 import org.schema.game.client.controller.PlayerOkCancelInput;
 import org.schema.game.client.data.GameClientState;
 import org.schema.game.client.view.gui.GUIBlockSprite;
+import org.schema.game.common.data.element.meta.weapon.Weapon;
 import org.schema.game.common.data.player.BlueprintPlayerHandleRequest;
 import org.schema.game.common.data.player.catalog.CatalogPermission;
 import org.schema.game.common.data.player.inventory.Inventory;
 import org.schema.game.network.objects.remote.RemoteBlueprintPlayerRequest;
+import org.schema.game.server.data.admin.AdminCommands;
 import org.schema.game.server.data.blueprintnw.BlueprintClassification;
 import org.schema.schine.common.language.Lng;
 import org.schema.schine.graphicsengine.core.MouseEvent;
@@ -21,6 +25,8 @@ import thederpgamer.edencore.data.buildsectordata.BuildSectorDataManager;
 import thederpgamer.edencore.data.exchangedata.ExchangeData;
 import thederpgamer.edencore.data.exchangedata.ExchangeDataManager;
 import thederpgamer.edencore.element.ElementManager;
+import thederpgamer.edencore.manager.PlayerActionManager;
+import thederpgamer.edencore.network.PlayerActionCommandPacket;
 
 import java.util.*;
 
@@ -52,9 +58,8 @@ public class ExchangeItemScrollableList extends ScrollableTableList<ExchangeData
 			BlueprintClassification.SHOPPING_STATION,
 			BlueprintClassification.TRADE_STATION
 	};
-
-	private final GUIAncor pane;
 	protected final int type;
+	private final GUIAncor pane;
 
 	public ExchangeItemScrollableList(InputState state, GUIAncor pane, int type) {
 		super(state, 10, 10, pane);
@@ -193,7 +198,8 @@ public class ExchangeItemScrollableList extends ScrollableTableList<ExchangeData
 				}
 			}, ControllerElement.FilterRowStyle.FULL);
 			columnsHeight = 52;
-		} else throw new IllegalArgumentException("ExchangeItemScrollableList does not support the given type: " + type);
+		} else
+			throw new IllegalArgumentException("ExchangeItemScrollableList does not support the given type: " + type);
 		activeSortColumnIndex = 0;
 	}
 
@@ -336,8 +342,12 @@ public class ExchangeItemScrollableList extends ScrollableTableList<ExchangeData
 								String error = canBuy(data);
 								if(error != null) {
 									((GameClientState) getState()).getController().popupAlertTextMessage(error);
-								} else{
-									buyBlueprint(data);
+								} else {
+									if(type == ExchangeDialog.SHIPS || type == ExchangeDialog.STATIONS) {
+										buyBlueprint(data);
+									} else if(type == ExchangeDialog.ITEMS || type == ExchangeDialog.WEAPONS) {
+										buyItem(data);
+									}
 									deactivate();
 								}
 							}
@@ -366,7 +376,10 @@ public class ExchangeItemScrollableList extends ScrollableTableList<ExchangeData
 
 	public String canBuy(ExchangeData data) {
 		GameClientState state = (GameClientState) getState();
-		if(BuildSectorDataManager.getInstance(false).isPlayerInAnyBuildSector(state.getPlayer())) return "You can't do this while in a build sector!";
+		if(!state.getPlayer().getInventory().hasFreeSlot())
+			return "You don't have enough space in your inventory to buy this item!";
+		if(BuildSectorDataManager.getInstance(false).isPlayerInAnyBuildSector(state.getPlayer()))
+			return "You can't do this while in a build sector!";
 		if(type == ExchangeDialog.SHIPS || type == ExchangeDialog.STATIONS) {
 			if(!hasPermission(data)) return "Selected blueprint is not available or you don't have access to it!";
 			else {
@@ -383,10 +396,21 @@ public class ExchangeItemScrollableList extends ScrollableTableList<ExchangeData
 	}
 
 	private boolean hasPermission(ExchangeData data) {
-		for(CatalogPermission permission : ((GameClientState) getState()).getCatalog().getAvailableCatalog()) {
-			if(permission.getUid().equals(data.getCatalogName())) return true;
+		for(CatalogPermission permission : ((GameClientState) getState()).getCatalog().getAllCatalog()) {
+			if(permission.getUid().toLowerCase(Locale.ENGLISH).equals(data.getCatalogName().toLowerCase(Locale.ENGLISH)) && permission.others())
+				return true;
 		}
 		return false;
+	}
+
+	private void buyItem(ExchangeData data) {
+		Inventory playerInventory = ((GameClientState) getState()).getPlayer().getInventory();
+		if(type == ExchangeDialog.WEAPONS) {
+			PacketUtil.sendPacket(GameClient.getClientPlayerState(), new PlayerActionCommandPacket(PlayerActionManager.GIVE_ITEM, GameClient.getClientPlayerState().getName(), String.valueOf(data.getItemId()), "1", "true"));
+			InventoryUtils.consumeItems(playerInventory, ElementManager.getItem("Gold Bar").getId(), data.getPrice());
+		} else {
+			PacketUtil.sendPacket(GameClient.getClientPlayerState(), new PlayerActionCommandPacket(PlayerActionManager.GIVE_ITEM, GameClient.getClientPlayerState().getName(), String.valueOf(data.getItemId()), String.valueOf(data.getItemCount()), "false"));
+		}
 	}
 
 	private void buyBlueprint(ExchangeData data) {
@@ -398,6 +422,7 @@ public class ExchangeItemScrollableList extends ScrollableTableList<ExchangeData
 		req.directBuy = true;
 		((GameClientState) getState()).getPlayer().getNetworkObject().catalogPlayerHandleBuffer.add(new RemoteBlueprintPlayerRequest(req, false));
 		InventoryUtils.consumeItems(((GameClientState) getState()).getPlayer().getInventory(), ElementManager.getItem("Gold Bar").getId(), data.getPrice());
+		PacketUtil.sendPacket(GameClient.getClientPlayerState(), new PlayerActionCommandPacket(PlayerActionManager.ADD_BARS, GameClient.getClientPlayerState().getName(), data.getProducer(), String.valueOf(data.getPrice())));
 	}
 
 	public class ExchangeItemScrollableListRow extends ScrollableTableList<ExchangeData>.Row {
