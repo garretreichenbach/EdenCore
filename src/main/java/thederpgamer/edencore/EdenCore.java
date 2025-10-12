@@ -31,12 +31,6 @@ import java.util.Arrays;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 
-/**
- * Main class for EdenCore mod.
- *
- * @author TheDerpGamer
- * @version 1.0 - [06/27/2021]
- */
 public class EdenCore extends StarMod {
 
 	private static EdenCore instance;
@@ -81,7 +75,9 @@ public class EdenCore extends StarMod {
 					try {
 						sleep(tipInterval);
 						String tip = ConfigManager.getRandomTip();
-						for(PlayerState playerState : GameServer.getServerState().getPlayerStatesByName().values()) PlayerUtils.sendMessage(playerState, tip);
+						for(PlayerState playerState : GameServer.getServerState().getPlayerStatesByName().values()) {
+							PlayerUtils.sendMessage(playerState, tip);
+						}
 					} catch(InterruptedException exception) {
 						instance.logException("An error occurred while checking player login timers", exception);
 						return;
@@ -161,7 +157,7 @@ public class EdenCore extends StarMod {
 		ControlBindingData.load(this);
 		ControlBindingData.registerBinding(this, "Open Guide", "Opens the Guide Menu", 181);
 		ControlBindingData.registerBinding(this, "Open Banking Menu", "Opens the Banking Menu", 78);
-		ControlBindingData.registerBinding(this, "Open Exchange Menu", "Opens the Exchange Menu", 74);
+//		ControlBindingData.registerBinding(this, "Open Exchange Menu", "Opens the Exchange Menu", 74);
 //		ControlBindingData.registerBinding(this, "Open Build Sector Menu", "Opens the Build Sector Menu", 55);
 		logInfo("Registered Bindings");
 	}

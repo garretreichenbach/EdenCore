@@ -1,40 +1,23 @@
 package thederpgamer.edencore.manager;
 
 import api.common.GameClient;
-import api.common.GameServer;
 import api.listener.Listener;
-import api.listener.events.block.SegmentPieceActivateByPlayer;
-import api.listener.events.block.SegmentPieceActivateEvent;
-import api.listener.events.draw.RegisterWorldDrawersEvent;
-import api.listener.events.gui.GUIElementInstansiateEvent;
 import api.listener.events.gui.GUITopBarCreateEvent;
 import api.listener.events.gui.MainWindowTabAddEvent;
 import api.listener.events.input.KeyPressEvent;
-import api.listener.events.player.PlayerChangeSectorEvent;
-import api.listener.events.player.PlayerDeathEvent;
 import api.listener.events.player.PlayerJoinWorldEvent;
 import api.listener.events.player.PlayerSpawnEvent;
-import api.listener.events.world.SimulationJobExecuteEvent;
 import api.mod.StarLoader;
 import api.mod.StarMod;
 import api.utils.game.PlayerUtils;
-import api.utils.game.inventory.InventoryUtils;
 import api.utils.gui.ModGUIHandler;
-import org.schema.common.util.linAlg.Vector3i;
 import org.schema.game.client.view.gui.newgui.GUITopBar;
-import org.schema.game.common.data.player.AbstractOwnerState;
-import org.schema.game.common.data.player.PlayerState;
-import org.schema.game.common.data.player.inventory.Inventory;
-import org.schema.game.common.data.world.RemoteSector;
-import org.schema.game.common.data.world.Sector;
-import org.schema.game.server.data.simulation.jobs.SpawnPiratePatrolPartyJob;
 import org.schema.schine.common.language.Lng;
 import org.schema.schine.graphicsengine.core.MouseEvent;
 import org.schema.schine.graphicsengine.forms.gui.GUIActivationHighlightCallback;
 import org.schema.schine.graphicsengine.forms.gui.GUICallback;
 import org.schema.schine.graphicsengine.forms.gui.GUIElement;
 import org.schema.schine.graphicsengine.forms.gui.newgui.GUIContentPane;
-import org.schema.schine.graphicsengine.forms.gui.newgui.GUIResizableGrabbableWindow;
 import org.schema.schine.graphicsengine.forms.gui.newgui.GUITabbedContent;
 import org.schema.schine.input.InputState;
 import thederpgamer.edencore.EdenCore;
@@ -42,16 +25,10 @@ import thederpgamer.edencore.data.buildsectordata.BuildSectorDataManager;
 import thederpgamer.edencore.data.exchangedata.ExchangeDataManager;
 import thederpgamer.edencore.data.misc.ControlBindingData;
 import thederpgamer.edencore.data.playerdata.PlayerDataManager;
-import thederpgamer.edencore.drawer.BuildSectorHudDrawer;
-import thederpgamer.edencore.element.ElementManager;
 import thederpgamer.edencore.gui.bankingmenu.BankingDialog;
-import thederpgamer.edencore.gui.buildsectormenu.BuildSectorDialog;
 import thederpgamer.edencore.gui.controls.ControlBindingsScrollableList;
-import thederpgamer.edencore.gui.exchangemenu.ExchangeDialog;
-import thederpgamer.edencore.utils.ClassUtils;
 
 import java.awt.*;
-import java.lang.reflect.Field;
 import java.net.URI;
 import java.util.ArrayList;
 import java.util.Locale;
@@ -120,7 +97,7 @@ public class EventManager {
 			}
 		}, instance);
 
-		StarLoader.registerListener(PlayerChangeSectorEvent.class, new Listener<PlayerChangeSectorEvent>() {
+		/*StarLoader.registerListener(PlayerChangeSectorEvent.class, new Listener<PlayerChangeSectorEvent>() {
 			@Override
 			public void onEvent(PlayerChangeSectorEvent event) {
 				try {
@@ -152,7 +129,7 @@ public class EventManager {
 					instance.logException("Failed to retrieve sectors during PlayerChangeSectorEvent for player " + event.getPlayerState().getName(), exception);
 				}
 			}
-		}, instance);
+		}, instance);*/
 
 		StarLoader.registerListener(PlayerJoinWorldEvent.class, new Listener<PlayerJoinWorldEvent>() {
 			@Override
@@ -164,14 +141,14 @@ public class EventManager {
 							try {
 								sleep(5000);
 								PlayerDataManager.getInstance(event.getPlayerState().isOnServer()).createMissingData(event.getPlayerState().getName()); // Create missing player data if it doesn't exist
-								BuildSectorDataManager.getInstance(event.getPlayerState().isOnServer()).createMissingData(event.getPlayerState().getName()); // Create missing build sector data if it doesn't exist
+//								BuildSectorDataManager.getInstance(event.getPlayerState().isOnServer()).createMissingData(event.getPlayerState().getName()); // Create missing build sector data if it doesn't exist
 							} catch(Exception exception) {
 								instance.logException("Failed to create missing data for player " + event.getPlayerState().getName(), exception);
 							}
 						}
 					}).start();
 
-					(new Thread("EdenCore_Player_Login_Reward_Timer") {
+					/*(new Thread("EdenCore_Player_Login_Reward_Timer") {
 						@Override
 						public void run() {
 							try {
@@ -192,7 +169,7 @@ public class EventManager {
 								instance.logException("Failed to start player login reward timer for player " + event.getPlayerState().getName(), exception);
 							}
 						}
-					}).start();
+					}).start();*/
 				}
 			}
 		}, instance);
@@ -291,7 +268,7 @@ public class EventManager {
 						return true;
 					}
 				});*/
-				dropDownButton.addExpandedButton("EXCHANGE", new GUICallback() {
+			/*	dropDownButton.addExpandedButton("EXCHANGE", new GUICallback() {
 					@Override
 					public void callback(GUIElement guiElement, MouseEvent mouseEvent) {
 						if(mouseEvent.pressedLeftMouse()) {
@@ -320,7 +297,7 @@ public class EventManager {
 					public boolean isActive(InputState inputState) {
 						return true;
 					}
-				});
+				});*/
 				dropDownButton.addExpandedButton("DISCORD", new GUICallback() {
 					@Override
 					public void callback(GUIElement guiElement, MouseEvent mouseEvent) {
@@ -381,11 +358,11 @@ public class EventManager {
 									GameClient.getClientState().getGlobalGameControlManager().getIngameControlManager().getPlayerGameControlManager().deactivateAll();
 									(new BankingDialog()).activate();
 									return;
-								case "Open Exchange Menu":
+								/*case "Open Exchange Menu":
 									GameClient.getClientState().getController().queueUIAudio("0022_menu_ui - enter");
 									GameClient.getClientState().getGlobalGameControlManager().getIngameControlManager().getPlayerGameControlManager().deactivateAll();
 									(new ExchangeDialog()).activate();
-									return;
+									return;*/
 								/*case "Open Build Sector Menu":
 									GameClient.getClientState().getController().queueUIAudio("0022_menu_ui - enter");
 									GameClient.getClientState().getGlobalGameControlManager().getIngameControlManager().getPlayerGameControlManager().deactivateAll();
@@ -398,7 +375,7 @@ public class EventManager {
 			}
 		}, instance);
 
-		StarLoader.registerListener(GUIElementInstansiateEvent.class, new Listener<GUIElementInstansiateEvent>() {
+		/*StarLoader.registerListener(GUIElementInstansiateEvent.class, new Listener<GUIElementInstansiateEvent>() {
 			@Override
 			public void onEvent(GUIElementInstansiateEvent event) {
 				if(event.getGUIElement() instanceof GUIResizableGrabbableWindow) {
@@ -416,9 +393,9 @@ public class EventManager {
 					}
 				}
 			}
-		}, instance);
+		}, instance);*/
 
-		StarLoader.registerListener(SimulationJobExecuteEvent.class, new Listener<SimulationJobExecuteEvent>() {
+		/*StarLoader.registerListener(SimulationJobExecuteEvent.class, new Listener<SimulationJobExecuteEvent>() {
 			@Override
 			public void onEvent(SimulationJobExecuteEvent event) {
 				if(event.getSimulationJob() instanceof SpawnPiratePatrolPartyJob) {
@@ -428,16 +405,16 @@ public class EventManager {
 					if(BuildSectorDataManager.getInstance(false).isBuildSector(from) || BuildSectorDataManager.getInstance(false).isBuildSector(to)) event.setCanceled(true);
 				} else if(BuildSectorDataManager.getInstance(false).isBuildSector(event.getStartLocation())) event.setCanceled(true);
 			}
-		}, instance);
+		}, instance);*/
 
-		StarLoader.registerListener(RegisterWorldDrawersEvent.class, new Listener<RegisterWorldDrawersEvent>() {
+		/*StarLoader.registerListener(RegisterWorldDrawersEvent.class, new Listener<RegisterWorldDrawersEvent>() {
 			@Override
 			public void onEvent(RegisterWorldDrawersEvent event) {
 				event.getModDrawables().add(new BuildSectorHudDrawer());
 			}
-		}, instance);
+		}, instance);*/
 
-		StarLoader.registerListener(SegmentPieceActivateEvent.class, new Listener<SegmentPieceActivateEvent>() {
+		/*StarLoader.registerListener(SegmentPieceActivateEvent.class, new Listener<SegmentPieceActivateEvent>() {
 			@Override
 			public void onEvent(SegmentPieceActivateEvent event) {
 				try {
@@ -453,9 +430,9 @@ public class EventManager {
 					instance.logException("Encountered an exception while trying to enforce permissions in a build sector", exception);
 				}
 			}
-		}, instance);
+		}, instance);*/
 
-		StarLoader.registerListener(SegmentPieceActivateByPlayer.class, new Listener<SegmentPieceActivateByPlayer>() {
+		/*StarLoader.registerListener(SegmentPieceActivateByPlayer.class, new Listener<SegmentPieceActivateByPlayer>() {
 			@Override
 			public void onEvent(SegmentPieceActivateByPlayer event) {
 				try {
@@ -471,6 +448,6 @@ public class EventManager {
 					instance.logException("Encountered an exception while trying to enforce permissions in a build sector", exception);
 				}
 			}
-		}, instance);
+		}, instance);*/
 	}
 }
